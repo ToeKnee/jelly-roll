@@ -1,0 +1,44 @@
+{% extends "checkout/base_confirm.html" %}
+{% load i18n %}
+{% load satchmo_currency %}
+{# this is the credit-card confirm template #}
+
+{% block errorheader %}{% trans "Please correct and resubmit" %}{% endblock %}
+
+{% block navbar %}
+   <li class="first"><a href="{{ shop_base }}">{% trans "Home" %}</a></li>
+   <li>{% trans "Checkout" %}</li>
+{% endblock %}
+
+{% block payment_display %}
+<h2 class="form-like">{% trans "Payment" %} {% if not PAYMENT_LIVE %}<strong>test mode</strong>{% endif %}</h2>
+<p>{% trans "Your payment will be processed through WorldPay." %}</p>
+{% endblock %}
+
+{% block payment_form %}
+
+<form action="{{ post_url }}" method="post">
+{% if not PAYMENT_LIVE %}
+	<input type=hidden name="testMode" value="100" />
+{% endif %}
+	<input type="hidden" name="instId" value="{{ inst_id }}" />
+	<input type="hidden" name="cartId" value="{{ order.id }}" />
+	<input type="hidden" name="amount" value="{{ order.balance }}" />
+	<input type="hidden" name="currency" value="{{ currency }}" />
+	<input type="hidden" name="desc" value="{% for item in order.orderitem_set.all %}{% if default_view_tax %}{{ item.quantity }} x {{ item }}; {% else %}
+	{{ item.quantity }} x {{ item }} {% endif %}{% endfor %}" />
+	<input type="hidden" name="email" value="{{ order.contact.email }}" />
+	<input type="hidden" name="address" value=" {{ order.bill_street1 }}&#10 {{ order.bill_street2 }}&#10 {{ order.bill_city }}&#10 {{ order.bill_state }}" />
+	<input type="hidden" name="name" value="{{ order.contact.full_name }}" />
+	<input type="hidden" name="country" value="{{ order.bill_country }}" />
+	<input type="hidden" name="postcode" value="{{ order.bill_postal_code }}" />
+	<input type="hidden" name="tel"  value="{{ order.contact.primary_phone.phone }}" />
+	<input type="hidden" name="fixContact"/>
+{% if MD5 %}
+	<input type="hidden" name="signatureFields" value="amount:currency:cartId" />
+	<input type="hidden" name="signature" value="{{ MD5 }}" />
+{% endif %}	
+	<input type="hidden" name="M_session" value="{{ session }}" />
+	<input type="submit" class="button" value ="{% trans "Purchase Items &raquo;" %}" />
+</form> 
+{% endblock %}
