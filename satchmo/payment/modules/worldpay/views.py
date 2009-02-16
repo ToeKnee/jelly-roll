@@ -82,38 +82,14 @@ def success(request):
     """
     The order has been succesfully processed.
     """
-
+    
     session = SessionStore(session_key=request.POST['M_session'])
     request.session = session
     
-    try:
-        order = Order.objects.get(id=request.POST['cartId'])
-    except Order.DoesNotExist:
-        return bad_or_missing(request, _('Your order has already been processed.'))
-
-    try:
-        contact = order.contact
-    except Contact.DoesNotExist:
-        url = lookup_url(payment_module, 'satchmo_checkout-step1')
-        return HttpResponseRedirect(url)
-
-    # Verify we still have items in the cart
-    tempCart = Cart.objects.get(customer=contact)
-    if tempCart.numItems == 0:
-        template = lookup_template(payment_module, 'checkout/empty_cart.html')
-        return render_to_response(template, RequestContext(request))
-
-    # Create a new order
-    newOrder = Order(contact=contact)
-    pay_ship_save(newOrder, tempCart, contact, shipping="", discount="")
-
-    newOrder.add_status(status='Pending', notes = "Order successfully submitted")
-    record_payment(newOrder, payment_module, amount=newOrder.balance)
-
-    # Now, send a confirmation email
-    send_order_confirmation(newOrder)
-    tempCart.empty()
-
-    success = generic_success(request)
-    request.session['orderID'] = newOrder.id
-    return success
+    if request.POST['transStatus'] == 'Y':
+        return generic_success(request)
+    else:
+        context = RequestContext(request,
+            {'message': _('Your transaction was rejected.')})
+        return render_to_response('shop_404.html', context)
+    
