@@ -224,8 +224,8 @@ class CarrierTranslation(models.Model):
 
 class Zone(models.Model):
     key = models.SlugField(_('Key'))
-    continent = models.ForeignKey(Continent, to_field='code', related_name='continent')
-    country = models.ForeignKey(Country, related_name='country', blank=True, null=True)
+    continent = models.ManyToManyField(Continent, related_name='continent')
+    country = models.ManyToManyField(Country, related_name='country', blank=True, null=True)
     
     def _find_translation(self, language_code=None):
         if not language_code:
