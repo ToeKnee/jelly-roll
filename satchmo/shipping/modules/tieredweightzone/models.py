@@ -185,7 +185,7 @@ class Carrier(models.Model):
         try:
             zone = Zone.objects.get(country=destination_country)
         except:
-            zone = Zone.objects.get(continent=continent)
+            zone = Zone.objects.get(continent__id=continent.id, country=None)
         
         tiers = WeightTier.objects.filter(carrier=self, zone=zone)
 
