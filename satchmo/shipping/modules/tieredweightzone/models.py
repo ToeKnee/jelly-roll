@@ -177,16 +177,22 @@ class Carrier(models.Model):
     name = property(name)
     
     def price(self, wgt, country):
-        """Get a price for this weight."""
+        """Get a price for this weight and country."""
         #Check delivery address' continent
-        print "yehaw", country
-        # check for special discounts
         destination_country = Country.objects.get(id=country)
         continent = destination_country.continent
-        print 'destination', destination_country, dir (destination_country)
-        zone = self.zones.get(continent=continent)
-        tiers = zone.tiers
-        print zone
+        
+        try:
+            zone = Zone.objects.get(country=destination_country)
+        except:
+            zone = Zone.objects.get(continent=continent)
+        
+        tiers = WeightTier.objects.filter(carrier=self, zone=zone)
+
+        if not tiers:
+            raise TieredPriceException('No price available. For this zone/country/weight')
+        
+        # check for special discounts
         prices = tiers.filter(expires__isnull=False, min_weight__lte=wgt).exclude(expires__lt=datetime.date.today())
         if not prices.count() > 0:
             prices = tiers.filter(expires__isnull=True, min_weight__lte=wgt)
@@ -194,14 +200,13 @@ class Carrier(models.Model):
         if prices.count() > 0:
             # Get the price with the quantity closest to the one specified without going over
             return Decimal(prices.order_by('-min_weight')[0].price)
-
         else:
             log.debug("No tiered price found for %s: weight=%s", self.id, wgt)
             raise TieredPriceException('No price available. Please contact us for a price.')
             
             
     def __unicode__(self):
-        return u"Carrier: %s (%s)" % (self.name, self.description)
+        return u"%s (%s)" % (self.name, self.description)
         
     class Meta:
         pass
@@ -219,7 +224,7 @@ class CarrierTranslation(models.Model):
 
 class Zone(models.Model):
     key = models.SlugField(_('Key'))
-    continent = models.ForeignKey(Continent, to_field='code')
+    continent = models.ForeignKey(Continent, to_field='code', related_name='continent')
     country = models.ForeignKey(Country, related_name='country', blank=True, null=True)
     
     def _find_translation(self, language_code=None):
@@ -279,7 +284,7 @@ class Zone(models.Model):
     name = property(name)
 
     def __unicode__(self):
-        return u"Zone: %s (%s)" % (self.name, self.description)  
+        return u"%s (%s)" % (self.name, self.description)  
       
     class Meta:
         pass
@@ -295,7 +300,7 @@ class ZoneTranslation(models.Model):
 
 
 class WeightTier(models.Model):
-    carrier = models.ForeignKey('Carrier', related_name='zones')
+    carrier = models.ForeignKey('Carrier', related_name='tiers')
     zone = models.ForeignKey('Zone', related_name='tiers')
     min_weight = models.DecimalField(_("Min Weight"), 
         help_text=_('The minumum weight for this tier to apply'), 
@@ -304,7 +309,7 @@ class WeightTier(models.Model):
     expires = models.DateField(_("Expires"), null=True, blank=True)
     
     def __unicode__(self):
-        return u"WeightTier: %s @ %s" % (self.price, self.min_weight)
+        return u"%s @ %s" % (self.price, self.min_weight)
     
     class Meta:
         ordering = ('zone','carrier','price')
