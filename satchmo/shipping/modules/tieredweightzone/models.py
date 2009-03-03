@@ -10,7 +10,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import get_language, ugettext_lazy as _
 from satchmo.shipping.modules.base import BaseShipper
-from satchmo.l10n.models import CONTINENTS, Country
+from satchmo.l10n.models import Continent, Country
 import datetime
 import logging
 import operator
@@ -219,7 +219,7 @@ class CarrierTranslation(models.Model):
 
 class Zone(models.Model):
     key = models.SlugField(_('Key'))
-    continent = models.CharField(_('Continent'), choices=CONTINENTS, max_length=2)
+    continent = models.ForeignKey(Continent, to_field='code')
     country = models.ForeignKey(Country, related_name='country', blank=True, null=True)
     
     def _find_translation(self, language_code=None):
