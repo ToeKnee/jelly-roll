@@ -185,7 +185,7 @@ class Carrier(models.Model):
         try:
             zone = Zone.objects.get(country=destination_country)
         except:
-            zone = Zone.objects.get(continent=continent)
+            zone = Zone.objects.get(continent__id=continent.id, country=None)
         
         tiers = WeightTier.objects.filter(carrier=self, zone=zone)
 
@@ -224,8 +224,8 @@ class CarrierTranslation(models.Model):
 
 class Zone(models.Model):
     key = models.SlugField(_('Key'))
-    continent = models.ForeignKey(Continent, to_field='code', related_name='continent')
-    country = models.ForeignKey(Country, related_name='country', blank=True, null=True)
+    continent = models.ManyToManyField(Continent, related_name='continent')
+    country = models.ManyToManyField(Country, related_name='country', blank=True, null=True)
     
     def _find_translation(self, language_code=None):
         if not language_code:
