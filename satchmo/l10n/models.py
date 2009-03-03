@@ -45,6 +45,15 @@ AREAS = (
 )
 
 
+class Continent(models.Model):
+    """
+    Continent based on data previously stored as Choices
+    """
+    code = models.CharField(_('2 letter code'), max_length=2, unique=True)
+    name = models.CharField(_('Official name'), max_length=128)
+    
+    def __unicode__(self):
+        return self.name
 
 class Country(models.Model):
     """
@@ -56,7 +65,7 @@ class Country(models.Model):
     iso3_code = models.CharField(_('ISO alpha-3'), max_length=3, unique=True)
     numcode = models.PositiveSmallIntegerField(_('ISO numeric'), null=True, blank=True)
     active = models.BooleanField(_('Country is active'), default=True)
-    continent = models.CharField(_('Continent'), choices=CONTINENTS, max_length=2)
+    continent = models.ForeignKey(Continent, to_field='code')
     admin_area = models.CharField(_('Administrative Area'), choices=AREAS, max_length=2, null=True, blank=True)
 
     class Meta:
