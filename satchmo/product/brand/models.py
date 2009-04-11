@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core import urlresolvers
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from satchmo.l10n.mixins import TranslatedObjectMixin
@@ -40,10 +41,9 @@ class Brand(models.Model, TranslatedObjectMixin):
         return self._find_translation()
     translation = property(fget=_translation)
 
-    def _get_absolute_url(self):
-        return ('satchmo_brand_view', None, {'brandname' : self.slug})
-        
-    get_absolute_url = models.permalink(_get_absolute_url)
+    def get_absolute_url(self):
+        return urlresolvers.reverse('satchmo_brand_view',
+            kwargs={'brandname' : self.slug})
         
     def active_products(self):
         return self.products.filter(site=self.site, active=True)        
