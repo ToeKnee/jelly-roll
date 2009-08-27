@@ -88,6 +88,8 @@ def contact_info(request, **kwargs):
             # Allow them to login from this page.
             request.session.set_test_cookie()
 
+        init_data['copy_address'] = True
+        
         form = PaymentContactInfoForm(
             shop=shop, 
             contact=contact, 
