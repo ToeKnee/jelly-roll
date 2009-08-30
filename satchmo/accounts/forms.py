@@ -16,36 +16,45 @@ log = logging.getLogger('accounts.forms')
 
 class RegistrationForm(forms.Form):
     """The basic account registration form."""
+
     title = forms.CharField(max_length=30, label=_('Title'), required=False)
+    username = forms.RegexField(label=_("Username"), max_length=30, regex=r'^\w+$',
+        help_text = _("Required. 30 characters or fewer. Alphanumeric characters only (letters, digits and underscores)."),
+        error_message = _("This value must contain only letters, numbers and underscores."), required=True)
     email = forms.EmailField(label=_('Email address'),
-        max_length=30, required=True)
-    password2 = forms.CharField(label=_('Password (again)'),
-        max_length=30, widget=forms.PasswordInput(), required=True)
+        max_length=320, required=True)
     password1 = forms.CharField(label=_('Password'),
         max_length=30, widget=forms.PasswordInput(), required=True)
+
+    password2 = forms.CharField(label=_('Password (again)'),
+        max_length=30, widget=forms.PasswordInput(), required=True)
+
     first_name = forms.CharField(label=_('First name'),
-        max_length=30, required=True)
+        max_length=30, required=False)
     last_name = forms.CharField(label=_('Last name'),
-        max_length=30, required=True)
+        max_length=30, required=False)
+
+    newsletter = forms.BooleanField(label=_('Newsletter'),
+        widget=forms.CheckboxInput(), required=False)
 
     def __init__(self, *args, **kwargs):
         self.contact = None
         super(RegistrationForm, self).__init__(*args, **kwargs)
 
-    newsletter = forms.BooleanField(label=_('Newsletter'),
-        widget=forms.CheckboxInput(), required=False)
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        try:
+            User.objects.get(username=username)
+        except User.DoesNotExist:
+            return username
+        raise forms.ValidationError(_("A user with that username already exists."))
 
-    def clean_password1(self):
-        """Enforce that password and password2 are the same."""
-        p1 = self.cleaned_data.get('password1')
-        p2 = self.cleaned_data.get('password2')
-        if not (p1 and p2 and p1 == p2):
-            raise forms.ValidationError(
-                ugettext("The two passwords do not match."))
-
-        # note, here is where we'd put some kind of custom
-        # validator to enforce "hard" passwords.
-        return p1
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1", "")
+        password2 = self.cleaned_data["password2"]
+        if password1 != password2:
+            raise forms.ValidationError(_("The two password fields didn't match."))
+        return password2
 
     def clean_email(self):
         """Prevent account hijacking by disallowing duplicate emails."""
@@ -73,7 +82,7 @@ class RegistrationForm(forms.Form):
         email = data['email']
         first_name = data['first_name']
         last_name = data['last_name']
-        username = generate_id(first_name, last_name)
+        username = data['username']
 
         verify = (config_value('SHOP', 'ACCOUNT_VERIFICATION') == 'EMAIL')
 
