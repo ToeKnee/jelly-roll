@@ -2,16 +2,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-CONTINENTS = (
-    ('AF', _('Africa')),
-    ('NA', _('North America')),
-    ('EU',  _('Europe')),
-    ('AS', _('Asia')),
-    ('OC',  _('Oceania')),
-    ('SA', _('South America')),
-    ('AN', _('Antarctica'))
-)
-
 AREAS = (
     ('a', _('Another')),
     ('i', _('Island')),
