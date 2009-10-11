@@ -1,5 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <django-objects version="1.0">
+    <object pk="1" model="l10n.continent">
+        <field type="CharField" name="code">AF</field>
+        <field type="CharField" name="name">Africa</field>
+    </object>
+    <object pk="2" model="l10n.continent">
+        <field type="CharField" name="code">NA</field>
+        <field type="CharField" name="name">North America</field>
+    </object>
+    <object pk="3" model="l10n.continent">
+        <field type="CharField" name="code">EU</field>
+        <field type="CharField" name="name">Europe</field>
+    </object>
+    <object pk="4" model="l10n.continent">
+        <field type="CharField" name="code">AS</field>
+        <field type="CharField" name="name">Asia</field>
+    </object>
+    <object pk="5" model="l10n.continent">
+        <field type="CharField" name="code">OC</field>
+        <field type="CharField" name="name">Oceania</field>
+    </object>
+    <object pk="6" model="l10n.continent">
+        <field type="CharField" name="code">SA</field>
+        <field type="CharField" name="name">South America</field>
+    </object>
+    <object pk="7" model="l10n.continent">
+        <field type="CharField" name="code">AN</field>
+        <field type="CharField" name="name">Antarctica</field>
+    </object>
     <object pk="1" model="l10n.country">
         <field type="CharField" name="iso2_code">AF</field>
         <field type="CharField" name="name">AFGHANISTAN</field>
