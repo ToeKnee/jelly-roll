@@ -192,9 +192,6 @@ class Carrier(models.Model):
     def __unicode__(self):
         return u"Carrier: %s" % self.name
         
-    class Admin:
-        ordering = ('key',)
-
     class Meta:
         pass
         
@@ -221,9 +218,6 @@ class QuantityTier(models.Model):
     
     def __unicode__(self):
         return u"QuantityTier: %s @ %s" % (self.price, self.quantity)
-    
-    class Admin:
-        ordering = ('min_total', 'expires')
     
     class Meta:
         pass
