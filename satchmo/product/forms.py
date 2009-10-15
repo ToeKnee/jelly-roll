@@ -127,7 +127,7 @@ class ProductExportForm(forms.Form):
             raw = serializers.serialize(format, objects, indent=False)
         except Exception, e:
             raise CommandError("Unable to serialize database: %s" % e)
-            
+
         if include_images:
             filedir = settings.MEDIA_ROOT
             buf = StringIO()
@@ -160,8 +160,8 @@ class ProductExportForm(forms.Form):
             format = "zip"
         else:
             mimetype = "text/" + format
-
-        response = HttpResponse(mimetype=mimetype, content=raw)
+        #TODO: WTF? HTTPResponse from a form? srsly?
+        response = HttpResponse(content_type=mimetype, content=raw)
         response['Content-Disposition'] = 'attachment; filename="products-%s.%s"' % (time.strftime('%Y%m%d-%H%M'), format)
             
         return response
