@@ -12,7 +12,7 @@ from threaded_multihost.threadlocals import set_current_user
 
 class TieredTest(TestCase):
     """Test Tiered Pricing"""
-    fixtures = ['l10n-data.yaml','sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
+    fixtures = ['l10n_data.xml','sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
 
     def setUp(self):
         tieruser = User.objects.create_user('timmy', 'timmy@example.com', '12345')

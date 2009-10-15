@@ -86,7 +86,7 @@ class TestGenerateCertificateCode(TestCase):
             self.assert_(ch in chars)
     
 class TestCertCreate(TestCase):
-    fixtures = ['l10n-data.yaml','test_shop']
+    fixtures = ['l10n_data.xml','test_shop']
     
     def setUp(self):
         self.site = Site.objects.get_current()
@@ -111,7 +111,7 @@ class TestCertCreate(TestCase):
         
 class GiftCertOrderTest(TestCase):
 
-    fixtures = ['l10n-data.yaml', 'test_shop.yaml', 'test_giftcertificate.yaml', 'test_giftcertificate_config.yaml']
+    fixtures = ['l10n_data.xml', 'test_shop.yaml', 'test_giftcertificate.yaml', 'test_giftcertificate_config.yaml']
     
     def tearDown(self):
         cache_delete()

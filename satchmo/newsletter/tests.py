@@ -55,7 +55,7 @@ class NewsletterTest(TestCase):
         
 class NewsletterTestViews(TestCase):
     
-    fixtures = ['l10n-data.yaml', 'sample-store-data.yaml']
+    fixtures = ['l10n_data.xml', 'sample-store-data.yaml']
     
     def setUp(self):
         cfg = config_get('NEWSLETTER', 'MODULE')

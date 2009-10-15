@@ -65,7 +65,7 @@ def get_step1_post_data(US):
         }
 
 class ShopTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
+    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
 
     def setUp(self):
         # Every test needs a client
@@ -456,7 +456,7 @@ class ShopTest(TestCase):
         self.assertEqual(len(mail.outbox), 1)
 
 class AdminTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'sample-store-data.yaml', 'products.yaml']
+    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml']
 
     def setUp(self):
         self.client = Client()
@@ -542,7 +542,7 @@ class FilterUtilTest(TestCase):
         self.assertEqual(kwargs['one'], '"test"')
 
 class CartTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
+    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
 
     def tearDown(self):
         cache_delete()
@@ -568,7 +568,7 @@ class CartTest(TestCase):
         self.assertEqual(cart.total, Decimal("43.00"))
 
 class ConfigTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'sample-store-data.yaml', 'test-config.yaml']
+    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'test-config.yaml']
 
     def tearDown(self):
         cache_delete()
@@ -610,7 +610,7 @@ def make_test_order(country, state, include_non_taxed=False, site=None):
     return o
 
 class OrderTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'test_multishop.yaml', 'products.yaml']    
+    fixtures = ['l10n_data.xml', 'test_multishop.yaml', 'products.yaml']
     
     def setUp(self):
         caching.cache_delete()
@@ -661,7 +661,7 @@ def vetoAllListener(sender, vetoes={}, **kwargs):
     raise CartAddProhibited(None, "No")
 
 class SignalTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'test_multishop.yaml', 'products.yaml']    
+    fixtures = ['l10n_data.xml', 'test_multishop.yaml', 'products.yaml']
 
     def setUp(self):
         caching.cache_delete()

@@ -6,7 +6,7 @@ from satchmo.shop.models import Config
 import datetime
 
 class ContactTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'test-config.yaml']
+    fixtures = ['l10n_data.xml', 'test-config.yaml']
     
     def setUp(self):
         self.US = Country.objects.get(iso2_code__iexact="US")
@@ -63,7 +63,7 @@ class ContactTest(TestCase):
         self.assertEqual(org, org2)
         
 class ContactInfoFormTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'test_shop.yaml', 'test-config.yaml']
+    fixtures = ['l10n_data.xml', 'test_shop.yaml', 'test-config.yaml']
     
     def test_missing_first_and_last_name_should_not_raise_exception(self):
         shop = Config.objects.get_current()

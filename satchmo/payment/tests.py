@@ -29,7 +29,7 @@ if prefix == '/':
     prefix = ''
 
 class TestRecurringBilling(TestCase):
-    fixtures = ['l10n-data.yaml', 'test_shop.yaml', 'sub_products', 'config']
+    fixtures = ['l10n_data.xml', 'test_shop.yaml', 'sub_products', 'config']
 
     def setUp(self):
         self.customer = Contact.objects.create(first_name='Jane', last_name='Doe')
@@ -193,7 +193,7 @@ class TestModulesSettings(TestCase):
 #         self.assertEqual(gc.usages.count(), 1)
 
 class TestMinimumOrder(TestCase):
-    fixtures = ['l10n-data.yaml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
+    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
 
     def setUp(self):
         # Every test needs a client

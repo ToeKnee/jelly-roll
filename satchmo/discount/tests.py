@@ -167,7 +167,7 @@ class CalcFunctionTest(TestCase):
         self.assertEqual(s[3], Decimal("1.00"))
         
 class DiscountAmountTest(TestCase):
-    fixtures = ['l10n-data.yaml', 'test_discount.yaml']
+    fixtures = ['l10n_data.xml', 'test_discount.yaml']
     
     def setUp(self):
         self.US = Country.objects.get(iso2_code__iexact = 'US')
