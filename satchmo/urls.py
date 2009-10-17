@@ -15,10 +15,6 @@ if urlpatterns:
 else:
     urlpatterns = satchmopatterns
 
-urlpatterns += patterns('',
-    (r'^admin/(.*)', admin.site.root),
-)
-    
 #The following is used to serve up local media files like images
 if getattr(settings, 'LOCAL_DEV', False):
     baseurlregex = r'^static/(?P<path>.*)$'
