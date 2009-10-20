@@ -10,7 +10,6 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
 {% load satchmo_thumbnail %}
 {% load satchmo_price %}
 {% load satchmo_currency satchmo_category %}
-{% load satchmo_ratings %}
 {% load satchmo_util %}
 {% if "recentlist"|app_enabled %}{% load satchmo_recentlist %}{% endif %}
 
@@ -73,6 +72,5 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
 {% if sale %}
 {% include "discount/product_eligible.html" %}
 {% endif %}
-{% product_ratings %}
 {% endblock %}
 {% endblock %}

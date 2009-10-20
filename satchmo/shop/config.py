@@ -23,12 +23,6 @@ CURRENCY = config_register(
         help_text= _("Use a '_' character to force a space."),
         default="$"))
 
-ENABLE_RATINGS = config_register(
-    BooleanValue(SHOP_GROUP,
-        'RATINGS',
-        description= _("Enable product ratings"),
-        default=True))
-
 RANDOM_FEATURED = config_register(
     BooleanValue(SHOP_GROUP,
         'RANDOM_FEATURED',

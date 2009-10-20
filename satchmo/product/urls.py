@@ -15,8 +15,6 @@ urlpatterns = patterns('satchmo.product.views',
 urlpatterns += patterns('satchmo.product.filterviews',
     (r'^product/view/recent/$', 
         'display_recent', {}, 'satchmo_product_recently_added'),
-    (r'^product/view/bestrated/$', 
-        'display_bestratings', {}, 'satchmo_product_best_rated'),
     (r'^product/view/bestsellers/$', 
         'display_bestsellers', {}, 'satchmo_product_best_selling'),
 )

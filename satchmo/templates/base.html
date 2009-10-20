@@ -41,10 +41,6 @@
 		<h3>{% trans "Quick Links" %}</h3>
 		{% url satchmo_product_recently_added as recenturl %}
 		{% if recenturl %}<a href="{{ recenturl }}">{% trans "Recently Added" %}</a><br/>{% endif %}
-		{% if shop.options.SHOP.RATINGS.value %}
-		{% url satchmo_product_best_rated as besturl %}
-		{% if besturl %}<a href="{{ besturl }}">{% trans "Most Popular" %}</a><br/>{% endif %}
-		{% endif %}
 		{% url satchmo_product_best_selling as popularurl %}
 		{% if popularurl %}<a href="{{ popularurl }}">{% trans "Best Sellers" %}</a>{% endif %}
 

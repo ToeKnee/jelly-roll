@@ -4,22 +4,11 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from satchmo.configuration import config_value
 from satchmo.product.models import Product
-from satchmo.productratings.queries import highest_rated
 from satchmo.product.queries import bestsellers
 import logging
         
 log = logging.getLogger('product.filterviews')
-
-def display_bestratings(request, count=0, template='product/best_ratings.html'):
-    """Display a list of the products with the best ratings in comments"""
-    if count is None:
-        count = config_value('SHOP', 'NUM_DISPLAY')
-    
-    ctx = RequestContext(request, {
-        'products' : highest_rated(),
-    })
-    return render_to_response(template, ctx)
-    
+ 
 def display_bestsellers(request, count=0, template='product/best_sellers.html'):
     """Display a list of the products which have sold the most"""
     if count == 0:

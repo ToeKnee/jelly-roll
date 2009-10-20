@@ -23,11 +23,6 @@ urlpatterns += patterns('satchmo.shop.views',
     (r'^history/$', 'orders.order_history', {}, 'satchmo_order_history'),
     (r'^tracking/(?P<order_id>\d+)/$', 'orders.order_tracking', {}, 'satchmo_order_tracking'),
     (r'^search/$', 'search.search_view', {}, 'satchmo_search'),
-
-    # Override comments with our redirecting view. You can remove the next two
-    # URLs if you aren't using ratings.
-    #(r'^comments/post/$', 'comments.post_rating', {'maxcomments': 1 }, 'satchmo_rating_post'),
-    (r'^comments/', include('django.contrib.comments.urls')),
     
     # Used for downloadable products.
     (r'^download/process/(?P<download_key>\w+)/$', 'download.process', {}, 'satchmo_download_process'),

@@ -126,7 +126,6 @@ INSTALLED_APPS = (
     'satchmo.recentlist',
     'satchmo.wishlist',
     'satchmo.upsell',
-    'satchmo.productratings',
     # ****
     # * Optional Feature, Tiered shipping
     # * uncomment below to make that shipping module available in your live site
