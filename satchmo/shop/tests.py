@@ -111,7 +111,7 @@ class ShopTest(TestCase):
         shop_config = Config.objects.get_current()
         subject = u"Welcome to %s" % shop_config.store_name
         response = self.client.get('/accounts/register/')
-        self.assertContains(response, "Please Enter Your Account Information",
+        self.assertContains(response, "Create An Account",
                             count=1, status_code=200)
         response = self.client.post('/accounts/register/', {'email': 'someone@test.com',
                                     'first_name': 'Paul',
