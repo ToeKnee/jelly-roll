@@ -67,15 +67,14 @@ class Price_Inline(admin.TabularInline):
 class ProductImage_Inline(admin.StackedInline):
     model = ProductImage
     extra = 3
-    
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        # This method will turn all TextFields into giant TextFields
-        if isinstance(db_field, ImageWithThumbnailField):
-            kwargs['widget'] = AdminImageWithThumbnailWidget
-            return db_field.formfield(**kwargs)
-            
-        return super(ProductImage_Inline, self).formfield_for_dbfield(db_field, **kwargs)
- 
+# TODO: Fix or remove.
+#    def formfield_for_dbfield(self, db_field, **kwargs):
+#        # This method will turn all TextFields into giant TextFields
+#        if isinstance(db_field, ImageWithThumbnailField):
+#            kwargs['widget'] = AdminImageWithThumbnailWidget
+#            return db_field.formfield(**kwargs)
+#        return super(ProductImage_Inline, self).formfield_for_dbfield(db_field, **kwargs)
+
 class ProductTranslation_Inline(admin.TabularInline): 
     model = ProductTranslation 
     extra = 1    
