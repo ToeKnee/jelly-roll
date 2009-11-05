@@ -61,7 +61,7 @@
 
 	    {% if cart_count %}
         ({{ cart_count }}{% if cart.total %} - {% spaceless %}{% if shop.options.TAX.DEFAULT_VIEW_TAX.value %}
-        {% load satchmo_tax %}{% cart_taxed_total cart 1 %}{% else %}{{ cart.total|currency }}
+        {% load satchmo_tax %}{% cart_taxed_total cart 1 %}{% else %}
         {% endif %}{% endspaceless %}{% endif %})<br/>
 		{% url satchmo_checkout-step1 as checkouturl %}
         {% if checkouturl %}<a href="{{ checkouturl }}">{% trans "Check out" %}</a>{% endif %}
@@ -81,6 +81,31 @@
 		{% if recent_list %}{% recentlyviewed recent_list %}{% endif %}
 	    {% endblock recentview %}
 		{% endblock rightnav%}
+
+            {% load satchmo_currency %}
+            {% block cartarea %}
+                <div class="cartarea">
+                    <a href="{{ carturl }}"><h3>{% trans "Shopping Cart" %}</h3> {% trans "[edit]" %}</a>
+                    <div class="cart">
+                        {% if cart %}
+                            <ul class="cart">
+                            {% for item in cart %}
+                                <li>{{item.quantity}} x <a href="{{item.product.get_absolute_url}}" title="{{item.product.get_absolute_url}}">{{item.description}}</a> {{ item.line_total|currency}}</li>
+                            {% endfor %}
+                            </ul>
+                            <p>
+                                <span class="carttotal">{% trans "Total" %}: {{cart.total|currency}}</span><br />
+                                + <a href="shipping/" title ="postage/shipping info">{% trans "postage" %}</a>
+                            </p>
+                        {% else %}
+                                {% trans "Your shopping cart is empty." %}
+                        {% endif %}
+                        <div class="checkoutlink">
+                            <a href="{% url satchmo_checkout-step1 %}">&#x21AA; {% trans "Check out" %}</a>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
 	</div>
 
 	<div id="content">
