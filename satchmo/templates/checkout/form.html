@@ -69,7 +69,7 @@
     <tr><td><label for="id_phone">{% trans "Phone number" %}*</label></td><td> {{ form.phone }}</td></tr>
     {% if form.phone.errors %}<tr><td>&nbsp;</td><td>*** {{ form.phone.errors|join:", " }}</td></tr>{% endif %}
 
-    <tr><td colspan="2"><h4>{% trans "Billing Information" %}</h4></td></tr>
+    <tr><td colspan="2"><h4>{% trans "Billing Address" %}</h4></td></tr>
 
     <tr><td><label for="id_addressee">{% trans "Bill To" %}</label><p class="help">{% trans "If different from the first and last names above" %}</td><td> {{ form.addressee }}</td></tr>
     {% if form.addressee.errors %}<tr><td>&nbsp;</td><td>*** {{ form.addressee.errors|join:", "}}</td></tr>{% endif %}

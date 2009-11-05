@@ -219,9 +219,9 @@ class TestMinimumOrder(TestCase):
         self.assertRedirects(response, prefix + '/cart/',
             status_code=302, target_status_code=200)
         response = self.client.get(prefix+'/cart/')
-        self.assertContains(response, "Django Rocks shirt (Large/Blue)", count=1, status_code=200)
+        self.assertContains(response, "Django Rocks shirt (Large/Blue)", count=2, status_code=200)
         response = self.client.get(url('satchmo_checkout-step1'))
-        self.assertContains(response, "Billing Information", count=1, status_code=200)
+        self.assertContains(response, "Billing Address", status_code=200)
 
         # now check for min order not met
         min_order.update("100.00")
@@ -236,4 +236,4 @@ class TestMinimumOrder(TestCase):
         self.assertRedirects(response, prefix + '/cart/',
             status_code=302, target_status_code=200)
         response = self.client.get(url('satchmo_checkout-step1'))
-        self.assertContains(response, "Billing Information", count=1, status_code=200)
+        self.assertContains(response, "Billing Address", status_code=200)
