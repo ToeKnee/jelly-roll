@@ -84,7 +84,8 @@ class ContactInfoFormL10NTest(TestCase):
             }
         shop = Config.objects.get_current()
         form = ContactInfoForm(data, shop=shop, contact=contact)
-        print "ERR: %s" % form.errors
+        if form.errors:
+            print "ERR: %s" % form.errors
         self.assertEqual(True, form.is_valid())
         contactid = form.save(contact)
         self.assertEqual(contact.id, contactid)
