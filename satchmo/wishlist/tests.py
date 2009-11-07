@@ -46,16 +46,6 @@ class WishTest(TestCase):
     def tearDown(self):
         cache_delete()
 
-    def test_main_page(self):
-        """
-        Look at the main page
-        """
-        response = self.client.get(prefix+'/')
-
-        # Check that the rendered context contains 4 products
-        self.assertContains(response, '<div class = "productImage">',
-                            count=4, status_code=200)
-
     def test_wish_adding_not_logged_in(self):
         """
         Validate we can't add unless we are logged in.
@@ -146,6 +136,6 @@ class WishTestLoggedIn(TestCase):
         })
         self.assertRedirects(response, domain + prefix+'/cart/', status_code=302, target_status_code=200)
         response = self.client.get(prefix+'/cart/')
-        self.assertContains(response, "Robots Attack", count=1, status_code=200)
+        self.assertContains(response, "Robots Attack", count=2, status_code=200)
         
         
