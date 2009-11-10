@@ -90,7 +90,7 @@
                         {% if cart %}
                             <ul class="cart">
                             {% for item in cart %}
-                                <li>{{item.quantity}} x <a href="{{item.product.get_absolute_url}}" title="{{item.product.get_absolute_url}}">{{item.description}}</a> {{ item.line_total|currency}}</li>
+                                <li>{{item.quantity}} x <a href="{{item.product.get_absolute_url}}" title="{{item.description}}">{{item.description}}</a> {{ item.line_total|currency}}</li>
                             {% endfor %}
                             </ul>
                             <p>
