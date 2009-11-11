@@ -1,3 +1,5 @@
+* Rename the project directory from satchmo to jellyroll
+* Only require jellyroll to be install in applications (not all of the sub-parts too)
 * Sort out documentation directory.
 * Move all fixtures to xml (or JSON) as YAML isn't universally supported. (remove python-yaml to test)
 * Remove the registration stuff
