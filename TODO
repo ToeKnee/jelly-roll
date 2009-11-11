@@ -1,0 +1,11 @@
+* Sort out documentation directory.
+* Move all fixtures to xml (or JSON) as YAML isn't universally supported. (remove python-yaml to test)
+* Remove the registration stuff
+* Remove the Google Stuff (probably)
+* Remove thumbnails
+* Translation seems wrong.  If it is, fix it.
+* Export forms are returning HTTP responses. Should not do that...
+* TODO: Don't depend on SATCHMO_DIRNAME for things like templates!
+* Remove base_satchmo.html
+* Create demo store
+* Simplify all templates
