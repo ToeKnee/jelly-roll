@@ -9,3 +9,4 @@
 * Remove base_satchmo.html
 * Create demo store
 * Simplify all templates
+* Remove PDF generation of Invocies, etc.  HTML is fine.
