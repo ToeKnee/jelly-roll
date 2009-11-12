@@ -25,25 +25,21 @@ def lookup_url(settings, name, include_server=False, ssl=False):
     Last just look up the name
     """
     url = None
-
-    if settings.has_key('URL_OVERRIDES'):
-        val = settings['URL_OVERRIDES']
-        url = val.get(name, None)
-
+    
     if not url:
         try:
             possible = settings.KEY.value + "_" + name
             url = urlresolvers.reverse(possible)
         except urlresolvers.NoReverseMatch:
             log.debug('No url found for %s', possible)
-
+    
     if not url:
         try:
             url = urlresolvers.reverse(name)
         except urlresolvers.NoReverseMatch:
             log.error('Could not find any url for %s', name)
             raise
-            
+    
     if include_server:
         if ssl:
             method = "https://"
