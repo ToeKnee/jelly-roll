@@ -19,7 +19,7 @@
 <h4>{% trans "Billing Address" %}</h4>
 {{ order.full_bill_street|linebreaksbr }}<br/>
 {{ order.bill_city }}<br/>
-{{ order.bill_state }}<br/>
+{% if  order.bill_state %}{{ order.bill_state }}<br/>{% endif %}
 {{ order.bill_postal_code }}<br/>
 {{ order.bill_country }}<br/>
 
@@ -27,7 +27,7 @@
 <h4>{% trans "Shipping Address" %}</h4>
 {{ order.full_ship_street|linebreaksbr }}<br/>
 {{ order.ship_city }}<br/>
-{{ order.ship_state }}<br/>
+{% if order.ship_state %}{{ order.ship_state }}<br/>{% endif %}
 {{ order.ship_postal_code }}<br/>
 {{ order.ship_country }}<br/>
 {% endif %}

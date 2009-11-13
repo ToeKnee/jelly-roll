@@ -547,14 +547,14 @@ class Order(models.Model):
     ship_city = models.CharField(_("City"), max_length=50, blank=True)
     ship_state = models.CharField(_("State"), max_length=50, blank=True)
     ship_postal_code = models.CharField(_("Zip Code"), max_length=30, blank=True)
-    ship_country = models.CharField(_("Country"), max_length=2, blank=True)
+    ship_country = models.ForeignKey(Country, blank=True, related_name="ship_country")
     bill_addressee = models.CharField(_("Addressee"), max_length=61, blank=True)
     bill_street1 = models.CharField(_("Street"), max_length=80, blank=True)
     bill_street2 = models.CharField(_("Street"), max_length=80, blank=True)
     bill_city = models.CharField(_("City"), max_length=50, blank=True)
     bill_state = models.CharField(_("State"), max_length=50, blank=True)
     bill_postal_code = models.CharField(_("Zip Code"), max_length=30, blank=True)
-    bill_country = models.CharField(_("Country"), max_length=2, blank=True)
+    bill_country = models.ForeignKey(Country, blank=True, related_name="bill_country")
     notes = models.TextField(_("Notes"), blank=True, null=True)
     sub_total = models.DecimalField(_("Subtotal"),
         max_digits=18, decimal_places=10, blank=True, null=True)
@@ -631,14 +631,14 @@ class Order(models.Model):
         self.ship_city = shipaddress.city
         self.ship_state = shipaddress.state
         self.ship_postal_code = shipaddress.postal_code
-        self.ship_country = shipaddress.country.iso2_code
+        self.ship_country = shipaddress.country
         self.bill_addressee = billaddress.addressee
         self.bill_street1 = billaddress.street1
         self.bill_street2 = billaddress.street2
         self.bill_city = billaddress.city
         self.bill_state = billaddress.state
         self.bill_postal_code = billaddress.postal_code
-        self.bill_country = billaddress.country.iso2_code
+        self.bill_country = billaddress.country
 
     def remove_all_items(self):
         """Delete all items belonging to this order."""
