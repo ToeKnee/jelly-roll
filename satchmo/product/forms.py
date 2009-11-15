@@ -292,7 +292,7 @@ class InventoryForm(forms.Form):
         super(InventoryForm, self).__init__(*args, **kwargs)
 
         if not products:
-            products = Product.objects.by_site().order_by('slug')
+            products = Product.objects.by_site().order_by("-active", "brand__slug", 'slug')
 
         for product in products:
             subtypes = product.get_subtypes()
