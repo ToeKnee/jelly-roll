@@ -525,16 +525,12 @@ class Product(models.Model):
     ordering = models.IntegerField(_("Ordering"), default=0, help_text=_("Override alphabetical order in category display"))
     weight = models.DecimalField(_("Weight"), max_digits=8, decimal_places=2, null=True, blank=True)
     weight_units = models.CharField(_("Weight units"), max_length=3, null=True, blank=True) 
-    #, validator_list=[weight_validator])
     length = models.DecimalField(_("Length"), max_digits=6, decimal_places=2, null=True, blank=True)
     length_units = models.CharField(_("Length units"), max_length=3, null=True, blank=True)
-    #, validator_list=[length_validator])
     width = models.DecimalField(_("Width"), max_digits=6, decimal_places=2, null=True, blank=True)
     width_units = models.CharField(_("Width units"), max_length=3, null=True, blank=True)
-    #, validator_list=[width_validator])
     height = models.DecimalField(_("Height"), max_digits=6, decimal_places=2, null=True, blank=True)
     height_units = models.CharField(_("Height units"), max_length=3, null=True, blank=True)
-    #, validator_list=[height_validator])
     related_items = models.ManyToManyField('self', blank=True, null=True, verbose_name=_('Related Items'), related_name='related_products')
     also_purchased = models.ManyToManyField('self', blank=True, null=True, verbose_name=_('Previously Purchased'), related_name='also_products')
     total_sold = models.IntegerField(_("Total sold"), default=0)
@@ -833,7 +829,6 @@ class Product(models.Model):
             subtype = getattr(self, subtype_name.lower())
             if hasattr(subtype, 'add_template_context'):
                 context = subtype.add_template_context(context, *args, **kwargs)
-
         return context
 
 class ProductTranslation(models.Model):
