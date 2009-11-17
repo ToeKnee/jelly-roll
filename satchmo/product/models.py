@@ -536,7 +536,8 @@ class Product(models.Model):
     total_sold = models.IntegerField(_("Total sold"), default=0)
     taxable = models.BooleanField(_("Taxable"), default=False)
     taxClass = models.ForeignKey(TaxClass, verbose_name=_('Tax Class'), blank=True, null=True, help_text=_("If it is taxable, what kind of tax?"))
-    shipclass = models.CharField(_('Shipping'), choices=SHIP_CLASS_CHOICES, default="DEFAULT", max_length=10,
+    # What is the product type?
+    shipclass = models.CharField(_('Shipping'), choices=SHIP_CLASS_CHOICES, default="YES", max_length=10,
         help_text=_("If this is 'Default', then we'll use the product type to determine if it is shippable."))
 
     objects = ProductManager()
