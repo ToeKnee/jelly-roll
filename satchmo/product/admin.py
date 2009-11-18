@@ -18,14 +18,14 @@ class CategoryTranslation_Inline(admin.StackedInline):
 class CategoryImage_Inline(admin.TabularInline):
     model = CategoryImage
     extra = 3
-    
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        # This method will turn all TextFields into giant TextFields
-        if isinstance(db_field, ImageWithThumbnailField):
-            kwargs['widget'] = AdminImageWithThumbnailWidget
-            return db_field.formfield(**kwargs)
-            
-        return super(CategoryImage_Inline, self).formfield_for_dbfield(db_field, **kwargs)
+# TODO: Fix or remove.
+#    def formfield_for_dbfield(self, db_field, **kwargs):
+#        # This method will turn all TextFields into giant TextFields
+#        if isinstance(db_field, ImageWithThumbnailField):
+#            kwargs['widget'] = AdminImageWithThumbnailWidget
+#            return db_field.formfield(**kwargs)
+#
+#        return super(CategoryImage_Inline, self).formfield_for_dbfield(db_field, **kwargs)
     
 
 class CategoryImageTranslation_Inline(admin.StackedInline):
