@@ -565,11 +565,11 @@ class Order(models.Model):
     discount = models.DecimalField(_("Discount amount"),
         max_digits=18, decimal_places=10, blank=True, null=True)
     method = models.CharField(_("Order method"),
-        choices=ORDER_CHOICES, max_length=50, blank=True)
+        choices=ORDER_CHOICES, max_length=200, blank=True)
     shipping_description = models.CharField(_("Shipping Description"),
-        max_length=50, blank=True, null=True)
+        max_length=200, blank=True, null=True)
     shipping_method = models.CharField(_("Shipping Method"),
-        max_length=50, blank=True, null=True)
+        max_length=200, blank=True, null=True)
     shipping_model = ShippingChoiceCharField(_("Shipping Models"),
         max_length=30, blank=True, null=True)
     shipping_cost = models.DecimalField(_("Shipping Cost"),
