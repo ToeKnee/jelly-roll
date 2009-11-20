@@ -139,14 +139,15 @@ class ProductOptions(admin.ModelAdmin):
         inlines.append(ProductTranslation_Inline)
     filter_horizontal = ('category',)
     
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        field = super(ProductOptions, self).formfield_for_dbfield(db_field, **kwargs)
-        fieldname = db_field.name
-        if fieldname in ("length_units", "width_units", "height_units"): 
-            field.initial = default_dimension_unit()
-        elif fieldname == "weight_units":
-            field.initial = default_weight_unit()
-        return field
+# TODO: Fix or remove.
+#    def formfield_for_dbfield(self, db_field, **kwargs):
+#        field = super(ProductOptions, self).formfield_for_dbfield(db_field, **kwargs)
+#        fieldname = db_field.name
+#        if fieldname in ("length_units", "width_units", "height_units"):
+#            field.initial = default_dimension_unit()
+#        elif fieldname == "weight_units":
+#            field.initial = default_weight_unit()
+#        return field
 
 class CustomProductOptions(admin.ModelAdmin):
     inlines = [CustomTextField_Inline]

@@ -12,13 +12,14 @@ class BrandTranslation_Inline(admin.StackedInline):
     verbose_name = _("Translation")
     verbose_name_plural = _("Translations")
     
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        # This method will turn all TextFields into giant TextFields
-        if isinstance(db_field, ImageWithThumbnailField):
-            kwargs['widget'] = AdminImageWithThumbnailWidget
-            return db_field.formfield(**kwargs)
-            
-        return super(BrandTranslation_Inline, self).formfield_for_dbfield(db_field, **kwargs)
+# TODO: Fix or remove.
+#def formfield_for_dbfield(self, db_field, **kwargs):
+#        # This method will turn all TextFields into giant TextFields
+#        if isinstance(db_field, ImageWithThumbnailField):
+#            kwargs['widget'] = AdminImageWithThumbnailWidget
+#            return db_field.formfield(**kwargs)
+#
+#        return super(BrandTranslation_Inline, self).formfield_for_dbfield(db_field, **kwargs)
     
 
 class BrandCategoryTranslation_Inline(admin.StackedInline):
@@ -27,13 +28,14 @@ class BrandCategoryTranslation_Inline(admin.StackedInline):
     verbose_name = _("Translation")
     verbose_name_plural = _("Translations")
 
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        # This method will turn all TextFields into giant TextFields
-        if isinstance(db_field, ImageWithThumbnailField):
-            kwargs['widget'] = AdminImageWithThumbnailWidget
-            return db_field.formfield(**kwargs)
-            
-        return super(BrandCategoryTranslation_Inline, self).formfield_for_dbfield(db_field, **kwargs)
+# TODO: Fix or remove.
+#    def formfield_for_dbfield(self, db_field, **kwargs):
+#        # This method will turn all TextFields into giant TextFields
+#        if isinstance(db_field, ImageWithThumbnailField):
+#            kwargs['widget'] = AdminImageWithThumbnailWidget
+#            return db_field.formfield(**kwargs)
+#
+#        return super(BrandCategoryTranslation_Inline, self).formfield_for_dbfield(db_field, **kwargs)
 
 class BrandCategoryTranslationOptions(admin.ModelAdmin):
     fieldsets = (
