@@ -26,10 +26,9 @@ def send_order_confirmation(new_order, template='email/order_complete.txt'):
 
     shop_config = Config.objects.get_current()
     shop_email = shop_config.store_email
-    shop_name = shop_config.store_name
     t = loader.get_template(template)
-    c = Context({'order': new_order, 'shop_name': shop_name})
-    subject = _("Thank you for your order from %(shop_name)s") % {'shop_name' : shop_name}
+    c = Context({'order': new_order, 'shop_config': shop_config})
+    subject = _("Thank you for your order from %(shop_name)s (Order id: %{order_id})s") % {'shop_name' : shop_config.store_name, 'order_id' : new_order.id }
 
     try:
         customer_email = new_order.contact.email
@@ -53,10 +52,9 @@ def send_order_notice(new_order, template='email/order_placed_notice.txt'):
     if config_value("PAYMENT", "ORDER_EMAIL_OWNER"):
         shop_config = Config.objects.get_current()
         shop_email = shop_config.store_email
-        shop_name = shop_config.store_name
         t = loader.get_template(template)
-        c = Context({'order': new_order, 'shop_name': shop_name})
-        subject = _("New order on %(shop_name)s") % {'shop_name' : shop_name}
+        c = Context({'order': new_order, 'shop_config': shop_config})
+        subject = _("New order on %(shop_name)s") % {'shop_name' : shop_config.store_name}
         
         eddresses = [shop_email, ]
         more = config_value("PAYMENT", "ORDER_EMAIL_EXTRA")

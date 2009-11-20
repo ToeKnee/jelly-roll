@@ -1,6 +1,6 @@
 {% load i18n %}{% load satchmo_currency %}{% with order.contact.first_name as first_name %}{% with order.contact.last_name as last_name %}{% blocktrans %}Dear {{ first_name }} {{ last_name }},{% endblocktrans %}{% endwith %}{% endwith %}
 
-{% blocktrans %}Thank you for ordering with {{ shop_name }}.{% endblocktrans %}
+{% blocktrans %}Thank you for ordering with {{ shop_config.store_name }}.{% endblocktrans %}
 
 {% trans "Your order is summarized below:" %}
 
