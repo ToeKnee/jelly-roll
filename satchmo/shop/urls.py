@@ -19,7 +19,6 @@ urlpatterns += patterns('satchmo.shop.views',
     (r'^cart/remove/$', 'cart.remove', {}, 'satchmo_cart_remove'),
     (r'^cart/remove/ajax$', 'cart.remove_ajax', {}, 'satchmo_cart_remove_ajax'),
     (r'^checkout/', include('satchmo.payment.urls')),
-    (r'^contact/$', 'contact.form', {}, 'satchmo_contact'),
     (r'^history/$', 'orders.order_history', {}, 'satchmo_order_history'),
     (r'^tracking/(?P<order_id>\d+)/$', 'orders.order_tracking', {}, 'satchmo_order_tracking'),
     (r'^search/$', 'search.search_view', {}, 'satchmo_search'),
@@ -44,5 +43,4 @@ if app_enabled('wishlist'):
     )
 
 urlpatterns += patterns('django.views.generic',
-    (r'^contact/thankyou/$','simple.direct_to_template',{'template':'thanks.html'},'satchmo_contact_thanks'),
 )

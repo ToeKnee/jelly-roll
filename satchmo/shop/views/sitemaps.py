@@ -45,7 +45,6 @@ def satchmo_main():
     rv = urlresolvers.reverse
     urls = (
         (base + '/', 1.0, 'hourly'),
-        (rv('satchmo_contact'), 1.0, 'monthly'),
         (rv('satchmo_cart'), 0.5, 'monthly'),
         (rv('auth_login'), 0.8, 'monthly'),
         (rv('registration_register'), 0.8, 'monthly'),
