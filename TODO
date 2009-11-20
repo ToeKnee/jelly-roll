@@ -13,4 +13,5 @@
 * Simplify all templates
 * Remove PDF generation of Invocies, etc.  HTML is fine.
 * Remove blackbird logging
-
+* Sort Order should default to 0 when editing products, product categories and brand categories in Admin
+* Contact model shouldn't have contact types hardcoded
