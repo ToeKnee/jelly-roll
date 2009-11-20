@@ -28,7 +28,7 @@ def send_order_confirmation(new_order, template='email/order_complete.txt'):
     shop_email = shop_config.store_email
     t = loader.get_template(template)
     c = Context({'order': new_order, 'shop_config': shop_config})
-    subject = _("Thank you for your order from %(shop_name)s (Order id: %{order_id})s") % {'shop_name' : shop_config.store_name, 'order_id' : new_order.id }
+    subject = _("Thank you for your order from %(shop_name)s (Order id: %(order_id)s)") % {'shop_name' : shop_config.store_name, 'order_id' : new_order.id }
 
     try:
         customer_email = new_order.contact.email
