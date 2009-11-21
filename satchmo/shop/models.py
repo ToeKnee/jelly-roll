@@ -32,6 +32,7 @@ from satchmo.product import signals as product_signals
 from satchmo.product.models import Product, DownloadableProduct
 from satchmo.shipping.fields import ShippingChoiceCharField
 from satchmo.tax.utils import get_tax_processor
+from satchmo.shop.notification import send_order_update_notice
 from django.contrib.sites.models import Site
     
 log = logging.getLogger('satchmo.shop.models')
@@ -736,10 +737,19 @@ class Order(models.Model):
         """
         Copy addresses from contact. If the order has just been created, set
         the create_date.
+
+        Also, notify the customer if the order status has been updated
         """
         if not self.pk:
             self.time_stamp = datetime.datetime.now()
             self.copy_addresses()
+
+        if self.pk:
+            old = Order.objects.get(pk=self.pk)
+
+            if old.status != self.status and self.status == "Shipped":
+                send_order_update_notice(self, self.status)
+
         super(Order, self).save(force_insert=force_insert, force_update=force_update) # Call the "real" save() method.
 
     def invoice(self):

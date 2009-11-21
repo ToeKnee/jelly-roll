@@ -43,7 +43,33 @@ def send_order_confirmation(new_order, template='email/order_complete.txt'):
         else:
             log.fatal('Error sending mail: %s' % e)
             raise IOError('Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
-            
+
+def send_order_update_notice(order, status, template='email/order_status_changed.txt'):
+    """Send an email to the customer when the status changes.
+    """
+    from satchmo.shop.models import Config
+
+    shop_config = Config.objects.get_current()
+    shop_email = shop_config.store_email
+    t = loader.get_template(template)
+    c = Context({'order': order, 'shop_config': shop_config, 'status': status, 'notes': order.notes})
+    subject = _("Your %(shop_name)s order has been updated. Status: %(status)s (Order id: %(order_id)s)") % {'shop_name' : shop_config.store_name, 'status': status, 'order_id' : order.id }
+
+    try:
+        customer_email = order.contact.email
+        body = t.render(c)
+        message = EmailMessage(subject, body, shop_email, [customer_email])
+        message.send()
+
+    except SocketError, e:
+        if settings.DEBUG:
+            log.error('Error sending mail: %s' % e)
+            log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', customer_email, subject, body)
+        else:
+            log.fatal('Error sending mail: %s' % e)
+            raise IOError('Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
+
+
 def send_order_notice(new_order, template='email/order_placed_notice.txt'):
     """Send an order confirmation mail to the owner.
     """
