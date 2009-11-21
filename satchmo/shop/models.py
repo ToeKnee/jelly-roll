@@ -737,19 +737,10 @@ class Order(models.Model):
         """
         Copy addresses from contact. If the order has just been created, set
         the create_date.
-
-        Also, notify the customer if the order status has been updated
         """
         if not self.pk:
             self.time_stamp = datetime.datetime.now()
             self.copy_addresses()
-
-        if self.pk:
-            old = Order.objects.get(pk=self.pk)
-
-            if old.status != self.status and self.status == "Shipped":
-                send_order_update_notice(self, self.status)
-
         super(Order, self).save(force_insert=force_insert, force_update=force_update) # Call the "real" save() method.
 
     def invoice(self):
@@ -1078,6 +1069,9 @@ class OrderStatus(models.Model):
         return self.status
 
     def save(self, force_insert=False, force_update=False):
+        if self.status == "Shipped":
+            send_order_update_notice(self)
+
         super(OrderStatus, self).save(force_insert=force_insert, force_update=force_update)
         self.order.status = self.status
         self.order.save()

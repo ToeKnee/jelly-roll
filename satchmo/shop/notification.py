@@ -44,7 +44,7 @@ def send_order_confirmation(new_order, template='email/order_complete.txt'):
             log.fatal('Error sending mail: %s' % e)
             raise IOError('Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
 
-def send_order_update_notice(order, status, template='email/order_status_changed.txt'):
+def send_order_update_notice(order_status, template='email/order_status_changed.txt'):
     """Send an email to the customer when the status changes.
     """
     from satchmo.shop.models import Config
@@ -52,11 +52,11 @@ def send_order_update_notice(order, status, template='email/order_status_changed
     shop_config = Config.objects.get_current()
     shop_email = shop_config.store_email
     t = loader.get_template(template)
-    c = Context({'order': order, 'shop_config': shop_config, 'status': status, 'notes': order.notes})
-    subject = _("Your %(shop_name)s order has been updated. Status: %(status)s (Order id: %(order_id)s)") % {'shop_name' : shop_config.store_name, 'status': status, 'order_id' : order.id }
+    c = Context({'order': order_status.order, 'shop_config': shop_config, 'status': order_status, 'notes': order_status.notes})
+    subject = _("Your %(shop_name)s order has been updated. Status: %(status)s (Order id: %(order_id)s)") % {'shop_name' : shop_config.store_name, 'status': order_status, 'order_id' : order_status.order.id }
 
     try:
-        customer_email = order.contact.email
+        customer_email = order_status.order.contact.email
         body = t.render(c)
         message = EmailMessage(subject, body, shop_email, [customer_email])
         message.send()
