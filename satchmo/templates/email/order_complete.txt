@@ -4,7 +4,7 @@
 
 {% trans "Your order is summarized below:" %}
 
-{% trans "Order number:" %} {{order.order_number}}
+{% trans "Order number:" %} {{order.id}}
 
 {% trans "Items Ordered" %}
 --------------
