@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 from satchmo.shop.views.utils import bad_or_missing
 from satchmo.shop.models import Order
 
-def success(request, template='checkout/worldpay/success.html'):
+def success(request, template='checkout/success.html'):
     """
     The order has been succesfully processed.  This can be used to generate a receipt or some other confirmation
     """
