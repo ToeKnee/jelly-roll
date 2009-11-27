@@ -118,15 +118,23 @@ def ipn(request):
         if not confirm_ipn_data(data, PP_URL):
             return HttpResponse()
 
-        if not 'payment_status' in data or not data['payment_status'] == "Completed":
-            # We want to respond to anything that isn't a payment - but we won't insert into our database.
-             log.info("Ignoring IPN data for non-completed payment.")
-             return HttpResponse()
-
         try:
             invoice = data['invoice']
         except:
             invoice = data['item_number']
+            
+        if not 'payment_status' in data or not data['payment_status'] == "Completed":
+            # We want to respond to anything that isn't a payment - but we won't insert into our database.
+            order = Order.objects.get(pk=invoice)
+            if data['payment_status'] == "Pending":
+                notes = "Pending Reason: %s" % (data['pending_reason'])
+            else:
+                notes = ""
+            order.add_status(status=data['payment_status'], notes=(notes))
+            log.info("Ignoring IPN data for non-completed payment.")
+            return HttpResponse()
+
+        
 
         gross = data['mc_gross']
         txn_id = data['txn_id']
@@ -134,7 +142,6 @@ def ipn(request):
         if not OrderPayment.objects.filter(transaction_id=txn_id).count():
             # If the payment hasn't already been processed:
             order = Order.objects.get(pk=invoice)
-            
             order.add_status(status='Processing', notes=_("Paid through PayPal."))
             payment_module = config_get_group('PAYMENT_PAYPAL')
             record_payment(order, payment_module, amount=gross, transaction_id=txn_id)
