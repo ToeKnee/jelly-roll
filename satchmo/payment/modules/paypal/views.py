@@ -135,7 +135,7 @@ def ipn(request):
             # If the payment hasn't already been processed:
             order = Order.objects.get(pk=invoice)
             
-            order.add_status(status='Pending', notes=_("Paid through PayPal."))
+            order.add_status(status='In Progress', notes=_("Paid through PayPal."))
             payment_module = config_get_group('PAYMENT_PAYPAL')
             record_payment(order, payment_module, amount=gross, transaction_id=txn_id)
             
