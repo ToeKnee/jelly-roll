@@ -1,30 +1,16 @@
-from satchmo.configuration import config_get_group
-from satchmo.payment.views import confirm, payship
-
-from django import http
-from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
-from django.template import RequestContext, Context
-from django.template.loader import get_template
-from django.utils.translation import ugettext as _
-from satchmo.configuration import config_get_group
-from satchmo.contact.models import Contact
-from satchmo.configuration import config_value 
-from satchmo.payment.config import payment_live
-from satchmo.shop.models import Cart, Order, OrderPayment
-from satchmo.utils.dynamic import lookup_url, lookup_template
-from satchmo.payment.views.checkout import success as generic_success
-from satchmo.shop.notification import send_order_confirmation
-from satchmo.payment.utils import pay_ship_save, record_payment
 from django.contrib.sessions.backends.db import SessionStore
-
-
-import base64
-import hmac
-import logging
-import sha, md5
-import time
-from datetime import datetime
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+from django.utils.translation import ugettext as _
+import md5
+from satchmo.configuration import config_get_group
+from satchmo.configuration import config_value
+from satchmo.payment.views import payship
+from satchmo.payment.views.checkout import success as generic_success
+from satchmo.payment.utils import record_payment
+from satchmo.shop.models import Cart
+from satchmo.shop.models import Order
+from satchmo.utils.dynamic import lookup_template
 
 payment_module = config_get_group('PAYMENT_WORLDPAY')
 
@@ -83,10 +69,17 @@ def success(request):
     The order has been succesfully processed.
     """
     
-    session = SessionStore(session_key=request.POST['M_session'])
+    session = SessionStore(session_key = request.POST['M_session'])
+    transaction_id = request.POST['cartId']
+    amount = request.POST['authAmount']
     request.session = session
     
     if request.POST['transStatus'] == 'Y':
+        order = Order.objects.get(pk=transaction_id)
+        order.add_status(status='Processing', notes=_("Paid through WorldPay."))
+        record_payment(order, payment_module, amount=amount, transaction_id=transaction_id)
+        for cart in Cart.objects.filter(customer=order.contact):
+            cart.empty()
         return generic_success(request)
     else:
         context = RequestContext(request,
