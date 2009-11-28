@@ -18,4 +18,4 @@
 * Sort Order should default to 0 when editing products, product categories and brand categories in Admin
 * Contact model shouldn't have contact types hardcoded
 * Don't put bit's of queries in the URL (see satchmo/templates/admin/order_sidebar.html)
-
+* Make BrandImages instead of hanging the image of the translation
