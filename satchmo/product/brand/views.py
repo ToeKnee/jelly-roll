@@ -28,7 +28,7 @@ def brand_page(request, brandname):
         raise Http404(_('Brand "%s" does not exist') % brandname)
 
         
-    products = list(brand.active_products())
+    products = brand.active_products()
     sale = find_best_auto_discount(products)
 
     ctx = {
@@ -52,11 +52,12 @@ def brand_category_page(request, brandname, catname):
         
     except BrandCategory.DoesNotExist:
         raise Http404(_('No category "%s" in brand "%s"') % (catname, brandname))
-        
-    products = list(cat.active_products())
+
+    products = cat.active_products()
     sale = find_best_auto_discount(products)
     
     ctx = RequestContext(request, {
+        'products' : products,
         'brand' : cat,
         'sale' : sale,
     })
