@@ -237,7 +237,8 @@ class Category(models.Model):
         children.append(node)
         for child in node.child.all():
             if child != self:
-                if (not only_active) or child.active_products().count() > 0:
+                # TODO: I think there is a problem here if the category has child categories, but they have no active children
+                if (not only_active) or child.active_products().count() > 0 or len(child.get_active_children()) > 0:
                     children_list = self._recurse_for_children(child, only_active=only_active)
                     children.append(children_list)
         return children
