@@ -12,7 +12,7 @@ log = logging.getLogger('thumbnail.fields')
 def _delete(sender, instance=None, **kwargs):
     if instance:
         if hasattr(instance,'picture'):
-            if os.path.isfile(instance.picture.path):
+            if instance.picture and os.path.isfile(instance.picture.path):
                 remove_model_thumbnails(instance)
         else:
             remove_model_thumbnails(instance)
