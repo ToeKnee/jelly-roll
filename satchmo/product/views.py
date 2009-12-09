@@ -81,13 +81,19 @@ def category_view(request, slug, parent_slugs='', template='base_category.html')
     return render_to_response(template, RequestContext(request, ctx))
 
 
-def display_featured():
+def display_featured(limit=None, random=None):
     """
     Used by the index generic view to choose how the featured products are displayed.
     Items can be displayed randomly or all in order
     """
-    random_display = config_value('SHOP','RANDOM_FEATURED')
-    num_to_display = config_value('SHOP','NUM_DISPLAY')
+    if random:
+        random_display = random
+    else:
+        random_display = config_value('SHOP','RANDOM_FEATURED')
+    if limit:
+        num_to_display = limit
+    else:
+        num_to_display = config_value('SHOP','NUM_DISPLAY')
     q = Product.objects.featured_by_site()
     if not random_display:
         return q[:num_to_display]

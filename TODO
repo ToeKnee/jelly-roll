@@ -20,3 +20,4 @@
 * Don't put bit's of queries in the URL (see satchmo/templates/admin/order_sidebar.html)
 * Make BrandImages instead of hanging the image of the translation
 * Improve wishlist app, it is currently not very good.
+* display_featured in product/views is not a view...

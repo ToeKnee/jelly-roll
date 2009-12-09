@@ -1,0 +1,16 @@
+{% load thumbnail %}
+
+<ul class="featured">
+{% for product in featured %}
+    <li>
+	<a href="{{ product.get_absolute_url }}" title="{{product.title}}">
+            {% if product.main_image %}
+                <img class="featured_thumbnail" src="{{product.main_image.picture.url|thumbnail:"width=64"}}" alt="{{product}}" width="64" />
+            {% endif %}
+            <h4>{{ product }}</h4>
+            <p>{{ product.description }}</p>
+        </a>
+    </li>
+{% endfor %}
+</ul>
+
