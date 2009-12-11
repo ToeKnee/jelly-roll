@@ -66,6 +66,29 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
 {% product_upsell product %}
 
 </form>
+
+    {% if product.instructions %}
+        <h4>Usage Instructions & Tips</h4>
+        <div id="instructions">
+            <b>Usage:</b>
+            <p>{{ product.instructions.instructions|linebreaks }}</p>
+        </div>
+    {% endif %}
+    {% if product.ingredients %}
+        <h4>Ingredients</h4>
+        <div id="ingredients">
+            <b>Ingredients</b>
+            <p>{{ product.ingredients.ingredients|linebreaks }}</p>
+        </div>
+    {% endif %}
+    {% if product.precautions %}
+        <h4>Precautions</h4>
+        <div id="precautions">
+            <b>Precautions</b>
+            <p>{{ product.precautions.precautions|linebreaks}}</p>
+        </div>
+    {% endif %}
+
 {% endblock %}
 
 {% block productfooter %}

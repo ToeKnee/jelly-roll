@@ -540,6 +540,9 @@ class Product(models.Model):
     # What is the product type?
     shipclass = models.CharField(_('Shipping'), choices=SHIP_CLASS_CHOICES, default="YES", max_length=10,
         help_text=_("If this is 'Default', then we'll use the product type to determine if it is shippable."))
+    ingredients = models.ForeignKey("IngredientsList", null=True, blank=True)
+    instructions = models.ForeignKey("Instruction", null=True, blank=True)
+    precautions = models.ForeignKey("Precaution", null=True, blank=True)
 
     objects = ProductManager()
 
@@ -1798,6 +1801,27 @@ class ProductImageTranslation(models.Model):
 
     def __unicode__(self):
         return u"ProductImageTranslation: [%s] (ver #%i) %s Name: %s" % (self.languagecode, self.version, self.productimage, self.name)
+
+class IngredientsList(models.Model):
+    description = models.CharField(max_length=255)
+    ingredients = models.TextField(_('Ingredients listing'))
+
+    def __unicode__ (self):
+        return u"%s" % (self.description)
+
+class Instruction(models.Model):
+    description = models.CharField(max_length=255)
+    instructions = models.TextField(_('Usage Instructions'))
+
+    def __unicode__ (self):
+        return u"%s" % (self.description)
+
+class Precaution(models.Model):
+    description = models.CharField(max_length=255)
+    precautions = models.TextField(_('Precautions'))
+
+    def __unicode__ (self):
+        return u"%s" % (self.description)
 
 UNSET = object()
 

@@ -3,7 +3,7 @@ from satchmo.product.models import Category, CategoryTranslation, CategoryImage,
                                    CustomProduct, CustomTextField, CustomTextFieldTranslation, ConfigurableProduct, \
                                    DownloadableProduct, SubscriptionProduct, Trial, ProductVariation, ProductAttribute, \
                                    Price, ProductImage, ProductImageTranslation, default_weight_unit, \
-                                   default_dimension_unit, ProductTranslation
+                                   default_dimension_unit, ProductTranslation, IngredientsList, Instruction, Precaution
 from django.contrib import admin
 from django.forms import models, ValidationError
 from django.utils.translation import get_language, ugettext_lazy as _
@@ -129,7 +129,8 @@ class ProductOptions(admin.ModelAdmin):
     list_filter = ('category', 'date_added')
     fieldsets = (
     (None, {'fields': ('site', 'category', 'name', 'slug', 'sku', 'description', 'short_description', 'date_added', 
-            'active', 'featured', 'items_in_stock','total_sold','ordering', 'shipclass')}), (_('Meta Data'), {'fields': ('meta',), 'classes': ('collapse',)}), 
+            'active', 'featured', 'items_in_stock','total_sold','ordering', 'shipclass', 'ingredients', 'instructions', 'precautions')}),
+            (_('Meta Data'), {'fields': ('meta',), 'classes': ('collapse',)}),
             (_('Item Dimensions'), {'fields': (('length', 'length_units','width','width_units','height','height_units'),('weight','weight_units')), 'classes': ('collapse',)}), 
             (_('Tax'), {'fields':('taxable', 'taxClass'), 'classes': ('collapse',)}), 
             (_('Related Products'), {'fields':('related_items','also_purchased'),'classes':'collapse'}), )
@@ -168,6 +169,15 @@ class ProductImageOptions(admin.ModelAdmin):
     if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
         inlines.append(ProductImageTranslation_Inline)
 
+class IngredientsListOptions(admin.ModelAdmin):
+    pass
+
+class InstructionsOptions(admin.ModelAdmin):
+    pass
+
+class PrecautionsOptions(admin.ModelAdmin):
+    pass
+
 admin.site.register(Category, CategoryOptions)
 #admin.site.register(CategoryImage, CategoryImageOptions)
 admin.site.register(OptionGroup, OptionGroupOptions)
@@ -180,4 +190,6 @@ admin.site.register(DownloadableProduct)
 admin.site.register(SubscriptionProduct, SubscriptionProductOptions)
 admin.site.register(ProductVariation, ProductVariationOptions)
 #admin.site.register(ProductImage, ProductImageOptions)
-
+admin.site.register(IngredientsList, IngredientsListOptions)
+admin.site.register(Instruction, InstructionsOptions)
+admin.site.register(Precaution, PrecautionsOptions)
