@@ -330,8 +330,8 @@ class Cart(models.Model):
                     alreadyInCart = True
                     break
             
+        signals.satchmo_cart_add_verify.send(self, cart=self, cartitem=item_to_modify, added_quantity=number_added, details=details)
         if not alreadyInCart:
-            signals.satchmo_cart_add_verify.send(self, cart=self, cartitem=item_to_modify, added_quantity=number_added, details=details)                
             self.cartitem_set.add(item_to_modify)
 
         item_to_modify.quantity += number_added
