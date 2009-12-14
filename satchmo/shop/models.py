@@ -383,6 +383,18 @@ class Cart(models.Model):
                     items.append(p)
         return items
 
+    def not_enough_stock(self):
+        """ Check that items are in stock
+            Return a list of out of stock items, or an empty list
+        """
+        not_enough_stock = []
+        config = Config.objects.get_current()
+        if config.no_stock_checkout == False:
+            for cart_item in self.cartitem_set.all():
+                if not cart_item.has_enough_stock():
+                    not_enough_stock.append(cart_item)
+        return not_enough_stock
+
     class Meta:
         verbose_name = _("Shopping Cart")
         verbose_name_plural = _("Shopping Carts")
@@ -456,6 +468,16 @@ class CartItem(models.Model):
         return (self.details.count() > 0)
 
     has_details = property(_has_details)
+
+    def has_enough_stock(self):
+        """
+        Check to see that there is enough stock to fulfill the order
+        """
+        config = Config.objects.get_current()
+        if config.no_stock_checkout or self.quantity <= self.product.items_in_stock:
+            return True
+        else:
+            return False
 
     def __unicode__(self):
         currency = config_value('SHOP', 'CURRENCY')
