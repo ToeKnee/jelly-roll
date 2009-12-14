@@ -50,6 +50,11 @@ def contact_info(request, **kwargs):
     except Contact.DoesNotExist:
         contact = None
 
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return http.HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     if request.method == "POST":
         new_data = request.POST.copy()
         if not tempCart.is_shippable:
