@@ -11,14 +11,25 @@ from satchmo.payment.utils import record_payment
 from satchmo.shop.models import Cart
 from satchmo.shop.models import Order
 from satchmo.utils.dynamic import lookup_template
+from django.core import urlresolvers
+from django.http import HttpResponseRedirect
 
 payment_module = config_get_group('PAYMENT_WORLDPAY')
 
 def pay_ship_info(request):
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     return payship.simple_pay_ship_info(request, payment_module, template='checkout/worldpay/pay_ship.html')
 
 def confirm_info(request):
     "Create form to send to WorldPay"
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
     
     try:
         order = Order.objects.from_request(request)

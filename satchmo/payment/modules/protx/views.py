@@ -3,14 +3,27 @@
 from django.utils.translation import ugettext as _
 from satchmo.configuration import config_get_group
 from satchmo.payment.views import payship, confirm
+from satchmo.shop.models import Cart
+from django.core import urlresolvers
+from django.http import HttpResponseRedirect
 import logging
 
 log = logging.getLogger('protx.views')
     
 def pay_ship_info(request):
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     return payship.credit_pay_ship_info(request, config_get_group('PAYMENT_PROTX'), template="checkout/protx/pay_ship.html")
     
 def confirm_info(request, template='checkout/protx/confirm.html', extra_context={}):
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     payment_module = config_get_group('PAYMENT_PROTX')
     controller = confirm.ConfirmController(request, payment_module)
     controller.templates['CONFIRM'] = template
@@ -24,6 +37,11 @@ def confirm_secure3d(request, secure3d_template='checkout/secure3d_form.html',
     """Handles confirming an order and processing the charges when secured by secure3d.
  
     """
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     payment_module = config_get_group('PAYMENT_PROTX')
     controller = confirm.ConfirmController(request, payment_module, extra_context=extra_context)
     controller.template['CONFIRM'] = confirm_template
