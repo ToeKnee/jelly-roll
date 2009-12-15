@@ -179,6 +179,9 @@ class NullCart(object):
     def empty(self):
         pass
 
+    def not_enough_stock(self):
+        pass
+
     def __str__(self):
         return "NullCart (empty)"
 
@@ -208,6 +211,10 @@ class OrderCart(NullCart):
         return self._order.balance
 
     total = property(_total)
+
+    def _not_enough_stock(self):
+        pass
+    not_enough_stock = property(_total)
 
     is_shippable = False
 
