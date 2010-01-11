@@ -75,24 +75,3 @@ LANGUAGES = (
 # Locale path settings.  Needs to be set for Translation compilation.
 # It can be blank
 # LOCALE_PATHS = ""
-
-#Configure logging
-LOGDIR = os.path.abspath(os.path.dirname(__file__))
-LOGFILE = "satchmo.log"
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%a, %d %b %Y %H:%M:%S',
-                    filename=os.path.join(LOGDIR, LOGFILE),
-                    filemode='w')
-
-# define a Handler which writes INFO messages or higher to the sys.stderr
-fileLog = logging.FileHandler(os.path.join(LOGDIR, LOGFILE), 'w')
-fileLog.setLevel(logging.DEBUG)
-# set a format which is simpler for console use
-formatter = logging.Formatter('%(asctime)s %(name)-12s: %(levelname)-8s %(message)s')
-# tell the handler to use this format
-fileLog.setFormatter(formatter)
-# add the handler to the root logger
-logging.getLogger('').addHandler(fileLog)
-logging.getLogger('caching').setLevel(logging.INFO)
-logging.info("Satchmo Started")
