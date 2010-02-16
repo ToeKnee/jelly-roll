@@ -2,19 +2,17 @@ try:
     from decimal import Decimal
 except:
     from django.utils._decimal import Decimal
+import logging
+
 from django.core import urlresolvers
 from django.core.cache import cache
 from django.template import Library
 from django.template import Node
-import logging
-from satchmo.discount.utils import calc_by_percentage
-from satchmo.product.brand.models import Brand
+
 from satchmo.product.models import Category
-from satchmo.product.queries import bestsellers
+from satchmo.product.brand.models import Brand
 from satchmo.shop.templatetags import get_filter_args
-
 log = logging.getLogger('shop.templatetags')
-
 try:
     from xml.etree.ElementTree import Element, SubElement, tostring
 except ImportError:
@@ -22,39 +20,7 @@ except ImportError:
 
 register = Library()
 
-def recurse_for_children(current_node, parent_node, active_cat, show_empty=False):
-    child_count = len(current_node.get_active_children())
-
-    if show_empty or child_count > 0 or current_node.active_products().count():
-        temp_parent = SubElement(parent_node, 'li')
-        if child_count == 1:
-            attrs = {'href': current_node.get_active_children()[0].get_absolute_url()}
-        else:
-            attrs = {'href': current_node.get_absolute_url()}
-        if current_node == active_cat:
-            attrs["class"] = "current"
-        link = SubElement(temp_parent, 'a', attrs)
-        link.text = current_node.translated_name()
-
-        if child_count > 0:
-            new_parent = SubElement(temp_parent, 'ul')
-            children = current_node.child.all()
-            for child in children:
-                recurse_for_children(child, new_parent, active_cat)
-        else:
-            brands = Brand.objects.filter(categories__slug=current_node.slug)
-            if brands.count() > 0:
-                brand_node = SubElement(temp_parent, 'ul')
-                for brand in brands:
-                    if  brand.active_products().count():
-                        temp_parent = SubElement(brand_node, 'li')
-                        url = urlresolvers.reverse('satchmo_brand_category_view', kwargs={'brandname' : brand.slug, 'catname' : current_node.slug})
-                        attrs = {'href': url}
-                        if brand == active_cat:
-                            attrs["class"] = "current"
-                        link = SubElement(temp_parent, 'a', attrs)
-                        link.text = brand.translation.name
-
+@register.inclusion_tag('category_tree.html')
 def category_tree(id=None):
     """
     Creates an unordered list of the categories.
@@ -74,22 +40,16 @@ def category_tree(id=None):
                 </ul>
         </ul>
     """
-    key = 'shop_tree_%s' % id
+    key = 'category_tree_%s' % id
     if cache.get(key):
-        tree = cache.get(key)
+        categories = cache.get(key)
     else:
-        active_cat = None
         if id:
-            active_cat = Category.objects.get(id=id)
-        root = Element("ul")
-        for cats in Category.objects.root_categories():
-            if cats.active_products() or cats.get_active_children():
-                recurse_for_children(cats, root, active_cat)
-        tree = tostring(root, 'utf-8')
-        cache.set(key, tree, 86000)
-    return tree
-
-register.simple_tag(category_tree)
+            categories = Category.objects.filter(parent__id=id)
+        else:
+            categories = Category.objects.root_categories()
+        cache.set(key, categories, 86400)
+    return {"categories": categories}
 
 class CategoryListNode(Node):
     """Template Node tag which pushes the category list into the context"""

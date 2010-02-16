@@ -155,6 +155,9 @@ class Category(models.Model):
         else:
             return qry.filter(site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
 
+    def active_products_include_children(self, variations=True, **kwargs):
+        return self.active_products(variations, True, **kwargs)
+
     def translated_description(self, language_code=None):
         return lookup_translation(self, 'description', language_code)
 
