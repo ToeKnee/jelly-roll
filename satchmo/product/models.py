@@ -145,10 +145,10 @@ class Category(models.Model):
 
     def active_products(self, variations=True, include_children=False, **kwargs):
         if not include_children:
-            qry = self.product_set.all()
+            qry = self.product_set.select_related()
         else:
             cats = self.get_all_children(include_self=True)
-            qry = Product.objects.filter(category__in=cats)
+            qry = Product.objects.select_related().filter(category__in=cats)
             
         if variations:
             return qry.filter(site=self.site, active=True, **kwargs)
