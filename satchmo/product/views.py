@@ -64,7 +64,7 @@ def category_view(request, slug, parent_slugs='', template='base_category.html')
     """
     try:
         category = Category.objects.get(slug=slug)
-        products = list(category.active_products())
+        products = category.active_products()
         sale = find_best_auto_discount(products)
 
     except Category.DoesNotExist:

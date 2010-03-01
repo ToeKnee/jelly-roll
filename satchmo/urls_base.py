@@ -28,5 +28,6 @@ urlpatterns = patterns('',
         'satchmo_sitemap_xml'),
     (r'settings/', include('satchmo.configuration.urls')),
     (r'cache/', include('satchmo.caching.urls')),
+    (r'product-feed\.xml$', "satchmo.utils.google.product_feed"),
 )
 
