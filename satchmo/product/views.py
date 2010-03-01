@@ -95,7 +95,7 @@ def display_featured(limit=None, random=None):
         num_to_display = limit
     else:
         num_to_display = config_value('SHOP','NUM_DISPLAY')
-    q = Product.objects.featured_by_site()
+    q = Product.objects.featured_by_site().filter(items_in_stock__gt=0)
     if not random_display:
         return q[:num_to_display]
     else:
