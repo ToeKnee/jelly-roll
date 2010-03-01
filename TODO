@@ -1,3 +1,4 @@
+* Product.translated_name breaks autoescaping (& not escaped to &amp;)
 * Rename the project directory from satchmo to jellyroll
 * Only require jellyroll to be install in applications (not all of the sub-parts too)
 * Sort out documentation directory.
