@@ -7,7 +7,6 @@ from satchmo.configuration.functions import config_choice_values
 from satchmo.configuration.functions import config_get
 
 def get_google_card_type(card):
-    print card
     allowed_payment_types = ["AmericanExpress", "Cash", "Check", "Discover", "GoogleCheckout", "MasterCard", "Visa", "wiretransfer"]
     for type in allowed_payment_types:
         if lower(card) == lower(type):
