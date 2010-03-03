@@ -24,6 +24,12 @@ xmlns:g="http://base.google.com/ns/1.0">
     {% for type in payment_types %}
     <g:payment_accepted>{{ type }}</g:payment_accepted>
     {% endfor %}
+
+    <g:payment_notes>
+    {% for note in payment_notes %}
+    {{ note }}
+    {% endfor %}
+    </g:payment_notes>
 </item>
 {% endfor %}
 </channel>
