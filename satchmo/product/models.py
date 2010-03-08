@@ -523,7 +523,8 @@ class Product(models.Model):
     category = models.ManyToManyField(Category, blank=True, verbose_name=_("Category"))
     items_in_stock = models.IntegerField(_("Number in stock"), default=0)
     meta = models.TextField(_("Meta Description"), max_length=200, blank=True, null=True, help_text=_("Meta description for this product"))
-    date_added = models.DateField(_("Date added"), null=True, blank=True)
+    date_added = models.DateField(_("Date added"), auto_now_add=True)
+    date_updated = models.DateField(_("Date updated"), auto_now=True)
     active = models.BooleanField(_("Is product active?"), default=True, help_text=_("This will determine whether or not this product will appear on the site"))
     featured = models.BooleanField(_("Featured Item"), default=False, help_text=_("Featured items will show on the front page"))
     ordering = models.IntegerField(_("Ordering"), default=0, help_text=_("Override alphabetical order in category display"))
@@ -690,9 +691,6 @@ class Product(models.Model):
         unique_together = (('site', 'sku'),('site','slug'))
 
     def save(self, force_insert=False, force_update=False):
-        if not self.pk:
-            self.date_added = datetime.date.today()
-
         if self.name and not self.slug:
             self.slug = slugify(self.name, instance=self)
 
