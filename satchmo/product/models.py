@@ -190,7 +190,7 @@ class Category(models.Model):
             kwargs={'parent_slugs' : slug_list, 'slug' : self.slug})
 
     def get_separator(self):
-        return ' :: '
+        return ' - '
 
     def _parents_repr(self):
         name_list = [cat.name for cat in self._recurse_for_parents(self)]
