@@ -6,13 +6,14 @@ xmlns:g="http://base.google.com/ns/1.0">
 <link>http://{{ shop_domain }}</link>
 <description>{{ shop_description }}</description>
 {% for product in products %}
+{% with product.brand_set.all|first as brand %}
 <item>
     <g:id>{{ product.slug }}</g:id>
-    <title>{{ product.translated_name|force_escape }}</title>
+    <title>{{ brand.translation.name|force_escape }} "{{ product.translated_name|force_escape }}" {{ product.category.all|first|force_escape }}</title>
     <link>http://{{ shop_domain }}{{ product.get_absolute_url }}</link>
     <description>{{ product.description }}</description>
     <g:product_type>{{ product.category.all|first }}</g:product_type>
-    {% with product.brand_set.all|first as brand %}{% if brand %}<g:brand>{{ brand.translation.name }}</g:brand>{% endif %}{% endwith %}
+    {% if brand %}<g:brand>{{ brand.translation.name }}</g:brand>{% endif %}
     <g:image_link>{{ product.main_image.picture.url }}</g:image_link>
     <g:quantity>{{ product.items_in_stock }}</g:quantity>
     <g:price>{{ product.unit_price|currency:"curr=" }}</g:price>
@@ -24,13 +25,13 @@ xmlns:g="http://base.google.com/ns/1.0">
     {% for type in payment_types %}
     <g:payment_accepted>{{ type }}</g:payment_accepted>
     {% endfor %}
-
     <g:payment_notes>
     {% for note in payment_notes %}
     {{ note }}
     {% endfor %}
     </g:payment_notes>
 </item>
+{% endwith %}
 {% endfor %}
 </channel>
 </rss>
