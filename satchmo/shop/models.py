@@ -526,6 +526,8 @@ ORDER_STATUS = (
     ('Processing', _('Processing')),
     ('Billed', _('Billed')),
     ('Shipped', _('Shipped')),
+    ('Cancelled', _('Cancelled')),
+    ('Lost', _('Lost in Transit')),
 )
 
 class OrderManager(models.Manager):
