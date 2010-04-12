@@ -18,7 +18,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.encoding import force_unicode
-from django.core import urlresolvers 
+from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
 from satchmo import caching
@@ -34,7 +34,7 @@ from satchmo.shipping.fields import ShippingChoiceCharField
 from satchmo.tax.utils import get_tax_processor
 from satchmo.shop.notification import send_order_update_notice
 from django.contrib.sites.models import Site
-    
+
 log = logging.getLogger('satchmo.shop.models')
 
 class NullConfig(object):
@@ -61,9 +61,9 @@ class ConfigManager(models.Manager):
         """Convenience method to get the current shop config"""
         if not site:
             site = Site.objects.get_current()
-        
+
         site = site.id
-            
+
         try:
             shop_config = caching.cache_get("Config", site)
         except caching.NotCachedError, nce:
@@ -74,7 +74,7 @@ class ConfigManager(models.Manager):
                 log.warning("No Shop Config found, using test shop config for site=%s.", site)
                 shop_config = NullConfig()
 
-        return shop_config    
+        return shop_config
 
 class Config(models.Model):
     """
@@ -105,21 +105,21 @@ class Config(models.Model):
         return ConfigurationSettings()
 
     options = property(fget=_options)
-    
+
     def areas(self):
         """Get country areas (states/counties).  Used in forms."""
         if self.in_country_only:
             return self.sales_country.adminarea_set.filter(active=True)
         else:
             return None
-            
+
     def countries(self):
         """Get country selections.  Used in forms."""
         if self.in_country_only:
             return Country.objects.filter(pk=self.sales_country.pk)
         else:
             return self.shipping_countries.filter(active=True)
-        
+
 
     def _base_url(self, secure=False):
         prefix = "http"
@@ -128,19 +128,19 @@ class Config(models.Model):
         return prefix + "://" + self.site.domain
 
     base_url = property(fget=_base_url)
-    
+
     def save(self, force_insert=False, force_update=False):
         caching.cache_delete("Config", self.site.id)
         # ensure the default country is in shipping countries
         mycountry = self.country
-        
+
         if mycountry:
             if not self.sales_country:
                 log.debug("%s: No sales_country set, adding country of store, '%s'", self, mycountry)
                 self.sales_country = mycountry
-        
+
 # This code doesn't work when creating a new site. At the time of creation, all of the necessary relationships
-# aren't setup. I modified the load_store code so that it would create this relationship manually when running 
+# aren't setup. I modified the load_store code so that it would create this relationship manually when running
 # with sample data. This is a bit of a django limitation so I'm leaving this in here for now. - CBM
 #            salescountry = self.sales_country
 #            try:
@@ -150,7 +150,7 @@ class Config(models.Model):
 #                self.shipping_countries.add(salescountry)
         else:
             log.warn("%s: has no country set", self)
-            
+
         super(Config, self).save(force_insert=force_insert, force_update=force_update)
         caching.cache_set("Config", self.site.id, value=self)
 
@@ -336,7 +336,7 @@ class Cart(models.Model):
                     item_to_modify = similarItem
                     alreadyInCart = True
                     break
-            
+
         signals.satchmo_cart_add_verify.send(self, cart=self, cartitem=item_to_modify, added_quantity=number_added, details=details)
         if not alreadyInCart:
             self.cartitem_set.add(item_to_modify)
@@ -460,7 +460,7 @@ class CartItem(models.Model):
 
     def _is_shippable(self):
         return self.product.is_shippable
-        
+
     is_shippable = property(fget=_is_shippable)
 
     def add_detail(self, data):
@@ -532,7 +532,7 @@ ORDER_CHOICES = (
 
 class Status(models.Model):
     status = models.CharField(_("Status"), max_length=255)
-    notify = models.BooleanField(_("Notify"), help_text="Notify the user on status update")
+    notify = models.BooleanField(_("Notify"), help_text="Notify the user on status update", default=True)
 
     def __unicode__(self):
         return self.status
@@ -633,11 +633,12 @@ class Order(models.Model):
         if not status:
             if self.orderstatus_set.count() > 0:
                 status_obj = self.status()
-                status = status_obj.status
             else:
-                status = 'Pending'
-
-        orderstatus.status = status
+                status_obj = Status.objects.get_or_create(status="Pending")
+        else:
+            status_obj = Status.objects.get_or_create(status=status)
+        print status_obj
+        orderstatus.status = status_obj
         orderstatus.notes = notes
         orderstatus.time_stamp = datetime.datetime.now()
         orderstatus.order = self
@@ -746,15 +747,15 @@ class Order(models.Model):
             address = self.ship_street1
         return mark_safe(address)
     full_ship_street = property(_full_ship_street)
-    
-    def _ship_country_name(self): 
-        return Country.objects.get(iso2_code=self.ship_country).name 
-    ship_country_name = property(_ship_country_name) 
-    
-    def _bill_country_name(self): 
-        return Country.objects.get(iso2_code=self.bill_country).name 
-    bill_country_name = property(_bill_country_name) 
-    
+
+    def _ship_country_name(self):
+        return Country.objects.get(iso2_code=self.ship_country).name
+    ship_country_name = property(_ship_country_name)
+
+    def _bill_country_name(self):
+        return Country.objects.get(iso2_code=self.bill_country).name
+    bill_country_name = property(_bill_country_name)
+
     def _get_balance_remaining_url(self):
         return ('satchmo_balance_remaining_order', None, {'order_id' : self.id})
     get_balance_remaining_url = models.permalink(_get_balance_remaining_url)
@@ -789,7 +790,7 @@ class Order(models.Model):
 
     def invoice(self):
         url = urlresolvers.reverse('satchmo_print_shipping', None, None, {'doc' : 'invoice', 'id' : self.id})
-        return mark_safe(u'<a href="%s">%s</a>' % (url, ugettext('View'))) 
+        return mark_safe(u'<a href="%s">%s</a>' % (url, ugettext('View')))
     invoice.allow_tags = True
 
     def _item_discount(self):
@@ -863,9 +864,9 @@ class Order(models.Model):
 
         log.debug("Order #%i, recalc: sub_total=%s, shipping=%s, discount=%s, tax=%s",
             self.id,
-            moneyfmt(item_sub_total), 
+            moneyfmt(item_sub_total),
             moneyfmt(self.shipping_sub_total),
-            moneyfmt(self.discount), 
+            moneyfmt(self.discount),
             moneyfmt(self.tax))
 
         self.total = Decimal(item_sub_total + self.shipping_sub_total + self.tax)
@@ -993,7 +994,7 @@ class OrderItem(models.Model):
 
     def _is_shippable(self):
         return self.product.is_shippable
-        
+
     is_shippable = property(fget=_is_shippable)
 
     def _sub_total(self):
@@ -1095,7 +1096,7 @@ class DownloadLink(models.Model):
         return u"%s" % (self.downloadable_product.product.translated_name())
     product_name=property(_product_name)
 
-    class Meta:        
+    class Meta:
         verbose_name = _("Download Link")
         verbose_name_plural = _("Download Links")
 
@@ -1128,7 +1129,7 @@ class OrderPayment(models.Model):
     order = models.ForeignKey(Order, related_name="payments")
     payment = PaymentChoiceCharField(_("Payment Method"),
         max_length=25, blank=True)
-    amount = models.DecimalField(_("amount"), 
+    amount = models.DecimalField(_("amount"),
         max_digits=18, decimal_places=10, blank=True, null=True)
     time_stamp = models.DateTimeField(_("timestamp"), blank=True, null=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
@@ -1167,7 +1168,7 @@ class OrderVariable(models.Model):
     key = models.SlugField(_('key'), )
     value = models.CharField(_('value'), max_length=100)
 
-    class Meta:        
+    class Meta:
         ordering=('key',)
         verbose_name = _("Order variable")
         verbose_name_plural = _("Order variables")
@@ -1184,7 +1185,7 @@ class OrderTaxDetail(models.Model):
     order = models.ForeignKey(Order, related_name="taxes")
     method = models.CharField(_("Model"), max_length=50, )
     description = models.CharField(_("Description"), max_length=50, blank=True)
-    tax = models.DecimalField(_("Tax"), 
+    tax = models.DecimalField(_("Tax"),
         max_digits=18, decimal_places=10, blank=True, null=True)
 
     def __unicode__(self):
@@ -1193,7 +1194,7 @@ class OrderTaxDetail(models.Model):
         else:
             return u"Tax: %s" % self.tax
 
-    class Meta:        
+    class Meta:
         verbose_name = _('Order tax detail')
         verbose_name_plural = _('Order tax details')
         ordering = ('id',)
@@ -1211,9 +1212,9 @@ def _recalc_total_on_contact_change(contact=None, **kwargs):
     for order in orders:
         order.copy_addresses()
         order.recalculate_total()
-        
+
 def _create_download_link(product=None, order=None, subtype=None, **kwargs):
-    if product and order and subtype == "download":        
+    if product and order and subtype == "download":
         new_link = DownloadLink(downloadable_product=product, order=order, key=product.create_key(), num_attempts=0)
         new_link.save()
     else:
