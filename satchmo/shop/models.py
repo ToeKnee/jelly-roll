@@ -520,15 +520,26 @@ ORDER_CHOICES = (
     ('Show', _('Show')),
 )
 
-ORDER_STATUS = (
-    ('Temp', _('Temp')),
-    ('Pending', _('Pending')),
-    ('Processing', _('Processing')),
-    ('Billed', _('Billed')),
-    ('Shipped', _('Shipped')),
-    ('Cancelled', _('Cancelled')),
-    ('Lost', _('Lost in Transit')),
-)
+#ORDER_STATUS = (
+#    ('Temp', _('Temp')),
+#    ('Pending', _('Pending')),
+#    ('Processing', _('Processing')),
+#    ('Billed', _('Billed')),
+#    ('Shipped', _('Shipped')),
+#    ('Cancelled', _('Cancelled')),
+#    ('Lost', _('Lost in Transit')),
+#)
+
+class Status(models.Model):
+    status = models.CharField(_("Status"), max_length=255)
+    notify = models.BooleanField(_("Notify"), help_text="Notify the user on status update")
+
+    def __unicode__(self):
+        return self.status
+
+    class Meta:
+        verbose_name = _("Status")
+        verbose_name_plural = _("Status'")
 
 class OrderManager(models.Manager):
     def from_request(self, request):
@@ -611,8 +622,6 @@ class Order(models.Model):
     tax = models.DecimalField(_("Tax"),
         max_digits=18, decimal_places=10, blank=True, null=True)
     time_stamp = models.DateTimeField(_("Timestamp"), blank=True, null=True)
-    status = models.CharField(_("Status"), max_length=20, choices=ORDER_STATUS,
-        blank=True, help_text=_("This is set automatically."))
 
     objects = OrderManager()
 
@@ -623,8 +632,8 @@ class Order(models.Model):
         orderstatus = OrderStatus()
         if not status:
             if self.orderstatus_set.count() > 0:
-                curr_status = self.orderstatus_set.all().order_by('-time_stamp')[0]
-                status = curr_status.status
+                status_obj = self.status()
+                status = status_obj.status
             else:
                 status = 'Pending'
 
@@ -633,6 +642,10 @@ class Order(models.Model):
         orderstatus.time_stamp = datetime.datetime.now()
         orderstatus.order = self
         orderstatus.save()
+
+    def status(self):
+        "Get latest Status"
+        return self.orderstatus_set.all().order_by("-time_stamp")[0]
 
     def add_variable(self, key, value):
         """Add an OrderVariable, used for misc stuff that is just too small to get its own field"""
@@ -1091,16 +1104,15 @@ class OrderStatus(models.Model):
     An order will have multiple statuses as it moves its way through processing.
     """
     order = models.ForeignKey(Order, verbose_name=_("Order"))
-    status = models.CharField(_("Status"),
-        max_length=20, choices=ORDER_STATUS, blank=True)
+    status = models.ForeignKey("Status")
     notes = models.CharField(_("Notes"), max_length=100, blank=True)
     time_stamp = models.DateTimeField(_("Timestamp"))
 
     def __unicode__(self):
-        return self.status
+        return self.status.status
 
     def save(self, force_insert=False, force_update=False):
-        if self.status == "Shipped":
+        if self.status.notify:
             send_order_update_notice(self)
 
         super(OrderStatus, self).save(force_insert=force_insert, force_update=force_update)

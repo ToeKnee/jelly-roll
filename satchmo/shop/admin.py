@@ -1,6 +1,18 @@
-from satchmo.shop.models import Config, Cart, CartItem, CartItemDetails, Order, OrderItem, OrderItemDetail, DownloadLink, OrderStatus, OrderPayment, OrderVariable, OrderTaxDetail
 from django.contrib import admin
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
+from satchmo.shop.models import Cart
+from satchmo.shop.models import CartItem
+from satchmo.shop.models import CartItemDetails
+from satchmo.shop.models import Config
+from satchmo.shop.models import DownloadLink
+from satchmo.shop.models import Order
+from satchmo.shop.models import OrderItem
+from satchmo.shop.models import OrderItemDetail
+from satchmo.shop.models import OrderPayment
+from satchmo.shop.models import OrderStatus
+from satchmo.shop.models import OrderTaxDetail
+from satchmo.shop.models import OrderVariable
+from satchmo.shop.models import Status
 
 class CartItem_Inline(admin.TabularInline):
     model = CartItem
@@ -41,6 +53,12 @@ class OrderItemDetail_Inline(admin.TabularInline):
     model = OrderItemDetail
     extra = 3
 
+class StatusOptions(admin.ModelAdmin):
+    model = Status
+
+class Status_Inline(admin.TabularInline):
+    model = Status
+
 class OrderStatus_Inline(admin.StackedInline):
     model = OrderStatus
     extra = 1
@@ -55,13 +73,13 @@ class OrderTaxDetail_Inline(admin.TabularInline):
 
 class OrderOptions(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('site', 'contact', 'method', 'status', 'discount_code', 'notes')}), (_('Shipping Method'), {'fields':
+        (None, {'fields': ('site', 'contact', 'method', 'discount_code', 'notes')}), (_('Shipping Method'), {'fields':
             ('shipping_method', 'shipping_description')}), (_('Shipping Address'), {'classes': ('collapse',), 'fields':
             ('ship_street1', 'ship_street2', 'ship_city', 'ship_state', 'ship_postal_code', 'ship_country')}), (_('Billing Address'), {'classes': ('collapse',), 'fields':
             ('bill_street1', 'bill_street2', 'bill_city', 'bill_state', 'bill_postal_code', 'bill_country')}), (_('Totals'), {'fields':
             ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'time_stamp')}))
-    list_display = ('contact', 'time_stamp', 'order_total', 'balance_forward', 'status', 'invoice', 'packingslip', 'shippinglabel')
-    list_filter = ['time_stamp', 'contact', 'status']
+    list_display = ('contact', 'time_stamp', 'order_total', 'balance_forward', 'invoice', 'packingslip', 'shippinglabel')
+    list_filter = ['time_stamp', 'contact']
     date_hierarchy = 'time_stamp' 
     inlines = [OrderItem_Inline, OrderStatus_Inline, OrderVariable_Inline, OrderTaxDetail_Inline]
 
@@ -78,6 +96,7 @@ admin.site.register(Cart, CartOptions)
 admin.site.register(CartItem, CartItemOptions)
 admin.site.register(Config, ConfigOptions)
 admin.site.register(DownloadLink)
+admin.site.register(Status, StatusOptions)
 admin.site.register(Order, OrderOptions)
 admin.site.register(OrderItem, OrderItemOptions)
 admin.site.register(OrderPayment, OrderPaymentOptions)
