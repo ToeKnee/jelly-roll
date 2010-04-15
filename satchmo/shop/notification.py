@@ -10,6 +10,7 @@ from django.core.mail import EmailMessage
 from django.template import loader, Context
 from django.utils.translation import ugettext as _
 from satchmo.configuration import config_value
+from smtplib import SMTPRecipientsRefused
 
 log = logging.getLogger('contact.notifications')
 
@@ -61,7 +62,7 @@ def send_order_update_notice(order_status, template='email/order_status_changed.
         message = EmailMessage(subject, body, shop_email, [customer_email])
         message.send()
 
-    except SocketError, e:
+    except (SocketError, SMTPRecipientsRefused), e:
         if settings.DEBUG:
             log.error('Error sending mail: %s' % e)
             log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', customer_email, subject, body)
