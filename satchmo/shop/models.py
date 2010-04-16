@@ -34,6 +34,7 @@ from satchmo.shipping.fields import ShippingChoiceCharField
 from satchmo.tax.utils import get_tax_processor
 from satchmo.shop.notification import send_order_update_notice
 from django.contrib.sites.models import Site
+from django.db.models import Max
 
 log = logging.getLogger('satchmo.shop.models')
 
@@ -520,22 +521,17 @@ ORDER_CHOICES = (
     ('Show', _('Show')),
 )
 
-#ORDER_STATUS = (
-#    ('Temp', _('Temp')),
-#    ('Pending', _('Pending')),
-#    ('Processing', _('Processing')),
-#    ('Billed', _('Billed')),
-#    ('Shipped', _('Shipped')),
-#    ('Cancelled', _('Cancelled')),
-#    ('Lost', _('Lost in Transit')),
-#)
-
 class Status(models.Model):
     status = models.CharField(_("Status"), max_length=255)
     notify = models.BooleanField(_("Notify"), help_text="Notify the user on status update", default=True)
+    display = models.BooleanField(_("Display"), help_text="Show orders of this status in the admin area home page", default=True)
 
     def __unicode__(self):
         return self.status
+
+    def orders(self):
+        """ Get all orders of this status """
+        return Order.objects.filter(status__status=self)
 
     class Meta:
         verbose_name = _("Status")
@@ -621,6 +617,7 @@ class Order(models.Model):
         max_digits=18, decimal_places=10, blank=True, null=True)
     tax = models.DecimalField(_("Tax"),
         max_digits=18, decimal_places=10, blank=True, null=True)
+    status = models.ForeignKey("OrderStatus", blank=True, null=True, editable=False, related_name="current_status")
     time_stamp = models.DateTimeField(_("Timestamp"), blank=True, null=True)
 
     objects = OrderManager()
@@ -637,16 +634,12 @@ class Order(models.Model):
                 status_obj = Status.objects.get_or_create(status="Pending")
         else:
             status_obj = Status.objects.get_or_create(status=status)
-        print status_obj
+
         orderstatus.status = status_obj
         orderstatus.notes = notes
         orderstatus.time_stamp = datetime.datetime.now()
         orderstatus.order = self
         orderstatus.save()
-
-    def status(self):
-        "Get latest Status"
-        return self.orderstatus_set.all().order_by("-time_stamp")[0]
 
     def add_variable(self, key, value):
         """Add an OrderVariable, used for misc stuff that is just too small to get its own field"""
@@ -1113,12 +1106,16 @@ class OrderStatus(models.Model):
         return self.status.status
 
     def save(self, force_insert=False, force_update=False):
+        super(OrderStatus, self).save(force_insert=force_insert, force_update=force_update)
+
+        # Set the most recent status
+        if self.order.status.time_stamp < self.time_stamp:
+            self.order.status = self
+            self.order.save()
+
+        # Send a notification if appropriate
         if self.status.notify:
             send_order_update_notice(self)
-
-        super(OrderStatus, self).save(force_insert=force_insert, force_update=force_update)
-        self.order.status = self.status
-        self.order.save()
 
     class Meta:
         verbose_name = _("Order Status")
