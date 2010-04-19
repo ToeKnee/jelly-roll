@@ -1,34 +1,13 @@
 from django import template
-from django.db import models
-from satchmo.shop.models import Order, ORDER_STATUS
+from satchmo.shop.models import Status
 from satchmo.shop.utils import is_multihost_enabled
 
 register = template.Library()
 
-def orders_at_status(status):
-    return Order.objects.filter(status=status)
-
-def pending_order_list():
-    """Returns a formatted list of pending orders"""
-    pending = unicode(ORDER_STATUS[1][0])
-    orders = orders_at_status(pending)
-    
+def order_lists():
+    """ Show all orders that are in status' that have display set to True """
     return {
-        'orders' : orders,
+        'status': Status.objects.filter(display=True),
         'multihost' : is_multihost_enabled()
     }
-
-register.inclusion_tag('admin/_ordercount_list.html')(pending_order_list)
-
-def inprocess_order_list():
-    """Returns a formatted list of in-process orders"""
-    inprocess = unicode(ORDER_STATUS[2][0])
-    orders = orders_at_status(inprocess)
-    
-    return {
-        'orders' : orders,
-        'multihost' : is_multihost_enabled()
-    }
-
-register.inclusion_tag('admin/_ordercount_list.html')(inprocess_order_list)
-
+register.inclusion_tag('admin/_ordercount_list.html')(order_lists)
