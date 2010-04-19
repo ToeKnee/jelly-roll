@@ -1109,7 +1109,7 @@ class OrderStatus(models.Model):
         super(OrderStatus, self).save(force_insert=force_insert, force_update=force_update)
 
         # Set the most recent status
-        if self.order.status.time_stamp < self.time_stamp:
+        if self.order.status == None or self.order.status.time_stamp < self.time_stamp:
             self.order.status = self
             self.order.save()
 
