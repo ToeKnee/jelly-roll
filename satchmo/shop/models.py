@@ -631,9 +631,9 @@ class Order(models.Model):
             if self.orderstatus_set.count() > 0:
                 status_obj = self.status()
             else:
-                status_obj = Status.objects.get_or_create(status="Pending")
+                status_obj, created = Status.objects.get_or_create(status="Pending")
         else:
-            status_obj = Status.objects.get_or_create(status=status)
+            status_obj, created = Status.objects.get_or_create(status=status)
 
         orderstatus.status = status_obj
         orderstatus.notes = notes
