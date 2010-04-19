@@ -5,6 +5,7 @@ Also contains shopping cart and related classes.
 import datetime
 import logging
 import operator
+
 import notification
 import signals
 
@@ -21,8 +22,7 @@ from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
 from satchmo import caching
-from satchmo import tax
-from satchmo.configuration import ConfigurationSettings, config_value, config_choice_values
+from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
 from satchmo.l10n.models import Country
