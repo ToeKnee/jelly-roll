@@ -78,8 +78,8 @@ class OrderOptions(admin.ModelAdmin):
             ('ship_street1', 'ship_street2', 'ship_city', 'ship_state', 'ship_postal_code', 'ship_country')}), (_('Billing Address'), {'classes': ('collapse',), 'fields':
             ('bill_street1', 'bill_street2', 'bill_city', 'bill_state', 'bill_postal_code', 'bill_country')}), (_('Totals'), {'fields':
             ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'time_stamp')}))
-    list_display = ('contact', 'time_stamp', 'order_total', 'balance_forward', 'invoice', 'packingslip', 'shippinglabel')
-    list_filter = ['time_stamp', 'contact']
+    list_display = ('contact', 'time_stamp', 'order_total', 'balance_forward', 'status', 'invoice', 'packingslip', 'shippinglabel')
+    list_filter = ['time_stamp']
     date_hierarchy = 'time_stamp' 
     inlines = [OrderItem_Inline, OrderStatus_Inline, OrderVariable_Inline, OrderTaxDetail_Inline]
 

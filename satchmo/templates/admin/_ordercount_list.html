@@ -4,7 +4,7 @@
 <ul>
     {% for s in status %}
         <li>
-            <h2><a href="/admin/shop/order/?status__exact={{ s.status }}">{{ s }}</a></h2>
+            <h2><a href="/admin/shop/order/?status__status__status__exact={{ s.status }}">{{ s }}</a></h2>
             <ul>
             {% for order in s.orders %}
         	<li>{{ order.status }} -
