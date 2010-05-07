@@ -535,7 +535,7 @@ class Status(models.Model):
 
     class Meta:
         verbose_name = _("Status")
-        verbose_name_plural = _("Status'")
+        verbose_name_plural = _("Statuses")
 
 class OrderManager(models.Manager):
     def from_request(self, request):
