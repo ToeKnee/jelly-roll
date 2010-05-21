@@ -120,8 +120,7 @@ class ShopTest(TestCase):
 #                                    'first_name': 'Paul',
 #                                    'last_name' : 'Test',
 #                                    'password1' : 'pass1',
-#                                    'password2' : 'pass1',
-#                                    'newsletter': '0'})
+#                                    'password2' : 'pass1'})
 #        self.assertRedirects(response, '/accounts/register/complete/',
 #            status_code=302, target_status_code=200)
 #        self.assertEqual(len(mail.outbox), 1)
@@ -321,8 +320,7 @@ class ShopTest(TestCase):
 #            'first_name': 'Teddy',
 #            'last_name': 'Tester',
 #            'password1': 'guz90tyc',
-#            'password2': 'guz90tyc',
-#            'newsletter': '0'}
+#            'password2': 'guz90tyc'}
 #        response = self.client.post('/accounts/register/', data)
 #        self.assertRedirects(response, '/accounts/register/complete/',
 #            status_code=302, target_status_code=200)
@@ -342,8 +340,7 @@ class ShopTest(TestCase):
 #            'first_name': 'New',
 #            'last_name': 'Tester',
 #            'password1': 'new123pass',
-#            'password2': 'new123pass',
-#            'newsletter': '0'}
+#            'password2': 'new123pass'}
 #        response = self.client.post('/accounts/register/', init_data)
 #        self.assertRedirects(response, '/accounts/register/complete/',
 #            status_code=302, target_status_code=200)

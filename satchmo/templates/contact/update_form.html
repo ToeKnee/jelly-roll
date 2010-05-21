@@ -68,13 +68,6 @@ $(document).ready(function() {
     <tr><td><label for="id_phone">{% trans "Phone number" %}*</label></td><td> {{ form.phone }}</td></tr>
     {% if form.phone.errors %}<tr><td>&nbsp;</td><td>*** {{ form.phone.errors|join:", " }}</td></tr>{% endif %}
 
-    {% if show_newsletter %}
-    <tr><td><label for="id_newsletter">{% trans "Newsletter" %}</label></td><td> {{ form.newsletter }}</td></tr>
-    {% if form.newsletter.errors %}<tr><td>&nbsp;</td><td>*** {{ form.newsletter.errors|join:", " }}</td></tr>{% endif %}
-    {% else %}
-    <input type='hidden' name='newsletter' value="False" />
-    {% endif %}
-
     <tr><td colspan="2"><h4>{% trans "Billing Address" %}</h4></td></tr>
 
     <tr><td><label for="id_addressee">{% trans "Bill To" %}</label><p class="help">{% trans "If different from the first and last names above" %}</td><td> {{ form.addressee }}</td></tr>
