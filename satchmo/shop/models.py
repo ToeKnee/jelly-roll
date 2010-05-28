@@ -130,7 +130,7 @@ class Config(models.Model):
 
     base_url = property(fget=_base_url)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         caching.cache_delete("Config", self.site.id)
         # ensure the default country is in shipping countries
         mycountry = self.country
@@ -152,7 +152,7 @@ class Config(models.Model):
         else:
             log.warn("%s: has no country set", self)
 
-        super(Config, self).save(force_insert=force_insert, force_update=force_update)
+        super(Config, self).save(*args, **kwargs)
         caching.cache_set("Config", self.site.id, value=self)
 
     def __unicode__(self):
@@ -362,7 +362,7 @@ class Cart(models.Model):
             item.delete()
         self.save()
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         """Ensure we have a date_time_created before saving the first time."""
         if not self.pk:
             self.date_time_created = datetime.datetime.now()
@@ -370,7 +370,7 @@ class Cart(models.Model):
             site = self.site
         except Site.DoesNotExist:
             self.site = Site.objects.get_current()
-        super(Cart, self).save(force_insert=force_insert, force_update=force_update)
+        super(Cart, self).save(*args, **kwargs)
 
     def _get_shippable(self):
         """Return whether the cart contains shippable items."""
@@ -618,7 +618,7 @@ class Order(models.Model):
     tax = models.DecimalField(_("Tax"),
         max_digits=18, decimal_places=10, blank=True, null=True)
     status = models.ForeignKey("OrderStatus", blank=True, null=True, editable=False, related_name="current_status")
-    time_stamp = models.DateTimeField(_("Timestamp"), blank=True, null=True)
+    time_stamp = models.DateTimeField(_("Timestamp"), default=datetime.datetime.now(), editable=True)
 
     objects = OrderManager()
 
@@ -771,15 +771,14 @@ class Order(models.Model):
         q = self.payments.exclude(transaction_id__isnull = False, transaction_id = "PENDING")
         return q.exclude(amount=Decimal("0.00"))
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         """
         Copy addresses from contact. If the order has just been created, set
         the create_date.
         """
         if not self.pk:
-            self.time_stamp = datetime.datetime.now()
             self.copy_addresses()
-        super(Order, self).save(force_insert=force_insert, force_update=force_update) # Call the "real" save() method.
+        super(Order, self).save(*args, **kwargs) # Call the "real" save() method.
 
     def invoice(self):
         url = urlresolvers.reverse('satchmo_print_shipping', None, None, {'doc' : 'invoice', 'id' : self.id})
@@ -1009,9 +1008,9 @@ class OrderItem(models.Model):
         return self.product.translated_name()
     description = property(_get_description)
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         self.update_tax()
-        super(OrderItem, self).save(force_insert=force_insert, force_update=force_update)
+        super(OrderItem, self).save(*args, **kwargs)
 
     def update_tax(self):
         taxclass = self.product.taxClass
@@ -1048,7 +1047,7 @@ class DownloadLink(models.Model):
     order = models.ForeignKey(Order, verbose_name=_('Order'))
     key = models.CharField(_('Key'), max_length=40)
     num_attempts = models.IntegerField(_('Number of attempts'), )
-    time_stamp = models.DateTimeField(_('Time stamp'), )
+    time_stamp = models.DateTimeField(_('Time stamp'), default=datetime.datetime.now(), editable=True)
     active = models.BooleanField(_('Active'), default=True)
 
     def _attempts_left(self):
@@ -1074,13 +1073,11 @@ class DownloadLink(models.Model):
         url = urlresolvers.reverse('satchmo_download_process', kwargs= {'download_key': self.key})
         return('http://%s%s' % (Site.objects.get_current(), url))
 
-    def save(self, force_insert=False, force_update=False):
+    def save(self, *args, **kwargs):
         """
        Set the initial time stamp
         """
-        if self.time_stamp is None:
-            self.time_stamp = datetime.datetime.now()
-        super(DownloadLink, self).save(force_insert=force_insert, force_update=force_update)
+        super(DownloadLink, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return u"%s - %s" % (self.downloadable_product.product.slug, self.time_stamp)
@@ -1097,22 +1094,23 @@ class OrderStatus(models.Model):
     """
     An order will have multiple statuses as it moves its way through processing.
     """
+
     order = models.ForeignKey(Order, verbose_name=_("Order"))
-    status = models.ForeignKey("Status")
+    status = models.ForeignKey(Status, verbose_name=_("Status"))
     notes = models.CharField(_("Notes"), max_length=100, blank=True)
-    time_stamp = models.DateTimeField(_("Timestamp"))
+    time_stamp = models.DateTimeField(_("Timestamp"), default=datetime.datetime.now(), editable=True)
 
     def __unicode__(self):
         return self.status.status
 
-    def save(self, force_insert=False, force_update=False):
-        super(OrderStatus, self).save(force_insert=force_insert, force_update=force_update)
+    def save(self, *args, **kwargs):
+        super(OrderStatus, self).save(*args, **kwargs)
 
         # Set the most recent status
         if self.order.status == None or self.order.status.time_stamp < self.time_stamp:
             self.order.status = self
             self.order.save()
-
+        
         # Send a notification if appropriate
         if self.status.notify:
             send_order_update_notice(self)
@@ -1128,7 +1126,7 @@ class OrderPayment(models.Model):
         max_length=25, blank=True)
     amount = models.DecimalField(_("amount"),
         max_digits=18, decimal_places=10, blank=True, null=True)
-    time_stamp = models.DateTimeField(_("timestamp"), blank=True, null=True)
+    time_stamp = models.DateTimeField(_("timestamp"), default=datetime.datetime.now(), editable=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
 
     def _credit_card(self):
@@ -1149,12 +1147,6 @@ class OrderPayment(models.Model):
             return u"Order payment #%i" % self.id
         else:
             return u"Order payment (unsaved)"
-
-    def save(self, force_insert=False, force_update=False):
-        if not self.pk:
-            self.time_stamp = datetime.datetime.now()
-
-        super(OrderPayment, self).save(force_insert=force_insert, force_update=force_update)
 
     class Meta:
         verbose_name = _("Order Payment")
