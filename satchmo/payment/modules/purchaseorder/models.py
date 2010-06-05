@@ -37,10 +37,10 @@ class PurchaseOrder(models.Model):
             
     order_link.allow_tags = True
     
-    def save(self):
+    def save(self, *args, **kwargs):
         if self.balance is None:
             self.balance = self.order.balance
-        super(PurchaseOrder, self).save()
+        super(PurchaseOrder, self).save(*args, **kwargs)
     
     
             

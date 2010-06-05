@@ -7,6 +7,7 @@ import datetime
 import logging
 import types
 from satchmo.discount.models import Discount, NullDiscount
+from satchmo.shop.models import Product
 
 log = logging.getLogger('discount.utils')
 
@@ -34,12 +35,12 @@ def find_discount_for_code(code):
 
     return discount
 
-def find_auto_discounts(product):
-    if not type(product) in (types.ListType, types.TupleType):
-        product = (product,)
+def find_auto_discounts(products):
+    if products.__class__ == Product:
+        products = [products]
     today = datetime.date.today()
     discs = Discount.objects.filter(automatic=True, active=True, startDate__lte=today, endDate__gt=today)
-    return discs.filter(validProducts__in=product).order_by('-percentage')
+    return discs.filter(validProducts__in=products).order_by('-percentage')
 
 def find_best_auto_discount(product):
     discs = find_auto_discounts(product)

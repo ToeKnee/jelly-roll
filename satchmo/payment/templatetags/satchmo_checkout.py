@@ -11,7 +11,7 @@ def payment_label(value):
     for mod in payments.value:
         config = config_get_group(mod)
         if config.KEY.value == value:
-            return translation.ugettext(config.LABEL)
+            return translation.ugettext(unicode(config.LABEL))
     return value.capitalize()
 
 register.filter(payment_label)
