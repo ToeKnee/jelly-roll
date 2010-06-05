@@ -84,10 +84,6 @@
         <tr><td class="label"><label for="id_password2">Password (again):</label></td><td class="text"> {{ createform.password2 }}</td></tr>
         {% if createform.password2.errors %}<tr><td>&nbsp;</td><td class="warn">*** {{ createform.password2.errors|join:", " }}</td></tr>{% endif %}
 
-        <tr><td colspan="2">{{ createform.newsletter }} <label for="id_newsletter">{% trans 'Sign me up for Email Updates about new products and special offers!' %}</label>
-        </td>
-        {% if createform.newsletter.errors %}<tr><td colspan="2" class="warn">*** {{ createform.newsletter.errors|join:", " }}</td></tr>{% endif %}   
-        
         <tr>
             <td colspan="2" class="button">
                 <input type="submit" name="create" value="{% trans 'Create' %}" />

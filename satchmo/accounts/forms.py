@@ -34,9 +34,6 @@ class RegistrationForm(forms.Form):
     last_name = forms.CharField(label=_('Last name'),
         max_length=30, required=False)
 
-    newsletter = forms.BooleanField(label=_('Newsletter'),
-        widget=forms.CheckboxInput(), required=False)
-
     def __init__(self, *args, **kwargs):
         self.contact = None
         super(RegistrationForm, self).__init__(*args, **kwargs)
@@ -113,12 +110,7 @@ class RegistrationForm(forms.Form):
         contact.title = data.get('title', '')
         contact.save()
 
-        if 'newsletter' not in data:
-            subscribed = False
-        else:
-            subscribed = data['newsletter']
-
-        signals.satchmo_registration.send(self, contact=contact, subscribed=subscribed, data=data)
+        signals.satchmo_registration.send(self, contact=contact, data=data)
 
         if not verify:
             user = authenticate(username=username, password=password)
