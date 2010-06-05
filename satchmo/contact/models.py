@@ -255,7 +255,7 @@ class AddressBook(models.Model):
     street2 = models.CharField(_("Street"), max_length=80, blank=True)
     state = models.CharField(_("State"), max_length=50, blank=True)
     city = models.CharField(_("City"), max_length=50)
-    postal_code = models.CharField(_("Zip Code"), max_length=30)
+    postal_code = models.CharField(_("Post Code"), max_length=30)
     country = models.ForeignKey(Country, verbose_name=_("Country"))
     is_default_shipping = models.BooleanField(_("Default Shipping Address"),
         default=False)
