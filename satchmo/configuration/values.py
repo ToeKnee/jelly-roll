@@ -332,7 +332,7 @@ class Value(object):
             value = None
         return value
 
-    def get_db_prep_save(self, value, connection):
+    def get_db_prep_save(self, value):
         "Returns a value suitable for storage into a CharField"
         if value == NOTSET:
             value = ""
@@ -415,7 +415,7 @@ class DurationValue(Value):
         except OverflowError:
             raise forms.ValidationError('The maximum allowed value is %s' % datetime.timedelta.max)
 
-    def get_db_prep_save(self, value, connection):
+    def get_db_prep_save(self, value):
         if value == NOTSET:
             return NOTSET
         else:
@@ -540,7 +540,7 @@ class MultipleStringValue(Value):
         kwargs['required'] = False
         return forms.MultipleChoiceField(choices=self.choices, **kwargs)
                 
-    def get_db_prep_save(self, value, connection):
+    def get_db_prep_save(self, value):
         if is_string_like(value):
             value = [value]
         return simplejson.dumps(value)
