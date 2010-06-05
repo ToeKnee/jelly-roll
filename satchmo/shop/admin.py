@@ -82,6 +82,20 @@ class OrderOptions(admin.ModelAdmin):
     list_filter = ['time_stamp']
     date_hierarchy = 'time_stamp' 
     inlines = [OrderItem_Inline, OrderStatus_Inline, OrderVariable_Inline, OrderTaxDetail_Inline]
+    actions = ['shipped']
+
+    def shipped(self, request, queryset):
+        rows_updated = 0
+        for obj in queryset:
+            shipped_status = Status.objects.get(status="Shipped")
+            obj.add_status(status=shipped_status, notes=u"Thanks for your order")
+            rows_updated += 1
+        if rows_updated == 1:
+            message_bit = "1 order was"
+        else:
+            message_bit = "%s orders were" % rows_updated
+        self.message_user(request, "%s successfully set to Shipped." % message_bit)
+    shipped.short_description = "Set selected Product Orders to Shipped"
 
 class OrderItemOptions(admin.ModelAdmin):
     inlines = [OrderItemDetail_Inline]
