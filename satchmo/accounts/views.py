@@ -242,18 +242,11 @@ def login_signup(request, template_name="login_signup.html", registration_handle
 
     site = Site.objects.get_current()
 
-    if config_get_group('NEWSLETTER'):
-        show_newsletter = True
-    else:
-        show_newsletter = False
-
-
     ctx = {
         'loginform': loginform,
         'createform' : createform,
         REDIRECT_FIELD_NAME: redirect_to,
         'site_name': site.name,
-        'show_newsletter' : show_newsletter,
     }
 
     if extra_context:
@@ -287,15 +280,10 @@ def register(request, redirect=None, template='registration/registration_form.ht
     if success:
         return todo
     else:
-        if config_get_group('NEWSLETTER'):
-            show_newsletter = True
-        else:
-            show_newsletter = False
 
         ctx = {
             'form': todo, 
             'title' : _('Registration Form'),
-            'show_newsletter' : show_newsletter
         }
 
         if extra_context:

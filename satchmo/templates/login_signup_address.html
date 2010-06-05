@@ -114,15 +114,6 @@ $(document).ready(function() {
 	    <tr><td><label for="id_phone">{% trans "Phone number" %}*</label></td><td> {{ createform.phone }}</td></tr>
 	    {% if createform.phone.errors %}<tr><td>&nbsp;</td><td>*** {{ createform.phone.errors|join:", " }}</td></tr>{% endif %}
 
-	    {% if show_newsletter %}
-	    <tr><td colspan="2">{{ createform.newsletter }} <label for="id_newsletter">{% trans 'Sign me up for Email Updates about new products and special offers!' %}</label>
-	        </td>	    
-		</tr>
-	    {% if createform.newsletter.errors %}<tr><td>&nbsp;</td><td>*** {{ createform.newsletter.errors|join:", " }}</td></tr>{% endif %}
-	    {% else %}
-	    <input type='hidden' name='newsletter' value="False" />
-	    {% endif %}
-
 	    <tr><td colspan="2"><h4>{% trans "Billing Address" %}</h4></td></tr>
 
 	    <tr><td><label for="id_addressee">{% trans "Bill To" %}</label><p class="help">{% trans "If different from the first and last names above" %}</td><td> {{ createform.addressee }}</td></tr>

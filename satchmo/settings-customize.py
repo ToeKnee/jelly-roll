@@ -134,10 +134,6 @@ INSTALLED_APPS = (
     # ****
     #'satchmo.shipping.modules.tiered'
     # ****
-    # * Optional feature newsletter
-    # ****
-    #'satchmo.newsletter',
-    # ****
     # * Optional feature product feeds
     # * These are usually for googlebase
     # ****
@@ -172,8 +168,6 @@ SATCHMO_SETTINGS = {
     #    (r'^checkout/confirm/$', 'paypal.checkout_step3.confirm_info', {'SSL': False}, 'satchmo_checkout-step3'),
     #   if you have satchmo.feeds, make sure to include its URL
     #    (r'^feed/', include('satchmo.feeds.urls')),
-    #   likewise with newsletters
-    #    (r'^newsletter/', include('satchmo.newsletter.urls'))
     #   enable brands here
     #    (r'^brand/', include('satchmo.product.brand.urls'))
     #}
@@ -191,10 +185,6 @@ SATCHMO_SETTINGS = {
     # This will turn on/off product translations in the admin for products
     'ALLOW_PRODUCT_TRANSLATIONS' : True,
     
-    # register custom external newsletter modules by listing their modules here
-    # 'CUSTOM_NEWSLETTER_MODULES' : ['client.newsletter.autoresponder',]
-    'CUSTOM_NEWSLETTER_MODULES' : [],
-
     # register custom external payment modules by listing their modules here
     # ex: 'CUSTOM_PAYMENT_MODULES' : ['client.payment.wondercharge',]
     'CUSTOM_PAYMENT_MODULES' : [],

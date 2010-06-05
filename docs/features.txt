@@ -101,6 +101,5 @@ In addition to these items, Satchmo provides:
     - Google analytic integration
     - Google adwords support
     - Google base feeds
-    - Newsletter support via mailman or custom database
     - Recently viewed items
     - Wishlists
