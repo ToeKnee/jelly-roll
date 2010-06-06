@@ -1196,7 +1196,7 @@ def _remove_order_on_cart_update(request=None, cart=None, **kwargs):
 def _recalc_total_on_contact_change(contact=None, **kwargs):
     #TODO: pull just the current order once we start using threadlocal middleware
     log.debug("Recalculating all contact orders not in process")
-    orders = Order.objects.filter(contact=contact, status="")
+    orders = Order.objects.filter(contact=contact, status=None)
     log.debug("Found %i orders to recalc", orders.count())
     for order in orders:
         order.copy_addresses()
