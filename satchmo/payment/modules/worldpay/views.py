@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
-import md5
+from hashlib import md5
 from satchmo.configuration import config_get_group
 from satchmo.configuration import config_value
 from satchmo.payment.views import payship
@@ -59,7 +59,7 @@ def confirm_info(request):
         # Doing the MD5 Signature dance
         # Generating secret "secret:amount:currency:cartId"
         signature = "%s:%s:%s:%s" % (payment_module.MD5.value, order.balance, currency, order.id)
-        MD5 = md5.new(signature).hexdigest()
+        MD5 = md5(signature).hexdigest()
     else:
         MD5 = False
         
