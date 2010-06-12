@@ -7,6 +7,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.http import urlencode
 from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
+
 from sys import exc_info
 from traceback import format_exception
 
@@ -106,6 +108,7 @@ def confirm_info(request):
 
     return render_to_response(template, ctx)
 
+@csrf_exempt
 def ipn(request):
     """PayPal IPN (Instant Payment Notification)
     Cornfirms that payment has been completed and marks invoice as paid.
@@ -176,6 +179,7 @@ def ipn(request):
 
     return HttpResponse()
 
+@csrf_exempt
 def confirm_ipn_data(data, PP_URL):
     # data is the form data that was submitted to the IPN URL.
 
