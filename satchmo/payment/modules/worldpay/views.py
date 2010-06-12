@@ -2,6 +2,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
 import md5
 from satchmo.configuration import config_get_group
 from satchmo.configuration import config_value
@@ -74,12 +75,12 @@ def confirm_info(request):
     })
     return render_to_response(template, ctx)
 
-
+@csrf_exempt
 def success(request):
     """
     The order has been succesfully processed.
     """
-    
+
     session = SessionStore(session_key = request.POST['M_session'])
     transaction_id = request.POST['cartId']
     amount = request.POST['authAmount']
