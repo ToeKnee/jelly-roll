@@ -10,6 +10,7 @@ from django.core.mail import EmailMessage
 from django.template import loader, Context
 from django.utils.translation import ugettext as _
 from satchmo.configuration import config_value
+from smtplib import SMTPRecipientsRefused
 
 log = logging.getLogger('contact.notifications')
 
@@ -36,7 +37,7 @@ def send_order_confirmation(new_order, template='email/order_complete.txt'):
         message = EmailMessage(subject, body, shop_email, [customer_email])
         message.send()
 
-    except SocketError, e:
+    except (SocketError, SMTPRecipientsRefused), e:
         if settings.DEBUG:
             log.error('Error sending mail: %s' % e)
             log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', customer_email, subject, body)
@@ -61,7 +62,7 @@ def send_order_update_notice(order_status, template='email/order_status_changed.
         message = EmailMessage(subject, body, shop_email, [customer_email])
         message.send()
 
-    except SocketError, e:
+    except (SocketError, SMTPRecipientsRefused), e:
         if settings.DEBUG:
             log.error('Error sending mail: %s' % e)
             log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', customer_email, subject, body)
@@ -100,11 +101,10 @@ def send_order_notice(new_order, template='email/order_placed_notice.txt'):
             message = EmailMessage(subject, body, shop_email, eddresses)
             message.send()
 
-        except SocketError, e:
+        except (SocketError, SMTPRecipientsRefused), e:
             if settings.DEBUG:
                 log.error('Error sending mail: %s' % e)
                 log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', ",".join(eddresses), subject, body)
             else:
                 log.fatal('Error sending mail: %s' % e)
                 raise IOError('Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
-

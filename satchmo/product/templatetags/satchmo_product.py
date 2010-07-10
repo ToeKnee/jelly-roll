@@ -7,6 +7,8 @@ from satchmo import caching
 from satchmo.configuration import config_value
 from satchmo.product.models import Category, Product
 from satchmo.shop.templatetags import get_filter_args
+from satchmo.product.queries import bestsellers
+from satchmo.product.views import display_featured
 
 register = template.Library()
 
@@ -86,3 +88,15 @@ def product_sort_by_price(products):
         return zip(*fast)[1]
     
 register.filter('product_sort_by_price', product_sort_by_price)
+
+@register.inclusion_tag('bestsellers.html')
+def show_bestsellers(limit=5):
+    ''' Renders best sellers list '''
+    products = bestsellers(limit)
+    return {"bestsellers": products,}
+
+@register.inclusion_tag('featured.html')
+def show_featured(limit=1, random=True):
+    ''' Renders best sellers list '''
+    products = display_featured(limit, random)
+    return {"featured": products,}

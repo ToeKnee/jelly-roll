@@ -235,10 +235,10 @@ class ContactInfoForm(forms.Form):
         self._check_state(data, country)
         return data
     
-    def save(self, contact=None, update_newsletter=True, **kwargs):
-        return self.save_info(contact=contact, update_newsletter=update_newsletter, **kwargs)
+    def save(self, contact=None, **kwargs):
+        return self.save_info(contact=contact, **kwargs)
     
-    def save_info(self, contact=None, update_newsletter=True, **kwargs):
+    def save_info(self, contact=None, **kwargs):
         """Save the contact info into the database.
         Checks to see if contact exists. If not, creates a contact
         and copies in the address and phone number."""
@@ -275,15 +275,6 @@ class ContactInfoForm(forms.Form):
                 setattr(customer, field, data[field])
             except KeyError:
                 pass
-
-        if update_newsletter and config_get_group('NEWSLETTER'):
-            from satchmo.newsletter import update_subscription
-            if 'newsletter' not in data:
-                subscribed = False
-            else:
-                subscribed = data['newsletter']
-            
-            update_subscription(contact, subscribed)
 
         if not customer.role:
             customer.role = "Customer"
@@ -374,6 +365,5 @@ class DateTextInput(forms.TextInput):
         return super(DateTextInput, self).render(name, value, attrs)
 
 class ExtendedContactInfoForm(ContactInfoForm):
-    """Contact form which includes birthday and newsletter."""
+    """Contact form which includes birthday."""
     dob = forms.DateField(required=False)
-    newsletter = forms.BooleanField(label=_('Newsletter'), widget=forms.CheckboxInput(), required=False)

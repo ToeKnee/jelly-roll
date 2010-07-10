@@ -1,8 +1,9 @@
 """Tags for manipulating brands on templates."""
 
-from django.template import Library, Node
+from django.core.cache import cache
+from django.template import Library
+from django.template import Node
 from satchmo.product.brand.models import Brand
-from satchmo.shop.templatetags import get_filter_args
 
 register = Library()
 
@@ -39,3 +40,34 @@ def do_brandlistnode(parser, token):
     return BrandListNode(var, nodelist)
 
 register.tag('brand_list', do_brandlistnode)
+
+@register.inclusion_tag('brand_tree.html')
+def brand_tree(category=None):
+    """
+    Creates an unordered list of the brands.
+
+    Example::
+
+        <ul>
+            <li>Books
+                <ul>
+                <li>Science Fiction
+                    <ul>
+                    <li>Space stories</li>
+                    <li>Robot stories</li>
+                    </ul>
+                </li>
+                <li>Non-fiction</li>
+                </ul>
+        </ul>
+    """
+    key = 'shop_tree_%s' % category.slug
+    if cache.get(key):
+        brands = cache.get(key)
+    else:
+        if category:
+            brands = Brand.objects.filter(categories__slug=category.slug)
+        else:
+            brands = Brand.objects.all()
+        cache.set(key, brands, 86000)
+    return {"brands": brands, "category": category.slug}

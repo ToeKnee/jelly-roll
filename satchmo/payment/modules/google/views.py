@@ -10,6 +10,8 @@ from satchmo.payment.views import payship
 from satchmo.payment.config import payment_live
 from satchmo.utils.dynamic import lookup_url, lookup_template
 from satchmo.shop.models import Cart
+from django.core import urlresolvers
+from django.http import HttpResponseRedirect
 import base64
 import hmac
 import logging
@@ -54,9 +56,19 @@ class GoogleCart(object):
         return sig
 
 def pay_ship_info(request):
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     return payship.simple_pay_ship_info(request, config_get_group('PAYMENT_GOOGLE'), 'checkout/google/pay_ship.html')
 
 def confirm_info(request):
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     payment_module = config_get_group('PAYMENT_GOOGLE')
 
     if not 'orderID' in request.session:

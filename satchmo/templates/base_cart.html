@@ -19,6 +19,10 @@
     <h4>{% trans "Your cart is empty." %}</h4>
 {% else %}
     <h4>{% trans "Your Cart" %}</h4>
+    {% with cart.not_enough_stock as not_enough_stock %}
+    {% if not_enough_stock %}
+        <p class="error">Unfortunately, we don't currently have enough stock to fulfil your order</p>
+    {% endif %}
     <table><tr><th></th>
     <th align="left">{% trans "Quantity" %}</th>
     <th>{% trans "Item" %}</th>
@@ -39,7 +43,23 @@
                     <input type="submit" id="id_update_submit" value="{% trans 'update amount' %}" />
                 </form>
             </td>
-            <td><a href="{{cartitem.product.get_absolute_url}}">{{ cartitem.description }}</a></td>
+            <td>
+                <a href="{{cartitem.product.get_absolute_url}}">
+                    {{ cartitem.description }}
+                </a>
+                {% if not cartitem.has_enough_stock %}
+                    <p class="error">
+                        {% trans "Sorry!" %}
+                        {% with cartitem.product.items_in_stock as quantity %}
+                        {% if quantity %}
+                            {% trans "There are only {{ quantity }} {{ cartitem.product.name }} available." %}
+                        {% else %}
+                            {% trans "There is no {{ cartitem.product.name }} availiable." %}
+                        {% endif %}
+                        {% endwith %}
+                    </p>
+                {% endif %}
+            </td>
             <td align="center">{% cartitem_total cartitem default_view_tax %}</td>
         </tr>
 		{% cartitem_custom_details cartitem %}
@@ -53,5 +73,11 @@
 	{% endif %}
 	
     <a href="{% url satchmo_checkout-step1 %}">{% trans "Check out" %}</a>
+    {% if not not_enough_stock %}
+        <a href="{% url satchmo_checkout-step1 %}">
+            {% trans "Check out" %}
+        </a>
+    {% endif %}
+    {% endwith %}
 {% endif %}
 {% endblock %}

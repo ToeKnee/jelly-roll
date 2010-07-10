@@ -1,9 +1,8 @@
+* Product.translated_name breaks autoescaping (& not escaped to &amp;)
 * Rename the project directory from satchmo to jellyroll
 * Only require jellyroll to be install in applications (not all of the sub-parts too)
 * Sort out documentation directory.
 * Move all fixtures to xml (or JSON) as YAML isn't universally supported. (remove python-yaml to test)
-* Make OrderStatus into a model that has a notify attribute to see if the user should be updated when something changes
-* Allow us to save more OrderStatus' such as the many that can come through from PayPal IPN
 * Remove the registration stuff
 * Remove the Google Stuff (probably)
 * Remove thumbnails
@@ -20,3 +19,4 @@
 * Don't put bit's of queries in the URL (see satchmo/templates/admin/order_sidebar.html)
 * Make BrandImages instead of hanging the image of the translation
 * Improve wishlist app, it is currently not very good.
+* display_featured in product/views is not a view...

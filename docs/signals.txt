@@ -48,11 +48,6 @@ satchmo.contact.signals
     
     * form_save
     
-satchmo.newsletter.signals
-++++++++++++++++++++++++++
-
-    * newsletter_subscription_updated
-    
 satchmo.payment.signals
 +++++++++++++++++++++++
 

@@ -152,7 +152,6 @@ In order to enable your new payment processor, you must add it to the CUSTOM_PAY
 in your local_settings.py::
 
     # register custom external payment modules by listing their modules here
-    # ex: CUSTOM_NEWSLETTER_MODULES = ['client.payment.wondercharge',]
     CUSTOM_PAYMENT_MODULES = ['custom.payment.mynewprocessor']
 
 

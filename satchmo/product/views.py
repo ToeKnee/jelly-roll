@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.template import RequestContext
 from django.template.loader import select_template
 from django.utils.translation import ugettext as _
+from django.views.decorators.cache import never_cache
 from satchmo.configuration import config_value
 from satchmo.discount.utils import find_best_auto_discount
 from satchmo.l10n.utils import moneyfmt
@@ -63,7 +64,7 @@ def category_view(request, slug, parent_slugs='', template='base_category.html')
     """
     try:
         category = Category.objects.get(slug=slug)
-        products = list(category.active_products())
+        products = category.active_products()
         sale = find_best_auto_discount(products)
 
     except Category.DoesNotExist:
@@ -81,13 +82,19 @@ def category_view(request, slug, parent_slugs='', template='base_category.html')
     return render_to_response(template, RequestContext(request, ctx))
 
 
-def display_featured():
+def display_featured(limit=None, random=None):
     """
     Used by the index generic view to choose how the featured products are displayed.
     Items can be displayed randomly or all in order
     """
-    random_display = config_value('SHOP','RANDOM_FEATURED')
-    num_to_display = config_value('SHOP','NUM_DISPLAY')
+    if random:
+        random_display = random
+    else:
+        random_display = config_value('SHOP','RANDOM_FEATURED')
+    if limit:
+        num_to_display = limit
+    else:
+        num_to_display = config_value('SHOP','NUM_DISPLAY')
     q = Product.objects.featured_by_site()
     if not random_display:
         return q[:num_to_display]
@@ -105,7 +112,7 @@ def get_configurable_product_options(request, id):
         return '<option>No valid options found in "%s"</option>' % cp.product.slug
     return http.HttpResponse(options, mimetype="text/html")
 
-
+@never_cache
 def get_product(request, product_slug, selected_options=(), 
     include_tax=NOTSET, default_view_tax=NOTSET):
     """Basic product view"""

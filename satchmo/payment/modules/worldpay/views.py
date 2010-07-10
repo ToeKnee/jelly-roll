@@ -2,7 +2,8 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
-import md5
+from django.views.decorators.csrf import csrf_exempt
+from hashlib import md5
 from satchmo.configuration import config_get_group
 from satchmo.configuration import config_value
 from satchmo.payment.views import payship
@@ -11,14 +12,25 @@ from satchmo.payment.utils import record_payment
 from satchmo.shop.models import Cart
 from satchmo.shop.models import Order
 from satchmo.utils.dynamic import lookup_template
+from django.core import urlresolvers
+from django.http import HttpResponseRedirect
 
 payment_module = config_get_group('PAYMENT_WORLDPAY')
 
 def pay_ship_info(request):
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     return payship.simple_pay_ship_info(request, payment_module, template='checkout/worldpay/pay_ship.html')
 
 def confirm_info(request):
     "Create form to send to WorldPay"
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
     
     try:
         order = Order.objects.from_request(request)
@@ -47,7 +59,7 @@ def confirm_info(request):
         # Doing the MD5 Signature dance
         # Generating secret "secret:amount:currency:cartId"
         signature = "%s:%s:%s:%s" % (payment_module.MD5.value, order.balance, currency, order.id)
-        MD5 = md5.new(signature).hexdigest()
+        MD5 = md5(signature).hexdigest()
     else:
         MD5 = False
         
@@ -63,12 +75,12 @@ def confirm_info(request):
     })
     return render_to_response(template, ctx)
 
-
+@csrf_exempt
 def success(request):
     """
     The order has been succesfully processed.
     """
-    
+
     session = SessionStore(session_key = request.POST['M_session'])
     transaction_id = request.POST['cartId']
     amount = request.POST['authAmount']

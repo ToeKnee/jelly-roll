@@ -1,16 +1,25 @@
 {# used by status_ordercounts templatetags #}
 {% load satchmo_currency i18n %}
+
 <ul>
-{% for order in orders %}
-	<li>
-		{% if multihost %}[{{ order.site.name }}] {% endif %}<a href="/admin/shop/order/{{ order.id }}">{{ order }}</a> 
-		&ndash; {{ order.total|currency }} {% trans "on" %} {{ order.time_stamp|date:"F jS Y H:i" }}
-	    <ul>
-	        {% for item in order.orderitem_set.all %}
-	            <li>
-					{{ item }} x {{ item.quantity }}
-				</li>
-	        {% endfor %}
-	    </ul>
-	</li>{% endfor %}
+    {% for s in status %}
+        <li>
+            <h2><a href="/admin/shop/order/?status__status__status__exact={{ s.status }}">{{ s }}</a></h2>
+            <ul>
+            {% for order in s.orders %}
+        	<li>{{ order.status }} -
+                    {% if multihost %}[{{ order.site.name }}] {% endif %}<a href="/admin/shop/order/{{ order.id }}">{{ order }}</a>
+                    &ndash; {{ order.total|currency }} {% trans "on" %} {{ order.time_stamp|date:"F jS Y H:i" }}
+                    <ul>
+                    {% for item in order.orderitem_set.all %}
+                        <li>
+                            {{ item }} x {{ item.quantity }}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
 </ul>

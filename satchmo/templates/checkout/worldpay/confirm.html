@@ -30,7 +30,7 @@
 	<input type="hidden" name="email" value="{{ order.contact.email }}" />
 	<input type="hidden" name="address" value=" {{ order.bill_street1 }}&#10 {{ order.bill_street2 }}&#10 {{ order.bill_city }}&#10 {{ order.bill_state }}" />
 	<input type="hidden" name="name" value="{{ order.contact.full_name }}" />
-	<input type="hidden" name="country" value="{{ order.bill_country }}" />
+	<input type="hidden" name="country" value="{{ order.bill_country.iso2_code  }}" />
 	<input type="hidden" name="postcode" value="{{ order.bill_postal_code }}" />
 	<input type="hidden" name="tel"  value="{{ order.contact.primary_phone.phone }}" />
 	<input type="hidden" name="fixContact"/>

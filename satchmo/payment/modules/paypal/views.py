@@ -7,6 +7,8 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.http import urlencode
 from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
+
 from sys import exc_info
 from traceback import format_exception
 
@@ -22,12 +24,22 @@ from satchmo.utils.dynamic import lookup_url, lookup_template
 log = logging.getLogger()
 
 def pay_ship_info(request):
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     return payship.base_pay_ship_info(request,
         config_get_group('PAYMENT_PAYPAL'), payship.simple_pay_ship_process_form,
         'checkout/paypal/pay_ship.html')
 
 
 def confirm_info(request):
+    # Check that items are in stock
+    cart = Cart.objects.from_request(request)
+    if cart.not_enough_stock():
+        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+
     payment_module = config_get_group('PAYMENT_PAYPAL')
 
     try:
@@ -36,8 +48,7 @@ def confirm_info(request):
         url = lookup_url(payment_module, 'satchmo_checkout-step1')
         return HttpResponseRedirect(url)
 
-    tempCart = Cart.objects.from_request(request)
-    if tempCart.numItems == 0:
+    if cart.numItems == 0:
         template = lookup_template(payment_module, 'checkout/empty_cart.html')
         return render_to_response(template, RequestContext(request))
 
@@ -97,6 +108,7 @@ def confirm_info(request):
 
     return render_to_response(template, ctx)
 
+@csrf_exempt
 def ipn(request):
     """PayPal IPN (Instant Payment Notification)
     Cornfirms that payment has been completed and marks invoice as paid.
@@ -167,6 +179,7 @@ def ipn(request):
 
     return HttpResponse()
 
+@csrf_exempt
 def confirm_ipn_data(data, PP_URL):
     # data is the form data that was submitted to the IPN URL.
 
