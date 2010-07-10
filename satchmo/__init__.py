@@ -1,4 +1,4 @@
-VERSION = (0, 8, 0)
+VERSION = (0, 5, 0)
 import logging
 import os
 
@@ -17,10 +17,10 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%a, %d %b %Y %H:%M:%S',
                     filename=LOGFILE,
-                    filemode='w')
+                    filemode='a+')
 
 # define a Handler which writes INFO messages or higher to the sys.stderr
-fileLog = logging.FileHandler(LOGFILE, 'w')
+fileLog = logging.FileHandler(LOGFILE, 'a+')
 fileLog.setLevel(logging.DEBUG)
 # set a format which is simpler for console use
 formatter = logging.Formatter('%(asctime)s %(name)-12s: %(levelname)-8s %(message)s')
@@ -30,3 +30,4 @@ fileLog.setFormatter(formatter)
 logging.getLogger('').addHandler(fileLog)
 logging.getLogger('caching').setLevel(logging.INFO)
 logging.info("Jelly Roll started")
+
