@@ -144,16 +144,17 @@ class Category(models.Model):
     main_image = property(_get_mainImage)
 
     def active_products(self, variations=True, include_children=False, **kwargs):
-        if not include_children:
-            qry = self.product_set.select_related()
-        else:
+        if variations and include_children:
             cats = self.get_all_children(include_self=True)
-            qry = Product.objects.select_related().filter(category__in=cats)
-            
-        if variations:
-            return qry.filter(site=self.site, active=True, **kwargs)
-        else:
-            return qry.filter(site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+            products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, **kwargs)
+        elif variations and not include_children:
+            products = self.product_set.select_related().filter(site=self.site, active=True, **kwargs)
+        elif not variations and include_children:
+            cats = self.get_all_children(include_self=True)
+            products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+        elif not variations and not include_children:
+            products = self.product_set.select_related().filter(site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+        return products
 
     def active_products_include_children(self, variations=True, **kwargs):
         return self.active_products(variations, True, **kwargs)
