@@ -9,6 +9,15 @@ import logging
 log = logging.getLogger('l10n.utils')
 
 def get_locale_conv(loc=None):
+    """
+    The following command will generate the locale on Unix systems.
+
+    sudo locale-gen en_US
+
+    On one system, the problem was ISO-8859-1 vs. UTF-8. I had UTF-8 but not ISO-8859. Here's what I did to generate it and make everyone happy -
+
+    sudo localedef -i en_US -f ISO-8859-1 en
+    """
     if loc is None:
         loc = to_locale(get_language())
     startloc = loc
@@ -18,7 +27,7 @@ def get_locale_conv(loc=None):
         loc = to_locale(loc)
 
     try:
-        #log.debug('setting locale: %s', loc.encode('utf-8'))
+        log.debug('setting locale: %s', loc.encode('utf-8'))
         locale.setlocale(locale.LC_ALL, locale.normalize(loc))
         return locale.localeconv()
     except (locale.Error, ValueError):
