@@ -1,10 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
+<!DOCTYPE html>
 {% load i18n satchmo_category satchmo_google satchmo_util satchmo_currency %}
+<html>
 <head>
     {% block extra-head %}{% endblock %}
-    <link rel="stylesheet" href="{{ media_url }}css/style.css" />
     <title>{% block title %}{{ shop_name }}{% if pagetitle %}: {{ pagetitle }}{% endif %}{% endblock %}</title>
 </head>
 {% block body %}
@@ -17,7 +15,7 @@
 	    <div id="navbar">
 	    <ul>
 	    	{% block navbar %}Breadcrumbs here{% endblock %}
-	   	</ul>
+	   </ul>
     </div>
 
     <div id="leftnav">
@@ -72,10 +70,8 @@
 	    {% if wishlist_url %}<p class="wishlist"><a href="{{ wishlist_url }}" />{% trans 'Wishlist' %}</a></p>{% endif %}
 	    {% endif %}            
 
-		{% url satchmo_contact as contact_url %}
-	    {% if contact_url %}<p><a href="{{ contact_url }}">{% trans "Contact Us" %}</a></p>{% endif %}
 
-		{% satchmo_language_selection_form %}
+            {% satchmo_language_selection_form %}
 
 	    {% block recentview %}
 		{% if recent_list %}{% recentlyviewed recent_list %}{% endif %}
@@ -108,24 +104,22 @@
             {% endblock %}
 	</div>
 
-	<div id="content">
-	    {% block content %}{% endblock %}
-	</div>
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
 
-	<div id="footer">
-		{% block footer %}
-		{% blocktrans %}Powered by <a href="http://www.satchmoproject.com">Satchmo</a>.{% endblocktrans %}
-		{% endblock %}
-	</div>
+    <div id="footer">
+        {% block footer %}
+        {% blocktrans %}Powered by Jelly Roll.{% endblocktrans %}
+        {% endblock %}
+    </div>
 
     </div>
-	{% block page-close %}
-    {% block google-tracker %}
+{% block google-tracker %}
     {% if shop.options.GOOGLE.ANALYTICS.value %}
-        {% show_tracker is_secure %}
+    {% show_tracker is_secure %}
     {% endif %}
-    {% endblock %}
-	{% endblock %}
+{% endblock %}
 </body>
 {% endblock %}
 </html>

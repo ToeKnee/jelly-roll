@@ -13,21 +13,14 @@ if shop_base == '':
 else:
     shopregex = '^' + shop_base[1:] + '/'
 
+
 urlpatterns = patterns('',
-    (r'^admin/print/(?P<doc>[-\w]+)/(?P<id>\d+)', 
-        'satchmo.shipping.views.displayDoc', {}, 
-        'satchmo_print_shipping'),
-    (r'^admin/product/configurableproduct/(?P<id>\d+)/getoptions/', 
-        'satchmo.product.views.get_configurable_product_options', {}, 
-        'satchmo_admin_configurableproduct'),
-    (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    (r'^accounts/', include('satchmo.accounts.urls')),
+    (r"^settings/", include('satchmo.configuration.urls')),
+    (r"^product/configurableproduct/(?P<id>\d+)/getoptions/", 'satchmo.product.views.get_configurable_product_options', {}, 'satchmo_admin_configurableproduct'),
     (shopregex, include('satchmo.shop.urls')),
-    (r'sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', 
-        {'sitemaps': sitemaps}, 
-        'satchmo_sitemap_xml'),
-    (r'settings/', include('satchmo.configuration.urls')),
+    (r'sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps}, 'satchmo_sitemap_xml'),
     (r'cache/', include('satchmo.caching.urls')),
     (r'product-feed\.xml$', "satchmo.utils.google.product_feed"),
+    (r'^accounts/', include('satchmo.accounts.urls')),
 )
 

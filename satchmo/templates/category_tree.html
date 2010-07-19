@@ -2,13 +2,15 @@
 {% if categories %}
 <ul>
     {% for category in categories %}
-        {% if category.active_products or category.active_products_include_children %}
+        {% if category.active_products_include_children %}
         <li>
-            <a href="{% ifequal category.get_active_children|length 1 %}{% with category.get_active_children|first as cat %}{{ cat.get_absolute_url }}{% endwith %}{% else %}{{ category.get_absolute_url }}{% endifequal %}" title="{{ category }}">
+            {% with category.get_active_children as cat_children %}
+            <a href="{% ifequal cat_children|length 1 %}{% with cat_children|first as cat %}{{ cat.get_absolute_url }}{% endwith %}{% else %}{{ category.get_absolute_url }}{% endifequal %}" title="{{ category }}">
                 {{ category.name }}
             </a>
             {% category_tree category.id %}
             {% brand_tree category %}
+            {% endwith %}
         </li>
         {% endif %}
     {% endfor %}
