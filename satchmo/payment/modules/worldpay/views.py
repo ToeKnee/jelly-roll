@@ -92,7 +92,6 @@ def success(request):
         record_payment(order, payment_module, amount=amount, transaction_id=transaction_id)
         for cart in Cart.objects.filter(customer=order.contact):
             cart.empty()
-        del request.session['orderID']
         return generic_success(request, template='checkout/worldpay/success.html')
     else:
         context = RequestContext(request,
