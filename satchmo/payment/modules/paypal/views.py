@@ -115,18 +115,18 @@ def ipn(request):
     Adapted from IPN cgi script provided at http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/456361"""
     payment_module = config_get_group('PAYMENT_PAYPAL')
     if payment_module.LIVE.value:
-        log.debug("Live IPN on %s", payment_module.KEY.value)
+        log.debug("PayPal IPN: Live IPN on %s", payment_module.KEY.value)
         url = payment_module.POST_URL.value
         account = payment_module.BUSINESS.value
     else:
-        log.debug("Test IPN on %s", payment_module.KEY.value)
+        log.debug("PayPal IPN: Test IPN on %s", payment_module.KEY.value)
         url = payment_module.POST_TEST_URL.value
         account = payment_module.BUSINESS_TEST.value
     PP_URL = url
 
     try:
         data = request.POST
-        log.debug("PayPal IPN data: " + repr(data))
+        log.debug("PayPal IPN: Data: " + repr(data))
         if not confirm_ipn_data(data, PP_URL):
             return HttpResponse()
 
@@ -143,7 +143,7 @@ def ipn(request):
             else:
                 notes = ""
             order.add_status(status=data['payment_status'], notes=(notes))
-            log.info("Ignoring IPN data for non-completed payment.")
+            log.info("PayPal IPN: Ignoring IPN data for non-completed payment.")
             return HttpResponse()
 
         
@@ -151,6 +151,7 @@ def ipn(request):
         gross = data['mc_gross']
         txn_id = data['txn_id']
 
+        log.info("PayPal IPN: Set %s to Processing" % txn_id)
         if not OrderPayment.objects.filter(transaction_id=txn_id).count():
             # If the payment hasn't already been processed:
             order = Order.objects.get(pk=invoice)
@@ -166,7 +167,7 @@ def ipn(request):
                 
                 order.notes = notes + _('---Comment via Paypal IPN---') + u'\n' + data['memo']
                 order.save()
-                log.debug("Saved order notes from Paypal")
+                log.debug("PayPal IPN: Saved order notes from Paypal")
             
             for item in order.orderitem_set.filter(product__subscriptionproduct__recurring=True, completed=False):
                 item.completed = True
@@ -179,7 +180,6 @@ def ipn(request):
 
     return HttpResponse()
 
-@csrf_exempt
 def confirm_ipn_data(data, PP_URL):
     # data is the form data that was submitted to the IPN URL.
 
@@ -196,9 +196,9 @@ def confirm_ipn_data(data, PP_URL):
 
     ret = fo.read()
     if ret == "VERIFIED":
-        log.info("PayPal IPN data verification was successful.")
+        log.info("PayPal IPN:  data verification was successful.")
     else:
-        log.info("PayPal IPN data verification failed.")
+        log.info("PayPal IPN:  data verification failed.")
         return False
 
     return True
