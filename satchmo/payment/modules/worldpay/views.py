@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 from hashlib import md5
 from satchmo.configuration import config_get_group
 from satchmo.configuration import config_value
@@ -15,8 +16,10 @@ from satchmo.utils.dynamic import lookup_template
 from django.core import urlresolvers
 from django.http import HttpResponseRedirect
 
+
 payment_module = config_get_group('PAYMENT_WORLDPAY')
 
+@never_cache
 def pay_ship_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -25,6 +28,7 @@ def pay_ship_info(request):
 
     return payship.simple_pay_ship_info(request, payment_module, template='checkout/worldpay/pay_ship.html')
 
+@never_cache
 def confirm_info(request):
     "Create form to send to WorldPay"
     # Check that items are in stock
@@ -76,6 +80,7 @@ def confirm_info(request):
     return render_to_response(template, ctx)
 
 @csrf_exempt
+@never_cache
 def success(request):
     """
     The order has been succesfully processed.
@@ -97,4 +102,3 @@ def success(request):
         context = RequestContext(request,
             {'message': _('Your transaction was rejected.')})
         return render_to_response('shop_404.html', context)
-    

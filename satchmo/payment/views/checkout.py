@@ -1,11 +1,12 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 
 from satchmo.shop.views.utils import bad_or_missing
 from satchmo.shop.models import Order
 
+@never_cache
 def success(request, template='checkout/success.html'):
     """
     The order has been succesfully processed.  This can be used to generate a receipt or some other confirmation
