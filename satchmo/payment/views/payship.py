@@ -17,12 +17,9 @@ from satchmo.shop.models import Cart
 from satchmo.utils.dynamic import lookup_url, lookup_template
 import logging
 
-from django.views.decorators.cache import never_cache
-
 log = logging.getLogger('payship')
 selection = _("Please Select")
 
-@never_cache
 def pay_ship_info_verify(request, payment_module):
     """Verify customer and cart.
     Returns:
@@ -45,7 +42,6 @@ def pay_ship_info_verify(request, payment_module):
             
     return (True, contact, tempCart)
 
-@never_cache
 def credit_pay_ship_process_form(request, contact, working_cart, payment_module, *args, **kwargs):
     """Handle the form information.
     Returns:
@@ -81,7 +77,6 @@ def credit_pay_ship_process_form(request, contact, working_cart, payment_module,
 
     return (False, form)
 
-@never_cache
 def simple_pay_ship_process_form(request, contact, working_cart, payment_module):
     if request.method == "POST":
         new_data = request.POST.copy()
@@ -95,7 +90,6 @@ def simple_pay_ship_process_form(request, contact, working_cart, payment_module)
 
     return (False, form)
 
-@never_cache
 def pay_ship_render_form(request, form, template, payment_module, cart):
     template = lookup_template(payment_module, template)
     
@@ -111,7 +105,6 @@ def pay_ship_render_form(request, form, template, payment_module, cart):
         'PAYMENT_LIVE': payment_live(payment_module)})
     return render_to_response(template, ctx)
 
-@never_cache
 def base_pay_ship_info(request, payment_module, form_handler, template):
     results = pay_ship_info_verify(request, payment_module)
     if not results[0]:
@@ -127,12 +120,10 @@ def base_pay_ship_info(request, payment_module, form_handler, template):
     form = results[1]
     return pay_ship_render_form(request, form, template, payment_module, working_cart)
 
-@never_cache
 def credit_pay_ship_info(request, payment_module, template='checkout/pay_ship.html'):
     """A pay_ship view which uses a credit card."""
     return base_pay_ship_info(request, payment_module, credit_pay_ship_process_form, template)
 
-@never_cache
 def simple_pay_ship_info(request, payment_module, template):
     """A pay_ship view which doesn't require a credit card."""
     return base_pay_ship_info(request, payment_module, simple_pay_ship_process_form, template)

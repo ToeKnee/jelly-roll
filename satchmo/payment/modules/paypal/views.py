@@ -8,7 +8,6 @@ from django.template import RequestContext
 from django.utils.http import urlencode
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.cache import never_cache
 
 from sys import exc_info
 from traceback import format_exception
@@ -24,7 +23,6 @@ from satchmo.utils.dynamic import lookup_url, lookup_template
 
 log = logging.getLogger()
 
-@never_cache
 def pay_ship_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -35,7 +33,7 @@ def pay_ship_info(request):
         config_get_group('PAYMENT_PAYPAL'), payship.simple_pay_ship_process_form,
         'checkout/paypal/pay_ship.html')
 
-@never_cache
+
 def confirm_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -111,7 +109,6 @@ def confirm_info(request):
     return render_to_response(template, ctx)
 
 @csrf_exempt
-@never_cache
 def ipn(request):
     """PayPal IPN (Instant Payment Notification)
     Cornfirms that payment has been completed and marks invoice as paid.
@@ -149,6 +146,8 @@ def ipn(request):
             log.info("PayPal IPN: Ignoring IPN data for non-completed payment.")
             return HttpResponse()
 
+        
+
         gross = data['mc_gross']
         txn_id = data['txn_id']
 
@@ -181,7 +180,6 @@ def ipn(request):
 
     return HttpResponse()
 
-@never_cache
 def confirm_ipn_data(data, PP_URL):
     # data is the form data that was submitted to the IPN URL.
 

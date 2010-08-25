@@ -1,7 +1,6 @@
 """Simple wrapper for standard checkout as implemented in satchmo.payment.views"""
 
 from django import http
-from django.views.decorators.cache import never_cache
 from forms import PurchaseorderPayShipForm
 from satchmo.configuration import config_get_group
 from satchmo.payment.views import confirm, payship
@@ -14,8 +13,7 @@ import logging
 log = logging.getLogger('purchaseorder.views')
 
 settings = config_get_group('PAYMENT_PURCHASEORDER')
-
-@never_cache
+    
 def pay_ship_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -27,8 +25,7 @@ def pay_ship_info(request):
         settings, 
         purchaseorder_process_form, 
         'checkout/purchaseorder/pay_ship.html')
-
-@never_cache
+        
 def confirm_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -40,7 +37,6 @@ def confirm_info(request):
         settings, 
         template='checkout/purchaseorder/confirm.html')
 
-@never_cache
 def purchaseorder_process_form(request, contact, working_cart, payment_module):
     log.debug('purchaseorder_process_form')
     if request.method == "POST":

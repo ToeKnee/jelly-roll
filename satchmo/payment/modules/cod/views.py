@@ -5,11 +5,9 @@ from satchmo.payment.views import confirm, payship
 from satchmo.shop.models import Cart
 from django.core import urlresolvers
 from django.http import HttpResponseRedirect
-from django.views.decorators.cache import never_cache
-
+    
 cod = config_get_group('PAYMENT_COD')
-
-@never_cache
+    
 def pay_ship_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -17,8 +15,7 @@ def pay_ship_info(request):
         return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
 
     return payship.simple_pay_ship_info(request, config_get_group('PAYMENT_COD'), 'checkout/cod/pay_ship.html')
-
-@never_cache
+    
 def confirm_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -26,3 +23,5 @@ def confirm_info(request):
         return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
 
     return confirm.credit_confirm_info(request, cod, template='checkout/cod/confirm.html')
+
+
