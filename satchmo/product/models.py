@@ -578,23 +578,28 @@ class Product(models.Model):
     main_category = property(_get_mainCategory)
 
     def _get_mainImage(self):
-        img = False
-        if self.productimage_set.count() > 0:
-            img = self.productimage_set.order_by('sort')[0]
+        key = "Product_get_mainImage %s" % (self.id)
+        key = key.replace(" ", "-")
+        if cache.get(key):
+            img = cache.get(key)
         else:
-            # try to get a main image by looking at the parent if this has one
-            p = self.get_subtype_with_attr('parent', 'product')
-            if p:
-                img = p.parent.product.main_image
+            img = False
+            if self.productimage_set.count() > 0:
+                img = self.productimage_set.order_by('sort')[0]
+            else:
+                # try to get a main image by looking at the parent if this has one
+                p = self.get_subtype_with_attr('parent', 'product')
+                if p:
+                    img = p.parent.product.main_image
 
-        if not img:
-            #This should be a "Image Not Found" placeholder image
-            try:
-                img = ProductImage.objects.filter(product__isnull=True).order_by('sort')[0]
-            except IndexError:
-                import sys
-                print >>sys.stderr, 'Warning: default product image not found - try syncdb'
-
+            if not img:
+                #This should be a "Image Not Found" placeholder image
+                try:
+                    img = ProductImage.objects.filter(product__isnull=True).order_by('sort')[0]
+                except IndexError:
+                    import sys
+                    print >>sys.stderr, 'Warning: default product image not found - try syncdb'
+            cache.set(key, img)
         return img
 
     main_image = property(_get_mainImage)
@@ -716,6 +721,10 @@ class Product(models.Model):
             self.sku = self.slug
         super(Product, self).save(*args, **kwargs)
         ProductPriceLookup.objects.smart_create_for_product(self)
+
+        key = "Product_get_mainImage %s" % (self.id)
+        key = key.replace(" ", "-")
+        cache.delete(key)
 
     def get_subtypes(self):
         types = []
