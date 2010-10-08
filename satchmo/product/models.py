@@ -132,21 +132,26 @@ class Category(models.Model):
     objects = CategoryManager()
 
     def _get_mainImage(self):
-        img = False
-        if self.images.count() > 0:
-            img = self.images.order_by('sort')[0]
+        key = "Category_get_mainImage %s" % (self.id)
+        key = key.replace(" ", "-")
+        if cache.get(key):
+            img = cache.get(key)
         else:
-            if self.parent_id and self.parent != self:
-                img = self.parent.main_image
+            img = False
+            if self.images.count() > 0:
+                img = self.images.order_by('sort')[0]
+            else:
+                if self.parent_id and self.parent != self:
+                    img = self.parent.main_image
 
-        if not img:
-            #This should be a "Image Not Found" placeholder image
-            try:
-                img = CategoryImage.objects.filter(category__isnull=True).order_by('sort')[0]
-            except IndexError:
-                import sys
-                print >>sys.stderr, 'Warning: default category image not found - try syncdb'
-
+            if not img:
+                #This should be a "Image Not Found" placeholder image
+                try:
+                    img = CategoryImage.objects.filter(category__isnull=True).order_by('sort')[0]
+                except IndexError:
+                    import sys
+                    print >>sys.stderr, 'Warning: default category image not found - try syncdb'
+            cache.set(key, img)
         return img
 
     main_image = property(_get_mainImage)
@@ -235,6 +240,9 @@ class Category(models.Model):
             self.slug = slugify(self.name, instance=self)
 
         super(Category, self).save(*args, **kwargs)
+        key = "Category_get_mainImage %s" % (self.id)
+        key = key.replace(" ", "-")
+        cache.delete(key)
 
     def _flatten(self, L):
         """
