@@ -4,30 +4,38 @@ as well as individual product level information which includes
 options.
 """
 
-import config
 import datetime
 import logging
+import os.path
 import random
 import sha
-import signals
-import os.path
 
+import config
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core.cache import cache
 from django.core import urlresolvers
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.files import FileField
+from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
-from django.utils.translation import get_language, ugettext_lazy as _
-from satchmo.configuration import config_value, SettingNotSet, config_value_safe
+from django.utils.translation import get_language
+from django.utils.translation import ugettext_lazy as _
+from satchmo.configuration import SettingNotSet
+from satchmo.configuration import config_value
+from satchmo.configuration import config_value_safe
 from satchmo.shop import get_satchmo_setting
 from satchmo.shop.signals import satchmo_search
 from satchmo.tax.models import TaxClass
 from satchmo.thumbnail.field import ImageWithThumbnailField
-from satchmo.utils import cross_list, normalize_dir, url_join, get_flat_list, add_month
+from satchmo.utils import add_month
+from satchmo.utils import cross_list
+from satchmo.utils import get_flat_list
+from satchmo.utils import normalize_dir
+from satchmo.utils import url_join
 from satchmo.utils.unique_id import slugify
-from django.utils.encoding import smart_str
+import signals
 
 try:
     from decimal import Decimal
@@ -124,36 +132,45 @@ class Category(models.Model):
     objects = CategoryManager()
 
     def _get_mainImage(self):
-        img = False
-        if self.images.count() > 0:
-            img = self.images.order_by('sort')[0]
-        else:
-            if self.parent_id and self.parent != self:
-                img = self.parent.main_image
+        key = "Category_get_mainImage %s" % (self.id)
+        key = key.replace(" ", "-")
+        img = cache.get(key)
+        if img == None:
+            img = False
+            if self.images.count() > 0:
+                img = self.images.order_by('sort')[0]
+            else:
+                if self.parent_id and self.parent != self:
+                    img = self.parent.main_image
 
-        if not img:
-            #This should be a "Image Not Found" placeholder image
-            try:
-                img = CategoryImage.objects.filter(category__isnull=True).order_by('sort')[0]
-            except IndexError:
-                import sys
-                print >>sys.stderr, 'Warning: default category image not found - try syncdb'
-
+            if not img:
+                #This should be a "Image Not Found" placeholder image
+                try:
+                    img = CategoryImage.objects.filter(category__isnull=True).order_by('sort')[0]
+                except IndexError:
+                    import sys
+                    print >>sys.stderr, 'Warning: default category image not found - try syncdb'
+            cache.set(key, img)
         return img
 
     main_image = property(_get_mainImage)
 
     def active_products(self, variations=True, include_children=False, **kwargs):
-        if variations and include_children:
-            cats = self.get_all_children(include_self=True)
-            products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, **kwargs)
-        elif variations and not include_children:
-            products = self.product_set.select_related().filter(site=self.site, active=True, **kwargs)
-        elif not variations and include_children:
-            cats = self.get_all_children(include_self=True)
-            products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
-        elif not variations and not include_children:
-            products = self.product_set.select_related().filter(site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+        key = "Category_active_products %s" % (self.id)
+        key = key.replace(" ", "-")
+        products = cache.get(key)
+        if products == None:
+            if variations and include_children:
+                cats = self.get_all_children(include_self=True)
+                products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, **kwargs)
+            elif variations and not include_children:
+                products = self.product_set.select_related().filter(site=self.site, active=True, **kwargs)
+            elif not variations and include_children:
+                cats = self.get_all_children(include_self=True)
+                products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+            elif not variations and not include_children:
+                products = self.product_set.select_related().filter(site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+            cache.set(key, products)
         return products
 
     def active_products_include_children(self, variations=True, **kwargs):
@@ -227,6 +244,13 @@ class Category(models.Model):
             self.slug = slugify(self.name, instance=self)
 
         super(Category, self).save(*args, **kwargs)
+        img_key = "Category_get_mainImage %s" % (self.id)
+        img_key = img_key.replace(" ", "-")
+        gac_key = "Category_get_all_children_%s_%s_%s" % (self.id, only_active, include_self)
+        gac_key = gac_key.replace("_", "-")
+        ap_key = "Category_active_products %s" % (self.id)
+        ap_key = key.replace(" ", "-")
+        cache.delete_many([img_key, gac_key, ap_key])
 
     def _flatten(self, L):
         """
@@ -257,12 +281,17 @@ class Category(models.Model):
         """
         Gets a list of all of the children categories.
         """
-        children_list = self._recurse_for_children(self, only_active=only_active)
-        if include_self:
-            ix = 0
-        else:
-            ix = 1
-        flat_list = self._flatten(children_list[ix:])
+        key = "Category_get_all_children_%s_%s_%s" % (self.id, only_active, include_self)
+        key = key.replace("_", "-")
+        flat_list = cache.get(key)
+        if flat_list == None:
+            children_list = self._recurse_for_children(self, only_active=only_active)
+            if include_self:
+                ix = 0
+            else:
+                ix = 1
+            flat_list = self._flatten(children_list[ix:])
+            cache.set(key, flat_list)
         return flat_list
         
     class Meta:
@@ -562,23 +591,27 @@ class Product(models.Model):
     main_category = property(_get_mainCategory)
 
     def _get_mainImage(self):
-        img = False
-        if self.productimage_set.count() > 0:
-            img = self.productimage_set.order_by('sort')[0]
-        else:
-            # try to get a main image by looking at the parent if this has one
-            p = self.get_subtype_with_attr('parent', 'product')
-            if p:
-                img = p.parent.product.main_image
+        key = "Product_get_mainImage %s" % (self.id)
+        key = key.replace(" ", "-")
+        img = cache.get(key)
+        if img == None:
+            img = False
+            if self.productimage_set.count() > 0:
+                img = self.productimage_set.order_by('sort')[0]
+            else:
+                # try to get a main image by looking at the parent if this has one
+                p = self.get_subtype_with_attr('parent', 'product')
+                if p:
+                    img = p.parent.product.main_image
 
-        if not img:
-            #This should be a "Image Not Found" placeholder image
-            try:
-                img = ProductImage.objects.filter(product__isnull=True).order_by('sort')[0]
-            except IndexError:
-                import sys
-                print >>sys.stderr, 'Warning: default product image not found - try syncdb'
-
+            if not img:
+                #This should be a "Image Not Found" placeholder image
+                try:
+                    img = ProductImage.objects.filter(product__isnull=True).order_by('sort')[0]
+                except IndexError:
+                    import sys
+                    print >>sys.stderr, 'Warning: default product image not found - try syncdb'
+            cache.set(key, img)
         return img
 
     main_image = property(_get_mainImage)
@@ -700,6 +733,10 @@ class Product(models.Model):
             self.sku = self.slug
         super(Product, self).save(*args, **kwargs)
         ProductPriceLookup.objects.smart_create_for_product(self)
+
+        key = "Product_get_mainImage %s" % (self.id)
+        key = key.replace(" ", "-")
+        cache.delete(key)
 
     def get_subtypes(self):
         types = []
@@ -1833,72 +1870,78 @@ def lookup_translation(obj, attr, language_code=None, version=-1):
 
     If specific language isn't found, returns the attribute from the base object.
     """
-    if not language_code:
-        language_code = get_language()
+    key = "lookup_translation %s %s %s %s" % (obj, attr, language_code, version)
+    key = key.replace(" ", "-")
+    val = cache.get(key)
+    if val == None:
+        if not language_code:
+            language_code = get_language()
 
-    if not hasattr(obj, '_translationcache'):
-        obj._translationcache = {}
+        if not hasattr(obj, '_translationcache'):
+            obj._translationcache = {}
 
-    short_code = language_code
-    pos = language_code.find('_')
-    if pos > -1:
-        short_code = language_code[:pos]
-
-    else:
-        pos = language_code.find('-')
+        short_code = language_code
+        pos = language_code.find('_')
         if pos > -1:
             short_code = language_code[:pos]
 
-    trans = None
-    has_key = obj._translationcache.has_key(language_code)
-    if has_key:
-        if obj._translationcache[language_code] == None and short_code != language_code:
-            return lookup_translation(obj, attr, short_code)
+        else:
+            pos = language_code.find('-')
+            if pos > -1:
+                short_code = language_code[:pos]
 
-    if not has_key:
-        q = obj.translations.filter(
-            languagecode__iexact = language_code)
+        trans = None
+        has_key = obj._translationcache.has_key(language_code)
+        if has_key:
+            if obj._translationcache[language_code] == None and short_code != language_code:
+                return lookup_translation(obj, attr, short_code)
 
-        if q.count() == 0:
-            obj._translationcache[language_code] = None
+        if not has_key:
+            q = obj.translations.filter(
+                languagecode__iexact = language_code)
 
-            if short_code != language_code:
-                return lookup_translation(obj, attr, language_code=short_code, version=version)
+            if q.count() == 0:
+                obj._translationcache[language_code] = None
 
-            else:
-                q = obj.translations.filter(
-                    languagecode__istartswith = language_code)
+                if short_code != language_code:
+                    return lookup_translation(obj, attr, language_code=short_code, version=version)
 
-        if q.count() > 0:
-            trans = None
-            if version > -1:
-                trans = q.order_by('-version')[0]
-            else:
-                # try to get the requested version, if it is available,
-                # else fallback to the most recent version
-                fallback = None
-                for t in q.order_by('-version'):
-                    if not fallback:
-                        fallback = t
-                    if t.version == version:
-                        trans = t
-                        break
-                if not trans:
-                    trans = fallback
+                else:
+                    q = obj.translations.filter(
+                        languagecode__istartswith = language_code)
 
-            obj._translationcache[language_code] = trans
+            if q.count() > 0:
+                trans = None
+                if version > -1:
+                    trans = q.order_by('-version')[0]
+                else:
+                    # try to get the requested version, if it is available,
+                    # else fallback to the most recent version
+                    fallback = None
+                    for t in q.order_by('-version'):
+                        if not fallback:
+                            fallback = t
+                        if t.version == version:
+                            trans = t
+                            break
+                    if not trans:
+                        trans = fallback
 
-    if not trans:
-        trans = obj._translationcache[language_code]
+                obj._translationcache[language_code] = trans
 
-    if not trans:
-        trans = obj
+        if not trans:
+            trans = obj._translationcache[language_code]
 
-    val = getattr(trans, attr, UNSET)
-    if trans != obj and (val in (None, UNSET)):
-        val = getattr(obj, attr)
+        if not trans:
+            trans = obj
 
-    return mark_safe(val)
+        val = getattr(trans, attr, UNSET)
+        if trans != obj and (val in (None, UNSET)):
+            val = getattr(obj, attr)
+
+        val = mark_safe(val)
+        cache.set(key, val)
+    return val
 
 def get_product_quantity_price(product, qty=1, delta=Decimal("0.00"), parent=None):
     """

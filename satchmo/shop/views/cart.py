@@ -23,6 +23,8 @@ from satchmo.shop.models import Cart, CartItem, NullCart, NullCartItem
 from satchmo.shop.signals import satchmo_cart_changed, satchmo_cart_add_complete, satchmo_cart_details_query
 from satchmo.utils import trunc_decimal
 from satchmo.shop.views.utils import bad_or_missing
+from django.views.decorators.csrf import csrf_exempt
+
 
 log = logging.getLogger('shop.views.cart')
 
@@ -96,6 +98,7 @@ def display(request, cart=None, error_message='', default_view_tax=NOTSET):
         })
     return render_to_response('base_cart.html', context)
 
+@csrf_exempt
 def add(request, id=0, redirect_to='satchmo_cart'):
     """Add an item to the cart."""
     log.debug('FORM: %s', request.POST)
