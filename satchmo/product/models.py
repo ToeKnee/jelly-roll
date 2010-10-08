@@ -157,16 +157,21 @@ class Category(models.Model):
     main_image = property(_get_mainImage)
 
     def active_products(self, variations=True, include_children=False, **kwargs):
-        if variations and include_children:
-            cats = self.get_all_children(include_self=True)
-            products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, **kwargs)
-        elif variations and not include_children:
-            products = self.product_set.select_related().filter(site=self.site, active=True, **kwargs)
-        elif not variations and include_children:
-            cats = self.get_all_children(include_self=True)
-            products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
-        elif not variations and not include_children:
-            products = self.product_set.select_related().filter(site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+        key = "Category_active_products %s" % (self.id)
+        key = key.replace(" ", "-")
+        products = cache.get(key)
+        if products == None:
+            if variations and include_children:
+                cats = self.get_all_children(include_self=True)
+                products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, **kwargs)
+            elif variations and not include_children:
+                products = self.product_set.select_related().filter(site=self.site, active=True, **kwargs)
+            elif not variations and include_children:
+                cats = self.get_all_children(include_self=True)
+                products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+            elif not variations and not include_children:
+                products = self.product_set.select_related().filter(site=self.site, active=True, productvariation__parent__isnull=True, **kwargs)
+            cache.set(key, products)
         return products
 
     def active_products_include_children(self, variations=True, **kwargs):
@@ -244,7 +249,9 @@ class Category(models.Model):
         img_key = img_key.replace(" ", "-")
         gac_key = "Category_get_all_children_%s_%s_%s" % (self.id, only_active, include_self)
         gac_key = gac_key.replace("_", "-")
-        cache.delete_many([img_key, gac_key])
+        ap_key = "Category_active_products %s" % (self.id)
+        ap_key = key.replace(" ", "-")
+        cache.delete_many([img_key, gac_key, ap_key])
 
     def _flatten(self, L):
         """
