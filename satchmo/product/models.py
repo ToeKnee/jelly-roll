@@ -134,9 +134,8 @@ class Category(models.Model):
     def _get_mainImage(self):
         key = "Category_get_mainImage %s" % (self.id)
         key = key.replace(" ", "-")
-        if cache.get(key):
-            img = cache.get(key)
-        else:
+        img = cache.get(key)
+        if img == None:
             img = False
             if self.images.count() > 0:
                 img = self.images.order_by('sort')[0]
@@ -284,9 +283,8 @@ class Category(models.Model):
         """
         key = "Category_get_all_children_%s_%s_%s" % (self.id, only_active, include_self)
         key = key.replace("_", "-")
-        if cache.get(key):
-            flat_list = cache.get(key)
-        else:
+        flat_list = cache.get(key)
+        if flat_list == None:
             children_list = self._recurse_for_children(self, only_active=only_active)
             if include_self:
                 ix = 0
@@ -595,9 +593,8 @@ class Product(models.Model):
     def _get_mainImage(self):
         key = "Product_get_mainImage %s" % (self.id)
         key = key.replace(" ", "-")
-        if cache.get(key):
-            img = cache.get(key)
-        else:
+        img = cache.get(key)
+        if img == None:
             img = False
             if self.productimage_set.count() > 0:
                 img = self.productimage_set.order_by('sort')[0]
@@ -1875,9 +1872,8 @@ def lookup_translation(obj, attr, language_code=None, version=-1):
     """
     key = "lookup_translation %s %s %s %s" % (obj, attr, language_code, version)
     key = key.replace(" ", "-")
-    if cache.get(key):
-        val = cache.get(key)
-    else:
+    val = cache.get(key)
+    if val == None:
         if not language_code:
             language_code = get_language()
 
