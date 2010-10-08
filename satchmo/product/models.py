@@ -4,30 +4,38 @@ as well as individual product level information which includes
 options.
 """
 
-import config
 import datetime
 import logging
+import os.path
 import random
 import sha
-import signals
-import os.path
 
+import config
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core.cache import cache
 from django.core import urlresolvers
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.files import FileField
+from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
-from django.utils.translation import get_language, ugettext_lazy as _
-from satchmo.configuration import config_value, SettingNotSet, config_value_safe
+from django.utils.translation import get_language
+from django.utils.translation import ugettext_lazy as _
+from satchmo.configuration import SettingNotSet
+from satchmo.configuration import config_value
+from satchmo.configuration import config_value_safe
 from satchmo.shop import get_satchmo_setting
 from satchmo.shop.signals import satchmo_search
 from satchmo.tax.models import TaxClass
 from satchmo.thumbnail.field import ImageWithThumbnailField
-from satchmo.utils import cross_list, normalize_dir, url_join, get_flat_list, add_month
+from satchmo.utils import add_month
+from satchmo.utils import cross_list
+from satchmo.utils import get_flat_list
+from satchmo.utils import normalize_dir
+from satchmo.utils import url_join
 from satchmo.utils.unique_id import slugify
-from django.utils.encoding import smart_str
+import signals
 
 try:
     from decimal import Decimal
@@ -1833,72 +1841,79 @@ def lookup_translation(obj, attr, language_code=None, version=-1):
 
     If specific language isn't found, returns the attribute from the base object.
     """
-    if not language_code:
-        language_code = get_language()
-
-    if not hasattr(obj, '_translationcache'):
-        obj._translationcache = {}
-
-    short_code = language_code
-    pos = language_code.find('_')
-    if pos > -1:
-        short_code = language_code[:pos]
-
+    key = "lookup_translation %s %s %s %s" % (obj, attr, language_code, version)
+    key = key.replace(" ", "-")
+    if cache.get(key):
+        val = cache.get(key)
     else:
-        pos = language_code.find('-')
+        if not language_code:
+            language_code = get_language()
+
+        if not hasattr(obj, '_translationcache'):
+            obj._translationcache = {}
+
+        short_code = language_code
+        pos = language_code.find('_')
         if pos > -1:
             short_code = language_code[:pos]
 
-    trans = None
-    has_key = obj._translationcache.has_key(language_code)
-    if has_key:
-        if obj._translationcache[language_code] == None and short_code != language_code:
-            return lookup_translation(obj, attr, short_code)
+        else:
+            pos = language_code.find('-')
+            if pos > -1:
+                short_code = language_code[:pos]
 
-    if not has_key:
-        q = obj.translations.filter(
-            languagecode__iexact = language_code)
+        trans = None
+        has_key = obj._translationcache.has_key(language_code)
+        if has_key:
+            if obj._translationcache[language_code] == None and short_code != language_code:
+                return lookup_translation(obj, attr, short_code)
 
-        if q.count() == 0:
-            obj._translationcache[language_code] = None
+        if not has_key:
+            q = obj.translations.filter(
+                languagecode__iexact = language_code)
 
-            if short_code != language_code:
-                return lookup_translation(obj, attr, language_code=short_code, version=version)
+            if q.count() == 0:
+                obj._translationcache[language_code] = None
 
-            else:
-                q = obj.translations.filter(
-                    languagecode__istartswith = language_code)
+                if short_code != language_code:
+                    return lookup_translation(obj, attr, language_code=short_code, version=version)
 
-        if q.count() > 0:
-            trans = None
-            if version > -1:
-                trans = q.order_by('-version')[0]
-            else:
-                # try to get the requested version, if it is available,
-                # else fallback to the most recent version
-                fallback = None
-                for t in q.order_by('-version'):
-                    if not fallback:
-                        fallback = t
-                    if t.version == version:
-                        trans = t
-                        break
-                if not trans:
-                    trans = fallback
+                else:
+                    q = obj.translations.filter(
+                        languagecode__istartswith = language_code)
 
-            obj._translationcache[language_code] = trans
+            if q.count() > 0:
+                trans = None
+                if version > -1:
+                    trans = q.order_by('-version')[0]
+                else:
+                    # try to get the requested version, if it is available,
+                    # else fallback to the most recent version
+                    fallback = None
+                    for t in q.order_by('-version'):
+                        if not fallback:
+                            fallback = t
+                        if t.version == version:
+                            trans = t
+                            break
+                    if not trans:
+                        trans = fallback
 
-    if not trans:
-        trans = obj._translationcache[language_code]
+                obj._translationcache[language_code] = trans
 
-    if not trans:
-        trans = obj
+        if not trans:
+            trans = obj._translationcache[language_code]
 
-    val = getattr(trans, attr, UNSET)
-    if trans != obj and (val in (None, UNSET)):
-        val = getattr(obj, attr)
+        if not trans:
+            trans = obj
 
-    return mark_safe(val)
+        val = getattr(trans, attr, UNSET)
+        if trans != obj and (val in (None, UNSET)):
+            val = getattr(obj, attr)
+
+        val = mark_safe(val)
+        cache.set(key, val)
+    return val
 
 def get_product_quantity_price(product, qty=1, delta=Decimal("0.00"), parent=None):
     """
