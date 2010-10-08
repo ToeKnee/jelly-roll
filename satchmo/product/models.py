@@ -240,9 +240,11 @@ class Category(models.Model):
             self.slug = slugify(self.name, instance=self)
 
         super(Category, self).save(*args, **kwargs)
-        key = "Category_get_mainImage %s" % (self.id)
-        key = key.replace(" ", "-")
-        cache.delete(key)
+        img_key = "Category_get_mainImage %s" % (self.id)
+        img_key = img_key.replace(" ", "-")
+        gac_key = "Category_get_all_children_%s_%s_%s" % (self.id, only_active, include_self)
+        gac_key = gac_key.replace("_", "-")
+        cache.delete_many([img_key, gac_key])
 
     def _flatten(self, L):
         """
@@ -273,12 +275,18 @@ class Category(models.Model):
         """
         Gets a list of all of the children categories.
         """
-        children_list = self._recurse_for_children(self, only_active=only_active)
-        if include_self:
-            ix = 0
+        key = "Category_get_all_children_%s_%s_%s" % (self.id, only_active, include_self)
+        key = key.replace("_", "-")
+        if cache.get(key):
+            flat_list = cache.get(key)
         else:
-            ix = 1
-        flat_list = self._flatten(children_list[ix:])
+            children_list = self._recurse_for_children(self, only_active=only_active)
+            if include_self:
+                ix = 0
+            else:
+                ix = 1
+            flat_list = self._flatten(children_list[ix:])
+            cache.set(key, flat_list)
         return flat_list
         
     class Meta:
