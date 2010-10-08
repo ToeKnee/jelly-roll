@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from satchmo.shop.views.utils import bad_or_missing
 from satchmo.shop.models import Order
 
+@csrf_exempt
 def success(request, template='checkout/success.html'):
     """
     The order has been succesfully processed.  This can be used to generate a receipt or some other confirmation
