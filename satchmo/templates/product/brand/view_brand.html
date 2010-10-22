@@ -18,12 +18,23 @@
 {% with brand.translation as translated %}
 <div id="product_category" class="brand">
 	<div class="brand_description">
-            <div class="breadcrumb">
-                {% for parent in category.parents %}
-                    <a href="{{ parent.get_absolute_url }}">{{ parent.translated_name }}</a> >
+            <h1>{{ brand.brand.translation.name }}</h1>
+        <div class="breadcrumb">
+            {% if brand.categories %}
+                {% for category in brand.categories %}
+                    {% for parent in category.parents %}
+                        <a href="{{ parent.get_absolute_url }}">{{ parent.translated_name }}</a> &gt;
+                    {% empty %}
+                        <a href="{% url satchmo_category category.slug %}">{{ category.translated_name }}</a> &gt;
+                    {% endfor %}
+                    {% if forloop.last and translated.name %}
+                        <a href="{% url satchmo_category brand.slug %}">{{ translated.name }}</a> &gt;
+                    {% endif %}
                 {% endfor %}
-                <h1>{{ category.translated_name }}</h1>
-            </div>
+            {% endif %}
+            <a href="{% url satchmo_brand_category_view brand.brand.slug brand.slug %}">{{ brand.brand.translation.name }}</a>
+        </div>
+
 	    {% if translated.picture %}
 	    <img src="{{ translated.picture.url|thumbnail:"width=85" }}" alt="{{ translated.name }}" />
 	    {% endif %}

@@ -27,7 +27,7 @@
         {% for parent in category.parents %}
             <a href="{{ parent.get_absolute_url }}">{{ parent.translated_name }}</a> >
         {% endfor %}
-        <h1>{{ category.translated_name }}</h1>
+        <h1 class="breadcrumb"><a href="{{ category.get_absolute_url }}">{{ category.translated_name }}</a></h1>
     </div>
     {% for product in products %} 
         {% if forloop.first %} <ul>  {% endif %}
