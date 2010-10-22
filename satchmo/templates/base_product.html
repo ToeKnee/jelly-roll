@@ -46,7 +46,19 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
 
 {% block content %}
 {% block productdetail %}
-<h4>{{ product.translated_name }}</h4>
+<div class="breadcrumb">
+    {% for name, url in product.category.all.0.get_url_name %}
+        <a href="{{ url }}">{{ name }}</a> >
+        {% if forloop.last %}
+            {% with product.brand_set.all|first as brand %}
+                {% if brand %}
+                    <a href="{% url satchmo_brand_category_view brand.slug name|slugify %}">{{ brand.translation.name }}</a> >
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+    {% endfor %}
+    <h1>{{ product.translated_name }}</h1>
+</div>
 <p>{{ product.translated_description }}</p>
 {% trans "Price" %} {% if default_view_tax %} {% trans '(incl. tax)' %}{% endif %}:
 <h3 id="price">{% if default_view_tax %}{{ price_with_tax|currency }}{% else %}{{ product.unit_price|currency }}{% endif %}</h3>

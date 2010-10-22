@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from satchmo.l10n.mixins import TranslatedObjectMixin
 from satchmo.product.models import Product
+from satchmo.product.models import Category
 from satchmo.thumbnail.field import ImageWithThumbnailField
 import logging
 
@@ -123,7 +124,10 @@ class BrandCategory(models.Model, TranslatedObjectMixin):
     get_absolute_url = models.permalink(_get_absolute_url)
         
     def active_products(self):
-        return self.products.filter(site=self.brand.site).filter(active=True)                
+        return self.products.filter(site=self.brand.site).filter(active=True)
+
+    def categories(self):
+        return Category.objects.filter(slug=self.slug)
         
     def has_categories(self):
         return False    

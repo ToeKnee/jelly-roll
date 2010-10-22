@@ -18,7 +18,12 @@
 {% with brand.translation as translated %}
 <div id="product_category" class="brand">
 	<div class="brand_description">
-		<h3>{{ translated.name }}</h3>
+            <div class="breadcrumb">
+                {% for parent in category.parents %}
+                    <a href="{{ parent.get_absolute_url }}">{{ parent.translated_name }}</a> >
+                {% endfor %}
+                <h1>{{ category.translated_name }}</h1>
+            </div>
 	    {% if translated.picture %}
 	    <img src="{{ translated.picture.url|thumbnail:"width=85" }}" alt="{{ translated.name }}" />
 	    {% endif %}
