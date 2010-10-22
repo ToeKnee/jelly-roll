@@ -32,7 +32,13 @@ def contact_info(request, **kwargs):
         return render_to_response('checkout/empty_cart.html', RequestContext(request))
 
     if not request.user.is_authenticated() and config_value(SHOP_GROUP, 'AUTHENTICATION_REQUIRED'):
-        url = urlresolvers.reverse('satchmo_checkout_auth_required')
+        # Try to find the sites usual login,
+        # If not available. fall bacl to the built in jelly-roll one
+        try:
+            url = urlresolvers.reverse('login')
+        except urlresolvers.NoReverseMatch:
+            url = urlresolvers.reverse('satchmo_checkout_auth_required')
+            
         thisurl = urlresolvers.reverse('satchmo_checkout-step1')
         return http.HttpResponseRedirect(url + "?next=" + thisurl)
 
