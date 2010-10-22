@@ -33,7 +33,7 @@ def contact_info(request, **kwargs):
 
     if not request.user.is_authenticated() and config_value(SHOP_GROUP, 'AUTHENTICATION_REQUIRED'):
         # Try to find the sites usual login,
-        # If not available. fall bacl to the built in jelly-roll one
+        # If not available. fall back to the built in jelly-roll one
         try:
             url = urlresolvers.reverse('login')
         except urlresolvers.NoReverseMatch:
