@@ -20,6 +20,7 @@ from satchmo.payment.views import payship
 from satchmo.payment.config import payment_live
 from satchmo.shop.models import Cart
 from satchmo.utils.dynamic import lookup_url, lookup_template
+from satchmo.payment.views.checkout import success as generic_success
 
 log = logging.getLogger()
 
@@ -174,6 +175,9 @@ def ipn(request):
                 item.save()
             for cart in Cart.objects.filter(customer=order.contact):
                 cart.empty()
+
+            # Make sure we call the usual success function to update stock levels
+            generic_success(request)
                 
     except:
         log.exception(''.join(format_exception(*exc_info())))
