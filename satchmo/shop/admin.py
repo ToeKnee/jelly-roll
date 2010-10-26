@@ -78,7 +78,7 @@ class OrderOptions(admin.ModelAdmin):
             ('ship_street1', 'ship_street2', 'ship_city', 'ship_state', 'ship_postal_code', 'ship_country')}), (_('Billing Address'), {'classes': ('collapse',), 'fields':
             ('bill_street1', 'bill_street2', 'bill_city', 'bill_state', 'bill_postal_code', 'bill_country')}), (_('Totals'), {'fields':
             ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'time_stamp')}))
-    list_display = ('contact', 'time_stamp', 'order_total', 'balance_forward', 'status', 'invoice', 'packingslip', 'shippinglabel')
+    list_display = ('contact', 'contact_user', 'time_stamp', 'order_total', 'balance_forward', 'status', 'invoice', 'packingslip', 'shippinglabel')
     list_filter = ['time_stamp']
     date_hierarchy = 'time_stamp' 
     inlines = [OrderItem_Inline, OrderStatus_Inline, OrderVariable_Inline, OrderTaxDetail_Inline]
@@ -96,6 +96,11 @@ class OrderOptions(admin.ModelAdmin):
             message_bit = "%s orders were" % rows_updated
         self.message_user(request, "%s successfully set to Shipped." % message_bit)
     shipped.short_description = "Set selected Product Orders to Shipped"
+
+    def contact_user(self, obj):
+        return obj.contact.user
+    contact_user.short_description = 'Contact User'
+
 
 class OrderItemOptions(admin.ModelAdmin):
     inlines = [OrderItemDetail_Inline]
