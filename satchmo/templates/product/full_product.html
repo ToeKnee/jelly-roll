@@ -58,10 +58,12 @@
             <input type="submit" name="addwish" value="{% trans "Add to wishlist" %}">
         {% endif %}
 
+        {% product_upsell product %}
+
         {% if error_message %}
         <span class="error">
             <strong>{{ error_message }}</strong>
         </span>
-    {% endif %}
+        {% endif %}
     </form>
 </div>
