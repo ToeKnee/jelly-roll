@@ -1,0 +1,67 @@
+{% load thumbnail media_url satchmo_currency satchmo_util satchmo_discounts i18n markup cache %}
+<div class="hproduct top_product">
+    {% cache 86400 quick_product product %}
+    <h1 class="fn">{{ product.translated_name }}</h1>
+    <div class="breadcrumb">
+        {% for name, url in product.category.all.0.get_url_name %}
+            <a href="{{ url }}" class="category">{{ name }}</a> &gt;
+            {% if forloop.last %}
+                {% with product.brand_set.all|first as brand %}
+                    {% if brand %}
+                        <a href="{% url satchmo_brand_category_view brand.slug name|slugify %}" class="brand">{{ brand.translation.name }}</a> &gt;
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+        {% endfor %}
+        <a href="{{ product.get_absolute_url }}" class="url">{{ product.translated_name }}</a>
+    </div>
+
+    {% if product.main_image %}
+        {% with product.main_image.picture.url|thumbnail:"width=80" as img %}
+        <img src="{% media_url img %}" title="{{ product.description }}" width="{{ img|image_width }}" height="{{ img|image_height }}" class="photo">
+        {% endwith %}
+    {% endif %}
+
+    <span class="description">{{ product.description|textile }}</span>
+
+    <p>
+        {% trans "Price" %}:
+	{% if default_view_tax %}
+            <span class="price">{{ price_with_tax|currency }}</span>
+	{% else %}
+		{% if sale %}
+                    <span class="struckthrough">{{ product.unit_price|currency }}</span>
+                    <span class="salestyle price">{{product|discount_price:sale|currency }}</span>
+                    <br>
+                    <strong> Save {{ product|discount_saved:sale|currency }} ({{ sale.percentage_text }} off!)</strong>
+                    <em>{% include "discount/some_eligible.html" %}</em>
+		{% else %}
+                    <strong class="price">{{ product.unit_price|currency }}</strong>
+		{% endif %}
+	{% endif %}
+    </p>
+
+    {% endcache %}
+
+    <p>
+        Availability:{% if product.in_stock %} {{product.items_in_stock}} In Stock {% else %} Out of Stock {% endif %}
+    </p>
+
+    <form action="{% url satchmo_smart_add %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="productname" value="{{product.slug}}">
+        {% if product.in_stock %}
+            {% trans "Quantity" %} <input type="number" size="2" name="quantity" value="1" min="0" max="{{ product.items_in_stock }}" class="priced">
+            <input type="submit" name="addcart" value="{% trans "Buy me!" %}">
+        {% endif %}
+        {% if "wishlist" and user.is_authenticated %}
+            <input type="submit" name="addwish" value="{% trans "Add to wishlist" %}">
+        {% endif %}
+
+        {% if error_message %}
+        <span class="error">
+            <strong>{{ error_message }}</strong>
+        </span>
+    {% endif %}
+    </form>
+</div>

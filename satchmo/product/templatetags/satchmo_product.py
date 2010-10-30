@@ -100,3 +100,13 @@ def show_featured(limit=1, random=True):
     ''' Renders best sellers list '''
     products = display_featured(limit, random)
     return {"featured": products,}
+
+@register.inclusion_tag('product/quick_product.html')
+def quick_product(product):
+    ''' Renders a product in a way that is usefull for a list '''
+    return {"product": product,}
+
+@register.inclusion_tag('product/full_product.html')
+def full_product(product):
+    ''' Renders a product in a way that is usefull for the product detail page '''
+    return {"product": product,}

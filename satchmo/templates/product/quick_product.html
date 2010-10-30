@@ -1,0 +1,53 @@
+{% load satchmo_thumbnail satchmo_currency satchmo_util i18n cache %}
+<div class="hproduct">
+    {% cache 86400 quick_product product %}
+
+    {% if product.main_image %}
+        <a href="{{ product.get_absolute_url }}">
+            {% with product.main_image.picture.url|thumbnail:"height=85" as img %}
+            <img src="{{ img }}" width="{{ img|image_width }}" height="{{ img|image_height }}" alt="{{ product.translated_name }}" title="{{ product.translated_name }} - {{ product.description }}">
+            {% endwith %}
+        </a>
+    {% endif %}
+
+    <h2>
+        <a href="{{ product.get_absolute_url }}" title="{{ product.description }}" class="fn">
+            {{ product.translated_name }}
+        </a>
+        -
+        <span class="price">
+            {% if default_view_tax %}{{ price_with_tax|currency }}{% else %}{{ product.unit_price|currency }}{% endif %}
+        </span>
+    </h2>
+
+    {% with product.category.all|first as category %}
+        {% with product.brand_set.all|first as brand %}
+            {% if brand %}
+                <a href="{% url satchmo_brand_view brand.slug %}" class="brand">{{ brand.translation.name }}</a> -
+            {% endif %}
+        {% endwith %}
+        <a href="{% url satchmo_category category.parent.slug category.slug %}" class="category">{{ category.translated_name }}</a>
+    {% endwith %}
+
+    <div class="description">
+        {{product.description|linebreaks}}
+    </div>
+
+    <p>
+        <a href="{{ product.get_absolute_url }}" title="Read more about {{ product.translated_name }}" class="url">See more at the {{ product.translated_name }} details page.</a>
+    </p>
+
+    {% endcache %}
+
+    <form action="{% url satchmo_smart_add %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="productname" value="{{product.slug}}">
+        {% if product.in_stock %}
+            {% trans "Quantity" %} <input type="number" size="2" name="quantity" value="1" min="0" max="{{ product.items_in_stock }}" class="priced">
+            <input type="submit" name="addcart" value="{% trans "Buy me!" %}">
+        {% endif %}
+        {% if "wishlist" and user.is_authenticated %}
+            <input type="submit" name="addwish" value="{% trans "Add to wishlist" %}">
+        {% endif %}
+    </form>
+</div>
