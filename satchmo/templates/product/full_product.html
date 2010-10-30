@@ -1,6 +1,6 @@
-{% load thumbnail media_url satchmo_currency satchmo_util satchmo_discounts i18n markup cache %}
-<div class="hproduct top_product">
-    {% cache 86400 quick_product product %}
+{% load satchmo_thumbnail satchmo_currency satchmo_util satchmo_discounts i18n cache %}
+<div class="hproduct top_product clear">
+    {% cache 86400 full_product product %}
     <h1 class="fn">{{ product.translated_name }}</h1>
     <div class="breadcrumb">
         {% for name, url in product.category.all.0.get_url_name %}
@@ -18,11 +18,11 @@
 
     {% if product.main_image %}
         {% with product.main_image.picture.url|thumbnail:"width=80" as img %}
-        <img src="{% media_url img %}" title="{{ product.description }}" width="{{ img|image_width }}" height="{{ img|image_height }}" class="photo">
+        <img src="{{ img }}" title="{{ product.description }}" width="{{ img|image_width }}" height="{{ img|image_height }}" class="photo">
         {% endwith %}
     {% endif %}
 
-    <span class="description">{{ product.description|textile }}</span>
+    <span class="description">{{ product.description|linebreaks }}</span>
 
     <p>
         {% trans "Price" %}:
