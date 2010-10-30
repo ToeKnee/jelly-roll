@@ -8,7 +8,7 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
 {% endcomment %}
 {% load i18n %}
 {% load satchmo_thumbnail %}
-{% load satchmo_price %}
+{% load satchmo_price satchmo_product %}
 {% load satchmo_currency satchmo_category %}
 {% load satchmo_util %}
 {% if "recentlist"|app_enabled %}{% load satchmo_recentlist %}{% endif %}
@@ -46,40 +46,8 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
 
 {% block content %}
 {% block productdetail %}
-<h1>{{ product.translated_name }}</h1>
-<div class="breadcrumb">
-    {% for name, url in product.category.all.0.get_url_name %}
-        <a href="{{ url }}">{{ name }}</a> &gt;
-        {% if forloop.last %}
-            {% with product.brand_set.all|first as brand %}
-                {% if brand %}
-                    <a href="{% url satchmo_brand_category_view brand.slug name|slugify %}">{{ brand.translation.name }}</a> &gt;
-                {% endif %}
-            {% endwith %}
-        {% endif %}
-    {% endfor %}
-    <a href="{{ product.get_absolute_url }}">{{ product.translated_name }}</a>
-</div>
-
-<p>{{ product.translated_description }}</p>
-{% trans "Price" %} {% if default_view_tax %} {% trans '(incl. tax)' %}{% endif %}:
-<h3 id="price">{% if default_view_tax %}{{ price_with_tax|currency }}{% else %}{{ product.unit_price|currency }}{% endif %}</h3>
-{% for pic in product.productimage_set.all %}
-    <img src="{{ pic.picture.url|thumbnail:"width=280" }}" width="280" />
-{% endfor %}
-
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-<form id="options" action="{% url satchmo_smart_add %}" method="post">
-{% trans "Quantity" %} <input type="text", size="2", name="quantity" id="quantity" value="1" class="priced" />
-<input type="hidden" name="productname" id="productname" value="{{product.slug}}" />
-<input type="submit" name="addcart" value="{% trans "Add to cart" %}" />
-{% if "wishlist"|app_enabled and user.is_authenticated %}
-<input type="submit" name="addwish" value="{% trans "Add to wishlist" %}" />
-{% endif %}
-
+{% full_product product %}
 {% product_upsell product %}
-
-</form>
 
     {% if product.instructions %}
         <h4>Usage Instructions & Tips</h4>
