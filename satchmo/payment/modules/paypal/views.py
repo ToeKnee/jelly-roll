@@ -159,13 +159,14 @@ def ipn(request):
             payment_module = config_get_group('PAYMENT_PAYPAL')
             record_payment(order, payment_module, amount=gross, transaction_id=txn_id)
 
-            # Added to track total sold for each product
+            # Track total sold for each product
             for item in order.orderitem_set.all():
+                log.debug("PayPal IPN: Set quauantites for %s" % txn_id)
                 product = item.product
                 product.total_sold += item.quantity
                 product.items_in_stock -= item.quantity
                 product.save()
-
+                log.debug("PayPal IPN: Set quantities for %s to %s" % (product, product.items_sold))
             
             if 'memo' in data:
                 if order.notes:

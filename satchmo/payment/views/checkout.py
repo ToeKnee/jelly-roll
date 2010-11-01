@@ -6,6 +6,9 @@ from django.views.decorators.csrf import csrf_exempt
 from satchmo.shop.views.utils import bad_or_missing
 from satchmo.shop.models import Order
 
+import logging
+log = logging.getLogger()
+
 @csrf_exempt
 def success(request, template='checkout/success.html'):
     """
@@ -22,6 +25,7 @@ def success(request, template='checkout/success.html'):
         product.total_sold += item.quantity
         product.items_in_stock -= item.quantity
         product.save()
+        log.debug("Set quantities for %s to %s" % (product, product.items_sold))
         
     del request.session['orderID']
     context = RequestContext(request, {'order': order})
