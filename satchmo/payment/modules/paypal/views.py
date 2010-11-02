@@ -166,7 +166,7 @@ def ipn(request):
                 product.total_sold += item.quantity
                 product.items_in_stock -= item.quantity
                 product.save()
-                log.debug("PayPal IPN: Set quantities for %s to %s" % (product, product.items_sold))
+                log.debug("PayPal IPN: Set quantities for %s to %s" % (product, product.total_sold))
             
             if 'memo' in data:
                 if order.notes:

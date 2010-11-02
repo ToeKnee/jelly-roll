@@ -25,7 +25,7 @@ def success(request, template='checkout/success.html'):
         product.total_sold += item.quantity
         product.items_in_stock -= item.quantity
         product.save()
-        log.debug("Set quantities for %s to %s" % (product, product.items_sold))
+        log.debug("Set quantities for %s to %s" % (product, product.total_sold))
         
     del request.session['orderID']
     context = RequestContext(request, {'order': order})
