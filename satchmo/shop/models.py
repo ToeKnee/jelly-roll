@@ -974,6 +974,7 @@ class OrderItem(models.Model):
         max_digits=18, decimal_places=10, null=True)
     expire_date = models.DateField(_("Subscription End"), help_text=_("Subscription expiration date."), blank=True, null=True)
     completed = models.BooleanField(_("Completed"), default=False)
+    stock_updated = models.BooleanField(_("Stock Updated"), default=False)
     discount = models.DecimalField(_("Line item discount"),
         max_digits=18, decimal_places=10, blank=True, null=True)
 

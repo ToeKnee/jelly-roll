@@ -42,12 +42,15 @@ def confirm_info(request):
 
     payment_module = config_get_group('PAYMENT_PAYPAL')
 
+    # Get the order,
+    # if there is no order, return to checkout step 1
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
         url = lookup_url(payment_module, 'satchmo_checkout-step1')
         return HttpResponseRedirect(url)
 
+    # Check that the cart has items in it.
     if cart.numItems == 0:
         template = lookup_template(payment_module, 'checkout/empty_cart.html')
         return render_to_response(template, RequestContext(request))
@@ -58,7 +61,7 @@ def confirm_info(request):
             {'message': _('Your order is no longer valid.')})
         return render_to_response('shop_404.html', context)
 
-    template = lookup_template(payment_module, 'checkout/paypal/confirm.html')
+    # Set URL and accounts based on whether the site is LIVE or not
     if payment_module.LIVE.value:
         log.debug("live order on %s", payment_module.KEY.value)
         url = payment_module.POST_URL.value
@@ -67,13 +70,17 @@ def confirm_info(request):
         url = payment_module.POST_TEST_URL.value
         account = payment_module.BUSINESS_TEST.value
 
+    # Is there a custom return URL
+    # Or will we use the default one?
     try:
         address = lookup_url(payment_module,
             payment_module.RETURN_ADDRESS.value, include_server=True)
     except urlresolvers.NoReverseMatch:
         address = payment_module.RETURN_ADDRESS.value
-        
+
+    # Create a pending payment
     create_pending_payment(order, payment_module)
+
     default_view_tax = config_value('TAX', 'DEFAULT_VIEW_TAX') 
   
     recurring = None
@@ -94,7 +101,7 @@ def confirm_info(request):
                     recurring['trial2']['expire_length'] = trial1.expire_length
                     recurring['trial2']['expire_unit'] = trial1.expire_unit[0]
                     recurring['trial2']['price'] = trial1.price
- 
+    
     ctx = RequestContext(request, {'order': order,
      'post_url': url,
      'default_view_tax': default_view_tax, 
@@ -106,6 +113,8 @@ def confirm_info(request):
      'PAYMENT_LIVE' : payment_live(payment_module)
     })
 
+    template = lookup_template(payment_module, 'checkout/paypal/confirm.html')
+
     return render_to_response(template, ctx)
 
 @csrf_exempt
@@ -113,6 +122,7 @@ def ipn(request):
     """PayPal IPN (Instant Payment Notification)
     Cornfirms that payment has been completed and marks invoice as paid.
     Adapted from IPN cgi script provided at http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/456361"""
+
     payment_module = config_get_group('PAYMENT_PAYPAL')
     if payment_module.LIVE.value:
         log.debug("PayPal IPN: Live IPN on %s", payment_module.KEY.value)
@@ -146,8 +156,6 @@ def ipn(request):
             log.info("PayPal IPN: Ignoring IPN data for non-completed payment.")
             return HttpResponse()
 
-        
-
         gross = data['mc_gross']
         txn_id = data['txn_id']
 
@@ -160,14 +168,19 @@ def ipn(request):
             record_payment(order, payment_module, amount=gross, transaction_id=txn_id)
 
             # Track total sold for each product
+            log.debug("PayPal IPN: Set quantities for %s" % txn_id)
             for item in order.orderitem_set.all():
-                log.debug("PayPal IPN: Set quauantites for %s" % txn_id)
-                product = item.product
-                product.total_sold += item.quantity
-                product.items_in_stock -= item.quantity
-                product.save()
-                log.debug("PayPal IPN: Set quantities for %s to %s" % (product, product.total_sold))
-            
+                if item.stock_updated == False:
+                    product = item.product
+                    product.total_sold += item.quantity
+                    product.items_in_stock -= item.quantity
+                    product.save()
+
+                    item.stock_updated = True
+                    item.save()
+                    log.debug("PayPal IPN: Set quantities for %s to %s" % (product, product.total_sold))
+
+
             if 'memo' in data:
                 if order.notes:
                     notes = order.notes + "\n"

@@ -16,15 +16,19 @@ def success(request, template='checkout/success.html'):
     """
     try:
         order = Order.objects.from_request(request)
+        log.info("Successully processed " % (order))
     except Order.DoesNotExist:
         return bad_or_missing(request, _('Your order has already been processed.'))
     
-    # Added to track total sold for each product
+    # Track total sold for each product
     for item in order.orderitem_set.all():
         product = item.product
         product.total_sold += item.quantity
         product.items_in_stock -= item.quantity
         product.save()
+
+        item.stock_updated = True
+        item.save()
         log.debug("Set quantities for %s to %s" % (product, product.total_sold))
         
     del request.session['orderID']

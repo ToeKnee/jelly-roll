@@ -1,6 +1,9 @@
 from django.db import models
-from satchmo.configuration import config_value_safe
+from satchmo.configuration import config_value, SettingNotSet
+from satchmo.configuration import config_value_safe, config_choice_values
+
 from south.modelsinspector import add_introspection_rules
+import config
 
 def shipping_choices():
     try:
