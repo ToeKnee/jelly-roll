@@ -3,6 +3,7 @@ from django.db.models.fields.files import ImageField
 from satchmo.configuration import config_value, SettingNotSet
 from satchmo.thumbnail.utils import remove_model_thumbnails, rename_by_field
 from satchmo.utils import normalize_dir
+from south.modelsinspector import add_introspection_rules
 import config
 import logging
 import os
@@ -94,4 +95,4 @@ class ImageWithThumbnailField(ImageField):
         super(ImageWithThumbnailField, self).contribute_to_class(cls, name)
         signals.pre_delete.connect(_delete, sender=cls)
         signals.post_save.connect(self._save_rename, sender=cls)
-
+add_introspection_rules([], ["^satchmo\.thumbnail\.field\.ImageWithThumbnailField"])

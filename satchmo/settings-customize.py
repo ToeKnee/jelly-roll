@@ -94,6 +94,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    'south',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.auth',

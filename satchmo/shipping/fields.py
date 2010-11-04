@@ -1,5 +1,6 @@
 from django.db import models
 from satchmo.configuration import config_value_safe
+from south.modelsinspector import add_introspection_rules
 
 def shipping_choices():
     try:
@@ -15,3 +16,4 @@ class ShippingChoiceCharField(models.CharField):
             kwargs['choices'] = shipping_choices()
                     
         super(ShippingChoiceCharField, self).__init__(*args, **kwargs)
+add_introspection_rules([], ["^satchmo\.shipping\.fields\.ShippingChoiceCharField"])
