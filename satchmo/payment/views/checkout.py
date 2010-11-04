@@ -29,7 +29,7 @@ def success(request, template='checkout/success.html'):
 
         item.stock_updated = True
         item.save()
-        log.debug("Set quantities for %s to %s" % (product, product.total_sold))
+        log.debug("Set quantities for %s to %s" % (product, product.items_in_stock))
         
     del request.session['orderID']
     context = RequestContext(request, {'order': order})
