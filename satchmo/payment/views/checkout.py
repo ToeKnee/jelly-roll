@@ -22,14 +22,15 @@ def success(request, template='checkout/success.html'):
     
     # Track total sold for each product
     for item in order.orderitem_set.all():
-        product = item.product
-        product.total_sold += item.quantity
-        product.items_in_stock -= item.quantity
-        product.save()
+        if item.stock_updated == False:
+            product = item.product
+            product.total_sold += item.quantity
+            product.items_in_stock -= item.quantity
+            product.save()
 
-        item.stock_updated = True
-        item.save()
-        log.debug("Set quantities for %s to %s" % (product, product.items_in_stock))
+            item.stock_updated = True
+            item.save()
+            log.debug("Set quantities for %s to %s" % (product, product.items_in_stock))
         
     del request.session['orderID']
     context = RequestContext(request, {'order': order})
