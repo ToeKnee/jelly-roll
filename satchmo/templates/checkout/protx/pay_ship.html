@@ -17,7 +17,7 @@ $(function() {satchmo.setup_issue_fields({{ form.requires_issue_number|as_json }
 {% block payment_table %}
     <tr><td><h4>{% trans "Payment Information" %}</h4></td></tr>
     {% if not PAYMENT_LIVE %}
-    <tr><td valign="top"><b>TEST MODE</b></td><td><i>Use Visa 4111111111111111 for CC#<br/>any future date for expiration<br/>any 3 digit CCV</i></td></tr>
+    <tr><td valign="top"><b>TEST MODE</b></td><td><i>Use Visa 4111111111111111 for CC#<br/>any future date for expiration<br/>any 3 digit CVV</i></td></tr>
     {% endif %}
 
     <tr><td><label for="id_card_holder">{% trans "Card Holder" %}</label></td> <td>{{ form.card_holder }}</td></tr>

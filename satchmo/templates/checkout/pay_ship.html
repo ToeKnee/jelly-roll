@@ -17,7 +17,7 @@
     <tr><td><label for="id_month_expires">{% trans "Expiration date" %}</label><label for="id_year_expires"></label></td><td> {{ form.month_expires }} {{form.year_expires}}</td></tr>
     {% if form.year_expires.errors %}<tr><td></td><td>*** {{ form.year_expires.errors|join:", " }}</td></tr>{% endif %}
 
-    <tr><td><label for="id_ccv">{% trans "CCV" %}</label></td><td> {{ form.ccv}}</td></tr>
+    <tr><td><label for="id_ccv">{% trans "CVV" %}</label></td><td> {{ form.ccv}}</td></tr>
     {% if form.ccv.errors %}<tr><td></td><td>*** {{ form.ccv.errors|join:", " }}</td></tr>{% endif %}
 
 {% endblock %}
