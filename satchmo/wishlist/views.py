@@ -7,6 +7,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.safestring import mark_safe
 from django.utils.simplejson.encoder import JSONEncoder
 from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.csrf import csrf_exempt
 from satchmo.contact.models import Contact
 from satchmo.shop.signals import order_success
 from satchmo.product.models import Product
@@ -35,7 +36,8 @@ def wishlist_view(request, message=""):
     })
     
     return render_to_response('wishlist/index.html', ctx)
-    
+
+@csrf_exempt
 def wishlist_add(request):
     """Add an item to the wishlist."""
     try:
