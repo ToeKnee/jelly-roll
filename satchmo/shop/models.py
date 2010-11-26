@@ -523,6 +523,7 @@ ORDER_CHOICES = (
 
 class Status(models.Model):
     status = models.CharField(_("Status"), max_length=255)
+    description = models.TextField(_("description"), null=True, blank=True)
     notify = models.BooleanField(_("Notify"), help_text="Notify the user on status update", default=True)
     display = models.BooleanField(_("Display"), help_text="Show orders of this status in the admin area home page", default=True)
 
