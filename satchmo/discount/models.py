@@ -42,26 +42,23 @@ class Discount(models.Model):
         help_text=_("Coupon Code"))
     amount = models.DecimalField(_("Discount Amount"), decimal_places=2,
         max_digits=4, blank=True, null=True, 
-        #validator_list=[amount_validator],
         help_text=_("Enter absolute discount amount OR percentage."))
     percentage = models.DecimalField(_("Discount Percentage"), decimal_places=2,
         max_digits=4, blank=True, null=True,
-        #validator_list=[percentage_validator],
         help_text=_("Enter absolute discount amount OR percentage.  Percentage example: \"0.10\"."))
     automatic = models.NullBooleanField(_("Is this an automatic discount?"), default=False, blank=True,
         null=True, help_text=_("Use this field to advertise the discount on all products to which it applies.  Generally this is used for site-wide sales."))
     allowedUses = models.IntegerField(_("Number of allowed uses"),
-        blank=True, null=True, help_text=_('Not implemented.'))
-    numUses = models.IntegerField(_("Number of times already used"),
-        blank=True, null=True, help_text=_('Not implemented.'))
+        blank=True, null=True, help_text=_('How many uses are allowed of this discount'))
+    numUses = models.IntegerField(_("Number of times already used"), default=0, editable=False)
     minOrder = models.DecimalField(_("Minimum order value"),
         decimal_places=2, max_digits=6, blank=True, null=True)
     startDate = models.DateField(_("Start Date"))
     endDate = models.DateField(_("End Date"))
-    active = models.BooleanField(_("Active"))
-    freeShipping = models.NullBooleanField(_("Free shipping"), blank=True, null=True,
+    active = models.BooleanField(_("Active"), default=True)
+    freeShipping = models.NullBooleanField(_("Free shipping"), default=False,
         help_text=_("Should this discount remove all shipping costs?"))
-    includeShipping = models.NullBooleanField(_("Include shipping"), blank=True, null=True,
+    includeShipping = models.NullBooleanField(_("Include shipping"), default=False,
         help_text=_("Should shipping be included in the discount calculation?"))
     validProducts = models.ManyToManyField(Product, verbose_name=_("Valid Products"),
         blank=True, null=True, help_text="Make sure not to include gift certificates!")
