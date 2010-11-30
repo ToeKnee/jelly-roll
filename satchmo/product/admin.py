@@ -124,7 +124,7 @@ class OptionOptions(admin.ModelAdmin):
         inlines.append(OptionTranslation_Inline)
 
 class ProductOptions(admin.ModelAdmin):
-    list_display = ('site', 'slug', 'sku', 'name', 'unit_price', 'items_in_stock', 'get_subtypes')
+    list_display = ('site', 'slug', 'sku', 'name', 'unit_price', 'items_in_stock', 'total_sold', 'get_subtypes')
     list_display_links = ('slug', 'name')
     list_filter = ('category', 'date_added')
     fieldsets = (
@@ -134,6 +134,7 @@ class ProductOptions(admin.ModelAdmin):
             (_('Item Dimensions'), {'fields': (('length', 'length_units','width','width_units','height','height_units'),('weight','weight_units')), 'classes': ('collapse',)}), 
             (_('Tax'), {'fields':('taxable', 'taxClass'), 'classes': ('collapse',)}), 
             (_('Related Products'), {'fields':('related_items','also_purchased'),'classes':'collapse'}), )
+    readonly_fields = ('total_sold',)
     search_fields = ['slug', 'sku', 'name']
     inlines = [ProductAttribute_Inline, Price_Inline, ProductImage_Inline]
     if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
