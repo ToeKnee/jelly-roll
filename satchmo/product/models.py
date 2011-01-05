@@ -553,7 +553,7 @@ class Product(models.Model):
     category = models.ManyToManyField(Category, blank=True, verbose_name=_("Category"))
     items_in_stock = models.IntegerField(_("Number in stock"), default=0)
     meta = models.TextField(_("Meta Description"), max_length=200, blank=True, null=True, help_text=_("Meta description for this product"))
-    date_added = models.DateField(_("Date added"), default=datetime.datetime.now())
+    date_added = models.DateField(_("Date added"))
     date_updated = models.DateField(_("Date updated"))
     active = models.BooleanField(_("Is product active?"), default=True, help_text=_("This will determine whether or not this product will appear on the site"))
     featured = models.BooleanField(_("Featured Item"), default=False, help_text=_("Featured items will show on the front page"))
@@ -726,6 +726,10 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         self.date_updated = datetime.datetime.now()
+
+        if not self.date_added:
+            self.date_added = self.date_updated
+
         if self.name and not self.slug:
             self.slug = slugify(self.name, instance=self)
 
