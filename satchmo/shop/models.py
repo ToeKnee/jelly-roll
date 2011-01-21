@@ -14,7 +14,6 @@ try:
 except:
     from django.utils._decimal import Decimal
 
-from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.encoding import force_unicode
@@ -34,7 +33,7 @@ from satchmo.shipping.fields import ShippingChoiceCharField
 from satchmo.tax.utils import get_tax_processor
 from satchmo.shop.notification import send_order_update_notice
 from django.contrib.sites.models import Site
-from django.db.models import Max
+from satchmo.discount.utils import find_discount_for_code
 
 log = logging.getLogger('satchmo.shop.models')
 
@@ -805,8 +804,6 @@ class Order(models.Model):
 
     def force_recalculate_total(self, save=True):
         """Calculates sub_total, taxes and total."""
-        from satchmo.discount.utils import find_discount_for_code
-
         zero = Decimal("0.0000000000")
         discount = find_discount_for_code(self.discount_code)
         discount.calc(self)
