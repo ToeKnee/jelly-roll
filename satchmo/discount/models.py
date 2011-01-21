@@ -49,7 +49,7 @@ class Discount(models.Model):
     automatic = models.NullBooleanField(_("Is this an automatic discount?"), default=False, blank=True,
         null=True, help_text=_("Use this field to advertise the discount on all products to which it applies.  Generally this is used for site-wide sales."))
     allowedUses = models.IntegerField(_("Number of allowed uses"),
-        blank=True, null=True, help_text=_('How many uses are allowed of this discount'))
+        default=1, help_text=_('How many uses are allowed of this discount'))
     numUses = models.IntegerField(_("Number of times already used"), default=0, editable=False)
     minOrder = models.DecimalField(_("Minimum order value"),
         decimal_places=2, max_digits=6, blank=True, null=True)
