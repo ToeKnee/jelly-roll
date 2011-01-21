@@ -686,8 +686,7 @@ class Order(models.Model):
         self.save()
 
     def _balance(self):
-        if self.total is None:
-            self.force_recalculate_total(save=True)
+        self.force_recalculate_total(save=True)
         return self.total-self.balance_paid
 
     balance = property(fget=_balance)
