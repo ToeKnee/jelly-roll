@@ -56,7 +56,7 @@
     freeShipping: false
     includeShipping: false
     minOrder: null
-    numUses: null
+    numUses: 1
     percentage: null
     startDate: 2007-12-15
     validProducts: []
@@ -73,7 +73,7 @@
     freeShipping: false
     includeShipping: false
     minOrder: null
-    numUses: null
+    numUses: 1
     percentage: '20'
     startDate: 2007-12-15
     validProducts: []
@@ -90,7 +90,7 @@
     freeShipping: false
     includeShipping: true
     minOrder: null
-    numUses: null
+    numUses: 1
     percentage: null
     startDate: 2007-12-15
     validProducts: []
@@ -107,7 +107,7 @@
     freeShipping: false
     includeShipping: true
     minOrder: null
-    numUses: null
+    numUses: 1
     percentage: '20'
     startDate: 2007-12-15
     validProducts: []
@@ -124,7 +124,7 @@
     freeShipping: true
     includeShipping: false
     minOrder: null
-    numUses: null
+    numUses: 1
     percentage: null
     startDate: 2007-12-15
     validProducts: []
@@ -141,7 +141,7 @@
     freeShipping: true
     includeShipping: false
     minOrder: null
-    numUses: null
+    numUses: 1
     percentage: '20'
     startDate: 2007-12-15
     validProducts: []
@@ -181,6 +181,7 @@
     also_purchased: []
     category: [4]
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: A neat book.  You should buy it.
     featured: true
     height: null
@@ -204,6 +205,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -227,6 +229,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -250,6 +253,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -273,6 +277,7 @@
     also_purchased: []
     category: [1]
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: Really cool shirt
     featured: true
     height: null
@@ -296,6 +301,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -319,6 +325,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -342,6 +349,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -365,6 +373,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -388,6 +397,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -411,6 +421,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -434,6 +445,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -457,6 +469,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -480,6 +493,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -503,6 +517,7 @@
     also_purchased: []
     category: [2]
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: Really cool python shirt - One Size Fits All
     featured: true
     height: null
@@ -526,6 +541,7 @@
     also_purchased: []
     category: [5]
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: Robots try to take over the world.
     featured: true
     height: null
@@ -549,6 +565,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -572,6 +589,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
@@ -595,6 +613,7 @@
     also_purchased: []
     category: []
     date_added: 2007-12-15
+    date_updated: 2007-12-15
     description: ''
     featured: false
     height: null
