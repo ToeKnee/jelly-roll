@@ -804,17 +804,24 @@ class Order(models.Model):
 
     def force_recalculate_total(self, save=True):
         """Calculates sub_total, taxes and total."""
+
         zero = Decimal("0.0000000000")
+
+        # Find the discount code and calculate it
         discount = find_discount_for_code(self.discount_code)
         discount.calc(self)
+
+        # Save the total discount in this Order's discount attribute
         self.discount = discount.total
-        discounts = discount.item_discounts
+
         itemprices = []
         fullprices = []
+
+        # Apply discounts to line item
         for lineitem in self.orderitem_set.all():
             lid = lineitem.id
-            if lid in discounts:
-                lineitem.discount = discounts[lid]
+            if lid in discount.item_discounts:
+                lineitem.discount = discount.item_discounts[lid]
             else:
                 lineitem.discount = zero
             if save:
@@ -823,8 +830,8 @@ class Order(models.Model):
             itemprices.append(lineitem.sub_total)
             fullprices.append(lineitem.line_item_price)
 
-        if 'Shipping' in discounts:
-            self.shipping_discount = discounts['Shipping']
+        if 'Shipping' in discount.item_discounts:
+            self.shipping_discount = discount.item_discounts['Shipping']
         else:
             self.shipping_discount = zero
 
