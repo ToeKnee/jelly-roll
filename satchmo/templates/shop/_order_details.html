@@ -3,13 +3,37 @@
 {% load satchmo_util %}
 {% load i18n %}
 {% if default_view_tax %}{% load satchmo_tax %}{% endif %}
+<ul>
 {% for item in order.orderitem_set.all %}
-{% if default_view_tax %}
-{{ item }} - {{item.unit_price_with_tax|currency}} x {{item.quantity}} = {{item.total_with_tax|currency}}<br/>
-{% else %}
-{{ item }} - {{item.unit_price|currency}} x {{item.quantity}} = {{item.sub_total|currency}}<br/>
-{% endif %}
+    <li>
+        {{ item }} -
+        {% if default_view_tax %}
+            {% if item.discount %}
+                <span class="unit_price discounted">{{item.unit_price_with_tax|currency}}</span>
+                (- <span class="discount">{{ item.discount|currency }}</span> discount)
+            {% else %}
+                <span class="unit_price">{{item.unit_price_with_tax|currency}}</span>}
+            {% endif %}
+            
+            x {{item.quantity}}
+            = {{item.total_with_tax|currency}}
+
+        {% else %}
+
+            {% if item.discount %}
+                <span class="unit_price discounted">{{item.unit_price|currency}}</span>
+                (- <span class="discount">{{ item.discount|currency }}</span> discount)
+            {% else %}
+                <span class="unit_price">{{item.unit_price|currency}}</span>
+            {% endif %}
+
+            x {{item.quantity}}
+            = {{item.sub_total|currency}}
+            
+        {% endif %}
+    </li>
 {% endfor %}
+</ul>
 
 <h4>{% trans "Contact Information" %}</h4>
 {{ order.contact.full_name }}<br/>
