@@ -42,10 +42,10 @@ def make_test_order(country, state):
         unit_price=price, line_item_price=price*2)
     item1.save()
 
-    detl = OrderItemDetail(name = 'email', value='me@example.com', sort_order=0, item=item1)
-    detl.save()
-    detl = OrderItemDetail(name = 'message', value='hello there', sort_order=0, item=item1)
-    detl.save()
+    detail = OrderItemDetail(name = 'email', value='me@example.com', sort_order=0, item=item1)
+    detail.save()
+    detail = OrderItemDetail(name = 'message', value='hello there', sort_order=0, item=item1)
+    detail.save()
 
     return o
 
@@ -128,4 +128,3 @@ class GiftCertOrderTest(TestCase):
         self.assertEqual(c.balance, Decimal('20.00'))
         self.assertEqual(c.recipient_email, 'me@example.com')
         self.assertEqual(c.message, 'hello there')
-        
