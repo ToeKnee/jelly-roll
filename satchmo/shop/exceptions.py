@@ -1,4 +1,4 @@
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 class CartAddProhibited(Exception):
     """Raised when a `signals.satchmo_cart_add_verify` listener vetoes adding an item to the cart.
@@ -15,9 +15,9 @@ class OutOfStockError(CartAddProhibited):
 
     def __init__(self, product, have, need):
         if have == 0:
-            msg = _("'%s' is out of stock.") % product.translated_name()
+            msg = _(u"'%s' is out of stock.") % product.translated_name()
         else:
-            msg = _("Only %(amount)i of '%(product)s' in stock.") % {
+            msg = _(u"Only %(amount)i of '%(product)s' in stock.") % {
                 'amount': have, 
                 'product': product.translated_name()
                 }
