@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _
 from satchmo.shop.exceptions import OutOfStockError
 import logging
 

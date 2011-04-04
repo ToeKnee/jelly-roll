@@ -5,7 +5,6 @@ Associates products to each other for upselling purposes.
 from datetime import date
 from django.conf import settings
 from django.db import models
-from django.utils.translation import get_language, gettext_lazy as _
 from django.utils.translation import ugettext, ugettext_lazy as _
 from satchmo import caching
 from satchmo.caching.models import CachedObjectMixin
