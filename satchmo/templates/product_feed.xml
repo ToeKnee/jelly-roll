@@ -16,7 +16,7 @@ xmlns:g="http://base.google.com/ns/1.0">
     {% if brand %}<g:brand>{{ brand.translation.name }}</g:brand>{% endif %}
     <g:image_link>{{ product.main_image.picture.url }}</g:image_link>
     <g:quantity>{{ product.items_in_stock }}</g:quantity>
-    <g:price>{{ product.unit_price|currency:"curr=" }}</g:price>
+    <g:price>{{ product.unit_price }}</g:price>
     <g:condition>new</g:condition>
     {% if product.weight %}<g:weight>{{ product.weight }} {{ product.weight_units }}</g:weight>{% endif %}
     {% if product.height %}<g:height>{{ product.height }} {{ product.height_units }}</g:height>{% endif %}

@@ -10,7 +10,7 @@ except:
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 from satchmo.product.models import Product
 import datetime
 import logging
@@ -88,7 +88,7 @@ class Discount(models.Model):
 
         minOrder = self.minOrder or 0
         if cart.total < minOrder:
-            return (False, ugettext('This discount only applies to orders of at least %s.' % moneyfmt(minOrder)))
+            return (False, ugettext('This discount only applies to orders of at least %s.' % money_format(minOrder)))
 
         validItems = False
         validproducts = self._get_valid_product_dict()

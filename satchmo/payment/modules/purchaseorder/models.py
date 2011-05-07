@@ -6,7 +6,7 @@ except:
 from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 from satchmo.shop.models import Order
 
 class PurchaseOrder(models.Model):
@@ -26,14 +26,14 @@ class PurchaseOrder(models.Model):
         else:
             b = Decimal('0.00')
             
-        return moneyfmt(b)
+        return money_format(b)
 
     def order_link(self):
         return mark_safe(u'<a href="/admin/shop/order/%i/">%s #%i (%s)</a>' % (
             self.order.id,
             ugettext('Order'), 
             self.order.id, 
-            moneyfmt(self.order.total)))
+            money_format(self.order.total)))
             
     order_link.allow_tags = True
     

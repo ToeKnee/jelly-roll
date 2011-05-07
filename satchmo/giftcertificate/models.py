@@ -11,7 +11,7 @@ from satchmo.configuration import config_value, config_get_group
 from satchmo.contact.models import Contact
 from satchmo.shop.models import OrderPayment, Order
 from satchmo.giftcertificate.utils import generate_certificate_code
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 from satchmo.payment.utils import record_payment
 from satchmo.product.models import Product
 from django.contrib.sites.models import Site
@@ -64,11 +64,11 @@ class GiftCertificate(models.Model):
         """
         amount = min(order.balance, self.balance)
         log.info('applying %s from giftcert #%i [%s] to order #%i [%s]', 
-            moneyfmt(amount), 
+            money_format(amount), 
             self.id, 
-            moneyfmt(self.balance), 
+            money_format(self.balance), 
             order.id, 
-            moneyfmt(order.balance))
+            money_format(order.balance))
         config = config_get_group('PAYMENT_GIFTCERTIFICATE')
         orderpayment = record_payment(order, config, amount)
         return self.use(amount, orderpayment=orderpayment)
@@ -90,8 +90,8 @@ class GiftCertificate(models.Model):
         super(GiftCertificate, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        sb = moneyfmt(self.start_balance)
-        b = moneyfmt(self.balance)
+        sb = money_format(self.start_balance)
+        b = money_format(self.balance)
         return u"Gift Cert: %s/%s" % (sb, b)
 
     class Meta:
