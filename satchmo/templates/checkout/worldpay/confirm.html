@@ -34,7 +34,6 @@
 	<input type="hidden" name="tel"  value="{{ order.contact.primary_phone.phone }}" />
 	<input type="hidden" name="fixContact"/>
 {% if MD5 %}
-	<input type="hidden" name="signatureFields" value="amount:currency:cartId" />
 	<input type="hidden" name="signature" value="{{ MD5 }}" />
 {% endif %}	
 	<input type="hidden" name="M_session" value="{{ session }}" />

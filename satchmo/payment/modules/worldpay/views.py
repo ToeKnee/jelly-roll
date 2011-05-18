@@ -12,6 +12,7 @@ from satchmo.payment.utils import record_payment
 from satchmo.shop.models import Cart
 from satchmo.shop.models import Order
 from satchmo.utils.dynamic import lookup_template
+from satchmo.utils import trunc_decimal
 from django.core import urlresolvers
 from django.http import HttpResponseRedirect
 
@@ -57,8 +58,9 @@ def confirm_info(request):
 
     if payment_module.MD5.value > "":
         # Doing the MD5 Signature dance
-        # Generating secret "secret:amount:currency:cartId"
-        signature = "%s:%s:%s:%s" % (payment_module.MD5.value, order.balance, currency, order.id)
+        # Generating secret "secret;amount;currency;cartId"
+        balance = trunc_decimal(order.balance, 2)
+        signature = "%s:%s:%s:%s" % (payment_module.MD5.value, balance, currency, order.id)
         MD5 = md5(signature).hexdigest()
     else:
         MD5 = False

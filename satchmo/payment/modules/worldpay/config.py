@@ -17,13 +17,13 @@ config_register_list(
 
     StringValue(PAYMENT_GROUP, 
         'CONNECTION',
-        description= ("URL to submit live transactions."),
+        description=_("URL to submit live transactions."),
         hidden=True,
         default='https://select.worldpay.com/wcc/purchase'),
 
     StringValue(PAYMENT_GROUP, 
         'CONNECTION_TEST',
-        description= ("URL to submit test transactions."),
+        description=_("URL to submit test transactions."),
         hidden=True,
         default='https://select-test.worldpay.com/wcc/purchase'),
 
@@ -35,6 +35,7 @@ config_register_list(
     StringValue(PAYMENT_GROUP, 
         'MD5', 
         description=_('Your Worldpay MD5 secret for transactions'),
+        help_text=_('Ensure that you set the SignatureFields to amount:currency:cartId'),
         default=""),
     
     StringValue(PAYMENT_GROUP,
