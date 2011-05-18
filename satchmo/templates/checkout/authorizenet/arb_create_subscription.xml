@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>{% load l10n %}{% localize off %}
 <ARBCreateSubscriptionRequest xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
 	<merchantAuthentication>
 		<name>{{ config.merchantID }}</name>
@@ -39,3 +39,4 @@
 		</billTo>
 	</subscription>
 </ARBCreateSubscriptionRequest>
+{% endlocalize %}
