@@ -1,63 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <django-objects version="1.0">
-    <object pk="8" model="shop.status">
-        <field type="CharField" name="status">Lost in Transit</field>
-        <field type="TextField" name="description">Your order has been lost in transit.</field>
-        <field type="BooleanField" name="notify">True</field>
-        <field type="BooleanField" name="display">True</field>
-    </object>
-    <object pk="7" model="shop.status">
-        <field type="CharField" name="status">Cancelled</field>
-        <field type="TextField" name="description">Your order has been canceled.</field>
-        <field type="BooleanField" name="notify">True</field>
-        <field type="BooleanField" name="display">False</field>
-    </object>
-    <object pk="6" model="shop.status">
-        <field type="CharField" name="status">Shipped</field>
-        <field type="TextField" name="description">Your order has been shipped.</field>
-        <field type="BooleanField" name="notify">True</field>
-        <field type="BooleanField" name="display">False</field>
-    </object>
-    <object pk="4" model="shop.status">
-        <field type="CharField" name="status">Billed</field>
-        <field type="TextField" name="description">Money still outstanding, awaiting payment.</field>
-        <field type="BooleanField" name="notify">False</field>
-        <field type="BooleanField" name="display">True</field>
-    </object>
-    <object pk="3" model="shop.status">
-        <field type="CharField" name="status">Processing</field>
-        <field type="TextField" name="description">Received payment and will be shipping the order soon.</field>
-        <field type="BooleanField" name="notify">False</field>
-        <field type="BooleanField" name="display">True</field>
-    </object>
-    <object pk="2" model="shop.status">
-        <field type="CharField" name="status">Pending</field>
-        <field type="TextField" name="description">Awaiting payment</field>
-        <field type="BooleanField" name="notify">False</field>
-        <field type="BooleanField" name="display">True</field>
-    </object>
-    <object pk="1" model="shop.status">
-        <field type="CharField" name="status">Temporary</field>
-        <field type="TextField" name="description"><None></None></field>
-        <field type="BooleanField" name="notify">False</field>
-        <field type="BooleanField" name="display">False</field>
-    </object>
-    <object pk="9" model="shop.status">
-        <field type="CharField" name="status">Awaiting Customer Response</field>
-        <field type="TextField" name="description"><None></None></field>
-        <field type="BooleanField" name="notify">True</field>
-        <field type="BooleanField" name="display">True</field>
-    </object>
-    <object pk="10" model="shop.status">
-        <field type="CharField" name="status">Refunded</field>
-        <field type="TextField" name="description">You have been refunded for your order.</field>
-        <field type="BooleanField" name="notify">True</field>
-        <field type="BooleanField" name="display">False</field>
-    </object>
-    <object pk="11" model="shop.status">
-        <field type="CharField" name="status">Reversed</field>
-        <field type="TextField" name="description">The payment has been reveresed</field>
-        <field type="BooleanField" name="notify">True</field>
-        <field type="BooleanField" name="display">True</field>
-    </object>
+  <object pk="8" model="shop.status">
+    <field type="CharField" name="status">Lost in Transit</field>
+    <field type="TextField" name="description">You've reported that your order has been lost in transit. </field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="7" model="shop.status">
+    <field type="CharField" name="status">Cancelled</field>
+    <field type="TextField" name="description">Your order has been cancelled.</field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">False</field>
+  </object>
+  <object pk="6" model="shop.status">
+    <field type="CharField" name="status">Shipped</field>
+    <field type="TextField" name="description">Your order has been shipped.</field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">False</field>
+  </object>
+  <object pk="4" model="shop.status">
+    <field type="CharField" name="status">Billed</field>
+    <field type="TextField" name="description">Money still outstanding, awaiting payment.</field>
+    <field type="BooleanField" name="notify">False</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="3" model="shop.status">
+    <field type="CharField" name="status">Processing</field>
+    <field type="TextField" name="description">We've received your order and we're getting it packed up and ready to go. It will be sent soon.</field>
+    <field type="BooleanField" name="notify">False</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="2" model="shop.status">
+    <field type="CharField" name="status">Pending</field>
+    <field type="TextField" name="description">Awaiting payment.</field>
+    <field type="BooleanField" name="notify">False</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="1" model="shop.status">
+    <field type="CharField" name="status">Temporary</field>
+    <field type="TextField" name="description"><None></None></field>
+    <field type="BooleanField" name="notify">False</field>
+    <field type="BooleanField" name="display">False</field>
+  </object>
+  <object pk="9" model="shop.status">
+    <field type="CharField" name="status">Awaiting Customer Response</field>
+    <field type="TextField" name="description">We've emailed you about your order and we're waiting to hear back from you.</field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="10" model="shop.status">
+    <field type="CharField" name="status">Refunded</field>
+    <field type="TextField" name="description">You have been refunded for your order.</field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">False</field>
+  </object>
+  <object pk="11" model="shop.status">
+    <field type="CharField" name="status">Reversed</field>
+    <field type="TextField" name="description">The payment has been reversed. This happens if you make a claim through PayPal or with your Credit Card, or when your payment has been refused by your card issuer.</field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="12" model="shop.status">
+    <field type="CharField" name="status">Canceled_Reversal</field>
+    <field type="TextField" name="description"><None></None></field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="13" model="shop.status">
+    <field type="CharField" name="status">Returned by Royal Mail</field>
+    <field type="TextField" name="description">Royal Mail has returned your item to us. Usually this happens when the address given was incomplete or delivery was attempted and your order was not collected.</field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="14" model="shop.status">
+    <field type="CharField" name="status">Processing replacement</field>
+    <field type="TextField" name="description">We're sending you replacement items for your lost or damaged order.</field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
+  <object pk="15" model="shop.status">
+    <field type="CharField" name="status">Denied</field>
+    <field type="TextField" name="description"><None></None></field>
+    <field type="BooleanField" name="notify">True</field>
+    <field type="BooleanField" name="display">True</field>
+  </object>
 </django-objects>
