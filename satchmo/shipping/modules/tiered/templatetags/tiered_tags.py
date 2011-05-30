@@ -7,7 +7,7 @@ from django import template
 from django.utils.safestring import mark_safe
 from satchmo.shipping.modules.tiered.models import Carrier
 from satchmo.shop.templatetags import get_filter_args
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 
 register = template.Library()
 
@@ -21,6 +21,6 @@ def tiered_shipping(price, args=''):
         raise template.TemplateSyntaxError('tiered_shipping needs the name of a valid carrier, could not find carrier "%s"' % args)
     shipping = c.price(Decimal(price))
     
-    return mark_safe(moneyfmt(shipping))
+    return mark_safe(money_format(shipping))
 
 register.filter(tiered_shipping)

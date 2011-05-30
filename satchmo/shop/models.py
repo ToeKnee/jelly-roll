@@ -25,7 +25,7 @@ from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
 from satchmo.l10n.models import Country
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 from satchmo.payment.fields import PaymentChoiceCharField
 from satchmo.product import signals as product_signals
 from satchmo.product.models import Product, DownloadableProduct
@@ -692,7 +692,7 @@ class Order(models.Model):
     balance = property(fget=_balance)
 
     def balance_forward(self):
-        return moneyfmt(self.balance)
+        return money_format(self.balance)
 
     balance_forward = property(fget=balance_forward)
 
@@ -860,10 +860,10 @@ class Order(models.Model):
 
         log.debug("Order #%i, recalc: sub_total=%s, shipping=%s, discount=%s, tax=%s",
             self.id,
-            moneyfmt(item_sub_total),
-            moneyfmt(self.shipping_sub_total),
-            moneyfmt(self.discount),
-            moneyfmt(self.tax))
+            money_format(item_sub_total),
+            money_format(self.shipping_sub_total),
+            money_format(self.discount),
+            money_format(self.tax))
 
         self.total = Decimal(item_sub_total + self.shipping_sub_total + self.tax)
 
@@ -877,7 +877,7 @@ class Order(models.Model):
 
     def _order_total(self):
         #Needed for the admin list display
-        return moneyfmt(self.total)
+        return money_format(self.total)
     order_total = property(_order_total)
 
     def order_success(self):
@@ -1143,7 +1143,7 @@ class OrderPayment(models.Model):
     credit_card = property(_credit_card)
 
     def _amount_total(self):
-        return moneyfmt(self.amount)
+        return money_format(self.amount)
 
     amount_total = property(fget=_amount_total)
 

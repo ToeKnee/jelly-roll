@@ -6,7 +6,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
 from satchmo.configuration import config_value
 from satchmo.discount.utils import find_best_auto_discount
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 from satchmo.product import signals
 from satchmo.product.models import Category, Product, ConfigurableProduct, sorted_tuple
 from satchmo.product.signals import index_prerender
@@ -186,9 +186,9 @@ def get_price(request, product_slug):
         if not pvp:
             return http.HttpResponse(json_encode(('', _("not available"))), mimetype="text/javascript")
         prod_slug = pvp.slug
-        price = moneyfmt(pvp.get_qty_price(quantity))
+        price = money_format(pvp.get_qty_price(quantity))
     else:
-        price = moneyfmt(product.get_qty_price(quantity))
+        price = money_format(product.get_qty_price(quantity))
 
     if not price:
         return http.HttpResponse(json_encode(('', _("not available"))), mimetype="text/javascript")
@@ -231,11 +231,11 @@ def get_price_detail(request, product_slug):
             price_with_tax = price+base_tax
 
             results['slug'] = product.slug
-            results['currency_price'] = moneyfmt(price)
+            results['currency_price'] = money_format(price)
             results['price'] = float(price)
             results['tax'] = float(base_tax)
-            results['currency_tax'] = moneyfmt(base_tax)
-            results['currency_price_with_tax'] = moneyfmt(price_with_tax)
+            results['currency_tax'] = money_format(base_tax)
+            results['currency_price_with_tax'] = money_format(price_with_tax)
             results['price_with_tax'] = float(price_with_tax)
             results['success'] = True
             results['message'] = ""

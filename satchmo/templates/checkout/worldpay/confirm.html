@@ -1,6 +1,5 @@
 {% extends "checkout/base_confirm.html" %}
-{% load i18n %}
-{% load satchmo_currency %}
+{% load l10n i18n satchmo_currency %}
 {# this is the credit-card confirm template #}
 
 {% block errorheader %}{% trans "Please correct and resubmit" %}{% endblock %}
@@ -16,7 +15,7 @@
 {% endblock %}
 
 {% block payment_form %}
-
+{% localize off %}
 <form action="{{ post_url }}" method="post">
 {% if not PAYMENT_LIVE %}
 	<input type=hidden name="testMode" value="100" />
@@ -35,10 +34,10 @@
 	<input type="hidden" name="tel"  value="{{ order.contact.primary_phone.phone }}" />
 	<input type="hidden" name="fixContact"/>
 {% if MD5 %}
-	<input type="hidden" name="signatureFields" value="amount:currency:cartId" />
 	<input type="hidden" name="signature" value="{{ MD5 }}" />
 {% endif %}	
 	<input type="hidden" name="M_session" value="{{ session }}" />
 	<input type="submit" class="button" value ="{% trans "Purchase Items &raquo;" %}" />
 </form> 
+{% endlocalize %}
 {% endblock %}

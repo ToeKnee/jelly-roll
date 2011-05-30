@@ -1,7 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 from satchmo.configuration import config_value
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 from satchmo.tax.templatetags.satchmo_tax import CartitemLineTaxedTotalNode, CartTaxedTotalNode
 from satchmo.utils import trunc_decimal
 import logging
@@ -45,7 +45,7 @@ class CartitemTotalNode(template.Node):
             show_currency = self.raw_currency
             
         if show_currency:
-            return moneyfmt(cartitem.line_total)
+            return money_format(cartitem.line_total)
         else:
             return cartitem.line_total
 
@@ -70,7 +70,7 @@ register.inclusion_tag("product/cart_detail_subscriptionproduct.html", takes_con
 
 def cartitem_total(parser, token):
     """Returns the line total for the cartitem, possibly with tax added.  If currency evaluates true,
-    then return the total formatted through moneyfmt.
+    then return the total formatted through money_format.
 
     Example::
 
@@ -131,13 +131,13 @@ class CartTotalNode(template.Node):
             show_currency = self.raw_currency
             
         if show_currency:
-            return moneyfmt(cart.total)
+            return money_format(cart.total)
         else:
             return cart.total
 
 def cart_total(parser, token):
     """Returns the total for the cart, possibly with tax added.  If currency evaluates true,
-    then return the total formatted through moneyfmt.
+    then return the total formatted through money_format.
 
     Example::
 

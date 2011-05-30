@@ -1,5 +1,6 @@
 VERSION = (0, 5, 0)
 import logging
+import locale
 import os
 
 def get_version():
@@ -10,6 +11,8 @@ def get_version():
         from django.utils.version import get_svn_revision
         v = '%s-%s-%s' % (v, VERSION[-1], get_svn_revision(path=satchmo.__path__[0]))
     return v
+
+locale.setlocale(locale.LC_ALL, '')
 
 #Configure logging
 LOGFILE = os.path.join("/", "var", "log", "jelly-roll.log")

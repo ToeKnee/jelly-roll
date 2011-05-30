@@ -1,5 +1,5 @@
 from satchmo.configuration import config_value
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 from satchmo.product.models import ProductVariation, Option, split_option_unique_id, ProductPriceLookup, OptionGroup
 from satchmo.shop.models import Config
 from satchmo.tax.utils import get_tax_processor
@@ -43,9 +43,6 @@ def productvariation_details(product, include_tax, user, create=False):
 
     details = {}
     
-    curr = config_value('SHOP', 'CURRENCY')
-    curr = curr.replace("_", " ")
-
     variations = ProductPriceLookup.objects.filter(parentid=product.id)
     if variations.count() == 0:
         if create:
@@ -79,11 +76,11 @@ def productvariation_details(product, include_tax, user, create=False):
         
         price = detl.dynamic_price
         
-        detail['PRICE'][detl.quantity] = moneyfmt(price, curr=curr)
+        detail['PRICE'][detl.quantity] = money_format(price)
         
         if include_tax:
             tax_price = taxer.by_price(tax_class, price) + price
-            detail['TAXED'][detl.quantity] = moneyfmt(tax_price, curr=curr)
+            detail['TAXED'][detl.quantity] = money_format(tax_price)
                 
     return details
 

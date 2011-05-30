@@ -4,7 +4,7 @@ except:
     from django.utils._decimal import Decimal
 
 from django import template
-from satchmo.l10n.utils import moneyfmt
+from satchmo.l10n.utils import money_format
 from satchmo.shop.templatetags import get_filter_args
 from satchmo.tax.utils import get_tax_processor
 import logging
@@ -56,12 +56,12 @@ class CartitemLineTaxedTotalNode(template.Node):
         total = item.line_total + taxer.by_price(item.product.taxClass, item.line_total)
         
         if self.currency:
-            return moneyfmt(total)
+            return money_format(total)
         return total
 
 def cartitem_line_taxed_total(parser, token):
     """Returns the line total for the cartitem, with tax added.  If currency evaluates true,
-    then return the total formatted through moneyfmt.
+    then return the total formatted through money_format.
     
     Example::
     
@@ -89,13 +89,13 @@ class CartTaxedTotalNode(template.Node):
         for item in cart:
             total += item.line_total + taxer.by_price(item.product.taxClass, item.line_total)
         if self.currency:
-            return moneyfmt(total)
+            return money_format(total)
         
         return total
 
 def cart_taxed_total(parser, token):
     """Returns the line total for the cartitem, with tax added.  If currency evaluates true,
-    then return the total formatted through moneyfmt.
+    then return the total formatted through money_format.
     
     Example:: 
     
@@ -176,13 +176,13 @@ class TaxedPriceNode(template.Node):
         total = price + taxer.by_price(self.taxclass, price)
         
         if self.currency:
-            return moneyfmt(total)
+            return money_format(total)
                         
         return total
         
 def taxed_price(parser, token):
     """Returns the taxed price for an amount.  If currency evaluates true,
-    then return the total formatted through moneyfmt.
+    then return the total formatted through money_format.
     
     Example:: 
         
