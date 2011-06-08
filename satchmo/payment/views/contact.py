@@ -3,6 +3,7 @@
 #####################################################################
 
 from django import http
+from django.contrib.auth.decorators import login_required
 from django.core import urlresolvers
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -23,6 +24,7 @@ def authentication_required(request, template='checkout/authentication_required.
         template, {}, context_instance = RequestContext(request)
     )
 
+@login_required
 def contact_info(request, **kwargs):
     """View which collects demographic information from customer."""
 
@@ -31,26 +33,14 @@ def contact_info(request, **kwargs):
     if tempCart.numItems == 0:
         return render_to_response('checkout/empty_cart.html', RequestContext(request))
 
-    if not request.user.is_authenticated() and config_value(SHOP_GROUP, 'AUTHENTICATION_REQUIRED'):
-        # Try to find the sites usual login,
-        # If not available. fall back to the built in jelly-roll one
-        try:
-            url = urlresolvers.reverse('login')
-        except urlresolvers.NoReverseMatch:
-            url = urlresolvers.reverse('satchmo_checkout_auth_required')
-            
-        thisurl = urlresolvers.reverse('satchmo_checkout-step1')
-        return http.HttpResponseRedirect(url + "?next=" + thisurl)
-
     init_data = {}
     shop = Config.objects.get_current()
-    if request.user.is_authenticated():
-        if request.user.email:
-            init_data['email'] = request.user.email
-        if request.user.first_name:
-            init_data['first_name'] = request.user.first_name
-        if request.user.last_name:
-            init_data['last_name'] = request.user.last_name
+    if request.user.email:
+        init_data['email'] = request.user.email
+    if request.user.first_name:
+        init_data['first_name'] = request.user.first_name
+    if request.user.last_name:
+        init_data['last_name'] = request.user.last_name
     try:
         contact = Contact.objects.from_request(request, create=False)
     except Contact.DoesNotExist:
