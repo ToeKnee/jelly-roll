@@ -46,6 +46,9 @@ def confirm_info(request):
     # if there is no order, return to checkout step 1
     try:
         order = Order.objects.from_request(request)
+        if order.status:
+            del request.session['orderID']
+            raise Order.DoesNotExist
     except Order.DoesNotExist:
         url = lookup_url(payment_module, 'satchmo_checkout-step1')
         return HttpResponseRedirect(url)
