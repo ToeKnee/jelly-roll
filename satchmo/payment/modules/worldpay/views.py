@@ -35,9 +35,6 @@ def confirm_info(request):
     
     try:
         order = Order.objects.from_request(request)
-        if order.status:
-            del request.session['orderID']
-            raise Order.DoesNotExist
     except Order.DoesNotExist:
         order = None
 

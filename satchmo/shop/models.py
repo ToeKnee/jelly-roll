@@ -548,12 +548,7 @@ class OrderManager(models.Manager):
         if 'orderID' in request.session:
             try:
                 order = Order.objects.get(id=request.session['orderID'])
-
-                # If the order user does not match the request user,
-                # don't return the order
-                if order.contact.user != request.user:
-                    order = None
-                    
+                # TODO: Validate against logged-in user.
             except Order.DoesNotExist:
                 pass
 

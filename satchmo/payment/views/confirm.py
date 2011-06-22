@@ -71,7 +71,6 @@ class ConfirmController(object):
         
         If not a POST, sets `response` to the result, the result of the `form_handler`, returns True
         """
-        
         if not self.sanity_check():
             return False
 
@@ -163,9 +162,7 @@ class ConfirmController(object):
         """Ensure we have a valid cart and order."""
         try:
             self.order = Order.objects.from_request(self.request)
-            if self.order.status:
-                del self.request.session['orderID']
-                raise Order.DoesNotExist
+            
         except Order.DoesNotExist:
             url = urlresolvers.reverse('satchmo_checkout-step1')
             self.invalidate(HttpResponseRedirect(url))
