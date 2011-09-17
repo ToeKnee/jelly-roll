@@ -23,4 +23,3 @@ urlpatterns = patterns('',
     (r'product-feed\.xml$', "satchmo.utils.google.product_feed"),
     (r'^accounts/', include('satchmo.accounts.urls')),
 )
-

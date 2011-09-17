@@ -49,7 +49,7 @@ satchmo.toggle_module = function(elt) {
 };
 
 $(function() {
-	$('#content-related h2.module-title').each(function() { 
+	$('#content-related h2.module-title').each(function() {
 		satchmo.setup_toggle(this);
 	});
 	satchmo.toggle_module($('#recent-actions-module h2'));
@@ -130,6 +130,9 @@ $(function() {
 				</li>
 			    {% endif %}
 				<li>
+		    		<a href="{% url satchmo_admin_picking_list %}">{% trans 'Picking List' %}</a><br/>
+				</li>
+				<li>
 		    		<a href="{% url satchmo_admin_edit_inventory %}">{% trans 'Edit Inventory' %}</a><br/>
 				</li>
 				<li>
@@ -143,6 +146,6 @@ $(function() {
 				</li>
 			</ul>
 		</div>
-	</div>	
+	</div>
 </div>
 {% endblock %}

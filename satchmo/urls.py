@@ -21,10 +21,9 @@ if getattr(settings, 'LOCAL_DEV', False):
     urlpatterns += patterns('',
         (baseurlregex, 'django.views.static.serve',
         {'document_root':  settings.MEDIA_ROOT}),
-        
-        (r'^site_media/(.*)$', 'django.views.static.serve', 
-        {'document_root': settings.MEDIA_ROOT}),        
+
+        (r'^site_media/(.*)$', 'django.views.static.serve',
+        {'document_root': settings.MEDIA_ROOT}),
     )
 
 urlhelper.remove_duplicate_urls(urlpatterns, [])
-

@@ -1,0 +1,94 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_modify humanize %}
+
+{% block breadcrumbs %}{% if not is_popup %}
+<div class="breadcrumbs">
+     <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
+     {% trans "Picking List" %}
+</div>
+{% endif %}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style type="text/css">
+	#picking-list {
+	padding: 0;
+	}
+
+	#picking-list li {
+	list-style: none;
+	}
+
+	#picking-list h3 {
+	font-size: 4em;
+	margin-bottom: 1em;
+	}
+
+	#picking-list > li {
+	float: left;
+	padding-right: 1em;
+	margin-right: 2em;
+	}
+
+	#picking-list ol li {
+	margin: 1em 1em 1.5em 1em;
+	font-size: 2em;
+	}
+</style>
+
+<style type="text/css" media="print">
+	#picking-list > li {
+	width: 40%;
+	margin: 0;
+	}
+
+	#picking-list h3 {
+	font-size: 2em;
+	}
+
+	#picking-list ol li {
+	margin: 0.5em;
+	list-style: circle;
+	font-size: 1em;
+	}
+
+	#picking-list .left {
+	float: left;
+	clear: both;
+	}
+
+	#picking-list .right {
+	float: right;
+	clear: right;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+	<h2>{{ order_count|intcomma }} orders processing &mdash; {% now "jS F Y" %}</h2>
+
+	<ul id="picking-list">
+		{% for brand, items in products.items %}
+		<li class="{% cycle left,right %}">
+			<h3>{{ brand }}</h3>
+			<ol>
+				{% for item, quantity in items %}
+				<li>
+					<span class="quantity">
+						{{ quantity|intcomma }}
+					</span>
+					×
+					<span class="item">
+						{{ item }}
+					</span>
+				</li>
+				{% endfor %}
+			</ol>
+		</li>
+		{% empty %}
+		<li>{% trans "No items to pick." %}</li>
+		{% endfor %}
+	</ul>
+</div>
+{% endblock %}
