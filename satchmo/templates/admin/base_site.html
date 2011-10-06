@@ -2,7 +2,6 @@
 {% load i18n satchmo_util %}
 
 {% block extrahead %}
-{% blackbird_logging %}
 {{ block.super }}
     <script src="{{media_url}}js/jquery.js" type="text/javascript"></script>
 	<script type="text/javascript"><!--
@@ -31,10 +30,10 @@
 </style>
 {% endblock %}
 
-{% block title %}{{ title|escape }} | {% trans 'Satchmo Site Administration' %}{% endblock %}
+{% block title %}{{ title|escape }} | {% trans 'Jelly Roll Site Administration' %}{% endblock %}
 
 {% block branding %}
-<h1 id="site-name">{% trans 'Satchmo Site Administration' %}</h1>
+<h1 id="site-name">{% trans 'Jelly Roll Site Administration' %}</h1>
 {% endblock %}
 
 {% block nav-global %}
