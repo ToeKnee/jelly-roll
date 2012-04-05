@@ -2,6 +2,7 @@ import logging
 import urllib2
 
 from django.core import urlresolvers
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -13,7 +14,7 @@ from sys import exc_info
 from traceback import format_exception
 
 from satchmo.configuration import config_get_group
-from satchmo.configuration import config_value 
+from satchmo.configuration import config_value
 from satchmo.shop.models import Order, OrderPayment
 from satchmo.payment.utils import record_payment, create_pending_payment
 from satchmo.payment.views import payship
@@ -22,6 +23,7 @@ from satchmo.shop.models import Cart
 from satchmo.utils.dynamic import lookup_url, lookup_template
 
 log = logging.getLogger()
+
 
 def pay_ship_info(request):
     # Check that items are in stock
@@ -34,6 +36,7 @@ def pay_ship_info(request):
         'checkout/paypal/pay_ship.html')
 
 
+@transaction.commit_on_success
 def confirm_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -81,8 +84,8 @@ def confirm_info(request):
     # Create a pending payment
     create_pending_payment(order, payment_module)
 
-    default_view_tax = config_value('TAX', 'DEFAULT_VIEW_TAX') 
-  
+    default_view_tax = config_value('TAX', 'DEFAULT_VIEW_TAX')
+
     recurring = None
     order_items = order.orderitem_set.all()
     for item in order_items:
@@ -101,10 +104,10 @@ def confirm_info(request):
                     recurring['trial2']['expire_length'] = trial1.expire_length
                     recurring['trial2']['expire_unit'] = trial1.expire_unit[0]
                     recurring['trial2']['price'] = trial1.price
-    
+
     ctx = RequestContext(request, {'order': order,
      'post_url': url,
-     'default_view_tax': default_view_tax, 
+     'default_view_tax': default_view_tax,
      'business': account,
      'currency_code': payment_module.CURRENCY_CODE.value,
      'return_address': address,
@@ -117,7 +120,9 @@ def confirm_info(request):
 
     return render_to_response(template, ctx)
 
+
 @csrf_exempt
+@transaction.commit_on_success
 def ipn(request):
     """PayPal IPN (Instant Payment Notification)
     Cornfirms that payment has been completed and marks invoice as paid.
@@ -127,11 +132,9 @@ def ipn(request):
     if payment_module.LIVE.value:
         log.debug("PayPal IPN: Live IPN on %s", payment_module.KEY.value)
         url = payment_module.POST_URL.value
-        account = payment_module.BUSINESS.value
     else:
         log.debug("PayPal IPN: Test IPN on %s", payment_module.KEY.value)
         url = payment_module.POST_TEST_URL.value
-        account = payment_module.BUSINESS_TEST.value
     PP_URL = url
 
     try:
@@ -142,9 +145,9 @@ def ipn(request):
 
         try:
             invoice = data['invoice']
-        except:
+        except KeyError:
             invoice = data['item_number']
-            
+
         if not 'payment_status' in data or not data['payment_status'] == "Completed":
             # We want to respond to anything that isn't a payment - but we won't insert into our database.
             order = Order.objects.get(pk=invoice)
@@ -163,6 +166,7 @@ def ipn(request):
         if not OrderPayment.objects.filter(transaction_id=txn_id).count():
             # If the payment hasn't already been processed:
             order = Order.objects.get(pk=invoice)
+            order.freeze()
             order.add_status(status='Processing', notes=_("Paid through PayPal."))
             payment_module = config_get_group('PAYMENT_PAYPAL')
             record_payment(order, payment_module, amount=gross, transaction_id=txn_id)
@@ -180,27 +184,27 @@ def ipn(request):
                     item.save()
                     log.debug("PayPal IPN: Set quantities for %s to %s" % (product, product.items_in_stock))
 
-
             if 'memo' in data:
                 if order.notes:
                     notes = order.notes + "\n"
                 else:
                     notes = ""
-                
+
                 order.notes = notes + _('---Comment via Paypal IPN---') + u'\n' + data['memo']
-                order.save()
                 log.debug("PayPal IPN: Saved order notes from Paypal")
-            
+
             for item in order.orderitem_set.filter(product__subscriptionproduct__recurring=True, completed=False):
                 item.completed = True
                 item.save()
             for cart in Cart.objects.filter(customer=order.contact):
                 cart.empty()
-                
+
+            order.save()
     except:
         log.exception(''.join(format_exception(*exc_info())))
 
     return HttpResponse()
+
 
 def confirm_ipn_data(data, PP_URL):
     # data is the form data that was submitted to the IPN URL.

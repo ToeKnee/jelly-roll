@@ -545,6 +545,10 @@ class Status(models.Model):
 
 
 class OrderManager(models.Manager):
+
+    def live(self):
+        return self.filter(frozen=False)
+
     def from_request(self, request):
         """Get the order from the session
 
@@ -554,15 +558,17 @@ class OrderManager(models.Manager):
         order = None
         if 'orderID' in request.session:
             try:
-                order = Order.objects.get(id=request.session['orderID'])
-                # TODO: Validate against logged-in user.
+                order = Order.objects.live().get(id=request.session['orderID'])
+
+                if request.user != order.contact.user:
+                    order = None
             except Order.DoesNotExist:
                 pass
 
-            if not order:
+            if order is None:
                 del request.session['orderID']
 
-        if not order:
+        if order is None:
             raise Order.DoesNotExist()
 
         return order
@@ -626,12 +632,27 @@ class Order(models.Model):
     tax = models.DecimalField(_("Tax"),
         max_digits=18, decimal_places=10, blank=True, null=True)
     status = models.ForeignKey("OrderStatus", blank=True, null=True, editable=False, related_name="current_status")
-    time_stamp = models.DateTimeField(_("Timestamp"), default=datetime.datetime.now(), editable=True)
+    frozen = models.BooleanField(default=False)
+    time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
 
     objects = OrderManager()
 
     def __unicode__(self):
         return "Order #%s: %s" % (self.id, self.contact.full_name)
+
+    def save(self, *args, **kwargs):
+        """
+        Copy addresses from contact. If the order has just been created, set
+        the create_date.
+        """
+        if self.pk is None:
+            self.copy_addresses()
+            self.time_stamp = datetime.datetime.now()
+        super(Order, self).save(*args, **kwargs)  # Call the "real" save() method.
+
+    def freeze(self):
+        self.frozen = True
+        self.time_stamp = datetime.datetime.now()
 
     def add_status(self, status=None, notes=None):
         orderstatus = OrderStatus()
@@ -777,15 +798,6 @@ class Order(models.Model):
     def payments_completed(self):
         q = self.payments.exclude(transaction_id__isnull=False, transaction_id="PENDING")
         return q.exclude(amount=Decimal("0.00"))
-
-    def save(self, *args, **kwargs):
-        """
-        Copy addresses from contact. If the order has just been created, set
-        the create_date.
-        """
-        if not self.pk:
-            self.copy_addresses()
-        super(Order, self).save(*args, **kwargs)  # Call the "real" save() method.
 
     def invoice(self):
         url = urlresolvers.reverse('satchmo_print_shipping', None, None, {'doc': 'invoice', 'id': self.id})
@@ -1115,12 +1127,14 @@ class OrderStatus(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("Order"))
     status = models.ForeignKey(Status, verbose_name=_("Status"))
     notes = models.TextField(_("Notes"), blank=True)
-    time_stamp = models.DateTimeField(_("Timestamp"), default=datetime.datetime.now(), editable=True)
+    time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
 
     def __unicode__(self):
         return self.status.status
 
     def save(self, *args, **kwargs):
+        if self.pk is None:
+            self.time_stamp = datetime.datetime.now()
         super(OrderStatus, self).save(*args, **kwargs)
 
         # Set the most recent status
@@ -1216,10 +1230,9 @@ def _remove_order_on_cart_update(request=None, cart=None, **kwargs):
 
 
 def _recalc_total_on_contact_change(contact=None, **kwargs):
-    #TODO: pull just the current order once we start using threadlocal middleware
     log.debug("Recalculating all contact orders not in process")
-    orders = Order.objects.filter(contact=contact, status=None)
-    log.debug("Found %i orders to recalc", orders.count())
+    orders = Order.objects.live().filter(contact=contact, status=None)
+    log.debug("Found %i orders to recalc", len(orders))
     for order in orders:
         order.copy_addresses()
         order.recalculate_total()
