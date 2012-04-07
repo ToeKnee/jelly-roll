@@ -19,7 +19,6 @@ def success(request, template='checkout/success.html'):
     """
     try:
         order = Order.objects.from_request(request)
-        log.info("Successully processed " % (order))
     except Order.DoesNotExist:
         return bad_or_missing(request, _('Your order has already been processed.'))
 
@@ -37,6 +36,9 @@ def success(request, template='checkout/success.html'):
 
     order.freeze()
     order.save()
+    if 'cart' in request.session:
+        del request.session['cart']
     del request.session['orderID']
+    log.info("Successully processed " % (order))
     context = RequestContext(request, {'order': order})
     return render_to_response(template, context)

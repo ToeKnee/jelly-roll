@@ -32,7 +32,7 @@ def confirm_info(request):
     cart = Cart.objects.from_request(request)
     if cart.not_enough_stock():
         return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
-    
+
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
@@ -44,8 +44,8 @@ def confirm_info(request):
         return render_to_response('shop_404.html', context)
 
     template = lookup_template(payment_module, 'checkout/worldpay/confirm.html')
-    
-    
+
+
     live = payment_module.LIVE.value
     currency = payment_module.CURRENCY_CODE.value
     inst_id = payment_module.INSTID.value
@@ -64,7 +64,7 @@ def confirm_info(request):
         MD5 = md5(signature).hexdigest()
     else:
         MD5 = False
-        
+
     ctx = RequestContext(request, {
         'order': order,
         'inst_id': inst_id,
@@ -77,20 +77,22 @@ def confirm_info(request):
     })
     return render_to_response(template, ctx)
 
+
 @csrf_exempt
 def success(request):
     """
     The order has been succesfully processed.
     """
 
-    session = SessionStore(session_key = request.POST['M_session'])
+    session = SessionStore(session_key=request.POST['M_session'])
     transaction_id = request.POST['cartId']
     amount = request.POST['authAmount']
     request.session = session
-    
+
     if request.POST['transStatus'] == 'Y':
         order = Order.objects.get(pk=transaction_id)
         order.add_status(status='Processing', notes=_("Paid through WorldPay."))
+        request.user = order.contact.user
         record_payment(order, payment_module, amount=amount, transaction_id=transaction_id)
         for cart in Cart.objects.filter(customer=order.contact):
             cart.empty()
@@ -99,4 +101,3 @@ def success(request):
         context = RequestContext(request,
             {'message': _('Your transaction was rejected.')})
         return render_to_response('shop_404.html', context)
-    
