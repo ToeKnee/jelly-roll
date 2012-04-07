@@ -54,7 +54,7 @@
                         {% if quantity %}
                             {% trans "There are only {{ quantity }} {{ cartitem.product.name }} available." %}
                         {% else %}
-                            {% trans "There is no {{ cartitem.product.name }} availiable." %}
+                            {% trans "There is no {{ cartitem.product.name }} available." %}
                         {% endif %}
                         {% endwith %}
                     </p>
@@ -71,7 +71,7 @@
     {% if sale %}
 	{% include "discount/some_eligible.html" %}
 	{% endif %}
-	
+
     <a href="{% url satchmo_checkout-step1 %}">{% trans "Check out" %}</a>
     {% if not not_enough_stock %}
         <a href="{% url satchmo_checkout-step1 %}">
