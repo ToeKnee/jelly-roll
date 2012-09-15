@@ -31,7 +31,7 @@ class ConfigOptions(admin.ModelAdmin):
             }),
         (_('Store Contact'), {'fields' : (
             'store_email', 'street1', 'street2',
-            'city', 'state', 'postal_code', 'country',) 
+            'city', 'state', 'postal_code', 'country',)
             }),
         (_('Shipping Countries'), {'fields' : (
             'in_country_only', 'sales_country', 'shipping_countries')
@@ -61,6 +61,7 @@ class Status_Inline(admin.TabularInline):
 
 class OrderStatus_Inline(admin.StackedInline):
     model = OrderStatus
+    readonly_fields = ('time_stamp',)
     extra = 1
 
 class OrderVariable_Inline(admin.TabularInline):
@@ -73,13 +74,23 @@ class OrderTaxDetail_Inline(admin.TabularInline):
 
 class OrderOptions(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('site', 'contact', 'method', 'discount_code', 'notes')}), (_('Shipping Method'), {'fields':
-            ('shipping_method', 'shipping_description')}), (_('Shipping Address'), {'classes': ('collapse',), 'fields':
-            ('ship_street1', 'ship_street2', 'ship_city', 'ship_state', 'ship_postal_code', 'ship_country')}), (_('Billing Address'), {'classes': ('collapse',), 'fields':
-            ('bill_street1', 'bill_street2', 'bill_city', 'bill_state', 'bill_postal_code', 'bill_country')}), (_('Totals'), {'fields':
-            ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'time_stamp')}))
-    list_display = ('id', 'contact', 'contact_user', 'time_stamp', 'order_total', 'balance_forward', 'status', 'invoice', 'packingslip', 'shippinglabel')
-    list_filter = ['time_stamp', 'status__status',]
+        (None,
+         {'fields': ('site', 'contact', 'method', 'discount_code', 'notes', 'time_stamp', 'frozen')}),
+        (_('Shipping Method'),
+         {'fields': ('shipping_method', 'shipping_description')}),
+        (_('Shipping Address'),
+         {'classes': ('collapse',),
+          'fields': ('ship_street1', 'ship_street2', 'ship_city', 'ship_state', 'ship_postal_code', 'ship_country')}),
+        (_('Billing Address'),
+         {'classes': ('collapse',),
+          'fields': ('bill_street1', 'bill_street2', 'bill_city', 'bill_state', 'bill_postal_code', 'bill_country')}),
+        (_('Totals'),
+         {'fields': ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total')}
+         )
+        )
+    readonly_fields = ('time_stamp', 'frozen',)
+    list_display = ('id', 'contact', 'contact_user', 'time_stamp', 'order_total', 'balance_forward', 'status', 'invoice', 'packingslip', 'shippinglabel', 'frozen')
+    list_filter = ['time_stamp', 'status__status', 'frozen']
     search_fields = ['id', 'contact__user__username', 'contact__user__email', 'contact__first_name', 'contact__last_name', 'contact__email']
     date_hierarchy = 'time_stamp'
     inlines = [OrderItem_Inline, OrderStatus_Inline, OrderVariable_Inline, OrderTaxDetail_Inline]

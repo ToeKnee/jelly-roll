@@ -69,47 +69,47 @@ def default_weight_unit():
         return 'lb'
 
 class CategoryManager(models.Manager):
-    
+
     def by_site(self, site=None, **kwargs):
         """Get all categories for this site"""
         if not site:
             site = Site.objects.get_current()
-        
+
         site = site.id
 
         return self.filter(site__id__exact = site, **kwargs)
-        
+
     def root_categories(self, site=None, **kwargs):
         """Get all root categories."""
-        
+
         if not site:
             site = Site.objects.get_current()
-        
+
         return self.filter(parent__isnull=True, site=site, **kwargs)
-        
+
     def search_by_site(self, keyword, site=None, include_children=False):
-        """Search for categories by keyword. 
+        """Search for categories by keyword.
         Note, this does not return a queryset."""
-        
+
         if not site:
             site = Site.objects.get_current()
-        
+
         cats = self.filter(
             Q(name__icontains=keyword) |
             Q(meta__icontains=keyword) |
             Q(description__icontains=keyword),
             site=site)
-        
+
         if include_children:
             # get all the children of the categories found
             cats = [cat.get_active_children(include_self=True) for cat in cats]
-            
+
         # sort properly
         if cats:
             fastsort = [(c.ordering, c.name, c) for c in get_flat_list(cats)]
             fastsort.sort()
             # extract the cat list
-            cats = zip(*fastsort)[2]            
+            cats = zip(*fastsort)[2]
         return cats
 
 class Category(models.Model):
@@ -127,7 +127,7 @@ class Category(models.Model):
     description = models.TextField(_("Description"), blank=True,
         help_text="Optional")
     ordering = models.IntegerField(_("Ordering"), default=0, help_text=_("Override alphabetical order in category display"))
-    related_categories = models.ManyToManyField('self', blank=True, null=True, 
+    related_categories = models.ManyToManyField('self', blank=True, null=True,
         verbose_name=_('Related Categories'), related_name='related_categories')
     objects = CategoryManager()
 
@@ -193,7 +193,7 @@ class Category(models.Model):
         if cat_obj == self and p_list:
             p_list.reverse()
         return p_list
-        
+
     def parents(self):
         return self._recurse_for_parents(self)
 
@@ -204,7 +204,7 @@ class Category(models.Model):
             slug_list = "/".join(slug_list) + "/"
         else:
             slug_list = ""
-        return urlresolvers.reverse('satchmo_category', 
+        return urlresolvers.reverse('satchmo_category',
             kwargs={'parent_slugs' : slug_list, 'slug' : self.slug})
 
     def get_separator(self):
@@ -246,11 +246,9 @@ class Category(models.Model):
         super(Category, self).save(*args, **kwargs)
         img_key = "Category_get_mainImage %s" % (self.id)
         img_key = img_key.replace(" ", "-")
-        gac_key = "Category_get_all_children_%s_%s_%s" % (self.id, only_active, include_self)
-        gac_key = gac_key.replace("_", "-")
         ap_key = "Category_active_products %s" % (self.id)
-        ap_key = key.replace(" ", "-")
-        cache.delete_many([img_key, gac_key, ap_key])
+        ap_key = ap_key.replace(" ", "-")
+        cache.delete_many([img_key, ap_key])
 
     def _flatten(self, L):
         """
@@ -293,7 +291,7 @@ class Category(models.Model):
             flat_list = self._flatten(children_list[ix:])
             cache.set(key, flat_list)
         return flat_list
-        
+
     class Meta:
         ordering = ['site', 'parent__id', 'ordering', 'name']
         verbose_name = _("Category")
@@ -380,7 +378,7 @@ class CategoryImageTranslation(models.Model):
 class OptionGroupManager(models.Manager):
     def get_sortmap(self):
         """Returns a dictionary mapping ids to sort order"""
-        
+
         work = {}
         for uid, order in self.values_list('id', 'sort_order'):
             work[uid] = order
@@ -393,7 +391,7 @@ class OptionGroup(models.Model):
     Examples - Size, Color, Shape, etc
     """
     site = models.ForeignKey(Site, verbose_name=_('Site'))
-    name = models.CharField(_("Name of Option Group"), max_length=50, 
+    name = models.CharField(_("Name of Option Group"), max_length=50,
         help_text=_("This will be the text displayed on the product page."))
     description = models.CharField(_("Detailed Description"), max_length=100,
         blank=True,
@@ -500,7 +498,7 @@ class OptionTranslation(models.Model):
         return u"OptionTranslation: [%s] (ver #%i) %s Name: %s" % (self.languagecode, self.version, self.option, self.name)
 
 class ProductManager(models.Manager):
-    
+
     def active(self, variations=True, **kwargs):
         return self.filter(active=True, variations=variations, **kwargs)
 
@@ -510,7 +508,7 @@ class ProductManager(models.Manager):
     def by_site(self, site=None, variations=True, **kwargs):
         if not site:
             site = Site.objects.get_current()
-        
+
         site = site.id
 
         #log.debug("by_site: site=%s", site)
@@ -527,15 +525,15 @@ class ProductManager(models.Manager):
             raise Product.DoesNotExist
         else:
             return products[0]
-            
+
     def recent_by_site(self, **kwargs):
         query = self.active_by_site(**kwargs)
         if query.count() == 0:
             query = self.active_by_site()
-            
+
         query = query.order_by('-date_added')
         return query
-    
+
 
 class Product(models.Model):
     """
@@ -559,7 +557,7 @@ class Product(models.Model):
     featured = models.BooleanField(_("Featured Item"), default=False, help_text=_("Featured items will show on the front page"))
     ordering = models.IntegerField(_("Ordering"), default=0, help_text=_("Override alphabetical order in category display"))
     weight = models.DecimalField(_("Weight"), max_digits=8, decimal_places=2, null=True, blank=True)
-    weight_units = models.CharField(_("Weight units"), max_length=3, null=True, blank=True) 
+    weight_units = models.CharField(_("Weight units"), max_length=3, null=True, blank=True)
     length = models.DecimalField(_("Length"), max_digits=6, decimal_places=2, null=True, blank=True)
     length_units = models.CharField(_("Length units"), max_length=3, null=True, blank=True)
     width = models.DecimalField(_("Width"), max_digits=6, decimal_places=2, null=True, blank=True)
@@ -615,14 +613,14 @@ class Product(models.Model):
         return img
 
     main_image = property(_get_mainImage)
-    
+
     def _is_discountable(self):
         p = self.get_subtype_with_attr('discountable')
         if p:
             return p.discountable
         else:
             return True
-            
+
     is_discountable = property(_is_discountable)
 
     def translated_attributes(self, language_code=None):
@@ -676,12 +674,12 @@ class Product(models.Model):
                 price = self._get_fullPrice()
 
         return price
-        
+
     def get_qty_price_list(self):
         """Return a list of tuples (qty, price)"""
         prices = Price.objects.filter(
             product__id=self.id).exclude(
-            expires__isnull=False, 
+            expires__isnull=False,
             expires__lt=datetime.date.today()
         ).select_related()
         return [(price.quantity, price.dynamic_price) for price in prices]
@@ -863,7 +861,7 @@ class Product(models.Model):
             return True
         else:
             return False
-            
+
     is_shippable = property(_get_shippable)
 
     def add_template_context(self, context, *args, **kwargs):
@@ -966,7 +964,7 @@ class CustomProduct(models.Model):
         price = get_product_quantity_price(self.product, qty)
         if not price and qty == 1:      # Prevent a recursive loop.
             price = Decimal("0.00")
-        elif not price:      
+        elif not price:
             price = self.product._get_fullPrice()
 
         return price * self.downpayment / 100
@@ -1009,11 +1007,11 @@ class CustomTextField(models.Model):
     name = models.CharField(_('Custom field name'), max_length=40, )
     slug = models.SlugField(_("Slug"), help_text=_("Auto-generated from name if blank"),
         blank=True)
-    products = models.ForeignKey(CustomProduct, verbose_name=_('Custom Fields'), 
+    products = models.ForeignKey(CustomProduct, verbose_name=_('Custom Fields'),
         related_name='custom_text_fields')
     sort_order = models.IntegerField(_("Sort Order"),
         help_text=_("The display order for this group."))
-    price_change = models.DecimalField(_("Price Change"), max_digits=14, 
+    price_change = models.DecimalField(_("Price Change"), max_digits=14,
         decimal_places=6, blank=True, null=True)
 
     def save(self, *args, **kwargs):
@@ -1111,7 +1109,7 @@ class ConfigurableProduct(models.Model):
                 site = self.product.site
             else:
                 site = self.site
-                
+
             variant = Product(site=site, items_in_stock=0, name=name)
             optnames = [opt.value for opt in options]
             if not slug:
@@ -1172,7 +1170,7 @@ class ConfigurableProduct(models.Model):
             if isinstance(options[0], Option):
                 opt = opt.unique_id
             optionlist.append(opt)
-            
+
         return sorted_tuple(optionlist)
 
     def get_product_from_options(self, options):
@@ -1180,7 +1178,7 @@ class ConfigurableProduct(models.Model):
         Accepts an iterable of either Option object or a sorted tuple of
         options ids.
         Returns the product that matches or None
-        """    
+        """
         options = self._unique_ids_from_options(options)
         pv = None
         if hasattr(self, '_variation_cache'):
@@ -1191,7 +1189,7 @@ class ConfigurableProduct(models.Model):
                     pv = member
                     break
         if pv:
-            return pv.product        
+            return pv.product
         return None
 
     def get_variations_for_options(self, options):
@@ -1215,7 +1213,7 @@ class ConfigurableProduct(models.Model):
         context['options'] = serialize_options(self, selected_options)
         context['details'] = productvariation_details(self.product, include_tax,
             request.user)
-                    
+
         return context
 
     def save(self, *args, **kwargs):
@@ -1230,15 +1228,15 @@ class ConfigurableProduct(models.Model):
             self.create_all_variations()
             self.create_subs = False
             super(ConfigurableProduct, self).save(*args, **kwargs)
-            
+
         ProductPriceLookup.objects.smart_create_for_product(self.product)
 
     def get_absolute_url(self):
         return self.product.get_absolute_url()
-        
+
     def setup_variation_cache(self):
         self._variation_cache = {}
-        for member in self.productvariation_set.all():        
+        for member in self.productvariation_set.all():
             key = member.unique_option_ids
             self._variation_cache[key] = member
 
@@ -1325,7 +1323,7 @@ class SubscriptionProduct(models.Model):
         If QTY_DISCOUNT prices are specified, then return the appropriate discount price for
         the specified qty.  Otherwise, return the unit_price
         returns price as a Decimal
-        
+
         Note: If a subscription has a trial, then we'll return the first trial price, otherwise the checkout won't
         balance and it will look like there are items to be paid on the order.
         """
@@ -1333,14 +1331,14 @@ class SubscriptionProduct(models.Model):
             trial = self.get_trial_terms(0)
         else:
             trial = None
-            
+
         if trial:
             price = trial.price * qty
         else:
             price = get_product_quantity_price(self.product, qty)
             if not price and qty == 1:      # Prevent a recursive loop.
                 price = Decimal("0.00")
-            elif not price:      
+            elif not price:
                 price = self.product._get_fullPrice()
         return price
 
@@ -1360,7 +1358,7 @@ class SubscriptionProduct(models.Model):
                 return self.trial_set.all().order_by('id')[trial]
             except IndexError:
                 return None
-                
+
     def calc_expire_date(self, date=None):
         if date is None:
             date = datetime.datetime.now()
@@ -1368,7 +1366,7 @@ class SubscriptionProduct(models.Model):
             expiredate = date + datetime.timedelta(days=self.expire_length)
         else:
             expiredate = add_month(date, n=self.expire_length)
-        
+
         return expiredate
 
     class Meta:
@@ -1391,7 +1389,7 @@ class Trial(models.Model):
 
     def __unicode__(self):
         return unicode(self.price)
-        
+
     def _occurrences(self):
         if self.expire_length:
             return int(self.expire_length/self.subscription.expire_length)
@@ -1406,7 +1404,7 @@ class Trial(models.Model):
             expiredate = date + datetime.timedelta(days=self.expire_length)
         else:
             expiredate = add_month(date, n=self.expire_length)
-        
+
         return expiredate
 
     class Meta:
@@ -1437,7 +1435,7 @@ class ProductVariation(models.Model):
     """
     product = models.OneToOneField(Product, verbose_name=_('Product'), primary_key=True)
     options = models.ManyToManyField(Option, verbose_name=_('Options'))
-    parent = models.ForeignKey(ConfigurableProduct, 
+    parent = models.ForeignKey(ConfigurableProduct,
     #, validator_list=[variant_validator]
     verbose_name=_('Parent'))
 
@@ -1496,7 +1494,7 @@ class ProductVariation(models.Model):
         qry = self.options.values_list('option_group__id', 'value').order_by('option_group')
         ret = [make_option_unique_id(*v) for v in qry]
         return sorted_tuple(ret)
-        
+
     unique_option_ids = property(_get_option_ids)
 
     def _get_subtype(self):
@@ -1538,7 +1536,7 @@ class ProductVariation(models.Model):
             pricelist = [(qty, price+price_delta) for qty, price in prices]
 
         return pricelist
-        
+
     def _is_shippable(self):
         product = self.product
         parent = self.parent.product
@@ -1546,7 +1544,7 @@ class ProductVariation(models.Model):
                 or product.shipclass == 'YES')
 
     is_shippable = property(fget=_is_shippable)
-    
+
     def isValidOption(self, field_data, all_data):
         raise validators.ValidationError(_("Two options from the same option group cannot be applied to an item."))
 
@@ -1562,7 +1560,7 @@ class ProductVariation(models.Model):
         if "ConfigurableProduct" in self.product.get_subtypes():
             log.warn("cannot add a productvariation subtype to a product which already is a configurableproduct. Aborting")
             return
-            
+
         pvs = ProductVariation.objects.filter(parent=self.parent)
         pvs = pvs.exclude(product=self.product)
         for pv in pvs:
@@ -1612,71 +1610,71 @@ class ProductVariation(models.Model):
 
     def __unicode__(self):
         return self.product.slug
-        
+
 
 class ProductPriceLookupManager(models.Manager):
-    
+
     def by_product(self, product):
         return self.get(productslug=product.slug)
-    
+
     def delete_expired(self):
         for p in self.filter(expires__lt=datetime.date.today()):
             p.delete()
-    
+
     def create_for_product(self, product):
         """Create a set of lookup objects for all priced quantities of the Product"""
 
         self.delete_for_product(product)
         pricelist = product.get_qty_price_list()
-            
+
         objs = []
         for qty, price in pricelist:
-            obj = ProductPriceLookup(productslug=product.slug, 
+            obj = ProductPriceLookup(productslug=product.slug,
                 siteid=product.site_id,
                 active=product.active,
-                price=price, 
-                quantity=qty, 
+                price=price,
+                quantity=qty,
                 discountable=product.is_discountable,
                 items_in_stock=product.items_in_stock)
             obj.save()
             objs.append(obj)
         return objs
-        
+
     def create_for_configurableproduct(self, configproduct):
         """Create a set of lookup objects for all variations of this product"""
 
         objs = self.create_for_product(configproduct)
         for pv in configproduct.configurableproduct.productvariation_set.filter(product__active='1'):
             objs.extend(self.create_for_variation(pv, configproduct))
-        
+
         return objs
-        
+
     def create_for_variation(self, variation, parent):
-        
+
         product = variation.product
-        
+
         self.delete_for_product(product)
         pricelist = variation.get_qty_price_list()
-            
+
         objs = []
         for qty, price in pricelist:
-            obj = ProductPriceLookup(productslug=product.slug, 
+            obj = ProductPriceLookup(productslug=product.slug,
                 parentid=parent.id,
                 siteid=product.site_id,
                 active=product.active,
-                price=price, 
-                quantity=qty, 
-                key=variation.optionkey, 
+                price=price,
+                quantity=qty,
+                key=variation.optionkey,
                 discountable=product.is_discountable,
                 items_in_stock=product.items_in_stock)
             obj.save()
             objs.append(obj)
         return objs
-        
+
     def delete_for_product(self, product):
         for obj in self.filter(productslug=product.slug):
             obj.delete()
-        
+
     def rebuild_all(self, site=None):
         if not site:
             site = Site.objects.get_current()
@@ -1690,7 +1688,7 @@ class ProductPriceLookupManager(models.Manager):
             prices = self.smart_create_for_product(p)
             ct += len(prices)
         log.info('ProductPriceLookup built %i prices', ct)
-            
+
     def smart_create_for_product(self, product):
         subtypes = product.get_subtypes()
         if 'ConfigurableProduct' in subtypes:
@@ -1699,7 +1697,7 @@ class ProductPriceLookupManager(models.Manager):
             return self.create_for_variation(product.productvariation, product.productvariation.product)
         else:
             return self.create_for_product(product)
-    
+
 class ProductPriceLookup(models.Model):
     """
     A denormalized object, used to quickly provide
@@ -1716,12 +1714,12 @@ class ProductPriceLookup(models.Model):
     items_in_stock = models.IntegerField()
 
     objects = ProductPriceLookupManager()
-    
+
     def _product(self):
         return Product.objects.get(slug=self.productslug)
-        
-    product = property(fget=_product)    
-    
+
+    product = property(fget=_product)
+
     def _dynamic_price(self):
         """Get the current price as modified by all listeners."""
         signals.satchmo_price_query.send(self, price=self, slug=self.productslug, discountable=self.discountable)
