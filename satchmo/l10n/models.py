@@ -41,9 +41,10 @@ class Continent(models.Model):
     """
     code = models.CharField(_('2 letter code'), max_length=2, unique=True)
     name = models.CharField(_('Official name'), max_length=128)
-    
+
     def __unicode__(self):
         return self.name
+
 
 class Country(models.Model):
     """

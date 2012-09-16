@@ -79,21 +79,21 @@ class Config(models.Model):
     configure various store behaviors
     """
     site = models.OneToOneField(Site, verbose_name=_("Site"), primary_key=True)
-    store_name = models.CharField(_("Store Name"),max_length=100, unique=True)
+    store_name = models.CharField(_("Store Name"), max_length=100, unique=True)
     store_description = models.TextField(_("Description"), blank=True, null=True)
     store_email = models.EmailField(_("Email"), blank=True, null=True)
-    street1=models.CharField(_("Street"),max_length=50, blank=True, null=True)
-    street2=models.CharField(_("Street"), max_length=50, blank=True, null=True)
-    city=models.CharField(_("City"), max_length=50, blank=True, null=True)
-    state=models.CharField(_("State"), max_length=30, blank=True, null=True)
-    postal_code=models.CharField(_("Post Code"), blank=True, null=True, max_length=9)
-    country=models.ForeignKey(Country, blank=True, null=False, verbose_name=_('Country'))
+    street1 = models.CharField(_("Street"), max_length=50, blank=True, null=True)
+    street2 = models.CharField(_("Street"), max_length=50, blank=True, null=True)
+    city = models.CharField(_("City"), max_length=50, blank=True, null=True)
+    state = models.CharField(_("State"), max_length=30, blank=True, null=True)
+    postal_code = models.CharField(_("Post Code"), blank=True, null=True, max_length=9)
+    country = models.ForeignKey(Country, blank=True, null=False, verbose_name=_('Country'))
     phone = models.CharField(_("Phone Number"), blank=True, null=True, max_length=12)
     no_stock_checkout = models.BooleanField(_("Purchase item not in stock?"), default=True)
     in_country_only = models.BooleanField(_("Only sell to in-country customers?"), default=True)
     sales_country = models.ForeignKey(Country, blank=True, null=True,
-                                     related_name='sales_country',
-                                     verbose_name=_("Default country for customers"))
+                                      related_name='sales_country',
+                                      verbose_name=("Default country for customers"))
     shipping_countries = models.ManyToManyField(Country, blank=True, verbose_name=_("Shipping Countries"), related_name="shop_configs")
 
     objects = ConfigManager()
