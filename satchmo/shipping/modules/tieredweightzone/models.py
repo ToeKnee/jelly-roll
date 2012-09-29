@@ -3,7 +3,7 @@ Tiered shipping models
 """
 try:
     from decimal import Decimal
-except:
+except ImportError:
     from django.utils._decimal import Decimal
 
 from django.conf import settings
@@ -19,23 +19,24 @@ import operator
 
 log = logging.getLogger('shipping.TieredWeight')
 
+
 class TieredPriceException(Exception):
     def __init__(self, reason):
         self.reason = reason
+
 
 class Shipper(BaseShipper):
 
     def __init__(self, carrier):
         self.id = carrier.key
         self.carrier = carrier
-        super(BaseShipper, self).__init__()
+        super(Shipper, self).__init__()
 
-    def __str__(self):
+    def __unicode__(self):
         """
         This is mainly helpful for debugging purposes
         """
         return "TieredWeight_Shipper: %s" % self.id
-    
 
     def description(self):
         """
@@ -54,20 +55,20 @@ class Shipper(BaseShipper):
         country = self.contact.shipping_address.country_id
         discount_multiplier = 1 - (self.shipping_discount() / Decimal('100.0'))
         return self.carrier.price(weight, country) * discount_multiplier
-        
-    def shipping_discount(self):
-		discounts = ShippingDiscount.objects.filter(carrier=self.carrier,
-													zone__in=self.contact.shipping_address.country.zone.all,
-													minimum_order_value__lte=self.cart.total
-													).filter(Q(start_date__gte=datetime.date.today(), end_date__lte=datetime.date.today()) | Q(end_date__isnull=True)).order_by('-percentage')
 
-		if discounts.count():
-			discount = discounts[0]			
-			percentage = discount.percentage
-		else:
-		    percentage = 0
-		return percentage
-		
+    def shipping_discount(self):
+        discounts = ShippingDiscount.objects.filter(carrier=self.carrier,
+                                                    zone__in=self.contact.shipping_address.country.zone.all,
+                                                    minimum_order_value__lte=self.cart.total
+                                                    ).filter(Q(start_date__gte=datetime.date.today(), end_date__lte=datetime.date.today()) | Q(end_date__isnull=True)).order_by('-percentage')
+
+        if discounts.count():
+            discount = discounts[0]
+            percentage = discount.percentage
+        else:
+            percentage = 0
+        return percentage
+
     def method(self):
         """
         Describes the actual delivery service (Mail, FedEx, DHL, UPS, etc)
@@ -91,14 +92,14 @@ class Shipper(BaseShipper):
             if wgt:
                 weight = reduce(operator.add, itemprices)
             else:
-                weight = Decimal('0.00')            
+                weight = Decimal('0.00')
             try:
                 country = self.contact.shipping_address.county_id
                 price = self.carrier.price(sub_total, country)
-                
+
             except TieredPriceException:
                 return False
-                
+
         elif self.cart:
             try:
                 price = self.cost()
@@ -115,7 +116,7 @@ class Carrier(models.Model):
     def _find_translation(self, language_code=None):
         if not language_code:
             language_code = get_language()
-            
+
         c = self.translations.filter(languagecode__exact = language_code)
         ct = c.count()
 
@@ -157,7 +158,7 @@ class Carrier(models.Model):
             return ""
 
     delivery = property(delivery)
- 
+
     def description(self):
         """Get the description, looking up by language code, falling back intelligently.
         """
@@ -167,7 +168,7 @@ class Carrier(models.Model):
         else:
             return ""
     description = property(description)
-    
+
     def method(self):
         """Get the description, looking up by language code, falling back intelligently.
         """
@@ -178,8 +179,8 @@ class Carrier(models.Model):
         else:
             return ""
 
-    method = property(method)    
- 
+    method = property(method)
+
     def name(self):
         """Get the name, looking up by language code, falling back intelligently.
         """
@@ -191,23 +192,23 @@ class Carrier(models.Model):
             return ""
 
     name = property(name)
-    
+
     def price(self, wgt, country):
         """Get a price for this weight and country."""
         #Check delivery address' continent
         destination_country = Country.objects.get(id=country)
         continent = destination_country.continent
-        
+
         try:
             zone = Zone.objects.get(country=destination_country)
         except:
             zone = Zone.objects.get(continent__id=continent.id, country=None)
-        
+
         tiers = WeightTier.objects.filter(carrier=self, zone=zone)
 
         if not tiers:
             raise TieredPriceException('No price available. For this zone/country/weight')
-        
+
         # check for special discounts
         prices = tiers.filter(expires__isnull=False, min_weight__lte=wgt).exclude(expires__lt=datetime.date.today())
         if not prices.count() > 0:
@@ -219,14 +220,14 @@ class Carrier(models.Model):
         else:
             log.debug("No tiered price found for %s: weight=%s", self.id, wgt)
             raise TieredPriceException('No price available. Please contact us for a price.')
-            
-            
+
+
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.description)
-        
+
     class Meta:
         pass
-        
+
 class CarrierTranslation(models.Model):
     carrier = models.ForeignKey('Carrier', related_name='translations')
     languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES, )
@@ -234,7 +235,7 @@ class CarrierTranslation(models.Model):
     description = models.CharField(_('Description'), max_length=200)
     method = models.CharField(_('Method'), help_text=_("i.e. US Mail"), max_length=200)
     delivery = models.CharField(_('Delivery Days'), max_length=200)
-    
+
     class Meta:
         ordering=('languagecode','name')
 
@@ -242,11 +243,11 @@ class Zone(models.Model):
     key = models.SlugField(_('Key'))
     continent = models.ManyToManyField(Continent, related_name='continent')
     country = models.ManyToManyField(Country, related_name='zone', blank=True, null=True)
-    
+
     def _find_translation(self, language_code=None):
         if not language_code:
             language_code = get_language()
-            
+
         c = self.translations.filter(languagecode__exact = language_code)
         ct = c.count()
 
@@ -276,7 +277,7 @@ class Zone(models.Model):
             trans = None
 
         return trans
-    
+
     def description(self):
         """Get the description, looking up by language code, falling back intelligently.
         """
@@ -286,7 +287,7 @@ class Zone(models.Model):
         else:
             return ""
     description = property(description)
-    
+
     def name(self):
         """Get the name, looking up by language code, falling back intelligently.
         """
@@ -300,8 +301,8 @@ class Zone(models.Model):
     name = property(name)
 
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.description)  
-      
+        return u"%s (%s)" % (self.name, self.description)
+
     class Meta:
         pass
 
@@ -310,7 +311,7 @@ class ZoneTranslation(models.Model):
     languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES, )
     name = models.CharField(_('Zone'), max_length=50, )
     description = models.CharField(_('Description'), max_length=200)
-    
+
     class Meta:
         ordering=('languagecode','name')
 
@@ -318,31 +319,31 @@ class ZoneTranslation(models.Model):
 class WeightTier(models.Model):
     carrier = models.ForeignKey('Carrier', related_name='tiers')
     zone = models.ForeignKey('Zone', related_name='tiers')
-    min_weight = models.DecimalField(_("Min Weight"), 
-        help_text=_('The minumum weight for this tier to apply'), 
+    min_weight = models.DecimalField(_("Min Weight"),
+        help_text=_('The minumum weight for this tier to apply'),
         max_digits=10, decimal_places=2, )
     price = models.DecimalField(_("Shipping Price"), max_digits=10, decimal_places=2, )
     expires = models.DateField(_("Expires"), null=True, blank=True)
-    
+
     def __unicode__(self):
         return u"%s @ %s" % (self.price, self.min_weight)
-    
+
     class Meta:
         ordering = ('zone','carrier','price')
 
 
 class ShippingDiscount(models.Model):
-	carrier = models.ForeignKey('Carrier', related_name='shipping_discount')
-	zone = models.ForeignKey('Zone', related_name='shipping_discount')
-	percentage = models.IntegerField(_("Percentage Discount"))
-	minimum_order_value = models.DecimalField(_("Minimum Order Value"), max_digits=10, decimal_places=2)
-	start_date = models.DateField(_("Start Date"))
-	end_date = models.DateField(_("End Date"), null=True, blank=True)
-	
-	def save(self, *args, **kwargs):
-		if self.start_date is None:
-			self.start_date = datetime.date.today()
-		super(ShippingDiscount, self).save(*args, **kwargs)
-	
-	
+    carrier = models.ForeignKey('Carrier', related_name='shipping_discount')
+    zone = models.ForeignKey('Zone', related_name='shipping_discount')
+    percentage = models.IntegerField(_("Percentage Discount"))
+    minimum_order_value = models.DecimalField(_("Minimum Order Value"), max_digits=10, decimal_places=2)
+    start_date = models.DateField(_("Start Date"))
+    end_date = models.DateField(_("End Date"), null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.start_date is None:
+            self.start_date = datetime.date.today()
+        super(ShippingDiscount, self).save(*args, **kwargs)
+
+
 import config

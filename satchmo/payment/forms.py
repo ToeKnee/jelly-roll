@@ -20,24 +20,25 @@ from satchmo.tax.templatetags.satchmo_tax import _get_taxprocessor
 from satchmo.utils.dynamic import lookup_template
 import calendar
 import datetime
-import sys
 
-MONTHS = [(month,'%02d'%month) for month in range(1,13)]
+
+MONTHS = [(month, '%02d' % month) for month in range(1, 13)]
+
 
 def _get_shipping_choices(request, paymentmodule, cart, contact, default_view_tax=False):
     """Iterate through legal shipping modules, building the list for display to the user.
-    
+
     Returns the shipping choices list, along with a dictionary of shipping choices, useful
     for building javascript that operates on shipping choices.
     """
     shipping_options = []
     shipping_dict = {}
-    
+
     if not cart.is_shippable:
-        methods = [shipping_method_by_key('NoShipping'),]
+        methods = [shipping_method_by_key('NoShipping'), ]
     else:
         methods = shipping_methods()
-    
+
     for method in methods:
         method.calculate(cart, contact)
         if method.valid():
@@ -46,39 +47,46 @@ def _get_shipping_choices(request, paymentmodule, cart, contact, default_view_ta
             shipcost = method.cost()
             shipping_tax = None
             taxed_shipping_price = None
-            if config_value('TAX','TAX_SHIPPING'):
+            if config_value('TAX', 'TAX_SHIPPING'):
                 shipping_tax = config_value('TAX', 'TAX_CLASS')
                 taxer = _get_taxprocessor(request)
                 total = shipcost + taxer.by_price(shipping_tax, shipcost)
                 taxed_shipping_price = money_format(total)
-            c = RequestContext(request, {
+
+            data = {
                 'amount': shipcost,
-                'description' : method.description(),
-                'method' : method.method(),
-                'expected_delivery' : method.expectedDelivery(),
-                'default_view_tax' : default_view_tax,
+                'description': method.description(),
+                'method': method.method(),
+                'expected_delivery': method.expectedDelivery(),
+                'default_view_tax': default_view_tax,
                 'shipping_tax': shipping_tax,
-                'taxed_shipping_price': taxed_shipping_price})
+                'taxed_shipping_price': taxed_shipping_price
+            }
+
+            if hasattr(method, 'shipping_discount'):
+                data['discount'] = method.shipping_discount()
+
+            c = RequestContext(request, data)
             shipping_options.append((method.id, t.render(c)))
             shipping_dict[method.id] = shipcost
-    
+
     return shipping_options, shipping_dict
-    
-     
+
+
 class CustomChargeForm(forms.Form):
     orderitem = forms.IntegerField(required=True, widget=forms.HiddenInput())
     amount = forms.DecimalField(label=_('New price'), required=False)
     shipping = forms.DecimalField(label=_('Shipping adjustment'), required=False)
     notes = forms.CharField(_("Notes"), required=False, initial="Your custom item is ready.")
-    
-     
+
+
 class PaymentMethodForm(forms.Form):
     paymentmethod = forms.ChoiceField(
-            label=_('Payment method'),
-            choices=labelled_payment_choices(),
-            widget=forms.RadioSelect,
-            required=True
-            )
+        label=_('Payment method'),
+        choices=labelled_payment_choices(),
+        widget=forms.RadioSelect,
+        required=True
+    )
 
     def __init__(self, *args, **kwargs):
         try:
@@ -108,17 +116,19 @@ class PaymentMethodForm(forms.Form):
             self.fields['paymentmethod'].widget = forms.RadioSelect(attrs={'value' : payment_choices[0][0]})
         self.fields['paymentmethod'].choices = payment_choices
 
+
 class PaymentContactInfoForm(ContactInfoForm, PaymentMethodForm):
-                                        
+
         def __init__(self, *args, **kwargs):
             super(PaymentContactInfoForm, self).__init__(*args, **kwargs)
-            
+
             signals.payment_form_init.send(PaymentContactInfoForm, form=self)
-            
+
         def save(self, *args, **kwargs):
             contactid = super(PaymentContactInfoForm, self).save(*args, **kwargs)
             signals.form_save.send(PaymentContactInfoForm, form=self)
             return contactid
+
 
 class SimplePayShipForm(forms.Form):
     shipping = forms.ChoiceField(widget=forms.RadioSelect(), required=False)
@@ -126,10 +136,10 @@ class SimplePayShipForm(forms.Form):
 
     def __init__(self, request, paymentmodule, *args, **kwargs):
         super(SimplePayShipForm, self).__init__(*args, **kwargs)
-        
+
         self.order = None
         self.orderpayment = None
-        
+
         try:
             self.tempCart = Cart.objects.from_request(request)
             if self.tempCart.numItems > 0:
@@ -137,24 +147,24 @@ class SimplePayShipForm(forms.Form):
                 sale = find_best_auto_discount(products)
                 if sale:
                     self.fields['discount'].initial = sale.code
-            
+
         except Cart.DoesNotExist:
             self.tempCart = None
-            
+
         try:
             self.tempContact = Contact.objects.from_request(request)
         except Contact.DoesNotExist:
             self.tempContact = None
-            
-        if kwargs.has_key('default_view_tax'):
+
+        if 'default_view_tax' in kwargs:
             default_view_tax = kwargs['default_view_tax']
         else:
             default_view_tax = config_value('TAX', 'TAX_SHIPPING')
-            
+
         shipping_choices, shipping_dict = _get_shipping_choices(request, paymentmodule, self.tempCart, self.tempContact, default_view_tax=default_view_tax)
         self.fields['shipping'].choices = shipping_choices
         self.shipping_dict = shipping_dict
-        
+
         signals.payment_form_init.send(SimplePayShipForm, form=self)
 
     def clean_shipping(self):
@@ -175,7 +185,7 @@ class SimplePayShipForm(forms.Form):
             if not valid:
                 raise forms.ValidationError(msg)
             # TODO: validate that it can work with these products
-        return data        
+        return data
 
     def save(self, request, cart, contact, payment_module):
         self.order = get_or_create_order(request, cart, contact, self.cleaned_data)
@@ -202,7 +212,7 @@ class CreditPayShipForm(SimplePayShipForm):
         self.fields['year_expires'].choices = [(year, year) for year in range(year_now, year_now+6)]
 
         self.tempCart = Cart.objects.from_request(request)
-            
+
         try:
             self.tempContact = Contact.objects.from_request(request)
         except Contact.DoesNotExist:
@@ -232,7 +242,7 @@ class CreditPayShipForm(SimplePayShipForm):
         if datetime.date.today() > datetime.date(year=year, month=month, day=max_day):
             raise forms.ValidationError(_('Your card has expired.'))
         return year
-    
+
     def clean_ccv(self):
         """ Validate a proper CCV is entered. Remember it can have a leading 0 so don't convert to int and return it"""
         try:
@@ -240,7 +250,7 @@ class CreditPayShipForm(SimplePayShipForm):
             return self.cleaned_data['ccv']
         except ValueError:
             raise forms.ValidationError(_('Invalid ccv.'))
-            
+
     def save(self, request, cart, contact, payment_module):
         """Save the order and the credit card information for this orderpayment"""
         super(CreditPayShipForm, self).save(request, cart, contact, payment_module)
@@ -249,10 +259,10 @@ class CreditPayShipForm(SimplePayShipForm):
             expire_month=data['month_expires'],
             expire_year=data['year_expires'],
             credit_type=data['credit_type'])
-            
+
         cc.storeCC(data['credit_number'])
         cc.save()
-        
+
         # set ccv into cache
         cc.ccv = data['ccv']
         self.cc = cc
