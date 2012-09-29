@@ -8,9 +8,11 @@ except:
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import get_language, ugettext_lazy as _
 from satchmo.shipping.modules.base import BaseShipper
 from satchmo.l10n.models import Continent, Country
+
 import datetime
 import logging
 import operator
@@ -50,8 +52,22 @@ class Shipper(BaseShipper):
                 if item.product.weight:
                     weight += item.product.weight * item.quantity
         country = self.contact.shipping_address.country_id
-        return self.carrier.price(weight, country)
+        discount_multiplier = 1 - (self.shipping_discount() / Decimal('100.0'))
+        return self.carrier.price(weight, country) * discount_multiplier
+        
+    def shipping_discount(self):
+		discounts = ShippingDiscount.objects.filter(carrier=self.carrier,
+													zone__in=self.contact.shipping_address.country.zone.all,
+													minimum_order_value__lte=self.cart.total
+													).filter(Q(start_date__gte=datetime.date.today(), end_date__lte=datetime.date.today()) | Q(end_date__isnull=True)).order_by('-percentage')
 
+		if discounts.count():
+			discount = discounts[0]			
+			percentage = discount.percentage
+		else:
+		    percentage = 0
+		return percentage
+		
     def method(self):
         """
         Describes the actual delivery service (Mail, FedEx, DHL, UPS, etc)
@@ -225,7 +241,7 @@ class CarrierTranslation(models.Model):
 class Zone(models.Model):
     key = models.SlugField(_('Key'))
     continent = models.ManyToManyField(Continent, related_name='continent')
-    country = models.ManyToManyField(Country, related_name='country', blank=True, null=True)
+    country = models.ManyToManyField(Country, related_name='zone', blank=True, null=True)
     
     def _find_translation(self, language_code=None):
         if not language_code:
@@ -314,4 +330,19 @@ class WeightTier(models.Model):
     class Meta:
         ordering = ('zone','carrier','price')
 
+
+class ShippingDiscount(models.Model):
+	carrier = models.ForeignKey('Carrier', related_name='shipping_discount')
+	zone = models.ForeignKey('Zone', related_name='shipping_discount')
+	percentage = models.IntegerField(_("Percentage Discount"))
+	minimum_order_value = models.DecimalField(_("Minimum Order Value"), max_digits=10, decimal_places=2)
+	start_date = models.DateField(_("Start Date"))
+	end_date = models.DateField(_("End Date"), null=True, blank=True)
+	
+	def save(self, *args, **kwargs):
+		if self.start_date is None:
+			self.start_date = datetime.date.today()
+		super(ShippingDiscount, self).save(*args, **kwargs)
+	
+	
 import config
