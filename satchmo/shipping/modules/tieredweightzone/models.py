@@ -60,7 +60,7 @@ class Shipper(BaseShipper):
         discounts = ShippingDiscount.objects.filter(carrier=self.carrier,
                                                     zone__in=self.contact.shipping_address.country.zone.all,
                                                     minimum_order_value__lte=self.cart.total
-                                                    ).filter(Q(start_date__gte=datetime.date.today(), end_date__lte=datetime.date.today()) | Q(end_date__isnull=True)).order_by('-percentage')
+                                                    ).filter(Q(start_date__lte=datetime.date.today(), end_date__gte=datetime.date.today()) | Q(end_date__isnull=True)).order_by('-percentage')
 
         if discounts.count():
             discount = discounts[0]
