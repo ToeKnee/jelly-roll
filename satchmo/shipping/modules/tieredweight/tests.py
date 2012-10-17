@@ -1,13 +1,12 @@
 try:
     from decimal import Decimal
-except:
+except ImportError:
     from django.utils._decimal import Decimal
 
 from django.test import TestCase
 
 from satchmo.shipping.modules.tiered.models import Carrier
 from satchmo.shipping.modules.tiered.models import ShippingTier
-from satchmo.shipping.modules.tiered.models import Shipper
 
 from datetime import datetime
 
