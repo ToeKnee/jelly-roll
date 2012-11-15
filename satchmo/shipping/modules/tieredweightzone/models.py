@@ -23,6 +23,7 @@ log = logging.getLogger('shipping.TieredWeight')
 class TieredPriceException(Exception):
     def __init__(self, reason):
         self.reason = reason
+        super(TieredPriceException, self).__init__(reason)
 
 
 class Shipper(BaseShipper):
@@ -201,7 +202,7 @@ class Carrier(models.Model):
 
         try:
             zone = Zone.objects.get(country=destination_country)
-        except:
+        except Zone.DoesNotExist:
             zone = Zone.objects.get(continent__id=continent.id, country=None)
 
         tiers = WeightTier.objects.filter(carrier=self, zone=zone)
@@ -221,12 +222,12 @@ class Carrier(models.Model):
             log.debug("No tiered price found for %s: weight=%s", self.id, wgt)
             raise TieredPriceException('No price available. Please contact us for a price.')
 
-
     def __unicode__(self):
         return u"%s (%s)" % (self.name, self.description)
 
     class Meta:
         pass
+
 
 class CarrierTranslation(models.Model):
     carrier = models.ForeignKey('Carrier', related_name='translations')
@@ -237,7 +238,8 @@ class CarrierTranslation(models.Model):
     delivery = models.CharField(_('Delivery Days'), max_length=200)
 
     class Meta:
-        ordering=('languagecode','name')
+        ordering = ('languagecode', 'name')
+
 
 class Zone(models.Model):
     key = models.SlugField(_('Key'))

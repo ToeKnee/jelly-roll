@@ -25,6 +25,7 @@ from django.utils.translation import ugettext_lazy as _
 from satchmo.configuration import SettingNotSet
 from satchmo.configuration import config_value
 from satchmo.configuration import config_value_safe
+from satchmo.shipping.config import shipping_methods
 from satchmo.shop import get_satchmo_setting
 from satchmo.shop.signals import satchmo_search
 from satchmo.tax.models import TaxClass
@@ -571,7 +572,8 @@ class Product(models.Model):
     taxClass = models.ForeignKey(TaxClass, verbose_name=_('Tax Class'), blank=True, null=True, help_text=_("If it is taxable, what kind of tax?"))
     # What is the product type?
     shipclass = models.CharField(_('Shipping'), choices=SHIP_CLASS_CHOICES, default="YES", max_length=10,
-        help_text=_("If this is 'Default', then we'll use the product type to determine if it is shippable."))
+                                 help_text=_("If this is 'Default', then we'll use the product type to determine if it is shippable.")
+        )
     ingredients = models.ForeignKey("IngredientsList", null=True, blank=True)
     instructions = models.ForeignKey("Instruction", null=True, blank=True)
     precautions = models.ForeignKey("Precaution", null=True, blank=True)
@@ -592,7 +594,7 @@ class Product(models.Model):
         key = "Product_get_mainImage %s" % (self.id)
         key = key.replace(" ", "-")
         img = cache.get(key)
-        if img == None:
+        if img is None:
             img = False
             if self.productimage_set.count() > 0:
                 img = self.productimage_set.order_by('sort')[0]
@@ -877,6 +879,26 @@ class Product(models.Model):
             if hasattr(subtype, 'add_template_context'):
                 context = subtype.add_template_context(context, *args, **kwargs)
         return context
+
+    def cheapest_shipping(self):
+        from satchmo.shop.models import Config
+        shop_details = Config.objects.get_current()
+        country = shop_details.country_id
+
+        min_price = None
+        min_carrier = None
+        if self.is_shippable:
+            for method in shipping_methods():
+                try:
+                    price = method.carrier.price(self.weight, country)
+                except:
+                    price = None
+                if price:
+                    if min_price is None or price < min_price:
+                        min_price = price
+                        min_carrier = method.carrier
+        return {"carrier": min_carrier, "price": min_price}
+
 
 class ProductTranslation(models.Model):
     """A specific language translation for a `Product`.  This is intended for all descriptions which are not the
