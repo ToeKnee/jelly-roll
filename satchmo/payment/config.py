@@ -1,8 +1,7 @@
-from django.conf import settings
 from django.utils.translation import ugettext_lazy, ugettext
 from satchmo.configuration import *
 from satchmo.shop import get_satchmo_setting
-from satchmo.utils import is_string_like, load_module
+from satchmo.utils import load_module
 import logging
 import signals
 
@@ -14,78 +13,88 @@ PAYMENT_GROUP = ConfigurationGroup('PAYMENT', _('Payment Settings'))
 
 CRON_KEY = config_register(
     StringValue(PAYMENT_GROUP,
-        'CRON_KEY',
-        description=_("Cron Passkey"),
-        help_text=_("Enter an authentication passkey to secure your recurring billing cron url."),
-        default = "x1234replace_me")
+                'CRON_KEY',
+                description=_("Cron Passkey"),
+                help_text=_("Enter an authentication passkey to secure your recurring billing cron url."),
+                default="x1234replace_me"
+                )
 )
 
 ALLOW_URL_CRON = config_register(
     BooleanValue(PAYMENT_GROUP,
-        'ALLOW_URL_REBILL',
-        description=_("Allow URL Access to Cron for subscription rebills"),
-        help_text=_("Do you want to allow remote url calls for subscription billing?"),
-        default = False)
+                 'ALLOW_URL_REBILL',
+                 description=_("Allow URL Access to Cron for subscription rebills"),
+                 help_text=_("Do you want to allow remote url calls for subscription billing?"),
+                 default=False
+                 )
 )
 
 PAYMENT_LIVE = config_register(
-    BooleanValue(PAYMENT_GROUP, 
-        'LIVE', 
-        description=_("Accept real payments"),
-        help_text=_("False if you want to be in test mode.  This is the master switch, turn it off to force all payments into test mode."),
-        default=False)
+    BooleanValue(PAYMENT_GROUP,
+                 'LIVE',
+                 description=_("Accept real payments"),
+                 help_text=_("False if you want to be in test mode.  This is the master switch, turn it off to force all payments into test mode."),
+                 default=False
+                 )
 )
 
 ORDER_EMAIL = config_register(
     BooleanValue(PAYMENT_GROUP,
-        'ORDER_EMAIL_OWNER',
-        description=_("Email owner?"),
-        help_text=_("True if you want to email the owner on order"),
-        default=False)
+                 'ORDER_EMAIL_OWNER',
+                 description=_("Email owner?"),
+                 help_text=_("True if you want to email the owner on order"),
+                 default=False
+                 )
 )
-    
+
 ORDER_EMAIL_EXTRA = config_register(
     StringValue(PAYMENT_GROUP,
-        'ORDER_EMAIL_EXTRA',
-        description=_("Extra order emails?"),
-        requires=ORDER_EMAIL,
-        help_text=_("Put all email addresses you want to email in addition to the owner when an order is placed."),
-        default = "")
+                'ORDER_EMAIL_EXTRA',
+                description=_("Extra order emails?"),
+                requires=ORDER_EMAIL,
+                help_text=_("Put all email addresses you want to email in addition to the owner when an order is placed."),
+                default=""
+                )
 )
 
 config_register_list(
-
     BooleanValue(PAYMENT_GROUP,
-        'COUNTRY_MATCH',
-        description=_("Country match required?"),
-        help_text=_("If True, then customers may not have different countries for shipping and billing."),
-        default=True),
+                 'COUNTRY_MATCH',
+                 description=_("Country match required?"),
+                 help_text=_("If True, then customers may not have different countries for shipping and billing."),
+                 default=True
+                 ),
 
     MultipleStringValue(PAYMENT_GROUP,
-        'MODULES',
-        description=_("Enable payment modules"),
-        help_text=_("""Select the payment modules you want to use with your shop.  
-    If you are adding a new one, you should save and come back to this page, 
-    as it may have enabled a new configuration section."""),
-        default=["PAYMENT_DUMMY"]),
-    
+                        'MODULES',
+                        description=_("Enable payment modules"),
+                        help_text=_("""Select the payment modules you want to use with your shop.
+                        If you are adding a new one, you should save and come back to this page,
+                        as it may have enabled a new configuration section."""),
+                        default=['PAYMENT_AUTOSUCCESS']
+                        ),
+
     BooleanValue(PAYMENT_GROUP,
-        'SSL',
-        description=_("Enable SSL"),
-        help_text=_("""This enables for generic pages like contact information capturing.  
-    It does not set SSL for individual modules. 
-    You must enable SSL for each payment module individually."""),
-        default=False),
+                 'SSL',
+                 description=_("Enable SSL"),
+                 help_text=_("""This enables for generic pages like contact information capturing.
+                 It does not set SSL for individual modules.
+                 You must enable SSL for each payment module individually."""),
+                 default=False
+                 ),
 
     DecimalValue(PAYMENT_GROUP,
-        'MINIMUM_ORDER',
-        description=_("Minimum Order"),
-        help_text=_("""The minimum cart total before checkout is allowed."""),
-        default="0.00")
+                 'MINIMUM_ORDER',
+                 description=_("Minimum Order"),
+                 help_text=_("""The minimum cart total before checkout is allowed."""),
+                 default="0.00"
+                 )
 )
 
 # --- Load default payment modules.  Ignore import errors, user may have deleted them. ---
-_default_modules = ('authorizenet','dummy','google','paypal', 'trustcommerce', 'cybersource', 'autosuccess', 'cod', 'protx', 'worldpay')
+_default_modules = ('dummy', 'autosuccess', 'cod', 'authorizenet', 'cybersource',
+                    'google', 'paypal', 'protx', 'trustcommerce', 'worldpay'
+                    )
 
 for module in _default_modules:
     try:
@@ -102,8 +111,8 @@ for extra in extra_payment:
     except ImportError:
         log.warn('Could not load payment module configuration: %s' % extra)
 
-# --- helper functions ---
 
+# --- helper functions ---
 def credit_choices(settings=None, include_module_if_no_choices=False):
     choices = []
     keys = []
@@ -122,27 +131,25 @@ def credit_choices(settings=None, include_module_if_no_choices=False):
             choices.append(pair)
     return choices
 
+
 def labelled_payment_choices():
     active_payment_modules = config_choice_values('PAYMENT', 'MODULES', translate=True)
 
     choices = []
     for module, module_name in active_payment_modules:
-        label = config_value(module, 'LABEL', default = module_name)
+        label = config_value(module, 'LABEL', default=module_name)
         choices.append((module, label))
-    
+
     signals.payment_choices.send(None, choices=choices)
     return choices
 
 
 def payment_live(settings):
-    if is_string_like(settings):
-        settings = config_get_group(settings)
-    
-    try:    
+    try:
         if config_value('PAYMENT', 'LIVE'):
             return settings['LIVE'].value
-            
+
     except SettingNotSet:
         pass
-        
+
     return False
