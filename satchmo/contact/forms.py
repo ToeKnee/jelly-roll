@@ -1,8 +1,7 @@
 from django import forms
-from django.contrib.auth.models import User
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _, ugettext
-from satchmo.configuration import config_value, config_get_group, SettingNotSet, SHOP_GROUP
+from satchmo.configuration import config_value, SHOP_GROUP
 from satchmo.contact.models import Contact, AddressBook, PhoneNumber, Organization
 from satchmo.l10n.models import Country
 from satchmo.shop.models import Config
@@ -13,6 +12,7 @@ import signals
 log = logging.getLogger('satchmo.contact.forms')
 
 selection = ''
+
 
 class ContactInfoForm(forms.Form):
     email = forms.EmailField(max_length=75, label=_('Email'))
@@ -37,7 +37,7 @@ class ContactInfoForm(forms.Form):
     next = forms.CharField(max_length=40, required=False, widget=forms.HiddenInput())
 
     def __init__(self, *args, **kwargs):
-        
+
         if kwargs:
             data = kwargs.copy()
         else:
@@ -46,35 +46,35 @@ class ContactInfoForm(forms.Form):
         shop = data.pop('shop', None)
         contact = data.pop('contact', None)
         self.shippable = data.pop('shippable', True)
-        
-        if not shop:
-            shop = Config.objects.get_current()            
 
-        super(ContactInfoForm, self).__init__(*args, **data)   
+        if not shop:
+            shop = Config.objects.get_current()
+
+        super(ContactInfoForm, self).__init__(*args, **data)
 
         self._billing_data_optional = config_value(SHOP_GROUP, 'BILLING_DATA_OPTIONAL')
-        
+
         self._local_only = shop.in_country_only
         areas = shop.areas()
-        if shop.in_country_only and areas and areas.count()>0:
+        if shop.in_country_only and areas and areas.count() > 0:
             areas = [(area.abbrev or area.name, area.name) for area in areas]
             billing_state = (contact and getattr(contact.billing_address, 'state', None)) or selection
             shipping_state = (contact and getattr(contact.shipping_address, 'state', None)) or selection
-            if config_value('SHOP','ENFORCE_STATE'):
+            if config_value('SHOP', 'ENFORCE_STATE'):
                 self.fields['state'] = forms.ChoiceField(choices=areas, initial=billing_state, label=_('State'))
                 self.fields['ship_state'] = forms.ChoiceField(choices=areas, initial=shipping_state, required=False, label=_('State'))
-        
+
         self._default_country = shop.sales_country
         billing_country = (contact and getattr(contact.billing_address, 'country', None)) or self._default_country
         shipping_country = (contact and getattr(contact.shipping_address, 'country', None)) or self._default_country
         self.fields['country'] = forms.ModelChoiceField(shop.countries(), required=False, label=_('Country'), empty_label=None, initial=billing_country.pk)
         self.fields['ship_country'] = forms.ModelChoiceField(shop.countries(), required=False, label=_('Country'), empty_label=None, initial=shipping_country.pk)
-        
+
         self.contact = contact
         if self._billing_data_optional:
             for fname in ('phone', 'street1', 'street2', 'city', 'state', 'country', 'postal_code', 'title'):
                 self.fields[fname].required = False
-                
+
         # slap a star on the required fields
         for f in self.fields:
             fld = self.fields[f]
@@ -82,20 +82,20 @@ class ContactInfoForm(forms.Form):
                 fld.label = (fld.label or f) + '*'
 
     def _check_state(self, data, country):
-        if country and config_value('SHOP','ENFORCE_STATE') and country.adminarea_set.filter(active=True).count() > 0:
+        if country and config_value('SHOP', 'ENFORCE_STATE') and country.adminarea_set.filter(active=True).count() > 0:
             if not data or data == selection:
                 raise forms.ValidationError(
-                    self._local_only and _('This field is required.') \
-                               or _('State is required for your country.'))
+                    self._local_only and _('This field is required.')
+                    or _('State is required for your country.')
+                )
             if (country.adminarea_set
                     .filter(active=True)
                     .filter(Q(name=data)
-                        |Q(abbrev=data)
-                        |Q(name=data.capitalize())
-                        |Q(abbrev=data.upper())).count() != 1):
+                            | Q(abbrev=data)
+                            | Q(name=data.capitalize())
+                            | Q(abbrev=data.upper())).count() != 1):
                 raise forms.ValidationError(_('Invalid state or province.'))
-        
-                
+
     def clean_email(self):
         """Prevent account hijacking by disallowing duplicate emails."""
         email = self.cleaned_data.get('email', None)
@@ -109,11 +109,11 @@ class ContactInfoForm(forms.Form):
                 raise forms.ValidationError(
                     ugettext("That email address is already in use."))
         return email
-    
+
     def clean_postal_code(self):
         postcode = self.cleaned_data.get('postal_code')
         country = None
-        
+
         if self._local_only:
             shop_config = Config.objects.get_current()
             country = shop_config.sales_country
@@ -125,16 +125,16 @@ class ContactInfoForm(forms.Form):
             # not supplied, so the country validation will fail and
             # we can defer the postcode validation until that's fixed.
             return postcode
-        
+
         return self.validate_postcode_by_country(postcode, country)
-    
+
     def clean_state(self):
         data = self.cleaned_data.get('state')
         if self._local_only:
             country = self._default_country
         else:
             country = self.fields['country'].clean(self.data.get('country'))
-            if country == None:
+            if country is None:
                 raise forms.ValidationError(_('This field is required.'))
         self._check_state(data, country)
         return data
@@ -146,7 +146,7 @@ class ContactInfoForm(forms.Form):
             return first_and_last
         else:
             return self.cleaned_data['addressee']
-    
+
     def clean_ship_addressee(self):
         if not self.cleaned_data.get('ship_addressee') and \
                 not self.cleaned_data.get('copy_address'):
@@ -155,7 +155,7 @@ class ContactInfoForm(forms.Form):
             return first_and_last
         else:
             return self.cleaned_data['ship_addressee']
-    
+
     def clean_country(self):
         if self._local_only:
             return self._default_country
@@ -164,7 +164,7 @@ class ContactInfoForm(forms.Form):
                 log.error("No country! Got '%s'" % self.cleaned_data.get('country'))
                 raise forms.ValidationError(_('This field is required.'))
         return self.cleaned_data['country']
-        
+
     def clean_ship_country(self):
         copy_address = self.fields['copy_address'].clean(self.data.get('copy_address'))
         if copy_address:
@@ -204,24 +204,24 @@ class ContactInfoForm(forms.Form):
         code = self.ship_charfield_clean('postal_code')
 
         country = None
-        
+
         if self._local_only:
             shop_config = Config.objects.get_current()
             country = shop_config.sales_country
         else:
             country = self.ship_charfield_clean('country')
-        
+
         if not country:
             # Either the store is misconfigured, or the country was
             # not supplied, so the country validation will fail and
             # we can defer the postcode validation until that's fixed.
             return code
-        
+
         return self.validate_postcode_by_country(code, country)
-        
+
     def clean_ship_state(self):
         data = self.cleaned_data.get('ship_state')
-        
+
         if self.cleaned_data.get('copy_address'):
             if 'state' in self.cleaned_data:
                 self.cleaned_data['ship_state'] = self.cleaned_data['state']
@@ -234,15 +234,15 @@ class ContactInfoForm(forms.Form):
 
         self._check_state(data, country)
         return data
-    
+
     def save(self, contact=None, **kwargs):
         return self.save_info(contact=contact, **kwargs)
-    
+
     def save_info(self, contact=None, **kwargs):
         """Save the contact info into the database.
         Checks to see if contact exists. If not, creates a contact
         and copies in the address and phone number."""
-        
+
         if not contact:
             customer = Contact()
             log.debug('creating new contact')
@@ -262,14 +262,14 @@ class ContactInfoForm(forms.Form):
         if not isinstance(shipcountry, Country):
             shipcountry = Country.objects.get(pk=shipcountry)
             data['ship_country'] = shipcountry
-        
+
         data['ship_country_id'] = shipcountry.id
-        
+
         companyname = data.pop('company', None)
         if companyname:
-            org = Organization.objects.by_name(companyname, create=True)            
+            org = Organization.objects.by_name(companyname, create=True)
             customer.organization = org
-        
+
         for field in customer.__dict__.keys():
             try:
                 setattr(customer, field, data[field])
@@ -280,16 +280,16 @@ class ContactInfoForm(forms.Form):
             customer.role = "Customer"
 
         customer.save()
-        
+
         # we need to make sure we don't blindly add new addresses
         # this isn't ideal, but until we have a way to manage addresses
         # this will force just the two addresses, shipping and billing
         # TODO: add address management like Amazon.
-        
+
         bill_address = customer.billing_address
         if not bill_address:
             bill_address = AddressBook(contact=customer)
-                
+
         changed_location = False
         address_keys = bill_address.__dict__.keys()
         for field in address_keys:
@@ -302,11 +302,11 @@ class ContactInfoForm(forms.Form):
                 pass
 
         bill_address.is_default_billing = True
-        
+
         copy_address = data['copy_address']
 
         ship_address = customer.shipping_address
-        
+
         if copy_address:
             # make sure we don't have any other default shipping address
             if ship_address and ship_address.id != bill_address.id:
@@ -314,11 +314,11 @@ class ContactInfoForm(forms.Form):
             bill_address.is_default_shipping = True
 
         bill_address.save()
-        
+
         if not copy_address:
             if not ship_address or ship_address.id == bill_address.id:
                 ship_address = AddressBook()
-            
+
             for field in address_keys:
                 if (not changed_location) and field in ('state', 'country', 'city'):
                     if getattr(ship_address, field) != data[field]:
@@ -331,7 +331,7 @@ class ContactInfoForm(forms.Form):
             ship_address.is_default_billing = False
             ship_address.contact = customer
             ship_address.save()
-            
+
         if not customer.primary_phone:
             phone = PhoneNumber()
             phone.primary = True
@@ -340,14 +340,14 @@ class ContactInfoForm(forms.Form):
         phone.phone = data['phone']
         phone.contact = customer
         phone.save()
-        
+
         signals.form_save.send(ContactInfoForm, object=customer, formdata=data, form=self)
-        
+
         if changed_location:
             signals.satchmo_contact_location_changed.send(self, contact=customer)
-        
+
         return customer.id
-        
+
     def validate_postcode_by_country(self, postcode, country):
         responses = signals.validate_postcode.send(self, postcode=postcode, country=country)
         # allow responders to reformat the code, but if they don't return
@@ -355,14 +355,16 @@ class ContactInfoForm(forms.Form):
         for responder, response in responses:
             if response:
                 return response
-                
+
         return postcode
+
 
 class DateTextInput(forms.TextInput):
     def render(self, name, value, attrs=None):
         if isinstance(value, datetime.date):
             value = value.strftime("%m.%d.%Y")
         return super(DateTextInput, self).render(name, value, attrs)
+
 
 class ExtendedContactInfoForm(ContactInfoForm):
     """Contact form which includes birthday."""
