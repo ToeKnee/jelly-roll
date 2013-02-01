@@ -10,21 +10,16 @@ Decimal("0.01")
 Decimal("0.01")
 """
 
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
+from decimal import Decimal
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.urlresolvers import reverse as url
 from django.test import TestCase
 from django.test.client import Client
 from django.utils.encoding import smart_str
-from django.utils.translation import ugettext as _
-
 from django.contrib.sites.models import Site
+
 from satchmo import caching
 from satchmo.caching import cache_delete
 from satchmo.configuration import config_get, config_value
@@ -38,18 +33,18 @@ from satchmo.shop.templatetags import get_filter_args
 
 from satchmo.shop import signals
 
-import datetime
 
 domain = 'http://example.com'
 prefix = get_satchmo_setting('SHOP_BASE')
 if prefix == '/':
     prefix = ''
 
+
 def get_step1_post_data(US):
     return {
         'email': 'sometester@example.com',
         'first_name': 'Teddy',
-        'last_name' : 'Tester',
+        'last_name': 'Tester',
         'phone': '456-123-5555',
         'street1': '8299 Some Street',
         'city': 'Springfield',
@@ -61,8 +56,9 @@ def get_step1_post_data(US):
         'ship_state': 'MO',
         'ship_postal_code': '81123',
         'paymentmethod': 'PAYMENT_DUMMY',
-        'copy_address' : True
-        }
+        'copy_address': True
+    }
+
 
 class ShopTest(TestCase):
     fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
@@ -71,8 +67,8 @@ class ShopTest(TestCase):
         # Every test needs a client
         cache_delete()
         self.client = Client()
-        self.US = Country.objects.get(iso2_code__iexact = "US")
-        
+        self.US = Country.objects.get(iso2_code__iexact="US")
+
     def tearDown(self):
         cache_delete()
 
@@ -91,18 +87,18 @@ class ShopTest(TestCase):
         """
         Validate the contact form works
         """
-        # TODO: Contact shouldn't be the shops 
-
-        response = self.client.get(prefix+'/contact/')
+        # TODO: Contact shouldn't be the shops
+        response = self.client.get(prefix + '/contact/')
         self.assertContains(response, '<h3>Contact Information</h3>',
                             count=1, status_code=200)
-        response = self.client.post(prefix+'/contact/', {'name': 'Test Runner',
-                              'sender': 'Someone@testrunner.com',
-                              'subject': 'A question to test',
-                              'inquiry': 'General Question',
-                              'contents': 'A lot of info goes here.'})
+        response = self.client.post(prefix + '/contact/', {'name': 'Test Runner',
+                                                           'sender': 'Someone@testrunner.com',
+                                                           'subject': 'A question to test',
+                                                           'inquiry': 'General Question',
+                                                           'contents': 'A lot of info goes here.'
+                                                           })
         self.assertRedirects(response, prefix + '/contact/thankyou/',
-            status_code=302, target_status_code=200)
+                             status_code=302, target_status_code=200)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'A question to test')
 
@@ -134,18 +130,18 @@ class ShopTest(TestCase):
         """
         Validate we can add some items to the cart
         """
-        response = self.client.get(prefix+'/product/dj-rocks/')
+        response = self.client.get(prefix + '/product/dj-rocks/')
 
         if not retest:
             self.assertContains(response, "Django Rocks shirt", count=2, status_code=200)
-        response = self.client.post(prefix+'/cart/add/', { "productname" : "dj-rocks",
-                                                      "1" : "L",
-                                                      "2" : "BL",
-                                                      "quantity" : 2})
+        response = self.client.post(prefix + '/cart/add/', {"productname": "dj-rocks",
+                                                            "1": "L",
+                                                            "2": "BL",
+                                                            "quantity": 2})
         if not retest:
             self.assertRedirects(response, prefix + '/cart/',
-                status_code=302, target_status_code=200)
-        response = self.client.get(prefix+'/cart/')
+                                 status_code=302, target_status_code=200)
+        response = self.client.get(prefix + '/cart/')
         expect = "<a href=\"%s/product/dj-rocks-l-bl/\">Django Rocks shirt (Large/Blue)</a>" % (prefix)
         self.assertContains(response, expect, count=1, status_code=200)
 
@@ -156,7 +152,7 @@ class ShopTest(TestCase):
 
         # Attempting to add a nonexistent product should result in a 404 error.
         response = self.client.post(prefix + '/cart/add/',
-            {'productname': 'nonexistent-product', 'quantity': '1'})
+                                    {'productname': 'nonexistent-product', 'quantity': '1'})
         self.assertContains(response, "The product you have requested does not exist.", count=1, status_code=404)
 
         # You should not be able to add a product that is inactive.
@@ -164,17 +160,17 @@ class ShopTest(TestCase):
         py_shirt.active = False
         py_shirt.save()
         response = self.client.post(prefix + '/cart/add/',
-            {'productname': 'PY-Rocks', 'quantity': '1'})
+                                    {'productname': 'PY-Rocks', 'quantity': '1'})
         self.assertContains(response, "That product is not available at the moment.", count=1, status_code=200)
 
         # You should not be able to add a product with a non-integer quantity.
         response = self.client.post(prefix + '/cart/add/',
-            {'productname': 'neat-book', '3': 'soft', 'quantity': '1.5'})
+                                    {'productname': 'neat-book', '3': 'soft', 'quantity': '1.5'})
         self.assertContains(response, "Please enter a whole number.", count=1, status_code=200)
 
         # You should not be able to add a product with a quantity less than one.
         response = self.client.post(prefix + '/cart/add/',
-            {'productname': 'neat-book', '3': 'soft', 'quantity': '0'})
+                                    {'productname': 'neat-book', '3': 'soft', 'quantity': '0'})
         self.assertContains(response, "Please enter a positive number.", count=1, status_code=200)
 
         # If no_stock_checkout is False, you should not be able to order a
@@ -183,14 +179,14 @@ class ShopTest(TestCase):
         shop_config.no_stock_checkout = False
         shop_config.save()
         response = self.client.post(prefix + '/cart/add/',
-            {'productname': 'neat-book', '3': 'soft', 'quantity': '1'})
+                                    {'productname': 'neat-book', '3': 'soft', 'quantity': '1'})
         self.assertContains(response, "&#39;A really neat book (Soft cover)&#39; is out of stock.", count=1, status_code=200)
 
     def test_product(self):
         # Test for an easily missed reversion. When you lookup a productvariation product then
         # you should get the page of the parent configurableproduct, but with the options for
         # that variation already selected
-        response = self.client.get(prefix+'/product/neat-book-soft/')
+        response = self.client.get(prefix + '/product/neat-book-soft/')
         self.assertContains(response, 'option value="soft" selected="selected"')
         self.assertContains(response, smart_str("%s5.00" % config_value('SHOP', 'CURRENCY')))
 
@@ -206,22 +202,23 @@ class ShopTest(TestCase):
         """
         Get the price and productname of a ProductVariation.
         """
-        response = self.client.get(prefix+'/product/dj-rocks/')
+        response = self.client.get(prefix + '/product/dj-rocks/')
         self.assertContains(response, "Django Rocks shirt", count=2, status_code=200)
 
         # this tests the unmolested price from the ConfigurableProduct, and
         # makes sure we get a good productname back for the ProductVariation
-        response = self.client.post(prefix+'/product/dj-rocks/prices/', {"1" : "S",
-                                                      "2" : "B",
-                                                      "quantity" : 1})
+        response = self.client.post(prefix + '/product/dj-rocks/prices/', {"1": "S",
+                                                                           "2": "B",
+                                                                           "quantity": 1
+                                                                           })
         content = response.content.split(',')
         self.assertEquals(content[0], '["dj-rocks-s-b"')
         self.assert_(content[1].endswith('20.00"]'))
 
         # This tests the option price_change feature, and again the productname
-        response = self.client.post(prefix+'/product/dj-rocks/prices/', {"1" : "L",
-                                                      "2" : "BL",
-                                                      "quantity" : 2})
+        response = self.client.post(prefix + '/product/dj-rocks/prices/', {"1": "L",
+                                                                           "2": "BL",
+                                                                           "quantity": 2})
         content = response.content.split(',')
         self.assertEqual(content[0], '["dj-rocks-l-bl"')
         self.assert_(content[1].endswith('23.00"]'))
@@ -237,7 +234,7 @@ class ShopTest(TestCase):
 
         self.test_cart_adding(retest=True)
         response = self.client.post(prefix + '/cart/remove/', {'cartitem': '1'})
-        response = self.client.get(prefix+'/cart/')
+        response = self.client.get(prefix + '/cart/')
         self.assertContains(response, "Your cart is empty.", count=1, status_code=200)
 
 #    def test_checkout(self):
@@ -375,16 +372,16 @@ class ShopTest(TestCase):
         self.assertEqual(user.contact_set.count(), 0)
         self.client.login(username='teddy', password='guz90tyc')
         self.test_cart_adding()
-        response = self.client.post(prefix + '/checkout/', get_step1_post_data(self.US))
+        self.client.post(prefix + '/checkout/', get_step1_post_data(self.US))
         self.assertEqual(user.contact_set.count(), 1)
 
     def test_logout(self):
         """The logout view should remove the user and contact id from the
         session.
         """
-        user = User.objects.create_user('teddy', 'sometester@example.com', 'guz90tyc')
+        User.objects.create_user('teddy', 'sometester@example.com', 'guz90tyc')
         self.client.login(username='teddy', password='guz90tyc')
-        response = self.client.get('/accounts/') # test logged in status
+        response = self.client.get('/accounts/')  # test logged in status
         self.assertContains(response, "the user you've logged in as doesn't have any contact information.", status_code=200)
         self.test_cart_adding()
         self.client.post(prefix + '/checkout/', get_step1_post_data(self.US))
@@ -393,19 +390,19 @@ class ShopTest(TestCase):
         #self.assertRedirects(response, prefix + '/',
         #    status_code=302, target_status_code=200)
         self.assert_(self.client.session.get(CUSTOMER_ID) is None)
-        response = self.client.get('/accounts/') # test logged in status
+        response = self.client.get('/accounts/')  # test logged in status
         self.assertRedirects(response, '/accounts/login/?next=/accounts/',
-            status_code=302, target_status_code=200)
+                             status_code=302, target_status_code=200)
 
     def test_search(self):
         """
         Do some basic searches to make sure it all works as expected
         """
-        response = self.client.get(prefix+'/search/', {'keywords':'python'})
+        response = self.client.get(prefix + '/search/', {'keywords': 'python'})
         self.assertContains(response, "Python Rocks shirt", count=5)
-        response = self.client.get(prefix+'/search/', {'keywords':'django+book'})
+        response = self.client.get(prefix + '/search/', {'keywords': 'django+book'})
         self.assertContains(response, "Sorry, your search did not return any results.")
-        response = self.client.get(prefix+'/search/', {'keywords':'shirt'})
+        response = self.client.get(prefix + '/search/', {'keywords': 'shirt'})
         self.assertContains(response, "Shirts", count=2)
         self.assertContains(response, "Short Sleeve", count=2)
         self.assertContains(response, "Django Rocks shirt", count=5)
@@ -416,22 +413,23 @@ class ShopTest(TestCase):
         Verify that the custom product is working as expected.
         """
         pm = config_get("PRODUCT", "PRODUCT_TYPES")
-        pm.update(["product::ConfigurableProduct","product::ProductVariation", "product::CustomProduct", "product::SubscriptionProduct"])
+        pm.update(["product::ConfigurableProduct", "product::ProductVariation", "product::CustomProduct", "product::SubscriptionProduct"])
 
-        response = self.client.get(prefix+"/")
+        response = self.client.get(prefix + "/")
         self.assertContains(response, "Computer", count=1)
-        response = self.client.get(prefix+"/product/satchmo-computer/")
+        response = self.client.get(prefix + "/product/satchmo-computer/")
         self.assertContains(response, "Memory", count=1)
         self.assertContains(response, "Case", count=1)
         self.assertContains(response, "Monogram", count=1)
-        response = self.client.post(prefix+'/cart/add/', { "productname" : "satchmo-computer",
-                                                      "5" : "1.5gb",
-                                                      "6" : "mid",
-                                                      "custom_monogram": "CBM",
-                                                      "quantity" : 1})
+        response = self.client.post(prefix + '/cart/add/', {"productname": "satchmo-computer",
+                                                            "5": "1.5gb",
+                                                            "6": "mid",
+                                                            "custom_monogram": "CBM",
+                                                            "quantity": 1
+                                                            })
         self.assertRedirects(response, prefix + '/cart/',
-            status_code=302, target_status_code=200)
-        response = self.client.get(prefix+'/cart/')
+                             status_code=302, target_status_code=200)
+        response = self.client.get(prefix + '/cart/')
         self.assertContains(response, '/satchmo-computer/">satchmo computer', status_code=200)
         self.assertContains(response, smart_str("%s168.00" % config_value('SHOP', 'CURRENCY')), count=4)
         self.assertContains(response, smart_str("Monogram: CBM  %s10.00" % config_value('SHOP', 'CURRENCY')), count=1)
@@ -439,7 +437,7 @@ class ShopTest(TestCase):
         self.assertContains(response, smart_str("Memory - Internal RAM: 1.5 GB  %s25.00" % config_value('SHOP', 'CURRENCY')), count=1)
         response = self.client.post(url('satchmo_checkout-step1'), get_step1_post_data(self.US))
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-step2'),
-            status_code=302, target_status_code=200)
+                             status_code=302, target_status_code=200)
         data = {
             'credit_type': 'Visa',
             'credit_number': '4485079141095836',
@@ -449,13 +447,14 @@ class ShopTest(TestCase):
             'shipping': 'FlatRate'}
         response = self.client.post(url('DUMMY_satchmo_checkout-step2'), data)
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-step3'),
-            status_code=302, target_status_code=200)
+                             status_code=302, target_status_code=200)
         response = self.client.get(url('DUMMY_satchmo_checkout-step3'))
         self.assertContains(response, smart_str("satchmo computer - %s168.00" % config_value('SHOP', 'CURRENCY')), count=1, status_code=200)
-        response = self.client.post(url('DUMMY_satchmo_checkout-step3'), {'process' : 'True'})
+        response = self.client.post(url('DUMMY_satchmo_checkout-step3'), {'process': 'True'})
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-success'),
-            status_code=302, target_status_code=200)
+                             status_code=302, target_status_code=200)
         self.assertEqual(len(mail.outbox), 1)
+
 
 class AdminTest(TestCase):
     fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml']
@@ -475,21 +474,22 @@ class AdminTest(TestCase):
         response = self.client.get('/admin/')
         self.assertContains(response, "contact/contact/", status_code=200)
 
-    #def test_product(self):
+    def test_product(self):
         response = self.client.get('/admin/product/product/1/')
         self.assertContains(response, "Django Rocks shirt", status_code=200)
 
-    #def test_configurableproduct(self):
+    def test_configurableproduct(self):
         response = self.client.get('/admin/product/configurableproduct/1/')
         self.assertContains(response, "Small, Black", status_code=200)
 
-    #def test_productimage_list(self):
-        # response = self.client.get('/admin/product/productimage/')
-        # self.assertContains(response, "Photo Not Available", status_code=200)
+    def test_productimage_list(self):
+        response = self.client.get('/admin/product/productimage/')
+        self.assertContains(response, "Photo Not Available", status_code=200)
 
-    #def test_productimage(self):
-        # response = self.client.get('/admin/product/productimage/1/')
-        # self.assertContains(response, "Photo Not Available", status_code=200)
+    def test_productimage(self):
+        response = self.client.get('/admin/product/productimage/1/')
+        self.assertContains(response, "Photo Not Available", status_code=200)
+
 
 class FilterUtilTest(TestCase):
     """Test the templatetags util class"""
@@ -514,7 +514,7 @@ class FilterUtilTest(TestCase):
         self.assertEqual(kwargs['two'], '2')
 
     def test_numerical_get_args(self):
-        args, kwargs = get_filter_args('test,one=1,two=2', (), ('one','two'))
+        args, kwargs = get_filter_args('test,one=1,two=2', (), ('one', 'two'))
         self.assertEqual(args[0], 'test')
 
         self.assertEqual(kwargs['one'], 1)
@@ -529,7 +529,6 @@ class FilterUtilTest(TestCase):
 
         self.assertFalse('two' in kwargs)
 
-
     def test_stripquotes_get_args(self):
         args, kwargs = get_filter_args('"test",one="test",two=2', stripquotes=True)
         self.assertEqual(args[0], 'test')
@@ -543,6 +542,7 @@ class FilterUtilTest(TestCase):
 
         self.assertEqual(kwargs['one'], '"test"')
 
+
 class CartTest(TestCase):
     fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
 
@@ -550,7 +550,6 @@ class CartTest(TestCase):
         cache_delete()
 
     def test_line_cost(self):
-        p = Product.objects.get(slug__iexact='dj-rocks')
         lb = Product.objects.get(slug__iexact='dj-rocks-l-bl')
         sb = Product.objects.get(slug__iexact='dj-rocks-s-b')
 
@@ -569,6 +568,7 @@ class CartTest(TestCase):
         self.assertEqual(item2.unit_price, Decimal("23.00"))
         self.assertEqual(cart.total, Decimal("43.00"))
 
+
 class ConfigTest(TestCase):
     fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'test-config.yaml']
 
@@ -579,37 +579,39 @@ class ConfigTest(TestCase):
         config = Config.objects.get_current()
         self.assertEquals(config.base_url, domain)
 
+
 def make_test_order(country, state, include_non_taxed=False, site=None):
     if not site:
         site = Site.objects.get_current()
     c = Contact(first_name="Tax", last_name="Tester",
-        role="Customer", email="tax@example.com")
+                role="Customer", email="tax@example.com")
     c.save()
     if not isinstance(country, Country):
-        country = Country.objects.get(iso2_code__iexact = country)
+        country = Country.objects.get(iso2_code__iexact=country)
 
     ad = AddressBook(contact=c, description="home",
-        street1 = "test", state=state, city="Portland",
-        country = country, is_default_shipping=True,
-        is_default_billing=True)
+                     street1="test", state=state, city="Portland",
+                     country=country, is_default_shipping=True,
+                     is_default_billing=True)
     ad.save()
-    o = Order(contact=c, shipping_cost=Decimal('10.00'), site = site)
+    o = Order(contact=c, shipping_cost=Decimal('10.00'), site=site)
     o.save()
 
     p = Product.objects.get(slug='dj-rocks-s-b')
     price = p.unit_price
     item1 = OrderItem(order=o, product=p, quantity=5,
-        unit_price=price, line_item_price=price*5)
+                      unit_price=price, line_item_price=price * 5)
     item1.save()
 
     if include_non_taxed:
         p = Product.objects.get(slug='neat-book-hard')
         price = p.unit_price
         item2 = OrderItem(order=o, product=p, quantity=1,
-            unit_price=price, line_item_price=price)
+                          unit_price=price, line_item_price=price)
         item2.save()
 
     return o
+
 
 class OrderTest(TestCase):
     fixtures = ['l10n_data.xml', 'test_multishop.yaml', 'products.yaml']
@@ -632,7 +634,7 @@ class OrderTest(TestCase):
         self.assertEqual(order.balance, price)
 
         paytype = config_value('PAYMENT', 'MODULES')[0]
-        pmt = OrderPayment(order = order, payment=paytype, amount=Decimal("5.00"))
+        pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("5.00"))
         pmt.save()
 
         self.assertEqual(order.balance, Decimal("110.00"))
@@ -640,7 +642,7 @@ class OrderTest(TestCase):
 
         self.assert_(order.is_partially_paid)
 
-        pmt = OrderPayment(order = order, payment=paytype, amount=Decimal("110.00"))
+        pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("110.00"))
         pmt.save()
 
         self.assertEqual(order.balance, Decimal("0.00"))
@@ -650,17 +652,17 @@ class OrderTest(TestCase):
     def testSmallPayment(self):
         order = make_test_order(self.US, '', include_non_taxed=True)
         order.recalculate_total(save=False)
-        price = order.total
-        subtotal = order.sub_total
 
         paytype = config_value('PAYMENT', 'MODULES')[0]
-        pmt = OrderPayment(order = order, payment=paytype, amount=Decimal("0.000001"))
+        pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("0.000001"))
         pmt.save()
 
         self.assert_(order.is_partially_paid)
 
+
 def vetoAllListener(sender, vetoes={}, **kwargs):
     raise CartAddProhibited(None, "No")
+
 
 class SignalTest(TestCase):
     fixtures = ['l10n_data.xml', 'test_multishop.yaml', 'products.yaml']
@@ -682,10 +684,9 @@ class SignalTest(TestCase):
             cart.save()
             p = Product.objects.get(slug='dj-rocks-s-b')
             cart.add_item(p, 1)
-            order = make_test_order(self.US, '', include_non_taxed=True)
+            make_test_order(self.US, '', include_non_taxed=True)
             self.fail('Should have thrown a CartAddProhibited error')
-
-        except CartAddProhibited, cap:
+        except CartAddProhibited:
             pass
 
         self.assertEqual(len(cart), 0)

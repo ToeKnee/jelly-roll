@@ -2,10 +2,7 @@
 Sets up a discount that can be applied to a product
 """
 
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
+from decimal import Decimal
 
 from django.contrib.sites.models import Site
 from django.db import models
@@ -31,6 +28,7 @@ class NullDiscount(object):
     def calc(self, *args):
         return Decimal("0.00")
 
+
 class Discount(models.Model):
     """
     Allows for multiple types of discounts including % and dollar off.
@@ -39,29 +37,30 @@ class Discount(models.Model):
     site = models.ForeignKey(Site, verbose_name=_('site'))
     description = models.CharField(_("Description"), max_length=100)
     code = models.CharField(_("Discount Code"), max_length=20, unique=True,
-        help_text=_("Coupon Code"))
+                            help_text=_("Coupon Code"))
     amount = models.DecimalField(_("Discount Amount"), decimal_places=2,
-        max_digits=4, blank=True, null=True, 
-        help_text=_("Enter absolute discount amount OR percentage."))
+                                 max_digits=4, blank=True, null=True,
+                                 help_text=_("Enter absolute discount amount OR percentage."))
     percentage = models.DecimalField(_("Discount Percentage"), decimal_places=2,
-        max_digits=4, blank=True, null=True,
-        help_text=_("Enter absolute discount amount OR percentage.  Percentage example: \"0.10\"."))
+                                     max_digits=4, blank=True, null=True,
+                                     help_text=_("Enter absolute discount amount OR percentage.  Percentage example: \"0.10\"."))
     automatic = models.NullBooleanField(_("Is this an automatic discount?"), default=False, blank=True,
-        null=True, help_text=_("Use this field to advertise the discount on all products to which it applies.  Generally this is used for site-wide sales."))
+                                        null=True,
+                                        help_text=_("Use this field to advertise the discount on all products to which it applies.  Generally this is used for site-wide sales."))
     allowedUses = models.IntegerField(_("Number of allowed uses"),
-        default=1, help_text=_('How many uses are allowed of this discount'))
+                                      default=1, help_text=_('How many uses are allowed of this discount'))
     numUses = models.IntegerField(_("Number of times already used"), default=0, editable=False)
     minOrder = models.DecimalField(_("Minimum order value"),
-        decimal_places=2, max_digits=6, blank=True, null=True)
+                                   decimal_places=2, max_digits=6, blank=True, null=True)
     startDate = models.DateField(_("Start Date"))
     endDate = models.DateField(_("End Date"))
     active = models.BooleanField(_("Active"), default=True)
     freeShipping = models.NullBooleanField(_("Free shipping"), default=False,
-        help_text=_("Should this discount remove all shipping costs?"))
+                                           help_text=_("Should this discount remove all shipping costs?"))
     includeShipping = models.NullBooleanField(_("Include shipping"), default=False,
-        help_text=_("Should shipping be included in the discount calculation?"))
+                                              help_text=_("Should shipping be included in the discount calculation?"))
     validProducts = models.ManyToManyField(Product, verbose_name=_("Valid Products"),
-        blank=True, null=True, help_text="Make sure not to include gift certificates!")
+                                           blank=True, null=True, help_text="Make sure not to include gift certificates!")
 
     def __init__(self, *args, **kwargs):
         self._calculated = False
@@ -96,7 +95,7 @@ class Discount(models.Model):
             for cart_item in cart.cartitem_set.all():
                 if cart_item.product.id in validproducts:
                     validItems = True
-                    break   #Once we have 1 valid item, we exit
+                    break   # Once we have 1 valid item, we exit
         else:
             validItems = True
 
@@ -122,7 +121,7 @@ class Discount(models.Model):
             lid = lineitem.id
             price = lineitem.line_item_price
             if lineitem.product.is_discountable and (allvalid or lineitem.product.id in validproducts):
-                discounted[lid] = price 
+                discounted[lid] = price
 
         if self.includeShipping and not self.freeShipping:
             shipcost = order.shipping_cost
@@ -165,7 +164,7 @@ class Discount(models.Model):
         if self.percentage > 1:
             pct = self.percentage
         else:
-            pct = self.percentage*100
+            pct = self.percentage * 100
         cents = Decimal("0")
         pct = pct.quantize(cents)
         return "%i%%" % pct
@@ -174,20 +173,21 @@ class Discount(models.Model):
 
     def valid_for_product(self, product):
         """Tests if discount is valid for a single product"""
-        if not p.is_discountable:
+        if not product.is_discountable:
             return False
-        p = self.validProducts.filter(id__exact = product.id)
+        p = self.validProducts.filter(id__exact=product.id)
         return p.count() > 0
 
     class Meta:
         verbose_name = _("Discount")
         verbose_name_plural = _("Discounts")
 
+
 def apply_even_split(discounted, amount):
     log.debug('Apply even split on %s to: %s', amount, discounted)
     lastct = -1
     ct = len(discounted)
-    split_discount = amount/ct
+    split_discount = amount / ct
 
     while ct > 0:
         log.debug("Trying with ct=%i", ct)
@@ -213,21 +213,23 @@ def apply_even_split(discounted, amount):
             lastct = ct
 
         if ct > 0:
-            split_discount = (amount-delta)/ct
+            split_discount = (amount - delta) / ct
 
     round_cents(work)
     return work
+
 
 def apply_percentage(discounted, percentage):
     work = {}
     if percentage > 1:
         log.warn("Correcting discount percentage, should be less than 1, is %s", percentage)
-        percentage = percentage/100
+        percentage = percentage / 100
 
     for lid, price in discounted.items():
         work[lid] = price * percentage
     round_cents(work)
     return work
+
 
 def round_cents(work):
     cents = Decimal("0.01")
