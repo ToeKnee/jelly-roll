@@ -27,6 +27,7 @@ except AttributeError:
 
 _CACHE_ENABLED = settings.CACHE_TIMEOUT > 0
 
+
 class CacheWrapper(object):
     def __init__(self, val, inprocess=False):
         self.val = val
@@ -46,29 +47,32 @@ class CacheWrapper(object):
 
     wrap = classmethod(wrap)
 
-class MethodNotFinishedError(Exception): 
+
+class MethodNotFinishedError(Exception):
     def __init__(self, f):
         self.func = f
 
 
-class NotCachedError(Exception):    
+class NotCachedError(Exception):
     def __init__(self, k):
         self.key = k
 
-class CacheNotRespondingError(Exception):    
+
+class CacheNotRespondingError(Exception):
     pass
-    
+
+
 def cache_delete(*keys, **kwargs):
     removed = []
     if cache_enabled():
         global CACHED_KEYS
         log.debug('cache_delete')
-        children = kwargs.pop('children',False)
+        children = kwargs.pop('children', False)
 
         if (keys or kwargs):
             key = cache_key(*keys, **kwargs)
-    
-            if CACHED_KEYS.has_key(key):
+
+            if key in CACHED_KEYS:
                 del CACHED_KEYS[key]
                 removed.append(key)
 
@@ -84,13 +88,13 @@ def cache_delete(*keys, **kwargs):
         else:
             key = "All Keys"
             deleteneeded = _cache_flush_all()
-        
+
             removed = CACHED_KEYS.keys()
 
             if deleteneeded:
                 for k in CACHED_KEYS:
                     cache.delete(k)
-            
+
             CACHED_KEYS = {}
 
         if removed:
@@ -104,19 +108,23 @@ def cache_delete(*keys, **kwargs):
 def cache_delete_function(func):
     return cache_delete(['func', func.__name__, func.__module__], children=True)
 
+
 def cache_enabled():
     global _CACHE_ENABLED
     return _CACHE_ENABLED
 
+
 def cache_enable(state=True):
     global _CACHE_ENABLED
-    _CACHE_ENABLED=state
+    _CACHE_ENABLED = state
+
 
 def _cache_flush_all():
     if is_memcached_backend():
         cache._cache.flush_all()
         return False
     return True
+
 
 def cache_function(length=settings.CACHE_TIMEOUT):
     """
@@ -140,8 +148,8 @@ def cache_function(length=settings.CACHE_TIMEOUT):
         def inner_func(*args, **kwargs):
             if not cache_enabled():
                 value = func(*args, **kwargs)
-                
-            else:        
+
+            else:
                 try:
                     value = cache_get('func', func.__name__, func.__module__, args, kwargs)
 
@@ -154,7 +162,7 @@ def cache_function(length=settings.CACHE_TIMEOUT):
                     cache_set(e.key, value=funcwrapper, length=length, skiplog=True)
                     value = func(*args, **kwargs)
                     cache_set(e.key, value=value, length=length)
-                
+
                 except MethodNotFinishedError, e:
                     value = func(*args, **kwargs)
 
@@ -164,14 +172,14 @@ def cache_function(length=settings.CACHE_TIMEOUT):
 
 
 def cache_get(*keys, **kwargs):
-    if kwargs.has_key('default'):
+    if 'default' in kwargs:
         default_value = kwargs.pop('default')
         use_default = True
     else:
         use_default = False
 
     key = cache_key(keys, **kwargs)
-    
+
     if not cache_enabled():
         raise NotCachedError(key)
     else:
@@ -179,7 +187,7 @@ def cache_get(*keys, **kwargs):
         CACHE_CALLS += 1
         if CACHE_CALLS == 1:
             cache_require()
-        
+
         obj = cache.get(key)
         if obj and isinstance(obj, CacheWrapper):
             CACHE_HITS += 1
@@ -187,7 +195,7 @@ def cache_get(*keys, **kwargs):
             log.debug('got cached [%i/%i]: %s', CACHE_CALLS, CACHE_HITS, key)
             if obj.inprocess:
                 raise MethodNotFinishedError(obj.val)
-            
+
             return obj.val
         else:
             try:
@@ -197,7 +205,7 @@ def cache_get(*keys, **kwargs):
 
             if use_default:
                 return default_value
-    
+
             raise NotCachedError(key)
 
 
@@ -217,7 +225,6 @@ def cache_set(*keys, **kwargs):
         CACHED_KEYS[key] = True
 
 
-
 def _hash_or_string(key):
     if is_string_like(key) or isinstance(key, (types.IntType, types.LongType, types.FloatType)):
         return smart_str(key)
@@ -228,17 +235,19 @@ def _hash_or_string(key):
         except AttributeError:
             return md5_hash(key)
 
+
 def cache_contains(*keys, **kwargs):
     key = cache_key(keys, **kwargs)
-    return CACHED_KEYS.has_key(key)
+    return key in CACHED_KEYS
+
 
 def cache_key(*keys, **pairs):
-    """Smart key maker, returns the object itself if a key, else a list 
+    """Smart key maker, returns the object itself if a key, else a list
     delimited by ':', automatically hashing any non-scalar objects."""
 
     if is_string_like(keys):
         keys = [keys]
-        
+
     if is_list_or_tuple(keys):
         if len(keys) == 1 and is_list_or_tuple(keys[0]):
             keys = keys[0]
@@ -252,13 +261,14 @@ def cache_key(*keys, **pairs):
         for k in klist:
             keys.append(k)
             keys.append(pairs[k])
-    
+
     key = KEY_DELIM.join([_hash_or_string(x) for x in keys])
     prefix = CACHE_PREFIX + KEY_DELIM
     if not key.startswith(prefix):
-        key = prefix+key
+        key = prefix + key
     return key.replace(" ", ".")
-    
+
+
 def md5_hash(obj):
     pickled = pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
     try:
@@ -273,12 +283,13 @@ def is_memcached_backend():
     except AttributeError:
         return False
 
+
 def cache_require():
     """Error if caching isn't running."""
     if cache_enabled():
         key = cache_key('require_cache')
-        cache_set(key,value='1')
-        v = cache_get(key, default = '0')
+        cache_set(key, value='1')
+        v = cache_get(key, default='0')
         if v != '1':
             raise CacheNotRespondingError()
         else:
