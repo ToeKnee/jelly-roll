@@ -1,6 +1,7 @@
 """A full cache system written on top of Django's rudimentary one."""
 
 from django.conf import settings
+
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 import cPickle as pickle
@@ -19,13 +20,12 @@ CACHED_KEYS = {}
 CACHE_CALLS = 0
 CACHE_HITS = 0
 KEY_DELIM = "::"
+TIMEOUT = 300
 try:
     CACHE_PREFIX = settings.CACHE_PREFIX
 except AttributeError:
     CACHE_PREFIX = str(settings.SITE_ID)
     log.warn("No CACHE_PREFIX found in settings, using SITE_ID.  Please update your settings to add a CACHE_PREFIX")
-
-_CACHE_ENABLED = settings.CACHE_TIMEOUT > 0
 
 
 class CacheWrapper(object):
@@ -64,59 +64,47 @@ class CacheNotRespondingError(Exception):
 
 def cache_delete(*keys, **kwargs):
     removed = []
-    if cache_enabled():
-        global CACHED_KEYS
-        log.debug('cache_delete')
-        children = kwargs.pop('children', False)
+    global CACHED_KEYS
+    log.debug('cache_delete')
+    children = kwargs.pop('children', False)
 
-        if (keys or kwargs):
-            key = cache_key(*keys, **kwargs)
+    if (keys or kwargs):
+        key = cache_key(*keys, **kwargs)
 
-            if key in CACHED_KEYS:
-                del CACHED_KEYS[key]
-                removed.append(key)
+        if key in CACHED_KEYS:
+            del CACHED_KEYS[key]
+            removed.append(key)
 
-            cache.delete(key)
+        cache.delete(key)
 
-            if children:
-                key = key + KEY_DELIM
-                children = [x for x in CACHED_KEYS.keys() if x.startswith(key)]
-                for k in children:
-                    del CACHED_KEYS[k]
-                    cache.delete(k)
-                    removed.append(k)
-        else:
-            key = "All Keys"
-            deleteneeded = _cache_flush_all()
+        if children:
+            key = key + KEY_DELIM
+            children = [x for x in CACHED_KEYS.keys() if x.startswith(key)]
+            for k in children:
+                del CACHED_KEYS[k]
+                cache.delete(k)
+                removed.append(k)
+    else:
+        key = "All Keys"
+        deleteneeded = _cache_flush_all()
 
-            removed = CACHED_KEYS.keys()
+        removed = CACHED_KEYS.keys()
 
-            if deleteneeded:
-                for k in CACHED_KEYS:
-                    cache.delete(k)
+        if deleteneeded:
+            for k in CACHED_KEYS:
+                cache.delete(k)
 
-            CACHED_KEYS = {}
+        CACHED_KEYS = {}
 
-        if removed:
-            log.debug("Cache delete: %s", removed)
-        else:
-            log.debug("No cached objects to delete for %s", key)
-
+    if removed:
+        log.debug("Cache delete: %s", removed)
+    else:
+        log.debug("No cached objects to delete for %s", key)
     return removed
 
 
 def cache_delete_function(func):
     return cache_delete(['func', func.__name__, func.__module__], children=True)
-
-
-def cache_enabled():
-    global _CACHE_ENABLED
-    return _CACHE_ENABLED
-
-
-def cache_enable(state=True):
-    global _CACHE_ENABLED
-    _CACHE_ENABLED = state
 
 
 def _cache_flush_all():
@@ -126,7 +114,7 @@ def _cache_flush_all():
     return True
 
 
-def cache_function(length=settings.CACHE_TIMEOUT):
+def cache_function(length=TIMEOUT):
     """
     A variant of the snippet posted by Jeff Wheeler at
     http://www.djangosnippets.org/snippets/109/
@@ -146,25 +134,20 @@ def cache_function(length=settings.CACHE_TIMEOUT):
     """
     def decorator(func):
         def inner_func(*args, **kwargs):
-            if not cache_enabled():
+            try:
+                value = cache_get('func', func.__name__, func.__module__, args, kwargs)
+            except NotCachedError, e:
+                # This will set a temporary value while ``func`` is being
+                # processed. When using threads, this is vital, as otherwise
+                # the function can be called several times before it finishes
+                # and is put into the cache.
+                funcwrapper = CacheWrapper(".".join([func.__module__, func.__name__]), inprocess=True)
+                cache_set(e.key, value=funcwrapper, length=length, skiplog=True)
                 value = func(*args, **kwargs)
+                cache_set(e.key, value=value, length=length)
 
-            else:
-                try:
-                    value = cache_get('func', func.__name__, func.__module__, args, kwargs)
-
-                except NotCachedError, e:
-                    # This will set a temporary value while ``func`` is being
-                    # processed. When using threads, this is vital, as otherwise
-                    # the function can be called several times before it finishes
-                    # and is put into the cache.
-                    funcwrapper = CacheWrapper(".".join([func.__module__, func.__name__]), inprocess=True)
-                    cache_set(e.key, value=funcwrapper, length=length, skiplog=True)
-                    value = func(*args, **kwargs)
-                    cache_set(e.key, value=value, length=length)
-
-                except MethodNotFinishedError, e:
-                    value = func(*args, **kwargs)
+            except MethodNotFinishedError, e:
+                value = func(*args, **kwargs)
 
             return value
         return inner_func
@@ -180,49 +163,45 @@ def cache_get(*keys, **kwargs):
 
     key = cache_key(keys, **kwargs)
 
-    if not cache_enabled():
-        raise NotCachedError(key)
+    global CACHE_CALLS, CACHE_HITS
+    CACHE_CALLS += 1
+    if CACHE_CALLS == 1:
+        cache_require()
+
+    obj = cache.get(key)
+    if obj and isinstance(obj, CacheWrapper):
+        CACHE_HITS += 1
+        CACHED_KEYS[key] = True
+        log.debug('got cached [%i/%i]: %s', CACHE_CALLS, CACHE_HITS, key)
+        if obj.inprocess:
+            raise MethodNotFinishedError(obj.val)
+
+        return obj.val
     else:
-        global CACHE_CALLS, CACHE_HITS
-        CACHE_CALLS += 1
-        if CACHE_CALLS == 1:
-            cache_require()
+        try:
+            del CACHED_KEYS[key]
+        except KeyError:
+            pass
 
-        obj = cache.get(key)
-        if obj and isinstance(obj, CacheWrapper):
-            CACHE_HITS += 1
-            CACHED_KEYS[key] = True
-            log.debug('got cached [%i/%i]: %s', CACHE_CALLS, CACHE_HITS, key)
-            if obj.inprocess:
-                raise MethodNotFinishedError(obj.val)
+        if use_default:
+            return default_value
 
-            return obj.val
-        else:
-            try:
-                del CACHED_KEYS[key]
-            except KeyError:
-                pass
-
-            if use_default:
-                return default_value
-
-            raise NotCachedError(key)
+        raise NotCachedError(key)
 
 
 def cache_set(*keys, **kwargs):
     """Set an object into the cache."""
-    if cache_enabled():
-        global CACHED_KEYS
-        obj = kwargs.pop('value')
-        length = kwargs.pop('length', settings.CACHE_TIMEOUT)
-        skiplog = kwargs.pop('skiplog', False)
+    global CACHED_KEYS
+    obj = kwargs.pop('value')
+    length = kwargs.pop('length', TIMEOUT)
+    skiplog = kwargs.pop('skiplog', False)
 
-        key = cache_key(keys, **kwargs)
-        val = CacheWrapper.wrap(obj)
-        if not skiplog:
-            log.debug('setting cache: %s', key)
-        cache.set(key, val, length)
-        CACHED_KEYS[key] = True
+    key = cache_key(keys, **kwargs)
+    val = CacheWrapper.wrap(obj)
+    if not skiplog:
+        log.debug('setting cache: %s', key)
+    cache.set(key, val, length)
+    CACHED_KEYS[key] = True
 
 
 def _hash_or_string(key):
@@ -286,12 +265,11 @@ def is_memcached_backend():
 
 def cache_require():
     """Error if caching isn't running."""
-    if cache_enabled():
-        key = cache_key('require_cache')
-        cache_set(key, value='1')
-        v = cache_get(key, default='0')
-        if v != '1':
-            raise CacheNotRespondingError()
-        else:
-            log.debug("Cache responding OK")
-        return True
+    key = cache_key('require_cache')
+    cache_set(key, value='1')
+    v = cache_get(key, default='0')
+    if v != '1':
+        raise CacheNotRespondingError()
+    else:
+        log.debug("Cache responding OK")
+    return True
