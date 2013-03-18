@@ -35,12 +35,12 @@ ORGANIZATION_ROLE_CHOICES = (
 )
 
 class OrganizationManager(models.Manager):
-    def by_name(self, name, create=False, role='Customer', orgtype='Company'):        
+    def by_name(self, name, create=False, role='Customer', orgtype='Company'):
         org = None
         orgs = self.filter(name=name, role=role, type=orgtype)
         if orgs.count() > 0:
             org = orgs[0]
-            
+
         if not org:
             if not create:
                 raise Organization.DoesNotExist()
@@ -48,7 +48,7 @@ class OrganizationManager(models.Manager):
                 log.debug('Creating organization: %s', name)
                 org = Organization(name=name, role=role, type=orgtype)
                 org.save()
-        
+
         return org
 
 class Organization(models.Model):
@@ -64,7 +64,7 @@ class Organization(models.Model):
     notes = models.TextField(_("Notes"), max_length=200, blank=True, null=True)
 
     objects = OrganizationManager()
-    
+
     def __unicode__(self):
         return self.name
 
@@ -93,7 +93,7 @@ class ContactManager(models.Manager):
                 contact = Contact.objects.get(id=request.session[CUSTOMER_ID])
             except Contact.DoesNotExist:
                 del request.session[CUSTOMER_ID]
-            
+
         if contact is None and request.user.is_authenticated():
             try:
                 contact = Contact.objects.get(user=request.user.id)
@@ -177,7 +177,7 @@ class Contact(models.Model):
 
     class Meta:
         verbose_name = _("Contact")
-        verbose_name_plural = _("Contacts")        
+        verbose_name_plural = _("Contacts")
 
 PHONE_CHOICES = (
     ('Work', _('Work')),
@@ -263,7 +263,7 @@ class AddressBook(models.Model):
         default=False)
 
     def __unicode__(self):
-       return u'%s - %s' % (self.contact.full_name, self.description)
+        return u'%s - %s' % (self.contact.full_name, self.city)
 
     def save(self, *args, **kwargs):
         """
