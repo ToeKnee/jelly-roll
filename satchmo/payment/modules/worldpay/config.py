@@ -19,13 +19,13 @@ config_register_list(
                 'CONNECTION',
                 description=_("URL to submit live transactions."),
                 hidden=True,
-                default='https://select.worldpay.com/wcc/purchase'),
+                default='https://secure.worldpay.com/wcc/purchase'),
 
     StringValue(PAYMENT_GROUP,
                 'CONNECTION_TEST',
                 description=_("URL to submit test transactions."),
                 hidden=True,
-                default='https://select-test.worldpay.com/wcc/purchase'),
+                default='https://secure-test.worldpay.com/wcc/purchase'),
 
     StringValue(PAYMENT_GROUP,
                 'INSTID',
