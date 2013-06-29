@@ -26,7 +26,7 @@ class CategoryImage_Inline(admin.TabularInline):
 #            return db_field.formfield(**kwargs)
 #
 #        return super(CategoryImage_Inline, self).formfield_for_dbfield(db_field, **kwargs)
-    
+
 
 class CategoryImageTranslation_Inline(admin.StackedInline):
     model = CategoryImageTranslation
@@ -75,16 +75,16 @@ class ProductImage_Inline(admin.StackedInline):
 #            return db_field.formfield(**kwargs)
 #        return super(ProductImage_Inline, self).formfield_for_dbfield(db_field, **kwargs)
 
-class ProductTranslation_Inline(admin.TabularInline): 
-    model = ProductTranslation 
-    extra = 1    
+class ProductTranslation_Inline(admin.TabularInline):
+    model = ProductTranslation
+    extra = 1
 
 class ProductImageTranslation_Inline(admin.StackedInline):
     model = ProductImageTranslation
     extra = 1
 
+
 class CategoryAdminForm(models.ModelForm):
-    
     def clean_parent(self):
         parent = self.cleaned_data['parent']
         slug = self.cleaned_data['slug']
@@ -95,18 +95,21 @@ class CategoryAdminForm(models.ModelForm):
             for p in parent._recurse_for_parents(parent):
                 if slug == p.slug:
                     raise ValidationError(_("You must not save a category in itself!"))
-                    
+
         return parent
 
+
 class CategoryOptions(admin.ModelAdmin):
-    list_display = ('site','name', '_parents_repr')
+    list_display = ('site', 'active', 'name', '_parents_repr')
     list_display_links = ('name',)
-    ordering = ['site', 'parent__id', 'ordering', 'name']
+    list_editable = ('active', )
+    ordering = ['site', 'active', 'parent__id', 'ordering', 'name']
     inlines = [CategoryImage_Inline]
     if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
         inlines.append(CategoryTranslation_Inline)
     filter_horizontal = ('related_categories',)
-    form = CategoryAdminForm    
+    form = CategoryAdminForm
+
 
 class CategoryImageOptions(admin.ModelAdmin):
     inlines = [CategoryImageTranslation_Inline]
@@ -128,11 +131,11 @@ class ProductOptions(admin.ModelAdmin):
     list_display_links = ('slug', 'name')
     list_filter = ('category', 'date_added')
     fieldsets = (
-    (None, {'fields': ('site', 'category', 'name', 'slug', 'sku', 'description', 'short_description', 
+    (None, {'fields': ('site', 'category', 'name', 'slug', 'sku', 'description', 'short_description',
             'active', 'featured', 'items_in_stock','total_sold','ordering', 'shipclass', 'ingredients', 'instructions', 'precautions')}),
             (_('Meta Data'), {'fields': ('meta',), 'classes': ('collapse',)}),
-            (_('Item Dimensions'), {'fields': (('length', 'length_units','width','width_units','height','height_units'),('weight','weight_units')), 'classes': ('collapse',)}), 
-            (_('Tax'), {'fields':('taxable', 'taxClass'), 'classes': ('collapse',)}), 
+            (_('Item Dimensions'), {'fields': (('length', 'length_units','width','width_units','height','height_units'),('weight','weight_units')), 'classes': ('collapse',)}),
+            (_('Tax'), {'fields':('taxable', 'taxClass'), 'classes': ('collapse',)}),
             (_('Related Products'), {'fields':('related_items','also_purchased'),'classes':'collapse'}), )
     readonly_fields = ('total_sold',)
     search_fields = ['slug', 'sku', 'name']
@@ -140,7 +143,7 @@ class ProductOptions(admin.ModelAdmin):
     if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
         inlines.append(ProductTranslation_Inline)
     filter_horizontal = ('category',)
-    
+
 # TODO: Fix or remove.
 #    def formfield_for_dbfield(self, db_field, **kwargs):
 #        field = super(ProductOptions, self).formfield_for_dbfield(db_field, **kwargs)

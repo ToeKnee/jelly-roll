@@ -113,6 +113,7 @@ class CategoryManager(models.Manager):
             cats = zip(*fastsort)[2]
         return cats
 
+
 class Category(models.Model):
     """
     Basic hierarchical category model for storing products
@@ -120,6 +121,7 @@ class Category(models.Model):
     site = models.ForeignKey(Site, verbose_name=_('Site'))
     name = models.CharField(_("Name"), max_length=200)
     slug = models.SlugField(_("Slug"), help_text=_("Used for URLs, auto-generated from name if blank"), blank=True)
+    active = models.BooleanField(_("Active"), default=False)
     parent = models.ForeignKey('self', blank=True, null=True,
         related_name='child')
         #,validator_list=['categoryvalidator'])
@@ -2009,4 +2011,3 @@ def split_option_unique_id(uid):
 import listeners
 satchmo_search.connect(listeners.default_product_search_listener, Product)
 log.debug('registered base search listener')
-
