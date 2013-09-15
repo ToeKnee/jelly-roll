@@ -2,19 +2,20 @@
 
 http://code.google.com/p/django-values/
 """
+
+import datetime
+import logging
+import signals
+
 from django import forms
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ImproperlyConfigured
 from django.utils import simplejson
 from django.utils.datastructures import SortedDict
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext, ugettext_lazy as _
-from satchmo.caching import cache_set
 from satchmo.configuration.models import find_setting, LongSetting, Setting, SettingNotSet
 from satchmo.utils import load_module, is_string_like, is_list_or_tuple
-from django.contrib.sites.models import Site
-import datetime
-import logging
-import signals
 
 try:
     from decimal import Decimal
@@ -22,8 +23,8 @@ except ImportError:
     from django.utils._decimal import Decimal
 
 __all__ = ['SHOP_GROUP', 'ConfigurationGroup', 'Value', 'BooleanValue', 'DecimalValue', 'DurationValue',
-      'FloatValue', 'IntegerValue', 'ModuleValue', 'PercentValue', 'PositiveIntegerValue', 'SortedDotDict',
-      'StringValue', 'LongStringValue', 'MultipleStringValue']
+           'FloatValue', 'IntegerValue', 'ModuleValue', 'PercentValue', 'PositiveIntegerValue', 'SortedDotDict',
+           'StringValue', 'LongStringValue', 'MultipleStringValue']
 
 _WARN = {}
 
@@ -31,33 +32,35 @@ log = logging.getLogger('configuration')
 
 NOTSET = object()
 
+
 class SortedDotDict(SortedDict):
 
     def __getattr__(self, key):
         try:
             return self[key]
         except:
-            raise AttributeError, key
+            raise AttributeError(key)
 
     def __iter__(self):
         vals = self.values()
         for k in vals:
             yield k
-            
+
     def values(self):
         vals = super(SortedDotDict, self).values()
         vals.sort()
         return vals
 
+
 class ConfigurationGroup(SortedDotDict):
     """A simple wrapper for a group of configuration values"""
     def __init__(self, key, name, *args, **kwargs):
         """Create a new ConfigurationGroup.
-        
+
         Arguments:
         - key
         - group name - for display to user
-        
+
         Named Arguments:
         - ordering: integer, optional, defaults to 1.
         - requires: See `Value` requires.  The default `requires` all member values will have if not overridden.
@@ -71,23 +74,23 @@ class ConfigurationGroup(SortedDotDict):
             reqval = kwargs.pop('requiresvalue', key)
             if not is_list_or_tuple(reqval):
                 reqval = (reqval, reqval)
-                
+
             self.requires_value = reqval[0]
             self.requires.add_choice(reqval)
-            
+
         super(ConfigurationGroup, self).__init__(*args, **kwargs)
-                
+
     def __cmp__(self, other):
         return cmp((self.ordering, self.name), (other.ordering, other.name))
-        
+
     def __eq__(self, other):
-        return (type(self) == type(other) 
-                and self.ordering == other.ordering 
+        return (type(self) == type(other)
+                and self.ordering == other.ordering
                 and self.name == other.name)
 
     def __ne__(self, other):
         return not self == other
-        
+
     def values(self):
         vals = super(ConfigurationGroup, self).values()
         return [v for v in vals if v.enabled()]
@@ -101,11 +104,11 @@ class Value(object):
     def __init__(self, group, key, **kwargs):
         """
         Create a new Value object for configuration.
-        
+
         Args:
             - `ConfigurationGroup`
             - key - a string key
-            
+
         Named arguments:
             - `description` - Will be passed to the field for form usage.  Should be a translation proxy.  Ex: _('example')
             - `help_text` - Will be passed to the field for form usage.
@@ -123,47 +126,47 @@ class Value(object):
         self.choices = kwargs.get('choices',[])
         self.ordering = kwargs.pop('ordering', 0)
         self.hidden = kwargs.pop('hidden', False)
-        
+
         self.requires = kwargs.pop('requires', None)
         if self.requires:
             reqval = kwargs.pop('requiresvalue', key)
             if not is_list_or_tuple(reqval):
                 reqval = (reqval, reqval)
-                
+
             self.requires_value = reqval[0]
             self.requires.add_choice(reqval)
-            
+
         elif group.requires:
             self.requires = group.requires
             self.requires_value = group.requires_value
-        
+
         if kwargs.has_key('default'):
             self.default = kwargs.pop('default')
-            self.use_default = True                
+            self.use_default = True
         else:
             self.use_default = False
-        
+
         self.creation_counter = Value.creation_counter
         Value.creation_counter += 1
 
     def __cmp__(self, other):
         return cmp((self.ordering, self.description, self.creation_counter), (other.ordering, other.description, other.creation_counter))
-        
+
     def __eq__(self, other):
         if type(self) == type(other):
             return self.value == other.value
         else:
             return self.value == other
-            
+
     def __iter__(self):
         return iter(self.value)
-        
+
     def __unicode__(self):
         return unicode(self.value)
-        
+
     def __str__(self):
         return str(self.value)
-        
+
     def add_choice(self, choice):
         """Add a choice if it doesn't already exist."""
         if not is_list_or_tuple(choice):
@@ -175,7 +178,7 @@ class Value(object):
                 break
         if not skip:
             self.choices += (choice, )
-        
+
     def choice_field(self, **kwargs):
         if self.hidden:
             kwargs['widget'] = forms.MultipleHiddenInput()
@@ -192,28 +195,28 @@ class Value(object):
         new_value = self.__class__(self.key)
         new_value.__dict__ = self.__dict__.copy()
         return new_value
-        
+
     def _default_text(self):
         if not self.use_default:
             note = ""
         else:
             if self.default == "":
                 note = _('Default value: ""')
-            
+
             elif self.choices:
                 work = []
                 for x in self.choices:
                     if x[0] in self.default:
                         work.append(smart_str(x[1]))
                 note = gettext('Default value: ') + ", ".join(work)
-        
+
             else:
                 note = _("Default value: %s") % unicode(self.default)
-        
+
         return note
-        
+
     default_text = property(fget=_default_text)
-        
+
     def enabled(self):
         enabled = False
         try:
@@ -228,7 +231,7 @@ class Value(object):
         except SettingNotSet:
             pass
         return enabled
-        
+
     def make_field(self, **kwargs):
         if self.choices:
             if self.hidden:
@@ -238,7 +241,7 @@ class Value(object):
             if self.hidden:
                 kwargs['widget'] = forms.HiddenInput()
             field = self.field(**kwargs)
-            
+
         field.group = self.group
         field.default_text = self.default_text
         return field
@@ -246,27 +249,27 @@ class Value(object):
     def make_setting(self, db_value):
         log.debug('new setting %s.%s', self.group.key, self.key)
         return Setting(group=self.group.key, key=self.key, value=db_value)
-        
+
     def _setting(self):
         return find_setting(self.group.key, self.key)
-        
+
     setting = property(fget = _setting)
 
-    def _value(self):            
+    def _value(self):
         try:
             val = self.setting.value
-            
+
         except SettingNotSet, sns:
             if self.use_default:
                 val = self.default
             else:
                 val = NOTSET
-                                
+
         except AttributeError, ae:
             log.error("Attribute error: %s", ae)
             log.error("%s: Could not get _value of %s", self.key, self.setting)
             raise(ae)
-            
+
         except Exception, e:
             global _WARN
             log.error(e)
@@ -274,7 +277,7 @@ class Value(object):
                 if not _WARN.has_key('configuration_setting'):
                     log.warn('Error loading setting %s.%s from table, OK if you are in syncdb', self.group.key, self.key)
                     _WARN['configuration_setting'] = True
-                    
+
                 if self.use_default:
                     val = self.default
                 else:
@@ -286,16 +289,16 @@ class Value(object):
                 raise SettingNotSet("Startup error, couldn't load %s.%s" %(self.group.key, self.key))
         return val
 
-    def update(self, value):    
+    def update(self, value):
         current_value = self.value
 
         new_value = self.to_python(value)
-        if current_value != new_value:        
+        if current_value != new_value:
             db_value = self.get_db_prep_save(value)
             try:
                 s = self.setting
                 s.value = db_value
-                
+
             except SettingNotSet:
                 s = self.make_setting(db_value)
 
@@ -306,9 +309,9 @@ class Value(object):
             else:
                 log.info("Updated setting %s.%s = %s", self.group.key, self.key, value)
                 s.save()
-                
+
             signals.configuration_value_changed.send(self, old_value=current_value, new_value=new_value, setting=self)
-            
+
             return True
         return False
 
@@ -317,7 +320,7 @@ class Value(object):
         return self.to_python(val)
 
     value = property(fget = value)
-        
+
     def editor_value(self):
         val = self._value()
         return self.to_editor(val)
@@ -364,7 +367,7 @@ class BooleanValue(Value):
         if value in (True, 't', 'True', 1, '1'):
             return True
         return False
-        
+
     to_editor = to_python
 
 class DecimalValue(Value):
@@ -377,13 +380,13 @@ class DecimalValue(Value):
     def to_python(self, value):
         if value==NOTSET:
             return Decimal("0")
-            
+
         try:
             return Decimal(value)
         except TypeError, te:
             log.warning("Can't convert %s to Decimal for settings %s.%s", value, self.group.key, self.key)
             raise TypeError(te)
-        
+
     def to_editor(self, value):
         if value == NOTSET:
             return "0"
@@ -422,7 +425,7 @@ class DurationValue(Value):
             return unicode(value.days * 24 * 3600 + value.seconds + float(value.microseconds) / 1000000)
 
 class FloatValue(Value):
-    
+
     class field(forms.FloatField):
 
         def __init__(self, *args, **kwargs):
@@ -433,13 +436,13 @@ class FloatValue(Value):
         if value == NOTSET:
             value = 0
         return float(value)
-        
+
     def to_editor(self, value):
         if value == NOTSET:
             return "0"
         else:
             return unicode(value)
-            
+
 class IntegerValue(Value):
     class field(forms.IntegerField):
 
@@ -495,17 +498,17 @@ class PositiveIntegerValue(IntegerValue):
 
 
 class StringValue(Value):
-    
+
     class field(forms.CharField):
         def __init__(self, *args, **kwargs):
             kwargs['required'] = False
             forms.CharField.__init__(self, *args, **kwargs)
-            
+
     def to_python(self, value):
         if value == NOTSET:
             value = ""
         return unicode(value)
-            
+
     to_editor = to_python
 
 class LongStringValue(Value):
@@ -518,7 +521,7 @@ class LongStringValue(Value):
 
     def make_setting(self, db_value):
         log.debug('new long setting %s.%s', self.group.key, self.key)
-        return LongSetting(group=self.group.key, key=self.key, value=db_value)        
+        return LongSetting(group=self.group.key, key=self.key, value=db_value)
 
     def to_python(self, value):
         if value == NOTSET:
@@ -535,16 +538,20 @@ class MultipleStringValue(Value):
         def __init__(self, *args, **kwargs):
             kwargs['required'] = False
             forms.CharField.__init__(self, *args, **kwargs)
-    
+
     def choice_field(self, **kwargs):
         kwargs['required'] = False
-        return forms.MultipleChoiceField(choices=self.choices, **kwargs)
-                
+        if len(self.choices) > 7:
+            field = forms.MultipleChoiceField(choices=self.choices, widget=FilteredSelectMultiple("", False), **kwargs)
+        else:
+            field = forms.MultipleChoiceField(choices=self.choices, **kwargs)
+        return field
+
     def get_db_prep_save(self, value):
         if is_string_like(value):
             value = [value]
         return simplejson.dumps(value)
-            
+
     def to_python(self, value):
         if not value or value == NOTSET:
             return []
@@ -559,13 +566,13 @@ class MultipleStringValue(Value):
                 else:
                     log.warning('Could not decode returning empty list: %s', value)
                     return []
-               
-             
+
     to_editor = to_python
-            
+
+
 class ModuleValue(Value):
     """Handles setting modules, storing them as strings in the db."""
-    
+
     class field(forms.CharField):
 
         def __init__(self, *args, **kwargs):
@@ -579,16 +586,15 @@ class ModuleValue(Value):
             raise SettingNotSet("%s.%s", self.group.key, self.key)
         else:
             return load_module("%s.%s" % (value, module))
-            
+
     def to_python(self, value):
         if value == NOTSET:
-            v = {}            
+            v = {}
         else:
             v = load_module(value)
         return v
-            
+
     def to_editor(self, value):
         if value == NOTSET:
             value = ""
-        return value    
-
+        return value
