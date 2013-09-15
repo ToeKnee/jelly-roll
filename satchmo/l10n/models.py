@@ -58,6 +58,7 @@ class Country(models.Model):
     active = models.BooleanField(_('Country is active'), default=True)
     continent = models.ForeignKey(Continent, to_field='code')
     admin_area = models.CharField(_('Administrative Area'), choices=AREAS, max_length=2, null=True, blank=True)
+    eu = models.BooleanField(_('Country is a member of the European Union'), default=False)
 
     class Meta:
         verbose_name = _('Country')
