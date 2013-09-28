@@ -26,17 +26,15 @@ class Shipper(BaseShipper):
         weight = Decimal("0.00")
 
         packing_fee = config_value('SHIPPING', 'PACKING_FEE')
+        # An Item is Royal Mail's name for a packet.  Not a singular
+        # product.
+        max_weight_per_item = config_value('SHIPPING', 'MAX_WEIGHT_PER_ITEM')
         if self.shipping_to_eu():
             per_item_rate = config_value('SHIPPING', 'PER_RATE_EU')
             per_kg_rate = config_value('SHIPPING', 'PER_KG_EU')
         else:
             per_item_rate = config_value('SHIPPING', 'PER_RATE_ROW')
             per_kg_rate = config_value('SHIPPING', 'PER_KG_ROW')
-
-        fee += per_item_rate  # Royal Mail calls a package an item,
-                              # this will need revised if we ever do
-                              # auto splitting of orders into multiple
-                              # packages
 
         for cartitem in self.cart.cartitem_set.all():
             if cartitem.product.is_shippable:
@@ -47,6 +45,13 @@ class Shipper(BaseShipper):
         weight = math.ceil(weight)  # Round to nearest 100g
         weight = weight / 10  # Tens of grams to Kgs
         fee += Decimal(str(weight)) * per_kg_rate
+
+        # If the weight is > MAX_WEIGHT_PER_ITEM split the order in to multiple items (packets)
+        # Round up to nearest Kg
+        weight = int(math.ceil(weight))
+        # Times to apply per_item_rate
+        items = int(math.ceil(weight / max_weight_per_item))
+        fee += per_item_rate * items
 
         # Add TAX
         if self.shipping_to_eu():

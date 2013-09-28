@@ -18,6 +18,14 @@ config_register_list(
                  default="0.30"),
 
     DecimalValue(SHIPPING_GROUP,
+                 'MAX_WEIGHT_PER_ITEM',
+                 description=_("[Royal Mail Contract] Max weight per item in Kgs (packet)"),
+                 help_text=_("The orders weight is rounded up and divided by this and multiplied by the per item price"),
+                 requires=SHIP_MODULES,
+                 requiresvalue='satchmo.shipping.modules.royalmailcontract',
+                 default="2.00"),
+
+    DecimalValue(SHIPPING_GROUP,
                  'PER_RATE_EU',
                  description=_("[Royal Mail Contract] Per item price E.U."),
                  requires=SHIP_MODULES,
