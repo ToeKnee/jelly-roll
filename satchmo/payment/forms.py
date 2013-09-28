@@ -39,36 +39,42 @@ def _get_shipping_choices(request, paymentmodule, cart, contact, default_view_ta
     else:
         methods = shipping_methods()
 
+    valid_methods = []
     for method in methods:
         method.calculate(cart, contact)
         if method.valid():
-            template = lookup_template(paymentmodule, 'shipping_options.html')
-            t = loader.get_template(template)
-            shipcost = method.cost()
-            shipping_tax = None
-            taxed_shipping_price = None
-            if config_value('TAX', 'TAX_SHIPPING'):
-                shipping_tax = config_value('TAX', 'TAX_CLASS')
-                taxer = _get_taxprocessor(request)
-                total = shipcost + taxer.by_price(shipping_tax, shipcost)
-                taxed_shipping_price = money_format(total)
+            valid_methods.append((method, method.cost()))
 
-            data = {
-                'amount': shipcost,
-                'description': method.description(),
-                'method': method.method(),
-                'expected_delivery': method.expectedDelivery(),
-                'default_view_tax': default_view_tax,
-                'shipping_tax': shipping_tax,
-                'taxed_shipping_price': taxed_shipping_price
-            }
+    # sort methods by cost
+    valid_methods.sort(key=lambda method_cost: int(method_cost[1]))
 
-            if hasattr(method, 'shipping_discount'):
-                data['discount'] = method.shipping_discount()
+    for method, shipcost in valid_methods:
+        template = lookup_template(paymentmodule, 'shipping_options.html')
+        t = loader.get_template(template)
+        shipping_tax = None
+        taxed_shipping_price = None
+        if config_value('TAX', 'TAX_SHIPPING'):
+            shipping_tax = config_value('TAX', 'TAX_CLASS')
+            taxer = _get_taxprocessor(request)
+            total = shipcost + taxer.by_price(shipping_tax, shipcost)
+            taxed_shipping_price = money_format(total)
 
-            c = RequestContext(request, data)
-            shipping_options.append((method.id, t.render(c)))
-            shipping_dict[method.id] = shipcost
+        data = {
+            'amount': shipcost,
+            'description': method.description(),
+            'method': method.method(),
+            'expected_delivery': method.expectedDelivery(),
+            'default_view_tax': default_view_tax,
+            'shipping_tax': shipping_tax,
+            'taxed_shipping_price': taxed_shipping_price
+        }
+
+        if hasattr(method, 'shipping_discount'):
+            data['discount'] = method.shipping_discount()
+
+        c = RequestContext(request, data)
+        shipping_options.append((method.id, t.render(c)))
+        shipping_dict[method.id] = shipcost
 
     return shipping_options, shipping_dict
 
