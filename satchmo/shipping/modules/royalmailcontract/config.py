@@ -66,5 +66,5 @@ config_register_list(
                         description=_("Countries excluded from Royal Mail Contract shipping."),
                         help_text=_("Select the countries that you want to exclude."),
                         default=[],
-                        choices=[(c.iso2_code, c.printable_name) for c in Country.objects.exclude(iso2_code="GB")])
+                        choices=Country.objects.exclude(iso2_code="GB").values_list('iso2_code', 'printable_name'))
 )
