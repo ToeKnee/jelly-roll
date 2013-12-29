@@ -25,16 +25,16 @@ class Shipper(BaseShipper):
         fee = Decimal("0.00")
         weight = Decimal("0.00")
 
-        packing_fee = config_value('satchmo.shipping.modules.royalmailcontract', 'PACKING_FEE')
+        packing_fee = config_value('ROYALMAILCONTRACT', 'PACKING_FEE')
         # An Item is Royal Mail's name for a packet.  Not a singular
         # product.
-        max_weight_per_item = config_value('satchmo.shipping.modules.royalmailcontract', 'MAX_WEIGHT_PER_ITEM')
+        max_weight_per_item = config_value('ROYALMAILCONTRACT', 'MAX_WEIGHT_PER_ITEM')
         if self.shipping_to_eu():
-            per_item_rate = config_value('satchmo.shipping.modules.royalmailcontract', 'PER_RATE_EU')
-            per_kg_rate = config_value('satchmo.shipping.modules.royalmailcontract', 'PER_KG_EU')
+            per_item_rate = config_value('ROYALMAILCONTRACT', 'PER_RATE_EU')
+            per_kg_rate = config_value('ROYALMAILCONTRACT', 'PER_KG_EU')
         else:
-            per_item_rate = config_value('satchmo.shipping.modules.royalmailcontract', 'PER_RATE_ROW')
-            per_kg_rate = config_value('satchmo.shipping.modules.royalmailcontract', 'PER_KG_ROW')
+            per_item_rate = config_value('ROYALMAILCONTRACT', 'PER_RATE_ROW')
+            per_kg_rate = config_value('ROYALMAILCONTRACT', 'PER_KG_ROW')
 
         for cartitem in self.cart.cartitem_set.all():
             if cartitem.product.is_shippable:
@@ -89,7 +89,7 @@ class Shipper(BaseShipper):
         Exclude countries that we don't want to ship to, also exclude
         the United Kingdom as this shipping module doesn't support GB.
         """
-        excluded_countries = config_value('satchmo.shipping.modules.royalmailcontract', 'EXCLUDE_COUNTRY')
+        excluded_countries = config_value('ROYALMAILCONTRACT', 'EXCLUDE_COUNTRY')
         excluded_countries.append(u'GB')
         return self.contact.shipping_address.country.iso2_code not in excluded_countries
 
