@@ -1,0 +1,97 @@
+#cn22 {
+    width: 34em;
+    border: thin solid black;
+    padding: 0.25em;
+
+}
+
+#cn22 h2, #cn22 h3, #cn22 h4 {
+    color: black;
+    font-family: sans-serif;
+    margin: 0;
+}
+
+#cn22 h2 {
+    font-size: large;
+    text-align: left;
+}
+
+#cn22 h4 {
+    font-size: small;
+    font-style: italic;
+}
+#cn22 .title {
+    float: right;
+    text-align: right;
+}
+
+#cn22 p {
+    margin: 0;
+    font-weight: bold;
+}
+
+#cn22 .francais {
+    font-weight: normal;
+    font-style: italic;
+}
+
+#cn22 .checkbox {
+    width: 1em;
+    height: 1em;
+    margin-right: 1em;
+    border: thin solid black;
+    float: left;
+}
+
+#cn22 table {
+    border-top: thin solid black;
+    border-bottom: thin solid black;
+}
+
+#cn22 table#type td {
+    font-size: smaller;
+}
+
+#cn22 table#type td:last-child {
+    width: 24em;
+}
+
+#cn22 table#details tbody tr {
+    border-bottom: thin dashed black;
+}
+
+
+#cn22 table#details th, #cn22  table#details td {
+    vertical-align: top;
+    border-left: thin solid black;
+}
+
+#cn22 table#details th:first-child, #cn22  table#details td:first-child {
+    border-left: none;
+}
+
+#cn22 table th,
+#cn22 table tfoot tr:first-child td {
+    font-size: smaller;
+}
+
+#cn22 table tbody td:first-child,
+#cn22 table tfoot tr:last-child td:first-child {
+    text-align: left;
+}
+
+#cn22 table#details tbody td:last-child,
+#cn22 table#details tfoot tr:last-child td:last-child,
+#cn22 table#details tbody td,
+#cn22 table#details tfoot tr:last-child td {
+    text-align: center;
+}
+
+#cn22 #signature p {
+    font-size: smaller;
+}
+
+#cn22 #signature span {
+    padding: 0.5em 0;
+    display: block;
+}

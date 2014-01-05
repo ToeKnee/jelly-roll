@@ -1,0 +1,116 @@
+{% load satchmo_currency %}
+
+{% if not order.ship_country.eu %}
+<div id="cn22">
+  <header>
+    <div class="title">
+      <h3>CN22</h3>
+      <div id="opened-officially">
+        <p>May be opened officially</p>
+        <p class="francais">Peut étre ouvert d'office</p>
+      </div>
+    </div>
+
+    <h2>Customs Declaration</h2>
+    <h2>Déclaration En Douane</h2>
+
+    <div id="Origin">
+      <p>
+        Great Britain \
+        <span class="francais">Grande-Bretagne</span>
+      </p>
+    </div>
+  </header>
+
+  <table id="type">
+    <tbody>
+      <tr>
+        <td>
+          <div class="checkbox"></div>
+          <p>
+            Gift \ <span class="francais">Cadeau</span>
+          </p>
+        </td>
+        <td>
+          <div class="checkbox"></div>
+          <p>
+            Commercial Sample \ <span class="francais">Echantillon commercial</span>
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="checkbox"></div>
+          <p>
+            Documents
+          </p>
+        </td>
+        <td>
+          <div class="checkbox"></div>
+          <p>
+            Other \ <span class="francais">Autre</span>
+          </p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table id="details">
+    <thead>
+      <tr>
+        <th>Quantity and detailed description of contents</th>
+        <th>Weight</th>
+        <th>Value</th>
+      </tr>
+      <tr class="francais">
+        <th>Quantité et description détaillée du contenu</th>
+        <th>Poids (in kg)</th>
+        <th>Valeur</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>
+           {{ item.quantity }} × {{ item.name }}
+        </td>
+        <td>{{ item.weight }}</td>
+        <td>{{ item.value|currency }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>
+          <h4>For commercial items only</h4>
+          <p>If known, HS tarrif number and country of origin of goods</p>
+          <p class="francais">N° tarifaire du SH et pays d'origine des merchandises (si connus)</p>
+        </td>
+        <td>
+          <p>Total Weight</p>
+          <p class="francais">Poids total (in kg)</p>
+        </td>
+        <td>
+          <p>Total Value</p>
+          <p class="francais">Valuer totale</p>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>{{ total_weight }}</td>
+        <td>{{ total_value|currency }}</td>
+      </tr>
+    </tfoot>
+  </table>
+  <div id="signature">
+    <p>
+      I, the undersigned. whose name and address are given on the
+      item, certify that the particulars given in this declaration are
+      correct and that this item does not contain any dangerous
+      article or articles prohibited by legislation or postal or
+      customs regulations.
+    </p>
+    <span>Date and sender's signature {% now "j/n/y" %}</span>
+  </div>
+</div>
+{% endif %}
