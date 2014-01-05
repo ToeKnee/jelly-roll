@@ -2,7 +2,6 @@
     width: 34em;
     border: thin solid black;
     padding: 0.25em;
-
 }
 
 #cn22 h2, #cn22 h3, #cn22 h4 {
@@ -75,8 +74,8 @@
     font-size: smaller;
 }
 
-#cn22 table tbody td:first-child,
-#cn22 table tfoot tr:last-child td:first-child {
+#cn22 table#details tbody td:first-child,
+#cn22 table#details tfoot tr:last-child td:first-child {
     text-align: left;
 }
 
