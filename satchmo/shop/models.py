@@ -990,18 +990,35 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, verbose_name=_("Product"))
     quantity = models.IntegerField(_("Quantity"), )
     unit_price = models.DecimalField(_("Unit price"),
-        max_digits=18, decimal_places=10)
+                                     max_digits=18,
+                                     decimal_places=10)
     unit_tax = models.DecimalField(_("Unit tax"),
-        max_digits=18, decimal_places=10, null=True)
+                                   max_digits=18,
+                                   decimal_places=10,
+                                   null=True)
     line_item_price = models.DecimalField(_("Line item price"),
-        max_digits=18, decimal_places=10)
+                                          max_digits=18,
+                                          decimal_places=10)
     tax = models.DecimalField(_("Line item tax"),
-        max_digits=18, decimal_places=10, null=True)
-    expire_date = models.DateField(_("Subscription End"), help_text=_("Subscription expiration date."), blank=True, null=True)
+                              max_digits=18,
+                              decimal_places=10,
+                              null=True)
+    expire_date = models.DateField(_("Subscription End"),
+                                   help_text=_("Subscription expiration date."),
+                                   blank=True,
+                                   null=True)
     completed = models.BooleanField(_("Completed"), default=False)
     stock_updated = models.BooleanField(_("Stock Updated"), default=False)
     discount = models.DecimalField(_("Line item discount"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
+                                   max_digits=18,
+                                   decimal_places=10,
+                                   blank=True,
+                                   null=True)
+
+    class Meta:
+        verbose_name = _("Order Line Item")
+        verbose_name_plural = _("Order Line Items")
+        ordering = ('id',)
 
     def __unicode__(self):
         return self.product.translated_name()
@@ -1044,10 +1061,9 @@ class OrderItem(models.Model):
         self.unit_tax = processor.by_price(taxclass, self.unit_price)
         self.tax = processor.by_orderitem(self)
 
-    class Meta:
-        verbose_name = _("Order Line Item")
-        verbose_name_plural = _("Order Line Items")
-        ordering = ('id',)
+    @property
+    def weight(self):
+        return self.product.weight * self.quantity
 
 
 class OrderItemDetail(models.Model):
@@ -1059,7 +1075,7 @@ class OrderItemDetail(models.Model):
     value = models.CharField(_('Value'), max_length=255)
     price_change = models.DecimalField(_("Price Change"), max_digits=18, decimal_places=10, blank=True, null=True)
     sort_order = models.IntegerField(_("Sort Order"),
-        help_text=_("The display order for this group."))
+                                     help_text=_("The display order for this group."))
 
     def __unicode__(self):
         return u"%s - %s,%s" % (self.item, self.name, self.value)
