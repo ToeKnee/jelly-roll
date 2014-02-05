@@ -1,7 +1,8 @@
 #cn22 {
-    width: 34em;
+    width: 8cm;
     border: thin solid black;
     padding: 0.25em;
+    font-size: 10px;
 }
 
 #cn22 h2, #cn22 h3, #cn22 h4 {
@@ -11,12 +12,12 @@
 }
 
 #cn22 h2 {
-    font-size: large;
+    font-size: 11px;
     text-align: left;
 }
 
 #cn22 h4 {
-    font-size: small;
+    font-size: 9px;
     font-style: italic;
 }
 #cn22 .title {
@@ -45,10 +46,11 @@
 #cn22 table {
     border-top: thin solid black;
     border-bottom: thin solid black;
+    font-size: 10px;
 }
 
 #cn22 table#type td {
-    font-size: smaller;
+    font-size: 8px;
 }
 
 #cn22 table#type td:last-child {
@@ -71,7 +73,7 @@
 
 #cn22 table th,
 #cn22 table tfoot tr:first-child td {
-    font-size: smaller;
+    font-size: 8px;
 }
 
 #cn22 table#details tbody td:first-child,
@@ -87,7 +89,7 @@
 }
 
 #cn22 #signature p {
-    font-size: smaller;
+    font-size: 8px;
 }
 
 #cn22 #signature span {
