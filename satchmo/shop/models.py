@@ -637,6 +637,10 @@ class Order(models.Model):
 
     objects = OrderManager()
 
+    class Meta:
+        verbose_name = _("Product Order")
+        verbose_name_plural = _("Product Orders")
+
     def __unicode__(self):
         return "Order #%s: %s" % (self.id, self.contact.full_name)
 
@@ -879,11 +883,12 @@ class Order(models.Model):
             taxdetl.save()
 
         log.debug("Order #%i, recalc: sub_total=%s, shipping=%s, discount=%s, tax=%s",
-            self.id,
-            money_format(item_sub_total),
-            money_format(self.shipping_sub_total),
-            money_format(self.discount),
-            money_format(self.tax))
+                  self.id,
+                  money_format(item_sub_total),
+                  money_format(self.shipping_sub_total),
+                  money_format(self.discount),
+                  money_format(self.tax)
+        )
 
         self.total = Decimal(item_sub_total + self.shipping_sub_total + self.tax)
 
@@ -977,9 +982,12 @@ class Order(models.Model):
                     valid = valid and validate_method(request, self, orderitem)
         return valid
 
-    class Meta:
-        verbose_name = _("Product Order")
-        verbose_name_plural = _("Product Orders")
+    @property
+    def weight(self):
+        total_weight = Decimal("0.00")
+        for item in self.orderitem_set.all():
+            total_weight += item.weight
+        return total_weight
 
 
 class OrderItem(models.Model):
