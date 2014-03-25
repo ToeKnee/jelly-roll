@@ -29,7 +29,7 @@ from satchmo.shop import signals
 from satchmo.shop.notification import order_success_listener, send_order_update_notice
 from satchmo.discount.utils import find_discount_for_code
 
-log = logging.getLogger('satchmo.shop.models')
+log = logging.getLogger(__name__)
 
 
 class NullConfig(object):
@@ -116,7 +116,6 @@ class Config(models.Model):
             return Country.objects.filter(pk=self.sales_country.pk)
         else:
             return self.shipping_countries.filter(active=True)
-
 
     def _base_url(self, secure=False):
         prefix = "http"
@@ -273,7 +272,7 @@ class CartManager(models.Manager):
             else:
                 raise Cart.DoesNotExist()
 
-        #log.debug("Cart: %s", cart)
+        log.debug("Cart: %s", cart)
         return cart
 
 
@@ -328,10 +327,10 @@ class Cart(models.Model):
                     for detail in details:
                         try:
                             similarItem.details.get(
-                                    name=detail['name'],
-                                    value=detail['value'],
-                                    price_change=detail['price_change']
-                                    )
+                                name=detail['name'],
+                                value=detail['value'],
+                                price_change=detail['price_change']
+                            )
                         except CartItemDetails.DoesNotExist:
                             looksTheSame = False
                 if looksTheSame:
@@ -398,7 +397,7 @@ class Cart(models.Model):
         """
         not_enough_stock = []
         config = Config.objects.get_current()
-        if config.no_stock_checkout == False:
+        if config.no_stock_checkout is False:
             for cart_item in self.cartitem_set.all():
                 if not cart_item.has_enough_stock():
                     not_enough_stock.append(cart_item)
@@ -426,7 +425,6 @@ class CartItem(models.Model):
 
     def _get_line_unitprice(self):
         # Get the qty discount price as the unit price for the line.
-
         self.qty_price = self.get_qty_price(self.quantity)
         self.detail_price = self.get_detail_price()
         #send signal to possibly adjust the unitprice
@@ -494,7 +492,7 @@ class CartItem(models.Model):
         currency = config_value('SHOP', 'CURRENCY')
         currency = currency.replace("_", " ")
         return u'%s - %s %s%s' % (self.quantity, self.product.name,
-            force_unicode(currency), self.line_total)
+                                  force_unicode(currency), self.line_total)
 
     class Meta:
         verbose_name = _("Cart Item")
@@ -510,8 +508,7 @@ class CartItemDetails(models.Model):
     value = models.TextField(_('detail'))
     name = models.CharField(_('name'), max_length=100)
     price_change = models.DecimalField(_("Item Detail Price Change"), max_digits=6, decimal_places=2, blank=True, null=True)
-    sort_order = models.IntegerField(_("Sort Order"),
-        help_text=_("The display order for this group."))
+    sort_order = models.IntegerField(_("Sort Order"), help_text=_("The display order for this group."))
 
     class Meta:
         ordering = ('sort_order',)
@@ -609,28 +606,17 @@ class Order(models.Model):
     bill_postal_code = models.CharField(_("Post Code"), max_length=30, blank=True)
     bill_country = models.ForeignKey(Country, blank=True, related_name="bill_country")
     notes = models.TextField(_("Notes"), blank=True, null=True)
-    sub_total = models.DecimalField(_("Subtotal"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
-    total = models.DecimalField(_("Total"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
-    discount_code = models.CharField(_("Discount Code"), max_length=20, blank=True, null=True,
-        help_text=_("Coupon Code"))
-    discount = models.DecimalField(_("Discount amount"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
-    method = models.CharField(_("Order method"),
-        choices=ORDER_CHOICES, max_length=200, blank=True)
-    shipping_description = models.CharField(_("Shipping Description"),
-        max_length=200, blank=True, null=True)
-    shipping_method = models.CharField(_("Shipping Method"),
-        max_length=200, blank=True, null=True)
-    shipping_model = ShippingChoiceCharField(_("Shipping Models"),
-        max_length=30, blank=True, null=True)
-    shipping_cost = models.DecimalField(_("Shipping Cost"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
-    shipping_discount = models.DecimalField(_("Shipping Discount"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
-    tax = models.DecimalField(_("Tax"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
+    sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
+    total = models.DecimalField(_("Total"), max_digits=18, decimal_places=10, blank=True, null=True)
+    discount_code = models.CharField(_("Discount Code"), max_length=20, blank=True, null=True, help_text=_("Coupon Code"))
+    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=10, blank=True, null=True)
+    method = models.CharField(_("Order method"), choices=ORDER_CHOICES, max_length=200, blank=True)
+    shipping_description = models.CharField(_("Shipping Description"), max_length=200, blank=True, null=True)
+    shipping_method = models.CharField(_("Shipping Method"), max_length=200, blank=True, null=True)
+    shipping_model = ShippingChoiceCharField(_("Shipping Models"), max_length=30, blank=True, null=True)
+    shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=10, blank=True, null=True)
+    shipping_discount = models.DecimalField(_("Shipping Discount"), max_digits=18, decimal_places=10, blank=True, null=True)
+    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=10, blank=True, null=True)
     status = models.ForeignKey("OrderStatus", blank=True, null=True, editable=False, related_name="current_status")
     frozen = models.BooleanField(default=False)
     time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
@@ -888,7 +874,7 @@ class Order(models.Model):
                   money_format(self.shipping_sub_total),
                   money_format(self.discount),
                   money_format(self.tax)
-        )
+                  )
 
         self.total = Decimal(item_sub_total + self.shipping_sub_total + self.tax)
 
@@ -1162,7 +1148,7 @@ class OrderStatus(models.Model):
         super(OrderStatus, self).save(*args, **kwargs)
 
         # Set the most recent status
-        if self.order.status == None or self.order.status.time_stamp < self.time_stamp:
+        if self.order.status is None or self.order.status.time_stamp < self.time_stamp:
             self.order.status = self
             self.order.save()
 
@@ -1178,10 +1164,8 @@ class OrderStatus(models.Model):
 
 class OrderPayment(models.Model):
     order = models.ForeignKey(Order, related_name="payments")
-    payment = PaymentChoiceCharField(_("Payment Method"),
-        max_length=25, blank=True)
-    amount = models.DecimalField(_("amount"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
+    payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
+    amount = models.DecimalField(_("amount"), max_digits=18, decimal_places=10, blank=True, null=True)
     time_stamp = models.DateTimeField(_("timestamp"), default=datetime.datetime.now(), editable=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
 
@@ -1232,8 +1216,7 @@ class OrderTaxDetail(models.Model):
     order = models.ForeignKey(Order, related_name="taxes")
     method = models.CharField(_("Model"), max_length=50)
     description = models.CharField(_("Description"), max_length=50, blank=True)
-    tax = models.DecimalField(_("Tax"),
-        max_digits=18, decimal_places=10, blank=True, null=True)
+    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=10, blank=True, null=True)
 
     def __unicode__(self):
         if self.description:
