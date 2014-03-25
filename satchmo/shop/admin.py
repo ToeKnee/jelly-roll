@@ -14,63 +14,76 @@ from satchmo.shop.models import OrderTaxDetail
 from satchmo.shop.models import OrderVariable
 from satchmo.shop.models import Status
 
+
 class CartItem_Inline(admin.TabularInline):
     model = CartItem
     extra = 3
+
 
 class CartItemDetails_Inline(admin.StackedInline):
     model = CartItemDetails
     extra = 1
 
+
 class ConfigOptions(admin.ModelAdmin):
     list_display = ('site', 'store_name')
     filter_horizontal = ('shipping_countries',)
     fieldsets = (
-        (None, {'fields': (
-            'site', 'store_name', 'store_description', 'no_stock_checkout')
-            }),
-        (_('Store Contact'), {'fields' : (
+        (None, {
+            'fields': ('site', 'store_name', 'store_description', 'no_stock_checkout')
+        }),
+        (_('Store Contact'), {'fields': (
             'store_email', 'street1', 'street2',
             'city', 'state', 'postal_code', 'country',)
-            }),
-        (_('Shipping Countries'), {'fields' : (
+        }),
+        (_('Shipping Countries'), {'fields': (
             'in_country_only', 'sales_country', 'shipping_countries')
-            })
+        })
     )
 
+
 class CartOptions(admin.ModelAdmin):
-    list_display = ('date_time_created','numItems','total')
+    list_display = ('date_time_created', 'numItems', 'total')
     inlines = [CartItem_Inline]
+
 
 class CartItemOptions(admin.ModelAdmin):
     inlines = [CartItemDetails_Inline]
+
 
 class OrderItem_Inline(admin.TabularInline):
     model = OrderItem
     extra = 3
 
+
 class OrderItemDetail_Inline(admin.TabularInline):
     model = OrderItemDetail
     extra = 3
 
+
 class StatusOptions(admin.ModelAdmin):
     model = Status
 
+
 class Status_Inline(admin.TabularInline):
     model = Status
+
 
 class OrderStatus_Inline(admin.StackedInline):
     model = OrderStatus
     readonly_fields = ('time_stamp',)
     extra = 1
 
+
 class OrderVariable_Inline(admin.TabularInline):
     model = OrderVariable
     extra = 1
 
+
 class OrderTaxDetail_Inline(admin.TabularInline):
     model = OrderTaxDetail
     extra = 1
+
 
 class OrderOptions(admin.ModelAdmin):
     fieldsets = (
@@ -87,7 +100,7 @@ class OrderOptions(admin.ModelAdmin):
         (_('Totals'),
          {'fields': ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total')}
          )
-        )
+    )
     readonly_fields = ('time_stamp', 'frozen',)
     list_display = ('id', 'contact', 'contact_user', 'time_stamp', 'order_total', 'balance_forward', 'status', 'invoice', 'packingslip', 'shippinglabel', 'frozen')
     list_filter = ['time_stamp', 'status__status', 'frozen']
@@ -116,6 +129,7 @@ class OrderOptions(admin.ModelAdmin):
 
 class OrderItemOptions(admin.ModelAdmin):
     inlines = [OrderItemDetail_Inline]
+
 
 class OrderPaymentOptions(admin.ModelAdmin):
     list_filter = ['order', 'payment']
