@@ -589,8 +589,15 @@ class Order(models.Model):
     Orders contain a copy of all the information at the time the order was
     placed.
     """
-    site = models.ForeignKey(Site, verbose_name=_('Site'))
-    contact = models.ForeignKey(Contact, verbose_name=_('Contact'))
+    site = models.ForeignKey(Site, verbose_name=_('Site'), editable=False)
+    contact = models.ForeignKey(Contact, verbose_name=_('Contact'), editable=False)
+    frozen = models.BooleanField(default=False)
+    time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
+    notes = models.TextField(_("Notes"), blank=True, null=True)
+    method = models.CharField(_("Order method"), choices=ORDER_CHOICES, max_length=200, blank=True)
+    status = models.ForeignKey("OrderStatus", blank=True, null=True, editable=False, related_name="current_status")
+    discount_code = models.CharField(_("Discount Code"), max_length=20, blank=True, null=True, help_text=_("Coupon Code"))
+
     ship_addressee = models.CharField(_("Addressee"), max_length=61, blank=True)
     ship_street1 = models.CharField(_("Street"), max_length=80, blank=True)
     ship_street2 = models.CharField(_("Street"), max_length=80, blank=True)
@@ -605,21 +612,17 @@ class Order(models.Model):
     bill_state = models.CharField(_("State"), max_length=50, blank=True)
     bill_postal_code = models.CharField(_("Post Code"), max_length=30, blank=True)
     bill_country = models.ForeignKey(Country, blank=True, related_name="bill_country")
-    notes = models.TextField(_("Notes"), blank=True, null=True)
-    sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
-    total = models.DecimalField(_("Total"), max_digits=18, decimal_places=10, blank=True, null=True)
-    discount_code = models.CharField(_("Discount Code"), max_length=20, blank=True, null=True, help_text=_("Coupon Code"))
-    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    method = models.CharField(_("Order method"), choices=ORDER_CHOICES, max_length=200, blank=True)
+
     shipping_description = models.CharField(_("Shipping Description"), max_length=200, blank=True, null=True)
     shipping_method = models.CharField(_("Shipping Method"), max_length=200, blank=True, null=True)
     shipping_model = ShippingChoiceCharField(_("Shipping Models"), max_length=30, blank=True, null=True)
+
+    sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
     shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=10, blank=True, null=True)
     shipping_discount = models.DecimalField(_("Shipping Discount"), max_digits=18, decimal_places=10, blank=True, null=True)
+    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=10, blank=True, null=True)
     tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=10, blank=True, null=True)
-    status = models.ForeignKey("OrderStatus", blank=True, null=True, editable=False, related_name="current_status")
-    frozen = models.BooleanField(default=False)
-    time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
+    total = models.DecimalField(_("Total"), max_digits=18, decimal_places=10, blank=True, null=True)
 
     objects = OrderManager()
 
