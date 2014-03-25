@@ -10,6 +10,7 @@ Decimal("0.01")
 Decimal("0.01")
 """
 
+import warnings
 from decimal import Decimal
 
 from django.contrib.auth.models import User
@@ -581,6 +582,7 @@ class ConfigTest(TestCase):
 
 
 def make_test_order(country, state, include_non_taxed=False, site=None):
+    warnings.warn("make_test_order is deprecated - Use TestOrderFactory instead", DeprecationWarning)
     if not site:
         site = Site.objects.get_current()
     c = Contact(first_name="Tax", last_name="Tester",
