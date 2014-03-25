@@ -393,6 +393,7 @@ class DecimalValue(Value):
         else:
             return unicode(value)
 
+
 # DurationValue has a lot of duplication and ugliness because of issue #2443
 # Until DurationField is sorted out, this has to do some extra work
 class DurationValue(Value):
@@ -424,6 +425,7 @@ class DurationValue(Value):
         else:
             return unicode(value.days * 24 * 3600 + value.seconds + float(value.microseconds) / 1000000)
 
+
 class FloatValue(Value):
 
     class field(forms.FloatField):
@@ -442,6 +444,7 @@ class FloatValue(Value):
             return "0"
         else:
             return unicode(value)
+
 
 class IntegerValue(Value):
     class field(forms.IntegerField):
@@ -488,6 +491,7 @@ class PercentValue(Value):
         else:
             return unicode(value)
 
+
 class PositiveIntegerValue(IntegerValue):
 
     class field(forms.IntegerField):
@@ -510,6 +514,7 @@ class StringValue(Value):
         return unicode(value)
 
     to_editor = to_python
+
 
 class LongStringValue(Value):
 
