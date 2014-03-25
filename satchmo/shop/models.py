@@ -620,9 +620,10 @@ class Order(models.Model):
     sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
     shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=10, blank=True, null=True)
     shipping_discount = models.DecimalField(_("Shipping Discount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=10, blank=True, null=True)
     tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=10, blank=True, null=True)
+    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=10, blank=True, null=True)
     total = models.DecimalField(_("Total"), max_digits=18, decimal_places=10, blank=True, null=True)
+    refund = models.DecimalField(_("Refund"), max_digits=18, decimal_places=10, blank=True, null=True, help_text=_("When refunding an order (either whole or in part), please note the amount here"))
 
     objects = OrderManager()
 

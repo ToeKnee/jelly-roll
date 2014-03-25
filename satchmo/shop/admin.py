@@ -98,7 +98,7 @@ class OrderOptions(admin.ModelAdmin):
          {'classes': ('collapse',),
           'fields': ('bill_street1', 'bill_street2', 'bill_city', 'bill_state', 'bill_postal_code', 'bill_country')}),
         (_('Totals'),
-         {'fields': ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total')}
+         {'fields': ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'refund')}
          )
     )
     readonly_fields = ('contact', 'time_stamp', 'frozen',)
