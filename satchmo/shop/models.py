@@ -1141,7 +1141,7 @@ class OrderStatus(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("Order"))
     status = models.ForeignKey(Status, verbose_name=_("Status"))
     notes = models.TextField(_("Notes"), blank=True)
-    time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
+    time_stamp = models.DateTimeField(_("Timestamp"), editable=False, db_index=True)
 
     def __unicode__(self):
         return self.status.status
