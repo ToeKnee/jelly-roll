@@ -9,45 +9,45 @@ import logging
 import os.path
 import random
 import sha
+from decimal import Decimal
 
 import config
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.cache import cache
 from django.core import urlresolvers
+from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.files import FileField
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
-from django.utils.translation import get_language
-from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import SettingNotSet
-from satchmo.configuration import config_value
-from satchmo.configuration import config_value_safe
+from django.utils.translation import (
+    get_language,
+    ugettext_lazy as _
+)
+from satchmo.configuration import (
+    SettingNotSet,
+    config_value,
+    config_value_safe
+)
 from satchmo.shipping.config import shipping_methods
-from satchmo.shop import get_satchmo_setting
 from satchmo.shop.signals import satchmo_search
 from satchmo.tax.models import TaxClass
 from satchmo.thumbnail.field import ImageWithThumbnailField
-from satchmo.utils import add_month
-from satchmo.utils import cross_list
-from satchmo.utils import get_flat_list
-from satchmo.utils import normalize_dir
-from satchmo.utils import url_join
+from satchmo.utils import (
+    add_month,
+    cross_list,
+    get_flat_list,
+    normalize_dir
+)
 from satchmo.utils.unique_id import slugify
 import signals
 
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
+log = logging.getLogger(__name__)
 
-log = logging.getLogger('product.models')
-
-dimension_units = (('cm','cm'), ('in','in'))
-
-weight_units = (('kg','kg'), ('lb','lb'))
+dimension_units = (('cm', 'cm'), ('in', 'in'))
+weight_units = (('kg', 'kg'), ('lb', 'lb'))
 
 SHIP_CLASS_CHOICES = (
     ('DEFAULT', _('Default')),
@@ -55,19 +55,22 @@ SHIP_CLASS_CHOICES = (
     ('NO', _('Not Shippable'))
 )
 
+
 def default_dimension_unit():
-    val = config_value_safe('SHOP','MEASUREMENT_SYSTEM', (None, None))[0]
+    val = config_value_safe('SHOP', 'MEASUREMENT_SYSTEM', (None, None))[0]
     if val == 'metric':
         return 'cm'
     else:
         return 'in'
 
+
 def default_weight_unit():
-    val = config_value_safe('SHOP','MEASUREMENT_SYSTEM', (None, None))[0]
+    val = config_value_safe('SHOP', 'MEASUREMENT_SYSTEM', (None, None))[0]
     if val == 'metric':
         return 'kg'
     else:
         return 'lb'
+
 
 class CategoryManager(models.Manager):
 
@@ -78,7 +81,7 @@ class CategoryManager(models.Manager):
 
         site = site.id
 
-        return self.filter(site__id__exact = site, **kwargs)
+        return self.filter(site__id__exact=site, **kwargs)
 
     def root_categories(self, site=None, **kwargs):
         """Get all root categories."""
@@ -123,22 +126,22 @@ class Category(models.Model):
     slug = models.SlugField(_("Slug"), help_text=_("Used for URLs, auto-generated from name if blank"), blank=True)
     active = models.BooleanField(_("Active"), default=False)
     parent = models.ForeignKey('self', blank=True, null=True,
-        related_name='child')
-        #,validator_list=['categoryvalidator'])
+                               related_name='child')
     meta = models.TextField(_("Meta Description"), blank=True, null=True,
-        help_text=_("Meta description for this category"))
+                            help_text=_("Meta description for this category"))
     description = models.TextField(_("Description"), blank=True,
-        help_text="Optional")
+                                   help_text="Optional")
     ordering = models.IntegerField(_("Ordering"), default=0, help_text=_("Override alphabetical order in category display"))
     related_categories = models.ManyToManyField('self', blank=True, null=True,
-        verbose_name=_('Related Categories'), related_name='related_categories')
+                                                verbose_name=_('Related Categories'),
+                                                related_name='related_categories')
     objects = CategoryManager()
 
     def _get_mainImage(self):
         key = "Category_get_mainImage %s" % (self.id)
         key = key.replace(" ", "-")
         img = cache.get(key)
-        if img == None:
+        if img is None:
             img = False
             if self.images.count() > 0:
                 img = self.images.order_by('sort')[0]
@@ -162,7 +165,7 @@ class Category(models.Model):
         key = "Category_active_products %s" % (self.id)
         key = key.replace(" ", "-")
         products = cache.get(key)
-        if products == None:
+        if products is None:
             if variations and include_children:
                 cats = self.get_all_children(include_self=True)
                 products = Product.objects.select_related().filter(category__in=cats, site=self.site, active=True, **kwargs)
@@ -208,7 +211,10 @@ class Category(models.Model):
         else:
             slug_list = ""
         return urlresolvers.reverse('satchmo_category',
-            kwargs={'parent_slugs' : slug_list, 'slug' : self.slug})
+                                    kwargs={
+                                        'parent_slugs': slug_list,
+                                        'slug': self.slug
+                                    })
 
     def get_separator(self):
         return ' - '
@@ -237,11 +243,11 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         if self.id:
             if self.parent and self.parent_id == self.id:
-                raise validators.ValidationError(_("You must not save a category in itself!"))
+                raise ValidationError(_("You must not save a category in itself!"))
 
             for p in self._recurse_for_parents(self):
                 if self.id == p.id:
-                    raise validators.ValidationError(_("You must not save a category in itself!"))
+                    raise ValidationError(_("You must not save a category in itself!"))
 
         if not self.slug:
             self.slug = slugify(self.name, instance=self)
@@ -257,8 +263,10 @@ class Category(models.Model):
         """
         Taken from a python newsgroup post
         """
-        if type(L) != type([]): return [L]
-        if L == []: return L
+        if not isinstance(L, list):
+            return [L]
+        if L == []:
+            return L
         return self._flatten(L[0]) + self._flatten(L[1:])
 
     def _recurse_for_children(self, node, only_active=False):
@@ -285,7 +293,7 @@ class Category(models.Model):
         key = "Category_get_all_children_%s_%s_%s" % (self.id, only_active, include_self)
         key = key.replace("_", "-")
         flat_list = cache.get(key)
-        if flat_list == None:
+        if flat_list is None:
             children_list = self._recurse_for_children(self, only_active=only_active)
             if include_self:
                 ix = 0
@@ -299,6 +307,7 @@ class Category(models.Model):
         ordering = ['site', 'parent__id', 'ordering', 'name']
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
+
 
 class CategoryTranslation(models.Model):
     """A specific language translation for a `Category`.  This is intended for all descriptions which are not the
@@ -314,11 +323,12 @@ class CategoryTranslation(models.Model):
     class Meta:
         verbose_name = _('Category Translation')
         verbose_name_plural = _('Category Translations')
-        ordering = ('category', 'name','languagecode')
+        ordering = ('category', 'name', 'languagecode')
         unique_together = ('category', 'languagecode', 'version')
 
     def __unicode__(self):
         return u"CategoryTranslation: [%s] (ver #%i) %s Name: %s" % (self.languagecode, self.version, self.category, self.name)
+
 
 class CategoryImage(models.Model):
     """
@@ -326,13 +336,13 @@ class CategoryImage(models.Model):
     Thumbnails are automatically created.
     """
     category = models.ForeignKey(Category, null=True, blank=True,
-        related_name="images")
+                                 related_name="images")
     picture = ImageWithThumbnailField(verbose_name=_('Picture'),
-        upload_to="__DYNAMIC__",
-        name_field="_filename",
-        max_length=200) #Media root is automatically prepended
+                                      upload_to="__DYNAMIC__",
+                                      name_field="_filename",
+                                      max_length=200)  # Media root is automatically prepended
     caption = models.CharField(_("Optional caption"), max_length=100,
-        null=True, blank=True)
+                               null=True, blank=True)
     sort = models.IntegerField(_("Sort Order"), )
 
     def translated_caption(self, language_code=None):
@@ -359,6 +369,7 @@ class CategoryImage(models.Model):
         verbose_name = _("Category Image")
         verbose_name_plural = _("Category Images")
 
+
 class CategoryImageTranslation(models.Model):
     """A specific language translation for a `CategoryImage`.  This is intended for all descriptions which are not the
     default settings.LANGUAGE.
@@ -372,11 +383,12 @@ class CategoryImageTranslation(models.Model):
     class Meta:
         verbose_name = _('Category Image Translation')
         verbose_name_plural = _('Category Image Translations')
-        ordering = ('categoryimage', 'caption','languagecode')
+        ordering = ('categoryimage', 'caption', 'languagecode')
         unique_together = ('categoryimage', 'languagecode', 'version')
 
     def __unicode__(self):
         return u"CategoryImageTranslation: [%s] (ver #%i) %s Name: %s" % (self.languagecode, self.version, self.categoryimage, self.name)
+
 
 class OptionGroupManager(models.Manager):
     def get_sortmap(self):
@@ -388,6 +400,7 @@ class OptionGroupManager(models.Manager):
 
         return work
 
+
 class OptionGroup(models.Model):
     """
     A set of options that can be applied to an item.
@@ -395,12 +408,12 @@ class OptionGroup(models.Model):
     """
     site = models.ForeignKey(Site, verbose_name=_('Site'))
     name = models.CharField(_("Name of Option Group"), max_length=50,
-        help_text=_("This will be the text displayed on the product page."))
+                            help_text=_("This will be the text displayed on the product page."))
     description = models.CharField(_("Detailed Description"), max_length=100,
-        blank=True,
-        help_text=_("Further description of this group (i.e. shirt size vs shoe size)."))
+                                   blank=True,
+                                   help_text=_("Further description of this group (i.e. shirt size vs shoe size)."))
     sort_order = models.IntegerField(_("Sort Order"),
-        help_text=_("The display order for this group."))
+                                     help_text=_("The display order for this group."))
 
     objects = OptionGroupManager()
 
@@ -421,6 +434,7 @@ class OptionGroup(models.Model):
         verbose_name = _("Option Group")
         verbose_name_plural = _("Option Groups")
 
+
 class OptionGroupTranslation(models.Model):
     """A specific language translation for an `OptionGroup`.  This is intended for all descriptions which are not the
     default settings.LANGUAGE.
@@ -435,7 +449,7 @@ class OptionGroupTranslation(models.Model):
     class Meta:
         verbose_name = _('Option Group Translation')
         verbose_name_plural = _('Option Groups Translations')
-        ordering = ('optiongroup', 'name','languagecode')
+        ordering = ('optiongroup', 'name', 'languagecode')
         unique_together = ('optiongroup', 'languagecode', 'version')
 
     def __unicode__(self):
@@ -445,8 +459,8 @@ class OptionGroupTranslation(models.Model):
 class OptionManager(models.Manager):
     def from_unique_id(self, unique_id):
         group_id, option_value = split_option_unique_id(unique_id)
-        group = OptionGroup.objects.get(id=group_id)
         return Option.objects.get(option_group=group_id, value=option_value)
+
 
 class Option(models.Model):
     """
@@ -458,8 +472,8 @@ class Option(models.Model):
     name = models.CharField(_("Display value"), max_length=50, )
     value = models.CharField(_("Stored value"), max_length=50)
     price_change = models.DecimalField(_("Price Change"), null=True, blank=True,
-        max_digits=14, decimal_places=6,
-        help_text=_("This is the price differential for this option."))
+                                       max_digits=14, decimal_places=6,
+                                       help_text=_("This is the price differential for this option."))
     sort_order = models.IntegerField(_("Sort Order"))
 
     def translated_name(self, language_code=None):
@@ -481,6 +495,7 @@ class Option(models.Model):
     def __unicode__(self):
         return u'%s: %s' % (self.option_group.name, self.name)
 
+
 class OptionTranslation(models.Model):
     """A specific language translation for an `Option`.  This is intended for all descriptions which are not the
     default settings.LANGUAGE.
@@ -494,11 +509,12 @@ class OptionTranslation(models.Model):
     class Meta:
         verbose_name = _('Option Translation')
         verbose_name_plural = _('Option Translations')
-        ordering = ('option', 'name','languagecode')
+        ordering = ('option', 'name', 'languagecode')
         unique_together = ('option', 'languagecode', 'version')
 
     def __unicode__(self):
         return u"OptionTranslation: [%s] (ver #%i) %s Name: %s" % (self.languagecode, self.version, self.option, self.name)
+
 
 class ProductManager(models.Manager):
 
@@ -544,11 +560,11 @@ class Product(models.Model):
     """
     site = models.ForeignKey(Site, verbose_name=_('Site'))
     name = models.CharField(_("Full Name"), max_length=255, blank=False,
-        help_text=_("This is what the product will be called in the default site language.  To add non-default translations, use the Product Translation section below."))
+                            help_text=_("This is what the product will be called in the default site language.  To add non-default translations, use the Product Translation section below."))
     slug = models.SlugField(_("Slug Name"), blank=True,
-        help_text=_("Used for URLs, auto-generated from name if blank"), max_length=80)
+                            help_text=_("Used for URLs, auto-generated from name if blank"), max_length=80)
     sku = models.CharField(_("SKU"), max_length=255, blank=True, null=True,
-        help_text=_("Defaults to slug if left blank"))
+                           help_text=_("Defaults to slug if left blank"))
     short_description = models.TextField(_("Short description of product"), help_text=_("This should be a 1 or 2 line description in the default site language for use in product listing screens"), max_length=200, default='', blank=True)
     description = models.TextField(_("Description of product"), help_text=_("This field can contain HTML and should be a few paragraphs in the default site language explaining the background of the product, and anything that would help the potential customer make their purchase."), default='', blank=True)
     category = models.ManyToManyField(Category, blank=True, verbose_name=_("Category"))
@@ -572,15 +588,45 @@ class Product(models.Model):
     total_sold = models.IntegerField(_("Total sold"), default=0)
     taxable = models.BooleanField(_("Taxable"), default=False)
     taxClass = models.ForeignKey(TaxClass, verbose_name=_('Tax Class'), blank=True, null=True, help_text=_("If it is taxable, what kind of tax?"))
-    # What is the product type?
     shipclass = models.CharField(_('Shipping'), choices=SHIP_CLASS_CHOICES, default="YES", max_length=10,
                                  help_text=_("If this is 'Default', then we'll use the product type to determine if it is shippable.")
-        )
+                                 )
     ingredients = models.ForeignKey("IngredientsList", null=True, blank=True)
     instructions = models.ForeignKey("Instruction", null=True, blank=True)
     precautions = models.ForeignKey("Precaution", null=True, blank=True)
 
     objects = ProductManager()
+
+    class Meta:
+        ordering = ('site', 'ordering', 'name')
+        verbose_name = _("Product")
+        verbose_name_plural = _("Products")
+        unique_together = (('site', 'sku'), ('site', 'slug'))
+
+    def __unicode__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return urlresolvers.reverse('satchmo_product',
+                                    kwargs={'product_slug': self.slug})
+
+    def save(self, *args, **kwargs):
+        self.date_updated = datetime.datetime.now()
+
+        if not self.date_added:
+            self.date_added = self.date_updated
+
+        if self.name and not self.slug:
+            self.slug = slugify(self.name, instance=self)
+
+        if not self.sku:
+            self.sku = self.slug
+        super(Product, self).save(*args, **kwargs)
+        ProductPriceLookup.objects.smart_create_for_product(self)
+
+        key = "Product_get_mainImage %s" % (self.id)
+        key = key.replace(" ", "-")
+        cache.delete(key)
 
     def _get_mainCategory(self):
         """Return the first category for the product"""
@@ -630,9 +676,9 @@ class Product(models.Model):
     def translated_attributes(self, language_code=None):
         if not language_code:
             language_code = get_language()
-        q = self.productattribute_set.filter(languagecode__exact = language_code)
+        q = self.productattribute_set.filter(languagecode__exact=language_code)
         if q.count() == 0:
-            q = self.productattribute_set.filter(Q(languagecode__isnull = True) | Q(languagecode__exact = ""))
+            q = self.productattribute_set.filter(Q(languagecode__isnull=True) | Q(languagecode__exact=""))
         return q
 
     def translated_description(self, language_code=None):
@@ -712,37 +758,6 @@ class Product(models.Model):
         return True
 
     has_full_weight = property(_has_full_weight)
-
-    def __unicode__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return urlresolvers.reverse('satchmo_product',
-            kwargs={'product_slug': self.slug})
-
-    class Meta:
-        ordering = ('site', 'ordering', 'name')
-        verbose_name = _("Product")
-        verbose_name_plural = _("Products")
-        unique_together = (('site', 'sku'),('site','slug'))
-
-    def save(self, *args, **kwargs):
-        self.date_updated = datetime.datetime.now()
-
-        if not self.date_added:
-            self.date_added = self.date_updated
-
-        if self.name and not self.slug:
-            self.slug = slugify(self.name, instance=self)
-
-        if not self.sku:
-            self.sku = self.slug
-        super(Product, self).save(*args, **kwargs)
-        ProductPriceLookup.objects.smart_create_for_product(self)
-
-        key = "Product_get_mainImage %s" % (self.id)
-        key = key.replace(" ", "-")
-        cache.delete(key)
 
     def get_subtypes(self):
         types = []
@@ -856,12 +871,12 @@ class Product(models.Model):
         shippable, then consider the product not shippable.
         If it is downloadable, then we don't ship it either.
         """
-        if self.shipclass=="DEFAULT":
+        if self.shipclass == "DEFAULT":
             subtype = self.get_subtype_with_attr('is_shippable')
             if subtype and not subtype.is_shippable:
                 return False
             return True
-        elif self.shipclass=="YES":
+        elif self.shipclass == "YES":
             return True
         else:
             return False
@@ -917,11 +932,12 @@ class ProductTranslation(models.Model):
     class Meta:
         verbose_name = _('Product Translation')
         verbose_name_plural = _('Product Translations')
-        ordering = ('product', 'name','languagecode')
+        ordering = ('product', 'name', 'languagecode')
         unique_together = ('product', 'languagecode', 'version')
 
     def __unicode__(self):
         return u"ProductTranslation: [%s] (ver #%i) %s Name: %s" % (self.languagecode, self.version, self.product, self.name)
+
 
 def get_all_options(obj, ids_only=False):
     """
@@ -945,6 +961,7 @@ def get_all_options(obj, ids_only=False):
     results = cross_list(masterlist)
     return results
 
+
 class CustomProduct(models.Model):
     """
     Product which must be custom-made or ordered.
@@ -952,8 +969,8 @@ class CustomProduct(models.Model):
     product = models.OneToOneField(Product, verbose_name=_('Product'), primary_key=True)
     downpayment = models.IntegerField(_("Percent Downpayment"), default=20)
     deferred_shipping = models.BooleanField(_('Deferred Shipping'),
-        help_text=_('Do not charge shipping at checkout for this item.'),
-        default=False)
+                                            help_text=_('Do not charge shipping at checkout for this item.'),
+                                            default=False)
     option_group = models.ManyToManyField(OptionGroup, verbose_name=_('Option Group'), blank=True,)
 
     def _is_shippable(self):
@@ -1005,8 +1022,6 @@ class CustomProduct(models.Model):
 
     full_price = property(fget=get_full_price)
 
-
-
     def _get_subtype(self):
         return 'CustomProduct'
 
@@ -1023,6 +1038,7 @@ class CustomProduct(models.Model):
         verbose_name = _('Custom Product')
         verbose_name_plural = _('Custom Products')
 
+
 class CustomTextField(models.Model):
     """
     A text field to be filled in by a customer.
@@ -1030,13 +1046,13 @@ class CustomTextField(models.Model):
 
     name = models.CharField(_('Custom field name'), max_length=40, )
     slug = models.SlugField(_("Slug"), help_text=_("Auto-generated from name if blank"),
-        blank=True)
+                            blank=True)
     products = models.ForeignKey(CustomProduct, verbose_name=_('Custom Fields'),
-        related_name='custom_text_fields')
+                                 related_name='custom_text_fields')
     sort_order = models.IntegerField(_("Sort Order"),
-        help_text=_("The display order for this group."))
+                                     help_text=_("The display order for this group."))
     price_change = models.DecimalField(_("Price Change"), max_digits=14,
-        decimal_places=6, blank=True, null=True)
+                                       decimal_places=6, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -1048,6 +1064,7 @@ class CustomTextField(models.Model):
 
     class Meta:
         ordering = ('sort_order',)
+
 
 class CustomTextFieldTranslation(models.Model):
     """A specific language translation for a `CustomTextField`.  This is intended for all descriptions which are not the
@@ -1062,11 +1079,12 @@ class CustomTextFieldTranslation(models.Model):
     class Meta:
         verbose_name = _('CustomTextField Translation')
         verbose_name_plural = _('CustomTextField Translations')
-        ordering = ('customtextfield', 'name','languagecode')
+        ordering = ('customtextfield', 'name', 'languagecode')
         unique_together = ('customtextfield', 'languagecode', 'version')
 
     def __unicode__(self):
         return u"CustomTextFieldTranslation: [%s] (ver #%i) %s Name: %s" % (self.languagecode, self.version, self.customtextfield, self.name)
+
 
 class ConfigurableProduct(models.Model):
     """
@@ -1076,10 +1094,8 @@ class ConfigurableProduct(models.Model):
     """
     product = models.OneToOneField(Product, verbose_name=_("Product"), primary_key=True)
     option_group = models.ManyToManyField(OptionGroup, blank=True, verbose_name=_("Option Group"))
-    create_subs = models.BooleanField(_("Create Variations"), default=False, help_text =_("Create ProductVariations for all this product's options.  To use this, you must first add an option, save, then return to this page and select this option."))
-
-    def __init__self(*args, **kwargs):
-        super(ConfigurableProduct, self).__init__(*args, **kwargs)
+    create_subs = models.BooleanField(_("Create Variations"), default=False,
+                                      help_text=_("Create ProductVariations for all this product's options.  To use this, you must first add an option, save, then return to this page and select this option."))
 
     def _get_subtype(self):
         return 'ConfigurableProduct'
@@ -1094,7 +1110,7 @@ class ConfigurableProduct(models.Model):
         """
         sublist = []
         masterlist = []
-        #Create a list of all the options & create all combos of the options
+        # Create a list of all the options & create all combos of the options
         for opt in self.option_group.all():
             for value in opt.option_set.all():
                 sublist.append(value)
@@ -1206,7 +1222,7 @@ class ConfigurableProduct(models.Model):
         options = self._unique_ids_from_options(options)
         pv = None
         if hasattr(self, '_variation_cache'):
-            pv =  self._variation_cache.get(options, None)
+            pv = self._variation_cache.get(options, None)
         else:
             for member in self.productvariation_set.all():
                 if member.unique_option_ids == options:
@@ -1226,7 +1242,7 @@ class ConfigurableProduct(models.Model):
         return variations
 
     def add_template_context(self, context, request, selected_options,
-            include_tax, **kwargs):
+                             include_tax, **kwargs):
         """
         Add context for the product template.
         Return the updated context.
@@ -1236,7 +1252,7 @@ class ConfigurableProduct(models.Model):
         selected_options = self._unique_ids_from_options(selected_options)
         context['options'] = serialize_options(self, selected_options)
         context['details'] = productvariation_details(self.product, include_tax,
-            request.user)
+                                                      request.user)
 
         return context
 
@@ -1271,10 +1287,12 @@ class ConfigurableProduct(models.Model):
     def __unicode__(self):
         return self.product.slug
 
+
 def _protected_dir(instance, filename):
     raw = config_value_safe('PRODUCT', 'PROTECTED_DIR', 'images/')
     updir = normalize_dir(raw)
     return os.path.join(updir, os.path.basename(filename))
+
 
 class DownloadableProduct(models.Model):
     """
@@ -1296,7 +1314,7 @@ class DownloadableProduct(models.Model):
 
     def create_key(self):
         salt = sha.new(str(random.random())).hexdigest()[:5]
-        download_key = sha.new(salt+smart_str(self.product.name)).hexdigest()
+        download_key = sha.new(salt + smart_str(self.product.name)).hexdigest()
         return download_key
 
     def order_success(self, order, order_item):
@@ -1305,6 +1323,7 @@ class DownloadableProduct(models.Model):
     class Meta:
         verbose_name = _("Downloadable Product")
         verbose_name_plural = _("Downloadable Products")
+
 
 class SubscriptionProduct(models.Model):
     """
@@ -1397,6 +1416,7 @@ class SubscriptionProduct(models.Model):
         verbose_name = _("Subscription Product")
         verbose_name_plural = _("Subscription Products")
 
+
 class Trial(models.Model):
     """
     Trial billing terms for subscription products.
@@ -1416,7 +1436,7 @@ class Trial(models.Model):
 
     def _occurrences(self):
         if self.expire_length:
-            return int(self.expire_length/self.subscription.expire_length)
+            return int(self.expire_length / self.subscription.expire_length)
         else:
             return 0
     occurrences = property(fget=_occurrences)
@@ -1436,20 +1456,13 @@ class Trial(models.Model):
         verbose_name = _("Trial Terms")
         verbose_name_plural = _("Trial Terms")
 
-#class BundledProduct(models.Model):
-#    """
-#    This type of Product is a group of products that are sold as a set
-#    NOTE: This doesn't do anything yet - it's just an example
-#    """
-#    product = models.OneToOneField(Product)
-#    members = models.ManyToManyField(Product, related_name='parent_productgroup_set')
-#
 
 class ProductVariationManager(models.Manager):
 
     def by_parent(self, parent):
         """Get the list of productvariations which have the `product` as the parent"""
         return ProductVariation.objects.filter(parent=parent)
+
 
 class ProductVariation(models.Model):
     """
@@ -1460,10 +1473,19 @@ class ProductVariation(models.Model):
     product = models.OneToOneField(Product, verbose_name=_('Product'), primary_key=True)
     options = models.ManyToManyField(Option, verbose_name=_('Options'))
     parent = models.ForeignKey(ConfigurableProduct,
-    #, validator_list=[variant_validator]
-    verbose_name=_('Parent'))
+                               verbose_name=_('Parent'))
 
     objects = ProductVariationManager()
+
+    class Meta:
+        verbose_name = _("Product variation")
+        verbose_name_plural = _("Product variations")
+
+    def __unicode__(self):
+        return self.product.slug
+
+    def get_absolute_url(self):
+        return self.product.get_absolute_url()
 
     def _get_fullPrice(self):
         """ Get price based on parent ConfigurableProduct """
@@ -1557,7 +1579,7 @@ class ProductVariation(models.Model):
             prices = self.parent.product.get_qty_price_list()
             price_delta = self.price_delta()
 
-            pricelist = [(qty, price+price_delta) for qty, price in prices]
+            pricelist = [(qty, price + price_delta) for qty, price in prices]
 
         return pricelist
 
@@ -1570,7 +1592,7 @@ class ProductVariation(models.Model):
     is_shippable = property(fget=_is_shippable)
 
     def isValidOption(self, field_data, all_data):
-        raise validators.ValidationError(_("Two options from the same option group cannot be applied to an item."))
+        raise ValidationError(_("Two options from the same option group cannot be applied to an item."))
 
     def price_delta(self):
         price_delta = Decimal("0.00")
@@ -1589,7 +1611,7 @@ class ProductVariation(models.Model):
         pvs = pvs.exclude(product=self.product)
         for pv in pvs:
             if pv.unique_option_ids == self.unique_option_ids:
-                return # Don't allow duplicates
+                return None  # Don't allow duplicates
 
         if not self.product.name:
             # will force calculation of default name
@@ -1625,16 +1647,6 @@ class ProductVariation(models.Model):
 
     sku = property(fset=_set_sku, fget=_get_sku)
 
-    def get_absolute_url(self):
-        return self.product.get_absolute_url()
-
-    class Meta:
-        verbose_name = _("Product variation")
-        verbose_name_plural = _("Product variations")
-
-    def __unicode__(self):
-        return self.product.slug
-
 
 class ProductPriceLookupManager(models.Manager):
 
@@ -1653,13 +1665,15 @@ class ProductPriceLookupManager(models.Manager):
 
         objs = []
         for qty, price in pricelist:
-            obj = ProductPriceLookup(productslug=product.slug,
+            obj = ProductPriceLookup(
+                productslug=product.slug,
                 siteid=product.site_id,
                 active=product.active,
                 price=price,
                 quantity=qty,
                 discountable=product.is_discountable,
-                items_in_stock=product.items_in_stock)
+                items_in_stock=product.items_in_stock
+            )
             obj.save()
             objs.append(obj)
         return objs
@@ -1674,7 +1688,6 @@ class ProductPriceLookupManager(models.Manager):
         return objs
 
     def create_for_variation(self, variation, parent):
-
         product = variation.product
 
         self.delete_for_product(product)
@@ -1682,7 +1695,8 @@ class ProductPriceLookupManager(models.Manager):
 
         objs = []
         for qty, price in pricelist:
-            obj = ProductPriceLookup(productslug=product.slug,
+            obj = ProductPriceLookup(
+                productslug=product.slug,
                 parentid=parent.id,
                 siteid=product.site_id,
                 active=product.active,
@@ -1690,7 +1704,8 @@ class ProductPriceLookupManager(models.Manager):
                 quantity=qty,
                 key=variation.optionkey,
                 discountable=product.is_discountable,
-                items_in_stock=product.items_in_stock)
+                items_in_stock=product.items_in_stock
+            )
             obj.save()
             objs.append(obj)
         return objs
@@ -1722,6 +1737,7 @@ class ProductPriceLookupManager(models.Manager):
         else:
             return self.create_for_product(product)
 
+
 class ProductPriceLookup(models.Model):
     """
     A denormalized object, used to quickly provide
@@ -1751,6 +1767,7 @@ class ProductPriceLookup(models.Model):
 
     dynamic_price = property(fget=_dynamic_price)
 
+
 class ProductAttribute(models.Model):
     """
     Allows arbitrary name/value pairs (as strings) to be attached to a product.
@@ -1766,6 +1783,7 @@ class ProductAttribute(models.Model):
     class Meta:
         verbose_name = _("Product Attribute")
         verbose_name_plural = _("Product Attributes")
+
 
 class Price(models.Model):
     """
@@ -1801,7 +1819,7 @@ class Price(models.Model):
         if self.id:
             prices = prices.exclude(id=self.id)
         if prices.count():
-            return #Duplicate Price
+            return None  # Duplicate Price
 
         super(Price, self).save(*args, **kwargs)
         ProductPriceLookup.objects.smart_create_for_product(self.product)
@@ -1812,6 +1830,7 @@ class Price(models.Model):
         verbose_name_plural = _("Prices")
         unique_together = (("product", "quantity", "expires"),)
 
+
 class ProductImage(models.Model):
     """
     A picture of an item.  Can have many pictures associated with an item.
@@ -1819,12 +1838,25 @@ class ProductImage(models.Model):
     """
     product = models.ForeignKey(Product, null=True, blank=True)
     picture = ImageWithThumbnailField(verbose_name=_('Picture'),
-        upload_to="__DYNAMIC__",
-        name_field="_filename",
-        max_length=200) #Media root is automatically prepended
+                                      upload_to="__DYNAMIC__",
+                                      name_field="_filename",
+                                      max_length=200)  # Media root is automatically prepended
     caption = models.CharField(_("Optional caption"), max_length=100,
-        null=True, blank=True)
+                               null=True, blank=True)
     sort = models.IntegerField(_("Sort Order"), )
+
+    class Meta:
+        ordering = ['sort']
+        verbose_name = _("Product Image")
+        verbose_name_plural = _("Product Images")
+
+    def __unicode__(self):
+        if self.product:
+            return u"Image of Product %s" % self.product.slug
+        elif self.caption:
+            return u"Image with caption \"%s\"" % self.caption
+        else:
+            return u"%s" % self.picture
 
     def translated_caption(self, language_code=None):
         return lookup_translation(self, 'caption', language_code)
@@ -1836,22 +1868,11 @@ class ProductImage(models.Model):
             return 'default'
     _filename = property(_get_filename)
 
-    def __unicode__(self):
-        if self.product:
-            return u"Image of Product %s" % self.product.slug
-        elif self.caption:
-            return u"Image with caption \"%s\"" % self.caption
-        else:
-            return u"%s" % self.picture
-
-    class Meta:
-        ordering = ['sort']
-        verbose_name = _("Product Image")
-        verbose_name_plural = _("Product Images")
 
 class ProductImageTranslation(models.Model):
-    """A specific language translation for a `ProductImage`.  This is intended for all descriptions which are not the
-    default settings.LANGUAGE.
+    """A specific language translation for a `ProductImage`.  This is
+    intended for all descriptions which are not the default
+    settings.LANGUAGE.
     """
     productimage = models.ForeignKey(ProductImage, related_name="translations")
     languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES)
@@ -1862,34 +1883,38 @@ class ProductImageTranslation(models.Model):
     class Meta:
         verbose_name = _('Product Image Translation')
         verbose_name_plural = _('Product Image Translations')
-        ordering = ('productimage', 'caption','languagecode')
+        ordering = ('productimage', 'caption', 'languagecode')
         unique_together = ('productimage', 'languagecode', 'version')
 
     def __unicode__(self):
         return u"ProductImageTranslation: [%s] (ver #%i) %s Name: %s" % (self.languagecode, self.version, self.productimage, self.name)
 
+
 class IngredientsList(models.Model):
     description = models.CharField(max_length=255)
     ingredients = models.TextField(_('Ingredients listing'))
 
-    def __unicode__ (self):
+    def __unicode__(self):
         return u"%s" % (self.description)
+
 
 class Instruction(models.Model):
     description = models.CharField(max_length=255)
     instructions = models.TextField(_('Usage Instructions'))
 
-    def __unicode__ (self):
+    def __unicode__(self):
         return u"%s" % (self.description)
+
 
 class Precaution(models.Model):
     description = models.CharField(max_length=255)
     precautions = models.TextField(_('Precautions'))
 
-    def __unicode__ (self):
+    def __unicode__(self):
         return u"%s" % (self.description)
 
 UNSET = object()
+
 
 def lookup_translation(obj, attr, language_code=None, version=-1):
     """Get a translated attribute by language.
@@ -1899,7 +1924,7 @@ def lookup_translation(obj, attr, language_code=None, version=-1):
     key = "lookup_translation %s %s %s %s" % (obj, attr, language_code, version)
     key = key.replace(" ", "-")
     val = cache.get(key)
-    if val == None:
+    if val is None:
         if not language_code:
             language_code = get_language()
 
@@ -1917,14 +1942,15 @@ def lookup_translation(obj, attr, language_code=None, version=-1):
                 short_code = language_code[:pos]
 
         trans = None
-        has_key = obj._translationcache.has_key(language_code)
+        has_key = language_code in obj._translationcache
         if has_key:
-            if obj._translationcache[language_code] == None and short_code != language_code:
+            if obj._translationcache[language_code] is None and short_code != language_code:
                 return lookup_translation(obj, attr, short_code)
 
         if not has_key:
             q = obj.translations.filter(
-                languagecode__iexact = language_code)
+                languagecode__iexact=language_code
+            )
 
             if q.count() == 0:
                 obj._translationcache[language_code] = None
@@ -1934,7 +1960,8 @@ def lookup_translation(obj, attr, language_code=None, version=-1):
 
                 else:
                     q = obj.translations.filter(
-                        languagecode__istartswith = language_code)
+                        languagecode__istartswith=language_code
+                    )
 
             if q.count() > 0:
                 trans = None
@@ -1969,6 +1996,7 @@ def lookup_translation(obj, attr, language_code=None, version=-1):
         cache.set(key, val)
     return val
 
+
 def get_product_quantity_price(product, qty=1, delta=Decimal("0.00"), parent=None):
     """
     Returns price as a Decimal else None.
@@ -1982,16 +2010,18 @@ def get_product_quantity_price(product, qty=1, delta=Decimal("0.00"), parent=Non
         try:
             if not type(val) is Decimal:
                 val = Decimal(val)
-            return val+delta
+            return val + delta
         except TypeError:
-            return val+delta
+            return val + delta
     else:
         if parent:
             return get_product_quantity_price(parent, qty, delta=delta)
         return None
 
+
 def make_option_unique_id(groupid, value):
     return '%s-%s' % (str(groupid), str(value),)
+
 
 def sorted_tuple(lst):
     ret = []
@@ -2000,6 +2030,7 @@ def sorted_tuple(lst):
             ret.append(x)
     ret.sort()
     return tuple(ret)
+
 
 def split_option_unique_id(uid):
     "reverse of make_option_unique_id"
