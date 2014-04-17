@@ -4,11 +4,13 @@ from django.core import urlresolvers
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from satchmo.l10n.mixins import TranslatedObjectMixin
-from satchmo.product.models import Product
-from satchmo.product.models import Category
+from satchmo.product.models import (
+    Category,
+    Product
+)
 from satchmo.thumbnail.field import ImageWithThumbnailField
-import logging
 
+import logging
 log = logging.getLogger(__name__)
 
 
@@ -30,8 +32,7 @@ class Brand(models.Model, TranslatedObjectMixin):
     slug = models.SlugField(_("Slug"), unique=True,
                             help_text=_("Used for URLs"))
     products = models.ManyToManyField(Product, blank=True,
-                                      verbose_name=_("Products"),
-                                      through='BrandProduct')
+                                      verbose_name=_("Products"))
     ordering = models.IntegerField(_("Ordering"))
     active = models.BooleanField(default=True)
 
@@ -69,15 +70,6 @@ class Brand(models.Model, TranslatedObjectMixin):
         ordering = ('ordering', 'slug')
         verbose_name = _('Brand')
         verbose_name_plural = _('Brands')
-
-
-class BrandProduct(models.Model):
-    brand = models.ForeignKey(Brand)
-    product = models.ForeignKey(Product)
-
-    class Meta:
-        verbose_name = _("Brand Product")
-        verbose_name_plural = _("Brand Products")
 
 
 class BrandTranslation(models.Model):
