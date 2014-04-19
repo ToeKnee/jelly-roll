@@ -134,6 +134,7 @@ class OrderItemOptions(admin.ModelAdmin):
 class OrderPaymentOptions(admin.ModelAdmin):
     list_filter = ['payment']
     list_display = ['id', 'order', 'payment', 'amount_total', 'time_stamp']
+    date_hierarchy = 'time_stamp'
     readonly_fields = ('order', )
     fieldsets = (
         (None, {'fields': ('order', 'payment', 'amount', 'transaction_id', 'time_stamp')}), )
