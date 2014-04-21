@@ -138,7 +138,7 @@ class OrderPaymentOptions(admin.ModelAdmin):
     readonly_fields = ('order', )
     fieldsets = (
         (None, {'fields': ('order', 'payment', 'amount', 'transaction_id', 'time_stamp')}), )
-    search_fields = ['id', 'order__id', 'order__contact__user__email', 'order__contact__first_name', 'order__contact__last_name', 'order__contact__email']
+    search_fields = ['id', 'amount', 'order__id', 'order__contact__user__email', 'order__contact__first_name', 'order__contact__last_name', 'order__contact__email']
 
 admin.site.register(Cart, CartOptions)
 admin.site.register(CartItem, CartItemOptions)
