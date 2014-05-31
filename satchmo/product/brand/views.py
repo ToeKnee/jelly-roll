@@ -4,7 +4,8 @@ from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
 from satchmo.discount.utils import find_best_auto_discount
 from satchmo.product import signals
-from satchmo.product.brand.models import Brand, BrandCategory
+from satchmo.product.models import Category
+from satchmo.product.brand.models import Brand
 
 import logging
 log = logging.getLogger(__name__)
@@ -39,22 +40,34 @@ def brand_page(request, brandname):
     return render_to_response('product/brand/view_brand.html', ctx)
 
 
-def brand_category_page(request, brandname, catname):
-    try:
-        cat = BrandCategory.objects.by_slug(brandname, catname)
+def brand_category_page(request, category_slug, brand_slug):
+    if category_slug != "-":
+        try:
+            category = Category.objects.get(slug=category_slug)
+        except Category.DoesNotExist:
+            raise Http404(_('Cagtegory "%s" does not exist') % category_slug)
+        try:
+            brand = category.brands.get(slug=brand_slug)
+        except Brand.DoesNotExist:
+            raise Http404(_('Brand "%s" does not exist in "%s"') % (brand_slug, category_slug))
+    else:
+        category = None
+        try:
+            brand = Brand.objects.get(slug=brand_slug)
+        except Brand.DoesNotExist:
+            raise Http404(_('Brand "%s" does not exist in "%s"') % (brand_slug, category_slug))
 
-    except Brand.DoesNotExist:
-        raise Http404(_('Brand "%s" does not exist') % brandname)
-
-    except BrandCategory.DoesNotExist:
-        raise Http404(_('No category "%s" in brand "%s"') % (catname, brandname))
-
-    products = cat.active_products()
+    if category:
+        products = brand.active_products(category)
+    else:
+        products = brand.active_products()
     sale = find_best_auto_discount(products)
 
-    ctx = RequestContext(request, {
+    context = RequestContext(request, {
         'products': products,
-        'brand': cat,
+        'category': category,
+        'brand': brand,
         'sale': sale,
     })
-    return render_to_response('product/brand/view_brand.html', ctx)
+
+    return render_to_response('product/brand/view_brand.html', context)

@@ -17,7 +17,7 @@
 {% block content %}
 {% with brand.translation as translated %}
 <div id="product_category" class="brand">
-	<div class="brand_description">
+    <div class="brand_description">
             <h1>{{ brand.brand.translation.name }}</h1>
         <div class="breadcrumb">
             {% if brand.categories %}
@@ -32,55 +32,55 @@
                     {% endif %}
                 {% endfor %}
             {% endif %}
-            <a href="{% url satchmo_brand_category_view brand.brand.slug brand.slug %}">{{ brand.brand.translation.name }}</a>
+            <a href="{% url satchmo_brand_category_view brand.slug brand.brand.slug  %}">{{ brand.brand.translation.name }}</a>
         </div>
 
-	    {% if translated.picture %}
-	    <img src="{{ translated.picture.url|thumbnail:"width=85" }}" alt="{{ translated.name }}" />
-	    {% endif %}
-		{% if translated.description %}
-		<div class="description">
-			{{ translated.description|safe }}
+        {% if translated.picture %}
+        <img src="{{ translated.picture.url|thumbnail:"width=85" }}" alt="{{ translated.name }}" />
+        {% endif %}
+        {% if translated.description %}
+        <div class="description">
+            {{ translated.description|safe }}
         </div>
-		{% endif %}
-		{% if user.is_staff or user.is_superuser %}
+        {% endif %}
+        {% if user.is_staff or user.is_superuser %}
             <p><a href="/admin/product/brand/brand/{{ brand.id }}/">Edit this brand</a></p>
         {% endif %}
-	</div>
+    </div>
 
     {% if brand.has_content %}
-    	{% if brand.has_products %}
-		<div class="brandproducts">
-		{% for product in products %} 
-			<div class="productImage{% if forloop.first %} first{% endif %}">	
-		        <a href="{{ product.get_absolute_url }}">
-		        	<img src="{{ product.main_image.picture.url|thumbnail:"width=85" }}" width="85" />
-				</a>
-				<br/>
-		        <a href="{{ product.get_absolute_url }}">{{ product.translated_name }}</a>
-	         </div>
-	    {% endfor %}
-		</div>
-		{% endif %}
+        {% if brand.has_products %}
+        <div class="brandproducts">
+        {% for product in products %}
+            <div class="productImage{% if forloop.first %} first{% endif %}">
+                <a href="{{ product.get_absolute_url }}">
+                    <img src="{{ product.main_image.picture.url|thumbnail:"width=85" }}" width="85" />
+                </a>
+                <br/>
+                <a href="{{ product.get_absolute_url }}">{{ product.translated_name }}</a>
+             </div>
+        {% endfor %}
+        </div>
+        {% endif %}
 
-		{% if brand.has_categories %}
-		<div class="brandcategories">
-			<h4>{% trans 'View more products in these categories' %}</h4>
-      	    {% for cat in brand.active_categories %}{% with cat.translation as translatedcat %}
-			<div class="brandImage">
-            	<a href="{{ cat.get_absolute_url }}">
-            		<img src="{{ translatedcat.picture.url|thumbnail:"width=85" }}" width="85" /> 
-				</a>
-				<br/>
-            	<a href="{{ cat.get_absolute_url }}">{{ translatedcat.name }}</a>
-			</div>
-	        {% endwith %}{% endfor %}
-		</div>
-		{% endif %}
-	{% endif %}
-	{% if sale %}
-	{% include "discount/some_eligible.html" %}
-	{% endif %}
+        {% if brand.has_categories %}
+        <div class="brandcategories">
+            <h4>{% trans 'View more products in these categories' %}</h4>
+            {% for cat in brand.active_categories %}{% with cat.translation as translatedcat %}
+            <div class="brandImage">
+                <a href="{{ cat.get_absolute_url }}">
+                    <img src="{{ translatedcat.picture.url|thumbnail:"width=85" }}" width="85" />
+                </a>
+                <br/>
+                <a href="{{ cat.get_absolute_url }}">{{ translatedcat.name }}</a>
+            </div>
+            {% endwith %}{% endfor %}
+        </div>
+        {% endif %}
+    {% endif %}
+    {% if sale %}
+    {% include "discount/some_eligible.html" %}
+    {% endif %}
 </div>
 {% endwith %}
 {% endblock %}

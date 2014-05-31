@@ -24,10 +24,9 @@ urlpatterns += patterns('satchmo.shop.views',
                         # Used for downloadable products.
                         (r'^download/process/(?P<download_key>\w+)/$', 'download.process', {}, 'satchmo_download_process'),
                         (r'^download/send/(?P<download_key>\w+)/$', 'download.send_file', {}, 'satchmo_download_send'),
-                        )
 
-# here we add product patterns directly into the root url
-urlpatterns += productpatterns
+                        ('wishlist/', include('satchmo.wishlist.urls')),
+                        )
 
 if app_enabled('l10n'):
     urlpatterns += patterns('',
@@ -35,7 +34,5 @@ if app_enabled('l10n'):
                             (r'^i18n/', include('satchmo.l10n.urls'))
                             )
 
-if app_enabled('wishlist'):
-    urlpatterns += patterns('',
-                            ('wishlist/', include('satchmo.wishlist.urls')),
-                            )
+# here we add product patterns directly into the root url
+urlpatterns += productpatterns

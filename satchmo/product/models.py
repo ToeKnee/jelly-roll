@@ -14,9 +14,9 @@ from decimal import Decimal
 import config
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core import urlresolvers
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.files import FileField
@@ -137,7 +137,45 @@ class Category(models.Model):
                                                 related_name='related_categories')
     objects = CategoryManager()
 
-    def _get_mainImage(self):
+    class Meta:
+        ordering = ['site', 'parent__id', 'ordering', 'name']
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
+
+    def __unicode__(self):
+        name_list = [cat.name for cat in self._recurse_for_parents(self)]
+        name_list.append(self.name)
+        return self.get_separator().join(name_list)
+
+    def get_absolute_url(self):
+        return reverse(
+            'satchmo_category',
+            kwargs={
+                'slug': self.slug
+            }
+        )
+
+    def save(self, *args, **kwargs):
+        if self.id:
+            if self.parent and self.parent_id == self.id:
+                raise ValidationError(_("You must not save a category in itself!"))
+
+            for p in self._recurse_for_parents(self):
+                if self.id == p.id:
+                    raise ValidationError(_("You must not save a category in itself!"))
+
+        if not self.slug:
+            self.slug = slugify(self.name, instance=self)
+
+        super(Category, self).save(*args, **kwargs)
+        img_key = "Category_get_mainImage %s" % (self.id)
+        img_key = img_key.replace(" ", "-")
+        ap_key = "Category_active_products %s" % (self.id)
+        ap_key = ap_key.replace(" ", "-")
+        cache.delete_many([img_key, ap_key])
+
+    @property
+    def main_image(self):
         key = "Category_get_mainImage %s" % (self.id)
         key = key.replace(" ", "-")
         img = cache.get(key)
@@ -158,8 +196,6 @@ class Category(models.Model):
                     print >>sys.stderr, 'Warning: default category image not found - try syncdb'
             cache.set(key, img)
         return img
-
-    main_image = property(_get_mainImage)
 
     def active_products(self, variations=True, include_children=False, **kwargs):
         key = "Category_active_products %s" % (self.id)
@@ -203,19 +239,6 @@ class Category(models.Model):
     def parents(self):
         return self._recurse_for_parents(self)
 
-    def get_absolute_url(self):
-        parents = self._recurse_for_parents(self)
-        slug_list = [cat.slug for cat in parents]
-        if slug_list:
-            slug_list = "/".join(slug_list) + "/"
-        else:
-            slug_list = ""
-        return urlresolvers.reverse('satchmo_category',
-                                    kwargs={
-                                        'parent_slugs': slug_list,
-                                        'slug': self.slug
-                                    })
-
     def get_separator(self):
         return ' - '
 
@@ -234,30 +257,6 @@ class Category(models.Model):
         name_list.append(self.translated_name())
         url_list.append(self.get_absolute_url())
         return zip(name_list, url_list)
-
-    def __unicode__(self):
-        name_list = [cat.name for cat in self._recurse_for_parents(self)]
-        name_list.append(self.name)
-        return self.get_separator().join(name_list)
-
-    def save(self, *args, **kwargs):
-        if self.id:
-            if self.parent and self.parent_id == self.id:
-                raise ValidationError(_("You must not save a category in itself!"))
-
-            for p in self._recurse_for_parents(self):
-                if self.id == p.id:
-                    raise ValidationError(_("You must not save a category in itself!"))
-
-        if not self.slug:
-            self.slug = slugify(self.name, instance=self)
-
-        super(Category, self).save(*args, **kwargs)
-        img_key = "Category_get_mainImage %s" % (self.id)
-        img_key = img_key.replace(" ", "-")
-        ap_key = "Category_active_products %s" % (self.id)
-        ap_key = ap_key.replace(" ", "-")
-        cache.delete_many([img_key, ap_key])
 
     def _flatten(self, L):
         """
@@ -302,11 +301,6 @@ class Category(models.Model):
             flat_list = self._flatten(children_list[ix:])
             cache.set(key, flat_list)
         return flat_list
-
-    class Meta:
-        ordering = ['site', 'parent__id', 'ordering', 'name']
-        verbose_name = _("Category")
-        verbose_name_plural = _("Categories")
 
 
 class CategoryTranslation(models.Model):
@@ -607,8 +601,26 @@ class Product(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return urlresolvers.reverse('satchmo_product',
-                                    kwargs={'product_slug': self.slug})
+        main_category = self.main_category
+        if main_category:
+            category_slug = main_category.slug
+        else:
+            category_slug = _("-")
+
+        main_brand = self.main_brand
+        if main_brand:
+            brand_slug = main_brand.slug
+        else:
+            brand_slug = _("-")
+
+        return reverse(
+            'satchmo_product',
+            kwargs={
+                'category_slug': category_slug,
+                'brand_slug': brand_slug,
+                'product_slug': self.slug
+            }
+        )
 
     def save(self, *args, **kwargs):
         self.date_updated = datetime.datetime.now()
@@ -628,15 +640,25 @@ class Product(models.Model):
         key = key.replace(" ", "-")
         cache.delete(key)
 
-    def _get_mainCategory(self):
+    @property
+    def main_category(self):
         """Return the first category for the product"""
 
-        if self.category.count() > 0:
-            return self.category.all()[0]
-        else:
-            return None
+        try:
+            category = self.category.all()[0]
+        except IndexError:
+            category = None
+        return category
 
-    main_category = property(_get_mainCategory)
+    @property
+    def main_brand(self):
+        """Return the first brand for the product"""
+
+        try:
+            brand = self.brands.all()[0]
+        except IndexError:
+            brand = None
+        return brand
 
     def _get_mainImage(self):
         key = "Product_get_mainImage %s" % (self.id)

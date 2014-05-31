@@ -8,6 +8,7 @@ from satchmo.configuration import config_value
 from satchmo.discount.utils import find_best_auto_discount
 from satchmo.l10n.utils import money_format
 from satchmo.product.models import Category, Product, ConfigurableProduct, sorted_tuple
+from satchmo.product.brand.models import Brand
 from satchmo.product.signals import index_prerender
 from satchmo.product.utils import get_tax
 from satchmo.shop.views.utils import bad_or_missing
@@ -115,13 +116,16 @@ def get_configurable_product_options(request, id):
 
 
 @never_cache
-def get_product(request, product_slug, selected_options=(),
+def get_product(request, category_slug, brand_slug, product_slug, selected_options=(),
                 include_tax=NOTSET, default_view_tax=NOTSET):
     """Basic product view"""
     try:
         product = Product.objects.get_by_site(active=True, slug=product_slug)
     except Product.DoesNotExist:
         return bad_or_missing(request, _('The product you have requested does not exist.'))
+
+    category = Category.objects.get(slug=category_slug)
+    brand = Brand.objects.get(slug=brand_slug)
 
     if default_view_tax == NOTSET:
         default_view_tax = config_value('TAX', 'DEFAULT_VIEW_TAX')
@@ -147,6 +151,8 @@ def get_product(request, product_slug, selected_options=(),
 
     extra_context = {
         'product': product,
+        'category': category,
+        'brand': brand,
         'default_view_tax': default_view_tax,
         'sale': best_discount,
     }

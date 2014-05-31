@@ -8,7 +8,7 @@
             {% if forloop.last %}
                 {% with product.brand_set.all|first as brand %}
                     {% if brand %}
-                        <a href="{% url satchmo_brand_category_view brand.slug name|slugify %}" class="brand">{{ brand.translation.name }}</a> &gt;
+                        <a href="{% url satchmo_brand_category_view name|slugify brand.slug %}" class="brand">{{ brand.translation.name }}</a> &gt;
                     {% endif %}
                 {% endwith %}
             {% endif %}
