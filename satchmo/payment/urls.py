@@ -1,8 +1,8 @@
 from django.conf.urls.defaults import patterns, url
 from satchmo.configuration import config_get_group, config_get, config_value
-import logging
 
-log = logging.getLogger('payment.urls')
+import logging
+log = logging.getLogger(__name__)
 
 config = config_get_group('PAYMENT')
 
