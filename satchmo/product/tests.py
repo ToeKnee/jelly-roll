@@ -152,7 +152,7 @@ class ProductExportTest(TestCase):
         user.is_superuser = True
         user.save()
         self.client.login(username='root', password='12345')
-        
+
     def tearDown(self):
         caching.cache_delete()
 
@@ -265,7 +265,7 @@ class ProductTest(TestCase):
 class ConfigurableProductTest(TestCase):
     """Test ConfigurableProduct."""
     fixtures = ['products.yaml']
-    
+
     def tearDown(self):
         caching.cache_delete()
 
@@ -294,7 +294,7 @@ class ConfigurableProductTest(TestCase):
 class OptionUtilsTest(TestCase):
     """Test the utilities used for serialization of options and selected option details."""
     fixtures = ['products.yaml']
-    
+
     def test_base_sort_order(self):
         p = Product.objects.get(slug='dj-rocks')
         serialized = serialize_options(p.configurableproduct)
@@ -306,33 +306,32 @@ class OptionUtilsTest(TestCase):
 
     def test_reordered(self):
         p = Product.objects.get(slug='dj-rocks')
-        
+
         pv = p.configurableproduct.productvariation_set.all()[0]
         orig_key = pv.optionkey
         orig_detl = productvariation_details(p, False, None, create=True)
-        
+
         sizegroup = OptionGroup.objects.get(name="sizes")
         sizegroup.sort_order = 100
         sizegroup.save()
-        
+
         # reverse ordering
         for opt in sizegroup.option_set.all():
             opt.sort_order = 100-opt.sort_order
             opt.save()
-        
+
         serialized = serialize_options(p.configurableproduct)
         self.assert_(len(serialized), 2)
         self.assertEqual(serialized[1]['id'], 1)
         got_vals = [opt.value for opt in serialized[1]['items']]
         self.assertEqual(got_vals, ['L','M','S'])
-        
+
         pv2 = ProductVariation.objects.get(pk=pv.pk)
         self.assertEqual(orig_key, pv2.optionkey)
         reorder_detl = productvariation_details(p, False, None)
         self.assertEqual(orig_detl, reorder_detl)
-        
+
 
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-

@@ -23,12 +23,11 @@ from satchmo.shop.models import Cart, CartItem, NullCart, NullCartItem
 from satchmo.shop.signals import satchmo_cart_changed, satchmo_cart_add_complete, satchmo_cart_details_query
 from satchmo.utils import trunc_decimal
 from satchmo.shop.views.utils import bad_or_missing
-from django.views.decorators.csrf import csrf_exempt
 
-
-log = logging.getLogger('shop.views.cart')
+log = logging.getLogger(__name__)
 
 NOTSET = object()
+
 
 def _set_quantity(request, force_delete=False):
     """Set the quantity for a specific cartitem.
@@ -64,7 +63,7 @@ def _set_quantity(request, force_delete=False):
     else:
         from satchmo.shop.models import Config
         config = Config.objects.get_current()
-        if config.no_stock_checkout == False:
+        if config.no_stock_checkout is False:
             stock = cartitem.product.items_in_stock
             log.debug('checking stock quantity.  Have %i, need %i', stock, qty)
             if stock < qty:
@@ -74,6 +73,7 @@ def _set_quantity(request, force_delete=False):
 
     satchmo_cart_changed.send(cart, cart=cart, request=request)
     return (True, cart, cartitem, "")
+
 
 def display(request, cart=None, error_message='', default_view_tax=NOTSET):
     """Display the items in the cart."""
@@ -93,25 +93,25 @@ def display(request, cart=None, error_message='', default_view_tax=NOTSET):
     context = RequestContext(request, {
         'cart': cart,
         'error_message': error_message,
-        'default_view_tax' : default_view_tax,
-        'sale' : sale,
-        })
+        'default_view_tax': default_view_tax,
+        'sale': sale
+    })
     return render_to_response('base_cart.html', context)
 
-@csrf_exempt
+
 def add(request, id=0, redirect_to='satchmo_cart'):
     """Add an item to the cart."""
     log.debug('FORM: %s', request.POST)
     formdata = request.POST.copy()
     productslug = None
 
-    if formdata.has_key('productname'):
+    if 'productname' in formdata:
         productslug = formdata['productname']
     try:
         product, details = product_from_post(productslug, formdata)
         if not (product and product.active):
             return _product_error(request, product,
-                _("That product is not available at the moment."))
+                                  _("That product is not available at the moment."))
 
     except (Product.DoesNotExist, MultiValueDictKeyError):
         log.debug("Could not find product: %s", productslug)
@@ -121,28 +121,28 @@ def add(request, id=0, redirect_to='satchmo_cart'):
         quantity = int(formdata['quantity'])
     except ValueError:
         return _product_error(request, product,
-            _("Please enter a whole number."))
+                              _("Please enter a whole number."))
 
     if quantity < 1:
         return _product_error(request, product,
-            _("Please enter a positive number."))
+                              _("Please enter a positive number."))
 
     cart = Cart.objects.from_request(request, create=True)
     # send a signal so that listeners can update product details before we add it to the cart.
     satchmo_cart_details_query.send(
-            cart,
-            product=product,
-            quantity=quantity,
-            details=details,
-            request=request,
-            form=formdata
-            )
+        cart,
+        product=product,
+        quantity=quantity,
+        details=details,
+        request=request,
+        form=formdata
+    )
     try:
         added_item = cart.add_item(product, number_added=quantity, details=details)
-        
+
     except CartAddProhibited, cap:
         return _product_error(request, product, cap.message)
-        
+
     # got to here with no error, now send a signal so that listeners can also operate on this form.
     satchmo_cart_add_complete.send(cart, cart=cart, cartitem=added_item, product=product, request=request, form=formdata)
     satchmo_cart_changed.send(cart, cart=cart, request=request)
@@ -150,11 +150,12 @@ def add(request, id=0, redirect_to='satchmo_cart'):
     url = urlresolvers.reverse(redirect_to)
     return HttpResponseRedirect(url)
 
+
 def add_ajax(request, id=0, template="json.html"):
     data = {'errors': []}
     product = None
     formdata = request.POST.copy()
-    if not formdata.has_key('productname'):
+    if 'productname' not in formdata:
         data['errors'].append(('product', _('No product requested')))
     else:
         productslug = formdata['productname']
@@ -177,7 +178,7 @@ def add_ajax(request, id=0, template="json.html"):
                 data['id'] = product.id
                 data['name'] = product.translated_name()
 
-                if not formdata.has_key('quantity'):
+                if 'quantity' not in formdata:
                     quantity = -1
                 else:
                     quantity = formdata['quantity']
@@ -195,13 +196,13 @@ def add_ajax(request, id=0, template="json.html"):
     if not data['errors']:
         # send a signal so that listeners can update product details before we add it to the cart.
         satchmo_cart_details_query.send(
-                tempCart,
-                product=product,
-                quantity=quantity,
-                details=details,
-                request=request,
-                form=formdata
-                )
+            tempCart,
+            product=product,
+            quantity=quantity,
+            details=details,
+            request=request,
+            form=formdata
+        )
         try:
             added_item = tempCart.add_item(product, number_added=quantity)
             request.session['cart'] = tempCart.id
@@ -209,17 +210,17 @@ def add_ajax(request, id=0, template="json.html"):
             if added_item:
                 # send a signal so that listeners can also operate on this form and item.
                 satchmo_cart_add_complete.send(
-                        tempCart,
-                        cartitem=added_item,
-                        product=product,
-                        request=request,
-                        form=formdata
-                        )
-                        
+                    tempCart,
+                    cartitem=added_item,
+                    product=product,
+                    request=request,
+                    form=formdata
+                )
+
         except CartAddProhibited, cap:
             data['results'] = _('Error')
             data['errors'].append(('product', cap.message))
-        
+
     else:
         data['results'] = _('Error')
 
@@ -230,7 +231,8 @@ def add_ajax(request, id=0, template="json.html"):
     log.debug('CART AJAX: %s', data)
 
     satchmo_cart_changed.send(tempCart, cart=tempCart, request=request)
-    return render_to_response(template, {'json' : encoded})
+    return render_to_response(template, {'json': encoded})
+
 
 def agree_terms(request):
     """Agree to terms"""
@@ -241,6 +243,7 @@ def agree_terms(request):
 
     return display(request, error_message=_('You must accept the terms and conditions.'))
 
+
 def remove(request):
     """Remove an item from the cart."""
     success, cart, cartitem, errors = _set_quantity(request, force_delete=True)
@@ -249,6 +252,7 @@ def remove(request):
     else:
         url = urlresolvers.reverse('satchmo_cart')
         return HttpResponseRedirect(url)
+
 
 def remove_ajax(request, template="json.html"):
     """Remove an item from the cart. Returning JSON formatted results."""
@@ -271,21 +275,23 @@ def remove_ajax(request, template="json.html"):
 
         return render_to_response(template, {'json': JSONEncoder().encode(data)})
 
+
 def set_quantity(request):
     """Set the quantity for a cart item.
 
     Intended to be called via the cart itself, returning to the cart after done.
     """
     cart_url = urlresolvers.reverse('satchmo_cart')
-    
+
     if not request.POST:
         return HttpResponseRedirect(cart_url)
-    
+
     success, cart, cartitem, errors = _set_quantity(request)
     if success:
         return HttpResponseRedirect(cart_url)
     else:
-        return display(request, cart = cart, error_message = errors)
+        return display(request, cart=cart, error_message=errors)
+
 
 def set_quantity_ajax(request, template="json.html"):
     """Set the quantity for a cart item, returning results formatted for handling by script.
@@ -350,10 +356,13 @@ def product_from_post(productslug, formdata):
                 price_change = customfield.price_change
             else:
                 price_change = zero
-            data = { 'name' : customfield.translated_name(),
-                     'value' : formdata["custom_%s" % customfield.slug],
-                     'sort_order': customfield.sort_order,
-                     'price_change': price_change }
+
+            data = {
+                'name': customfield.translated_name(),
+                'value': formdata["custom_%s" % customfield.slug],
+                'sort_order': customfield.sort_order,
+                'price_change': price_change
+            }
             details.append(data)
             data = {}
         chosenOptions = optionids_from_post(cp, formdata)
@@ -364,10 +373,11 @@ def product_from_post(productslug, formdata):
                 price_change = result.price_change
             else:
                 price_change = zero
-            data = { 'name': unicode(result.option_group),
-                      'value': unicode(result.translated_name()),
-                      'sort_order': result.sort_order,
-                      'price_change': price_change
+            data = {
+                'name': unicode(result.option_group),
+                'value': unicode(result.translated_name()),
+                'sort_order': result.sort_order,
+                'price_change': price_change
             }
             details.append(data)
             data = {}
@@ -376,10 +386,10 @@ def product_from_post(productslug, formdata):
         ix = 0
         for field in ('email', 'message'):
             data = {
-                'name' : field,
-                'value' : formdata.get("custom_%s" % field, ""),
-                'sort_order' : ix,
-                'price_change' : zero,
+                'name': field,
+                'value': formdata.get("custom_%s" % field, ""),
+                'sort_order': ix,
+                'price_change': zero
             }
             ix += 1
             details.append(data)
@@ -388,10 +398,10 @@ def product_from_post(productslug, formdata):
 
     return product, details
 
+
 def _product_error(request, product, msg):
     template = find_product_template(product)
     context = RequestContext(request, {
         'product': product,
         'error_message': msg})
     return HttpResponse(template.render(context))
-
