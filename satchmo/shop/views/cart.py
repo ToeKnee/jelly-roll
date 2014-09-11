@@ -400,8 +400,13 @@ def product_from_post(productslug, formdata):
 
 
 def _product_error(request, product, msg):
+    brand = product.brands.all()[0]
+    category = product.category.all()[0]
     template = find_product_template(product)
     context = RequestContext(request, {
         'product': product,
-        'error_message': msg})
+        'brand': brand,
+        'category': category,
+        'error_message': msg
+    })
     return HttpResponse(template.render(context))
