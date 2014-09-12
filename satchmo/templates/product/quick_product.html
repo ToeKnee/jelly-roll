@@ -46,7 +46,7 @@
             {% trans "Quantity" %} <input type="number" size="2" name="quantity" value="1" min="0" max="{{ product.items_in_stock }}" class="priced">
             <input type="submit" name="addcart" value="{% trans "Buy me!" %}">
         {% endif %}
-        {% if "wishlist" and user.is_authenticated %}
+        {% if show_wishlist and user.is_authenticated %}
             <input type="submit" name="addwish" value="{% trans "Add to wishlist" %}">
         {% endif %}
     </form>

@@ -105,9 +105,15 @@ def show_featured(limit=1, random=True):
 
 
 @register.inclusion_tag('product/quick_product.html')
-def quick_product(product):
+def quick_product(product, show_wishlist=True):
     ''' Renders a product in a way that is usefull for a list '''
-    return {"product": product}
+    if show_wishlist == "False":
+        show_wishlist = False
+
+    return {
+        "product": product,
+        "show_wishlist": show_wishlist
+    }
 
 
 @register.inclusion_tag('product/full_product.html')
