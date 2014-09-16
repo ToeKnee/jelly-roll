@@ -124,7 +124,10 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
     except Product.DoesNotExist:
         return bad_or_missing(request, _('The product you have requested does not exist.'))
 
-    category = Category.objects.get(slug=category_slug)
+    try:
+        category = Category.objects.get(slug=category_slug)
+    except Category.DoesNotExist:
+        category = None
     brand = Brand.objects.get(slug=brand_slug)
 
     if default_view_tax == NOTSET:
@@ -143,7 +146,7 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
 
     if 'ProductVariation' in subtype_names:
         selected_options = product.productvariation.unique_option_ids
-        #Display the ConfigurableProduct that this ProductVariation belongs to.
+        # Display the ConfigurableProduct that this ProductVariation belongs to.
         product = product.productvariation.parent.product
         subtype_names = product.get_subtypes()
 
