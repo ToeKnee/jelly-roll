@@ -5,7 +5,7 @@ except ImportError:
 from django import forms
 from django.db import transaction
 from django.conf import settings
-from django.core import serializers, urlresolvers
+from django.core import serializers
 from django.core.management.base import CommandError
 from django.core.management.color import no_style
 from django.contrib.sites.models import Site
@@ -31,60 +31,60 @@ def export_choices():
     fmts = serializers.get_serializer_formats()
     return zip(fmts,fmts)
 
-class ProductExportForm(forms.Form):    
-    
+class ProductExportForm(forms.Form):
+
     def __init__(self, *args, **kwargs):
         products = kwargs.pop('products', None)
-        
+
         super(ProductExportForm, self).__init__(*args, **kwargs)
-        
+
         self.fields['format'] = forms.ChoiceField(label=_('export format'), choices=export_choices(), required=True)
         self.fields['include_images'] = forms.BooleanField(label=_('Include Images'), initial=True, required=False)
         self.fields['include_categories'] = forms.BooleanField(label=_('Include Categories'), initial=True, required=False)
-        
+
         if not products:
             products = Product.objects.by_site().order_by('slug')
-            
+
         for product in products:
             subtypes = product.get_subtypes()
             expclasses = ('export', ) + subtypes
             extclasses = " ".join(expclasses)
 
-            kw = { 
+            kw = {
             'label' : product.slug,
             'help_text' : product.name,
             'initial' : False,
             'required' : False,
             'widget' : forms.CheckboxInput(attrs={'class': extclasses}) }
-            
+
             chk = forms.BooleanField(**kw)
             chk.slug = product.slug
             chk.product_id = product.id
-            chk.subtypes = " ".join(subtypes)            
+            chk.subtypes = " ".join(subtypes)
             self.fields['export__%s' % product.slug] = chk
-            
+
     def export(self, request):
         self.full_clean()
         format = 'yaml'
         selected = []
         include_images = False
         include_categories = False
-        
+
         for name, value in self.cleaned_data.items():
             if name == 'format':
                 format = value
                 continue
-                
+
             if name == 'include_images':
                 include_images = value
                 continue
-            
+
             if name == 'include_categories':
                 include_categories = value
                 continue
-                
+
             opt, key = name.split('__')
-            
+
             if opt=='export':
                 if value:
                     selected.append(key)
@@ -132,29 +132,29 @@ class ProductExportForm(forms.Form):
             filedir = settings.MEDIA_ROOT
             buf = StringIO()
             zf = zipfile.ZipFile(buf, 'a', zipfile.ZIP_STORED)
-            
+
             export_file = 'products.%s' % format
             zf.writestr(str(export_file), raw)
-            
-            zinfo = zf.getinfo(str(export_file)) 
-            # Caution, highly magic number, chmods the file to 644 
-            zinfo.external_attr = 2175008768L 
-            
+
+            zinfo = zf.getinfo(str(export_file))
+            # Caution, highly magic number, chmods the file to 644
+            zinfo.external_attr = 2175008768L
+
             image_dir = config_value('PRODUCT', 'IMAGE_DIR')
             config = "PRODUCT.IMAGE_DIR=%s\nEXPORT_FILE=%s" % (image_dir, export_file)
             zf.writestr('VARS', config)
-            
-            zinfo = zf.getinfo('VARS') 
-            # Caution, highly magic number, chmods the file to 644 
-            zinfo.external_attr = 2175008768L 
-            
+
+            zinfo = zf.getinfo('VARS')
+            # Caution, highly magic number, chmods the file to 644
+            zinfo.external_attr = 2175008768L
+
             for image in images:
                 f = os.path.join(filedir, image)
                 if os.path.exists(f):
                     zf.write(f, str(image))
-            
+
             zf.close()
-            
+
             raw = buf.getvalue()
             mimetype = "application/zip"
             format = "zip"
@@ -163,15 +163,15 @@ class ProductExportForm(forms.Form):
         #TODO: WTF? HTTPResponse from a form? srsly?
         response = HttpResponse(content_type=mimetype, content=raw)
         response['Content-Disposition'] = 'attachment; filename="products-%s.%s"' % (time.strftime('%Y%m%d-%H%M'), format)
-            
+
         return response
 
 
-class ProductImportForm(forms.Form):  
-    
-    def __init__(self, *args, **kwargs):        
+class ProductImportForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
         super(ProductImportForm, self).__init__(*args, **kwargs)
-    
+
         self.fields['upload'] = forms.Field(label=_("File to import"), widget=forms.FileInput, required=False)
 
     def import_from(self, infile, maxsize=10000000):
@@ -179,19 +179,19 @@ class ProductImportForm(forms.Form):
         results = []
 
         filetype = infile.content_type
-        filename = infile.name 
+        filename = infile.name
         raw = infile.read()
-        
+
         # filelen = len(raw)
         # if filelen > maxsize:
         #     errors.append(_('Import too large, must be smaller than %i bytes.' % maxsize ))
-        
+
         format = os.path.splitext(filename)[1]
         if format and format.startswith('.'):
             format = format[1:]
         if not format:
             errors.append(_('Could not parse format from filename: %s') % filename)
-        
+
         if format == 'zip':
             zf = zipfile.ZipFile(StringIO(raw), 'r')
             files = zf.namelist()
@@ -206,10 +206,10 @@ class ProductImportForm(forms.Form):
                         other_image_dir = val
                     elif key == 'EXPORT_FILE':
                         export_file = val
-                
+
                 if other_image_dir is None or export_file is None:
                     errors.append(_('Bad VARS file in import zipfile.'))
-                    
+
                 else:
                     # save out all the files which start with other_image_dr
                     rename = image_dir == other_image_dir
@@ -225,10 +225,10 @@ class ProductImportForm(forms.Form):
                             outf.write(buf)
                             outf.close()
                             results.append('Imported image: %s' % f)
-                            
+
                     infile = zf.read(export_file)
                     zf.close()
-                    
+
                     format = os.path.splitext(export_file)[1]
                     if format and format.startswith('.'):
                         format = format[1:]
@@ -236,24 +236,24 @@ class ProductImportForm(forms.Form):
                         errors.append(_('Could not parse format from filename: %s') % filename)
                     else:
                         raw = infile
-            
+
             else:
                 errors.append(_('Missing VARS in import zipfile.'))
-        
+
         else:
             raw = StringIO(str(raw))
 
         if not format in serializers.get_serializer_formats():
             errors.append(_('Unknown file format: %s') % format)
-            
+
         if not errors:
-            
+
             from django.db import connection, transaction
-            
+
             transaction.commit_unless_managed()
             transaction.enter_transaction_management()
             transaction.managed(True)
-        
+
             try:
 
                 ct = 0
@@ -270,7 +270,7 @@ class ProductImportForm(forms.Form):
                         cursor = connection.cursor()
                         for line in sequence_sql:
                             cursor.execute(line)
-                    
+
                 results.append(_('Added %(count)i objects from %(filename)s') % {'count': ct, 'filename': filename})
                 transaction.commit()
                 #label_found = True
@@ -280,30 +280,31 @@ class ProductImportForm(forms.Form):
                 errors.append("Raw: %s" % raw)
                 transaction.rollback()
                 transaction.leave_transaction_management()
-            
+
         return results, errors
 
 
 class InventoryForm(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         products = kwargs.pop('products', None)
 
         super(InventoryForm, self).__init__(*args, **kwargs)
 
         if not products:
-            products = Product.objects.by_site().order_by("-active", "brand__slug", 'slug')
+            products = Product.objects.by_site().order_by("-active", "brands__slug", 'slug')
 
         for product in products:
             subtypes = product.get_subtypes()
             qtyclasses = ('text', 'qty') + subtypes
             qtyclasses = " ".join(qtyclasses)
 
-            kw = { 
-            'label' : product.slug,
-            'help_text' : product.name,
-            'initial' : product.items_in_stock,
-            'widget' : forms.TextInput(attrs={'class': qtyclasses}) }
+            kw = {
+                'label': product.slug,
+                'help_text': product.name,
+                'initial': product.items_in_stock,
+                'widget': forms.TextInput(attrs={'class': qtyclasses})
+            }
 
             qty = forms.IntegerField(**kw)
             self.fields['qty__%s' % product.slug] = qty
@@ -315,7 +316,7 @@ class InventoryForm(forms.Form):
                 initial_price = product.customproduct.full_price
             else:
                 initial_price = product.unit_price
-                
+
             kw['initial'] = initial_price
             kw['required'] = False
             kw['widget'] = forms.TextInput(attrs={'class': "text price"})
@@ -342,20 +343,20 @@ class InventoryForm(forms.Form):
 
             prod = Product.objects.get(slug__exact=key)
             subtypes = prod.get_subtypes()
-            
-            if opt=='qty':
+
+            if opt == 'qty':
                 if value != prod.items_in_stock:
                     request.user.message_set.create(message='Updated %s stock to %s' % (key, value))
                     log.debug('Saving new qty=%i for %s' % (value, key))
                     prod.items_in_stock = value
                     prod.save()
 
-            elif opt=='price':
+            elif opt == 'price':
                 if 'CustomProduct' in subtypes:
                     full_price = prod.customproduct.full_price
                 else:
                     full_price = prod.unit_price
-                    
+
                 if value != full_price:
                     request.user.message_set.create(message='Updated %s unit price to %s' % (key, value))
                     log.debug('Saving new price %s for %s' % (value, key))
@@ -366,7 +367,7 @@ class InventoryForm(forms.Form):
                     price.price = value
                     price.save()
 
-            elif opt=="active":
+            elif opt == "active":
                 if value != prod.active:
                     if value:
                         note = "Activated %s"
@@ -377,7 +378,7 @@ class InventoryForm(forms.Form):
                     prod.active = value
                     prod.save()
 
-            elif opt=="featured":
+            elif opt == "featured":
                 if value != prod.featured:
                     if value:
                         note = "%s is now featured"
@@ -388,9 +389,10 @@ class InventoryForm(forms.Form):
                     prod.featured = value
                     prod.save()
 
+
 class VariationManagerForm(forms.Form):
     dirty = forms.CharField(widget=forms.HiddenInput(), required=False)
-    
+
     def __init__(self, *args, **kwargs):
         self.optionkeys = []
         self.variationkeys = []
@@ -400,17 +402,17 @@ class VariationManagerForm(forms.Form):
         self.namedict = {}
         self.skudict = {}
         self.slugdict = {}
-        
+
         self.product = kwargs.pop('product', None)
-        
+
         super(VariationManagerForm, self).__init__(*args, **kwargs)
-        
+
         if self.product:
             configurableproduct = self.product.configurableproduct;
-            
+
             for grp in configurableproduct.option_group.all():
                 optchoices = [("%i_%i" % (opt.option_group.id, opt.id), opt.name) for opt in grp.option_set.all()]
-                kw = { 
+                kw = {
                     'label' : grp.name,
                     'widget' : forms.CheckboxSelectMultiple(),
                     'required' : False,
@@ -421,19 +423,19 @@ class VariationManagerForm(forms.Form):
                 self.fields[key] = fld
                 self.optionkeys.append(key)
                 self.optiondict[grp.id] = []
-                
+
             configurableproduct.setup_variation_cache()
             for opts in configurableproduct.get_all_options():
                 variation = configurableproduct.get_product_from_options(opts)
                 optnames = [opt.value for opt in opts]
-                kw = { 
+                kw = {
                     'initial' : None,
                     'label' : " ".join(optnames),
                     'required' : False
                 }
-                
-                opt_str = '__'.join(["%i_%i" % (opt.option_group.id, opt.id) for opt in opts])    
-                
+
+                opt_str = '__'.join(["%i_%i" % (opt.option_group.id, opt.id) for opt in opts])
+
                 key = "pv__%s" % opt_str
 
                 if variation:
@@ -451,26 +453,26 @@ class VariationManagerForm(forms.Form):
                 pv = forms.BooleanField(**kw)
 
                 self.fields[key] = pv
-                
+
                 for opt in opts:
                     self.optiondict[opt.option_group.id].append(key)
-                
+
                 self.variationkeys.append(key)
-                
+
                 # Name Field
-                
+
                 nv = forms.CharField(initial=basename)
                 namekey = "name__%s" % opt_str
                 self.fields[namekey] = nv
                 self.namedict[key] = namekey
-                
-                # SKU Field                
+
+                # SKU Field
 
                 sv = forms.CharField(initial=sku, required=False)
                 skukey = "sku__%s" % opt_str
                 self.fields[skukey] = sv
                 self.skudict[key] = skukey
-                
+
                 # Slug Field
                 sf = forms.CharField(initial=slug)
                 slugkey = "slug__%s" % opt_str
@@ -481,7 +483,7 @@ class VariationManagerForm(forms.Form):
         self.full_clean()
         data = self.cleaned_data
         optiondict = _get_optiondict()
-        
+
         #dirty is a comma delimited list of groupid__optionid strings
         dirty = self.cleaned_data['dirty'].split(',')
         if dirty:
@@ -497,9 +499,9 @@ class VariationManagerForm(forms.Form):
                             self._delete_variation(opts, request)
                 except KeyError:
                     pass
-                    
+
     save = transaction.commit_on_success(_save)
-                           
+
     def _create_variation(self, opts, key, data, request):
         namekey = "name__" + key
         nameval = data[namekey]
@@ -509,30 +511,30 @@ class VariationManagerForm(forms.Form):
         slugval = data[slugkey]
         log.debug("Got name=%s, sku=%s, slug=%s", nameval, skuval, slugval)
         v = self.product.configurableproduct.create_variation(
-            opts, 
-            name=nameval, 
-            sku=skuval, 
+            opts,
+            name=nameval,
+            sku=skuval,
             slug=slugval)
         log.info('Updated variation %s', v)
         request.user.message_set.create(message='Created %s' % v)
         return v
-        
+
     def _delete_variation(self, opts, request):
         variation = self.product.configurableproduct.get_product_from_options(opts)
         if variation:
             log.info("Deleting variation for [%s] %s", self.product.slug, opts)
             request.user.message_set.create(message='Deleted %s' % variation)
             variation.delete()
- 
+
 def _get_optiondict():
-    site = Site.objects.get_current()       
+    site = Site.objects.get_current()
     opts = Option.objects.filter(option_group__site__id = site.id)
     d = {}
     for opt in opts:
         d.setdefault(opt.option_group.id, {})[opt.id] = opt
     return d
-    
-def _get_options_for_key(key, optiondict):    
+
+def _get_options_for_key(key, optiondict):
     ids = key.split('__')
     opts = []
     for work in ids:
