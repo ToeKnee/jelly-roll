@@ -3,7 +3,10 @@ import factory
 from django.contrib.sites.models import Site
 from django.template.defaultfilters import slugify
 
-from satchmo.product.models import Product
+from satchmo.product.models import (
+    ConfigurableProduct,
+    Product
+)
 
 
 class ProductFactory(factory.Factory):
@@ -16,3 +19,9 @@ class ProductFactory(factory.Factory):
 
 class TaxableProductFactory(ProductFactory):
     taxable = True
+
+
+class ConfigurableProductFactory(factory.Factory):
+    FACTORY_FOR = ConfigurableProduct
+
+    product = factory.SubFactory(ProductFactory)
