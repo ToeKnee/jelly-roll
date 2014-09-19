@@ -6,7 +6,7 @@
         {% for name, url in product.category.all.0.get_url_name %}
             <a href="{{ url }}" class="category">{{ name }}</a> &gt;
             {% if forloop.last %}
-                {% with product.brand_set.all|first as brand %}
+                {% with product.brands.all|first as brand %}
                     {% if brand %}
                         <a href="{% url satchmo_brand_category_view name|slugify brand.slug %}" class="brand">{{ brand.translation.name }}</a> &gt;
                     {% endif %}

@@ -6,7 +6,7 @@ xmlns:g="http://base.google.com/ns/1.0">
 <link>http://{{ shop_domain }}</link>
 <description>{{ shop_description }}</description>
 {% for product in products %}
-{% with product.brand_set.all|first as brand %}
+{% with product.brands.all|first as brand %}
 <item>
     <g:id>{{ product.slug }}</g:id>
     <title>{{ brand.translation.name|force_escape }} "{{ product.translated_name|force_escape }}" {{ product.category.all|first|force_escape }}</title>

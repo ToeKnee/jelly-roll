@@ -21,7 +21,7 @@
     </h2>
 
     {% with product.category.all|first as category %}
-        {% with product.brand_set.all|first as brand %}
+        {% with product.brands.all|first as brand %}
             {% if brand %}
                 <a href="{% url satchmo_brand_view brand.slug %}" class="brand">{{ brand.translation.name }}</a> -
             {% endif %}

@@ -11,7 +11,7 @@ from satchmo.product.forms import VariationManagerForm
 from satchmo.shop.views.utils import bad_or_missing
 import logging
 
-log = logging.getLogger('product.adminviews')
+log = logging.getLogger(__name__)
 
 
 def edit_inventory(request):
@@ -48,7 +48,7 @@ def picking_list(request):
 
     for order in processing_orders:
         for item in order.orderitem_set.all():
-            brand = item.product.brand_set.all()
+            brand = item.product.brands.all()
             if brand.count():
                 brand = brand[0].translation.name
             else:
