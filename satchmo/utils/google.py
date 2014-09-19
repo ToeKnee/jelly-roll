@@ -6,12 +6,14 @@ from django.template import RequestContext
 from satchmo.configuration.functions import config_choice_values
 from satchmo.configuration.functions import config_get
 
+
 def get_google_card_type(card):
     allowed_payment_types = ["AmericanExpress", "Cash", "Check", "Discover", "GoogleCheckout", "MasterCard", "Visa", "wiretransfer"]
     for type in allowed_payment_types:
         if lower(card) == lower(type):
             return type
     return None
+
 
 def product_feed(request):
     products = Product.objects.filter(active=True)
@@ -36,4 +38,10 @@ def product_feed(request):
     # Make the list unique
     set(payment_types)
     set(payment_notes)
-    return render_to_response("product_feed.xml", {'products': products, "payment_types": payment_types, "payment_notes": payment_notes}, context_instance=RequestContext(request))
+
+    context = {
+        "products": products,
+        "payment_types": payment_types,
+        "payment_notes": payment_notes
+    }
+    return render_to_response("product_feed.xml", context, context_instance=RequestContext(request))
