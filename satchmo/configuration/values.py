@@ -4,13 +4,13 @@ http://code.google.com/p/django-values/
 """
 
 import datetime
+import json
 import logging
 import signals
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ImproperlyConfigured
-from django.utils import simplejson
 from django.utils.datastructures import SortedDict
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext, ugettext_lazy as _
@@ -97,8 +97,8 @@ class ConfigurationGroup(SortedDotDict):
 
 SHOP_GROUP = ConfigurationGroup('SHOP', _('Base Settings'), ordering=0)
 
-class Value(object):
 
+class Value(object):
     creation_counter = 0
 
     def __init__(self, group, key, **kwargs):
@@ -123,7 +123,7 @@ class Value(object):
         self.key = key
         self.description = kwargs.get('description', None)
         self.help_text = kwargs.get('help_text')
-        self.choices = kwargs.get('choices',[])
+        self.choices = kwargs.get('choices', [])
         self.ordering = kwargs.pop('ordering', 0)
         self.hidden = kwargs.pop('hidden', False)
 
@@ -140,7 +140,7 @@ class Value(object):
             self.requires = group.requires
             self.requires_value = group.requires_value
 
-        if kwargs.has_key('default'):
+        if 'default' in kwargs:
             self.default = kwargs.pop('default')
             self.use_default = True
         else:
@@ -555,7 +555,7 @@ class MultipleStringValue(Value):
     def get_db_prep_save(self, value):
         if is_string_like(value):
             value = [value]
-        return simplejson.dumps(value)
+        return json.dumps(value)
 
     def to_python(self, value):
         if not value or value == NOTSET:
@@ -564,7 +564,7 @@ class MultipleStringValue(Value):
             return value
         else:
             try:
-                return simplejson.loads(value)
+                return json.loads(value)
             except:
                 if is_string_like(value):
                     return [value]

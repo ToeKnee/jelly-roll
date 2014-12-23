@@ -1,9 +1,6 @@
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
+import json
+from decimal import Decimal
 
-import logging
 
 from django.core import urlresolvers
 from django.http import HttpResponseRedirect, HttpResponse
@@ -11,7 +8,6 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.safestring import mark_safe
-from django.utils.simplejson.encoder import JSONEncoder
 from django.utils.translation import ugettext as _
 
 from satchmo.configuration import config_value
@@ -24,6 +20,7 @@ from satchmo.shop.signals import satchmo_cart_changed, satchmo_cart_add_complete
 from satchmo.utils import trunc_decimal
 from satchmo.shop.views.utils import bad_or_missing
 
+import logging
 log = logging.getLogger(__name__)
 
 NOTSET = object()
@@ -226,7 +223,7 @@ def add_ajax(request, id=0, template="json.html"):
 
     data['cart_count'] = tempCart.numItems
 
-    encoded = JSONEncoder().encode(data)
+    encoded = json.JSONEncoder().encode(data)
     encoded = mark_safe(encoded)
     log.debug('CART AJAX: %s', data)
 
@@ -267,13 +264,13 @@ def remove_ajax(request, template="json.html"):
         data['results'] = success
         data['errors'] = errors
 
-        # note we have to convert Decimals to strings, since simplejson doesn't know about Decimals
+        # note we have to convert Decimals to strings, since json doesn't know about Decimals
         if cart and cartitem:
             data['cart_total'] = str(cart.total)
             data['cart_count'] = cart.numItems
             data['item_id'] = cartitem.id
 
-        return render_to_response(template, {'json': JSONEncoder().encode(data)})
+        return render_to_response(template, {'json': json.JSONEncoder().encode(data)})
 
 
 def set_quantity(request):
@@ -307,7 +304,7 @@ def set_quantity_ajax(request, template="json.html"):
         data['results'] = success
         data['errors'] = errors
 
-        # note we have to convert Decimals to strings, since simplejson doesn't know about Decimals
+        # note we have to convert Decimals to strings, since json doesn't know about Decimals
         if cart:
             carttotal = str(trunc_decimal(cart.total, 2))
             cartqty = cart.numItems
@@ -331,7 +328,7 @@ def set_quantity_ajax(request, template="json.html"):
         data['item_qty'] = itemqty
         data['item_price'] = price
 
-    encoded = JSONEncoder().encode(data)
+    encoded = json.JSONEncoder().encode(data)
     encoded = mark_safe(encoded)
     return render_to_response(template, {'json': encoded})
 
