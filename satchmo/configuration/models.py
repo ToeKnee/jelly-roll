@@ -1,17 +1,18 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
+from django.db import transaction
 from django.db.models import loading
 from django.utils.translation import ugettext_lazy as _
+
 from satchmo.caching import cache_key, cache_get, cache_set, NotCachedError
 from satchmo.caching.models import CachedObjectMixin
-from django.contrib.sites.models import Site
-import logging
-from django.db import transaction
 
-log = logging.getLogger('configuration.models')
+import logging
+log = logging.getLogger(__name__)
 
 __all__ = ['SettingNotSet', 'Setting', 'LongSetting', 'find_setting']
+
 
 def _safe_get_siteid(site):
     if not site:
@@ -28,7 +29,8 @@ def _safe_get_siteid(site):
     transaction.commit()
     return siteid
 
-_safe_get_siteid=transaction.commit_manually(_safe_get_siteid)
+_safe_get_siteid = transaction.commit_manually(_safe_get_siteid)
+
 
 def find_setting(group, key, site=None):
     """Get a setting or longsetting by group and key, cache and return it."""
@@ -40,7 +42,7 @@ def find_setting(group, key, site=None):
     try:
         setting = cache_get(ck)
 
-    except NotCachedError, nce:
+    except NotCachedError:
         if loading.app_cache_ready():
             try:
                 setting = Setting.objects.get(site__id__exact=siteid, key__exact=key, group__exact=group)
@@ -60,10 +62,12 @@ def find_setting(group, key, site=None):
 
     return setting
 
+
 class SettingNotSet(Exception):
     def __init__(self, k, cachekey=None):
         self.key = k
         self.cachekey = cachekey
+
 
 class SettingManager(models.Manager):
     def get_query_set(self):
@@ -110,11 +114,13 @@ class Setting(models.Model, CachedObjectMixin):
         self.cache_delete()
         super(Setting, self).delete()
 
+
 class LongSettingManager(models.Manager):
     def get_query_set(self):
         all = super(LongSettingManager, self).get_query_set()
         siteid = _safe_get_siteid(None)
         return all.filter(site__id__exact=siteid)
+
 
 class LongSetting(models.Model, CachedObjectMixin):
     """A Setting which can handle more than 255 characters"""
