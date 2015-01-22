@@ -26,6 +26,7 @@ from django.utils.translation import (
     get_language,
     ugettext_lazy as _
 )
+
 from satchmo.configuration import (
     SettingNotSet,
     config_value,
@@ -1771,8 +1772,8 @@ class ProductPriceLookup(models.Model):
     productslug = models.CharField(max_length=80)
     price = models.DecimalField(max_digits=14, decimal_places=6, )
     quantity = models.IntegerField()
-    active = models.BooleanField()
-    discountable = models.BooleanField()
+    active = models.BooleanField(default=False)
+    discountable = models.BooleanField(default=False)
     items_in_stock = models.IntegerField()
 
     objects = ProductPriceLookupManager()
