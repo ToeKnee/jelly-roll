@@ -12,7 +12,7 @@ from django.db.models.fields.files import ImageField
 from satchmo.thumbnail.text import URLify
 from satchmo.configuration import config_value
 
-image_cache = get_cache('locmem:///')
+image_cache = get_cache('satchmo-thumbnail')
 
 _FILE_CACHE_TIMEOUT = 60 * 60 * 60 * 24 * 31 # 1 month
 _THUMBNAIL_GLOB = '%s_t*%s'
