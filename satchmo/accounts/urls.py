@@ -27,7 +27,7 @@ verify = (config_value('SHOP', 'ACCOUNT_VERIFICATION') == 'EMAIL')
 urlpatterns += patterns('django.views.generic',
     (r'^register/complete/$', 'simple.direct_to_template',
         {'template': 'registration/registration_complete.html',
-        'extra_context': {'verify': verify }}, 
+        'extra_context': {'verify': verify }},
         'registration_complete'),
 )
 
@@ -40,7 +40,7 @@ password_reset_dict = {
 # the "from email" in password reset is problematic... it is hard coded as None
 urlpatterns += patterns('django.contrib.auth.views',
     (r'^login/$', 'login', {'template_name': 'registration/login.html'}, 'auth_login'),
-    (r'^secure/login/$', 'login', {'SSL' : True, 'template_name': 'registration/login.html'}, 'auth_secure_login'),
+    (r'^secure/login/$', 'login', {'template_name': 'registration/login.html'}, 'auth_secure_login'),
     (r'^password_reset/$', 'password_reset', password_reset_dict, 'auth_password_reset'),
     (r'^password_reset/done/$', 'password_reset_done', {'template_name':'registration/password_reset_done.html'}, 'auth_password_reset_done'),
     (r'^reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'password_reset_confirm'),

@@ -165,8 +165,8 @@ LOGIN_REDIRECT_URL = '/accounts/'
 SATCHMO_SETTINGS = {
     # this will override any urls set in the store url modules
     #'SHOP_URLS' : patterns('satchmo.shop.views',
-    #    (r'^checkout/pay/$', 'paypal.checkout_step2.pay_ship_info', {'SSL': False}, 'satchmo_checkout-step2'),
-    #    (r'^checkout/confirm/$', 'paypal.checkout_step3.confirm_info', {'SSL': False}, 'satchmo_checkout-step3'),
+    #    (r'^checkout/pay/$', 'paypal.checkout_step2.pay_ship_info', {}, 'satchmo_checkout-step2'),
+    #    (r'^checkout/confirm/$', 'paypal.checkout_step3.confirm_info', {}, 'satchmo_checkout-step3'),
     #   if you have satchmo.feeds, make sure to include its URL
     #    (r'^feed/', include('satchmo.feeds.urls')),
     #   enable brands here
