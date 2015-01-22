@@ -2,20 +2,24 @@ import os
 import fnmatch
 import shutil
 import urlparse
-try:
-    import Image
-except ImportError:
-    from PIL import Image
+
+from PIL import Image
+
 from django.conf import settings
 from django.core.cache import get_cache
 from django.db.models.fields.files import ImageField
+
 from satchmo.thumbnail.text import URLify
 from satchmo.configuration import config_value
 
+import logging
+logger = logging.getLogger(__name__)
+
 image_cache = get_cache('satchmo-thumbnail')
 
-_FILE_CACHE_TIMEOUT = 60 * 60 * 60 * 24 * 31 # 1 month
+_FILE_CACHE_TIMEOUT = 60 * 60 * 60 * 24 * 31  # 1 month
 _THUMBNAIL_GLOB = '%s_t*%s'
+
 
 def _get_thumbnail_path(path, width=None, height=None):
     """ create thumbnail path from path and required width and/or height.
@@ -35,31 +39,31 @@ def _get_thumbnail_path(path, width=None, height=None):
     if (width is not None) and (height is not None):
         th_name += '_w%d_h%d' % (width, height)
     elif width is not None:
-        th_name += '%d' % width # for compatibility with admin
+        th_name += '%d' % width  # for compatibility with admin
     elif height is not None:
         th_name += '_h%d' % height
     th_name += ext
 
     return urlparse.urljoin(basedir, th_name)
 
+
 def _get_path_from_url(url, root=settings.MEDIA_ROOT, url_root=settings.MEDIA_URL):
     """ make filesystem path from url """
 
-#    if url.startswith('/'):
-#        return url
-
     if url.startswith(url_root):
-        url = url[len(url_root):] # strip media root url
+        url = url[len(url_root):]  # strip media root url
 
     return os.path.normpath(os.path.join(root, url))
+
 
 def _get_url_from_path(path, root=settings.MEDIA_ROOT, url_root=settings.MEDIA_URL):
     """ make url from filesystem path """
 
     if path.startswith(root):
-        path = path[len(root):] # strip media root
+        path = path[len(root):]  # strip media root
 
     return urlparse.urljoin(root, path.replace('\\', '/'))
+
 
 def _has_thumbnail(photo_url, width=None, height=None, root=settings.MEDIA_ROOT, url_root=settings.MEDIA_URL):
     # one of width/height is required
@@ -67,13 +71,15 @@ def _has_thumbnail(photo_url, width=None, height=None, root=settings.MEDIA_ROOT,
 
     return os.path.isfile(_get_path_from_url(_get_thumbnail_path(photo_url, width, height), root, url_root))
 
+
 def make_thumbnail(photo_url, width=None, height=None, root=settings.MEDIA_ROOT, url_root=settings.MEDIA_URL):
     """ create thumbnail """
 
     # one of width/height is required
     assert (width is not None) or (height is not None)
 
-    if not photo_url: return None
+    if not photo_url:
+        return None
 
     th_url = _get_thumbnail_path(photo_url, width, height)
     th_path = _get_path_from_url(th_url, root, url_root)
@@ -122,11 +128,12 @@ def make_thumbnail(photo_url, width=None, height=None, root=settings.MEDIA_ROOT,
 
     return th_url
 
+
 def _remove_thumbnails(photo_url, root=settings.MEDIA_ROOT, url_root=settings.MEDIA_URL):
-    if not photo_url: return # empty url
+    if not photo_url:
+        return None  # empty url
 
     file_name = _get_path_from_url(photo_url, root, url_root)
-    import fnmatch, os
     base, ext = os.path.splitext(os.path.basename(file_name))
     basedir = os.path.dirname(file_name)
     for file in fnmatch.filter(os.listdir(basedir), _THUMBNAIL_GLOB % (base, ext)):
@@ -135,8 +142,9 @@ def _remove_thumbnails(photo_url, root=settings.MEDIA_ROOT, url_root=settings.ME
             os.remove(path)
         except OSError:
             # no reason to crash due to bad paths.
-            log.warn("Could not delete image thumbnail: %s", path)
-        image_cache.delete(path) # delete from cache
+            logger.warn("Could not delete image thumbnail: %s", path)
+        image_cache.delete(path)  # delete from cache
+
 
 def remove_model_thumbnails(model):
     """ remove all thumbnails for all ImageFields (and subclasses) in the model """
@@ -148,9 +156,11 @@ def remove_model_thumbnails(model):
                 url = field_value.path
                 _remove_thumbnails(url)
 
+
 def make_admin_thumbnail(url):
     """ make thumbnails for admin interface """
     return make_thumbnail(url, width=120)
+
 
 def make_admin_thumbnails(model):
     """ create thumbnails for admin interface for all ImageFields (and subclasses) in the model """
@@ -159,6 +169,7 @@ def make_admin_thumbnails(model):
         if isinstance(obj, ImageField):
             url = getattr(model, obj.name).path
             make_thumbnail(url, width=120)
+
 
 def _get_thumbnail_url(photo_url, width=None, height=None, root=settings.MEDIA_ROOT, url_root=settings.MEDIA_URL):
     """ return thumbnail URL for requested photo_url and required width and/or height
@@ -174,6 +185,7 @@ def _get_thumbnail_url(photo_url, width=None, height=None, root=settings.MEDIA_R
     else:
         return photo_url
 
+
 def _set_cached_file(path, value):
     """ Store file dependent data in cache.
         Timeout is set to _FILE_CACHE_TIMEOUT (1month).
@@ -181,6 +193,7 @@ def _set_cached_file(path, value):
 
     mtime = os.path.getmtime(path)
     image_cache.set(path, (mtime, value,), _FILE_CACHE_TIMEOUT)
+
 
 def _get_cached_file(path, default=None):
     """ Get file content from cache.
@@ -193,8 +206,8 @@ def _get_cached_file(path, default=None):
         return None
     mtime, value = cached
 
-    if (not os.path.isfile(path)) or (os.path.getmtime(path) != mtime): # file is changed or deleted
-        image_cache.delete(path) # delete from cache
+    if (not os.path.isfile(path)) or (os.path.getmtime(path) != mtime):  # file is changed or deleted
+        image_cache.delete(path)  # delete from cache
         # remove thumbnails if exists
         base, ext = os.path.splitext(os.path.basename(path))
         basedir = os.path.dirname(path)
@@ -203,6 +216,7 @@ def _get_cached_file(path, default=None):
         return None
     else:
         return value
+
 
 def get_image_size(photo_url, root=settings.MEDIA_ROOT, url_root=settings.MEDIA_URL):
     """ returns image size.
@@ -231,7 +245,7 @@ def get_image_size(photo_url, root=settings.MEDIA_ROOT, url_root=settings.MEDIA_
 
 
 ##################################################
-## FILE HELPERS ##
+# FILE HELPERS #
 
 def _rename(old_name, new_name):
     """ rename image old_name -> name """
@@ -248,8 +262,10 @@ def _rename(old_name, new_name):
 #     if not (field and field.content):
 #         return field
 
+
 def rename_by_field(file_path, req_name, add_path=None):
-    if file_path.strip() == '': return '' # no file uploaded
+    if file_path.strip() == '':
+        return ''  # no file uploaded
 
     old_name = os.path.basename(file_path)
     path = os.path.dirname(file_path)
@@ -263,7 +279,7 @@ def rename_by_field(file_path, req_name, add_path=None):
     name, ext = os.path.splitext(old_name)
     new_name = URLify(req_name) + ext
 
-    if (add_path is not None) and (add_path not in path): # prevent adding if already here
+    if (add_path is not None) and (add_path not in path):  # prevent adding if already here
         dest_path = os.path.join(path, add_path)
     else:
         dest_path = path
@@ -274,6 +290,6 @@ def rename_by_field(file_path, req_name, add_path=None):
     dest_path = os.path.join(dest_path, new_name)
 
     if file_path != dest_path:
-        return _rename(file_path, dest_path).replace('\\', '/') # windows fix
+        return _rename(file_path, dest_path).replace('\\', '/')  # windows fix
     else:
-        return file_path.replace('\\', '/') # windows fix
+        return file_path.replace('\\', '/')  # windows fix
