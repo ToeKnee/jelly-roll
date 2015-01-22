@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<django-objects version="1.0"><object pk="1" model="product.productimage"><field to="product.product" name="product" rel="ManyToOneRel"><None></None></field><field type="FileField" name="picture">images/productimage-picture-default.jpg</field><field type="CharField" name="caption">Photo Not Available</field><field type="IntegerField" name="sort">1</field></object></django-objects>
