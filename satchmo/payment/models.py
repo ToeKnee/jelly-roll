@@ -26,6 +26,7 @@ class PaymentOption(models.Model):
     """
     description = models.CharField(_("Description"), max_length=20)
     active = models.BooleanField(_("Active"),
+                                 default=True,
                                  help_text=_("Should this be displayed as an option for the user?"))
     optionName = PaymentChoiceCharField(_("Option Name"), max_length=20,
                                         unique=True,
