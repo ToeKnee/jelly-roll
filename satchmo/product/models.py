@@ -1834,7 +1834,10 @@ class Price(models.Model):
 
     def save(self, *args, **kwargs):
         prices = Price.objects.filter(product=self.product, quantity=self.quantity)
-        ## Jump through some extra hoops to check expires - if there's a better way to handle this field I can't think of it. Expires needs to be able to be set to None in cases where there is no expiration date.
+        # Jump through some extra hoops to check expires - if there's
+        # a better way to handle this field I can't think of
+        # it. Expires needs to be able to be set to None in cases
+        # where there is no expiration date.
         if self.expires:
             prices = prices.filter(expires=self.expires)
         else:
