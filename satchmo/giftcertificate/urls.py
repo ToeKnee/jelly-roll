@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from satchmo.configuration import config_get_group
 
 config = config_get_group('PAYMENT_GIFTCERTIFICATE')

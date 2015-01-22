@@ -41,10 +41,10 @@ import logging
 SITE_DOMAIN = "example.com"
 SITE_NAME = "My Site"
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 # These can override or add to the default URLs
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 URLS = patterns('',
 )
 

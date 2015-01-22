@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import include, patterns
+from django.conf.urls import include, patterns
 from satchmo.product.urls import urlpatterns as productpatterns
 from satchmo.shop import get_satchmo_setting
 from satchmo.utils import app_enabled

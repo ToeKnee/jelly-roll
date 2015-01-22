@@ -2,7 +2,7 @@
 URLConf for Caching app
 """
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 urlpatterns = patterns('satchmo.caching.views',
     (r'^$', 'stats_page', {}, 'caching_stats'),

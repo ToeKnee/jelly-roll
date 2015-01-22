@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from satchmo.configuration import config_value, config_get_group
 
 

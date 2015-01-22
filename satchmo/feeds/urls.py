@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 urlpatterns = patterns('satchmo.feeds.views',
     (r'atom/$', 'product_feed', {}, 'satchmo_atom_feed'),

@@ -2,7 +2,7 @@
 URLConf for Satchmo Contacts.
 """
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 urlpatterns = patterns('satchmo.contact.views',
     (r'^$', 'view', {}, 'satchmo_account_info'),

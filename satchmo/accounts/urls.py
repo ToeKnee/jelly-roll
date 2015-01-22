@@ -6,7 +6,7 @@ root URLConf to include this URLConf for any URL beginning with
 '/accounts/'.
 
 """
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from satchmo.configuration import config_value
 
 # extending the urls in contacts

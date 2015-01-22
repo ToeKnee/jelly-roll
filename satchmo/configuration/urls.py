@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 urlpatterns = patterns('satchmo.configuration.views',
     (r'^$', 'site_settings', {}, 'satchmo_site_settings'),

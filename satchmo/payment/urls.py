@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url
+from django.conf.urls import patterns, url
 from satchmo.configuration import config_get_group, config_get, config_value
 
 import logging

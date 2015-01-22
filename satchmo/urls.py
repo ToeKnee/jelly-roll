@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.contrib import admin
 from satchmo.utils import urlhelper
 from satchmo.urls_base import urlpatterns as satchmopatterns
