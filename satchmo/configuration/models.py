@@ -85,6 +85,7 @@ class Setting(models.Model, CachedObjectMixin):
     objects = SettingManager()
 
     class Meta:
+        db_table = "configuration_setting"
         unique_together = ('site', 'group', 'key')
 
     def __unicode__(self):
@@ -130,6 +131,9 @@ class LongSetting(models.Model, CachedObjectMixin):
     value = models.TextField(blank=True)
 
     objects = LongSettingManager()
+
+    class Meta:
+        db_table = "configuration_longsetting"
 
     def __nonzero__(self):
         return self.id is not None

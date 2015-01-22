@@ -7,6 +7,7 @@ import datetime
 import json
 import logging
 import signals
+from decimal import Decimal
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
@@ -17,18 +18,13 @@ from django.utils.translation import gettext, ugettext_lazy as _
 from satchmo.configuration.models import find_setting, LongSetting, Setting, SettingNotSet
 from satchmo.utils import load_module, is_string_like, is_list_or_tuple
 
-try:
-    from decimal import Decimal
-except ImportError:
-    from django.utils._decimal import Decimal
-
 __all__ = ['SHOP_GROUP', 'ConfigurationGroup', 'Value', 'BooleanValue', 'DecimalValue', 'DurationValue',
            'FloatValue', 'IntegerValue', 'ModuleValue', 'PercentValue', 'PositiveIntegerValue', 'SortedDotDict',
            'StringValue', 'LongStringValue', 'MultipleStringValue']
 
 _WARN = {}
 
-log = logging.getLogger('configuration')
+log = logging.getLogger(__name__)
 
 NOTSET = object()
 
@@ -253,13 +249,13 @@ class Value(object):
     def _setting(self):
         return find_setting(self.group.key, self.key)
 
-    setting = property(fget = _setting)
+    setting = property(fget=_setting)
 
     def _value(self):
         try:
             val = self.setting.value
 
-        except SettingNotSet, sns:
+        except SettingNotSet:
             if self.use_default:
                 val = self.default
             else:
@@ -274,7 +270,7 @@ class Value(object):
             global _WARN
             log.error(e)
             if str(e).find("configuration_setting") > -1:
-                if not _WARN.has_key('configuration_setting'):
+                if 'configuration_setting' not in _WARN:
                     log.warn('Error loading setting %s.%s from table, OK if you are in syncdb', self.group.key, self.key)
                     _WARN['configuration_setting'] = True
 
@@ -286,7 +282,7 @@ class Value(object):
                 import traceback
                 traceback.print_exc()
                 log.warn("Problem finding settings %s.%s, %s", self.group.key, self.key, e)
-                raise SettingNotSet("Startup error, couldn't load %s.%s" %(self.group.key, self.key))
+                raise SettingNotSet("Startup error, couldn't load %s.%s" % (self.group.key, self.key))
         return val
 
     def update(self, value):
@@ -319,13 +315,13 @@ class Value(object):
         val = self._value()
         return self.to_python(val)
 
-    value = property(fget = value)
+    value = property(fget=value)
 
     def editor_value(self):
         val = self._value()
         return self.to_editor(val)
 
-    editor_value = property(fget = editor_value)
+    editor_value = property(fget=editor_value)
 
     # Subclasses should override the following methods where applicable
 
@@ -351,6 +347,7 @@ class Value(object):
 # VALUE TYPES #
 ###############
 
+
 class BooleanValue(Value):
 
     class field(forms.BooleanField):
@@ -370,15 +367,16 @@ class BooleanValue(Value):
 
     to_editor = to_python
 
+
 class DecimalValue(Value):
     class field(forms.DecimalField):
 
-           def __init__(self, *args, **kwargs):
-               kwargs['required'] = False
-               forms.DecimalField.__init__(self, *args, **kwargs)
+        def __init__(self, *args, **kwargs):
+            kwargs['required'] = False
+            forms.DecimalField.__init__(self, *args, **kwargs)
 
     def to_python(self, value):
-        if value==NOTSET:
+        if value == NOTSET:
             return Decimal("0")
 
         try:
