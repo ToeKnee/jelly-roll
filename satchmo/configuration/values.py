@@ -34,7 +34,7 @@ class SortedDotDict(SortedDict):
     def __getattr__(self, key):
         try:
             return self[key]
-        except:
+        except IndexError:
             raise AttributeError(key)
 
     def __iter__(self):
