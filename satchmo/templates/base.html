@@ -37,9 +37,9 @@
 	<div id="rightnav">
 		{% block rightnav %}
 		<h3>{% trans "Quick Links" %}</h3>
-		{% url satchmo_product_recently_added as recenturl %}
+		{% url "satchmo_product_recently_added" as recenturl %}
 		{% if recenturl %}<a href="{{ recenturl }}">{% trans "Recently Added" %}</a><br/>{% endif %}
-		{% url satchmo_product_best_selling as popularurl %}
+		{% url "satchmo_product_best_selling" as popularurl %}
 		{% if popularurl %}<a href="{{ popularurl }}">{% trans "Best Sellers" %}</a>{% endif %}
 
 	    <h3>{% trans "Account Information" %}</h3>
@@ -47,26 +47,26 @@
 		<a href="/admin" target="blank">{% trans "Admin" %}</a><br/>
 		{% endif %}
 	    {% if user.is_authenticated %}
-		{% url satchmo_account_info as accounturl %}
+		{% url "satchmo_account_info" as accounturl %}
         {% if accounturl %}<a href="{{ accounturl }}" target="blank">{% trans "Account Details" %}</a><br/>{% endif %}
         <a href="{{ logout_url }}">{% trans "Log out" %}</a><br/>
 	    {% else %}
         <a href="{{ login_url }}?next={{request.path}}">{% trans "Log in" %}</a><br/>
 	    {% endif %}
 
-		{% url satchmo_cart as carturl %}
+		{% url "satchmo_cart" as carturl %}
 	    {% if carturl %}<a href="{{ carturl }}">{% trans "Cart" %}</a>{% endif %}
 
 	    {% if cart_count %}
         ({{ cart_count }}{% if cart.total %} - {% spaceless %}{% if shop.options.TAX.DEFAULT_VIEW_TAX.value %}
         {% load satchmo_tax %}{% cart_taxed_total cart 1 %}{% else %}
         {% endif %}{% endspaceless %}{% endif %})<br/>
-		{% url satchmo_checkout-step1 as checkouturl %}
+		{% url "satchmo_checkout-step1" as checkouturl %}
         {% if checkouturl %}<a href="{{ checkouturl }}">{% trans "Check out" %}</a>{% endif %}
 	    {% endif %}
     
 	    {% if user.is_authenticated and "wishlist"|app_enabled %}
-		{% url satchmo_wishlist_view as wishlist_url %}
+		{% url "satchmo_wishlist_view" as wishlist_url %}
 	    {% if wishlist_url %}<p class="wishlist"><a href="{{ wishlist_url }}" />{% trans 'Wishlist' %}</a></p>{% endif %}
 	    {% endif %}            
 
@@ -97,7 +97,7 @@
                                 {% trans "Your shopping cart is empty." %}
                         {% endif %}
                         <div class="checkoutlink">
-                            <a href="{% url satchmo_checkout-step1 %}">&#x21AA; {% trans "Check out" %}</a>
+                            <a href="{% url "satchmo_checkout-step1" %}">&#x21AA; {% trans "Check out" %}</a>
                         </div>
                     </div>
                 </div>

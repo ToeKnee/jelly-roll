@@ -26,11 +26,11 @@
 </ul>
 <h5>{% trans "Account options" %}:</h5>
 <p>
-    <a href="{% url satchmo_profile_update %}">{% trans "Update your profile" %}</a>
+    <a href="{% url "satchmo_profile_update" %}">{% trans "Update your profile" %}</a>
     <br/>
-    <a href="{% url auth_password_change %}">{% trans "Change your password" %}</a>
+    <a href="{% url "auth_password_change" %}">{% trans "Change your password" %}</a>
     <br/>
-    <a href="{% url satchmo_order_history %}">{% trans "Order History" %}</a>
+    <a href="{% url "satchmo_order_history" %}">{% trans "Order History" %}</a>
 </p>
 </ul>
 {% else %}
@@ -39,9 +39,9 @@
 </p>
 <h5>{% trans "Account options" %}:</h5>
 <p>
-    <a href="{% url satchmo_profile_update %}">{% trans 'Set up contact information' %}</a>
+    <a href="{% url "satchmo_profile_update" %}">{% trans 'Set up contact information' %}</a>
     <br/>
-    <a href="{% url auth_password_change %}">{% trans "Change your password" %}</a>
+    <a href="{% url "auth_password_change" %}">{% trans "Change your password" %}</a>
 </p>
 {% endif %}
 {% endblock %}

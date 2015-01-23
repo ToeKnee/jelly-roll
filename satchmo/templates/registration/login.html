@@ -22,11 +22,11 @@
 {% if next %}
     value={{ next }} />
 {% else %}
-    value="{% url satchmo_account_info %}" />
+    value="{% url "satchmo_account_info" %}" />
 {% endif %}
 </form>
 
-<p>{% trans "If you do not have an account, please" %} <a href="{% url registration_register %}">{% trans "click here" %}</a>.</p>
-<p>{% trans "If you do not remember your password, please" %} <a href="{% url auth_password_reset %}">{% trans "click here</a> to have it reset." %}</p>
+<p>{% trans "If you do not have an account, please" %} <a href="{% url "registration_register" %}">{% trans "click here" %}</a>.</p>
+<p>{% trans "If you do not remember your password, please" %} <a href="{% url "auth_password_reset" %}">{% trans "click here</a> to have it reset." %}</p>
 
 {% endblock %}

@@ -3,7 +3,7 @@
 
 {% block breadcrumbs %}{% if not is_popup %}
 <div class="breadcrumbs">
-	 <a href="{% url admin:index %}">{% trans "Home" %}</a> &rsaquo;
+	 <a href="{% url "admin:index" %}">{% trans "Home" %}</a> &rsaquo;
 	 {% trans "Inventory Management" %}
 </div>
 {% endif %}{% endblock %}

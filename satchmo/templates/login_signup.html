@@ -12,8 +12,8 @@
 {% block content %}
 <h4>{% trans "Login, or sign up to the store" %}</h4>
 
-<form name="loginform" method="post" action="{% url auth_login %}">
-<input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}{% url satchmo_account_info %}{% endif %}" />
+<form name="loginform" method="post" action="{% url "auth_login" %}">
+<input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}{% url "satchmo_account_info" %}{% endif %}" />
 <input type="hidden" name="action" value="login" />    
 <table class="form" style="float:left; width: 50%">
     <thead>
@@ -54,9 +54,9 @@
 </table>
 </form>
 		
-<form name="createform" method="post" action="{% url auth_login %}">
+<form name="createform" method="post" action="{% url "auth_login" %}">
 <input type="hidden" name="action" value="create" />
-<input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}{% url satchmo_account_info %}{% endif %}" />
+<input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}{% url "satchmo_account_info" %}{% endif %}" />
 <table class="form nohead">
     <thead>
         <tr>

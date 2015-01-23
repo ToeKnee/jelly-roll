@@ -2,7 +2,7 @@
 {% load l10n i18n satchmo_util %}
 {# this is the Paypal confirm template #}
 
-{% block payment_step %}<a href="{% url PAYPAL_satchmo_checkout-step2 %}">{% trans "Payment" %}</a>{% endblock %}
+{% block payment_step %}<a href="{% url "PAYPAL_satchmo_checkout-step2" %}">{% trans "Payment" %}</a>{% endblock %}
 
 {% block payment_display %}
 <h4>{% trans "Payment" %}</h4>

@@ -3,7 +3,7 @@
     {% for brand in brands %}
         {% if brand.active_products  %}
         <li>
-            <a href="{% if category %}{% url satchmo_brand_category_view category brand %}{% else %}{% url satchmo_brand_view brand %}{% endif %}" title="{{ brand.translation.name }}">
+            <a href="{% if category %}{% url "satchmo_brand_category_view" category brand %}{% else %}{% url "satchmo_brand_view" brand %}{% endif %}" title="{{ brand.translation.name }}">
                 {{ brand.translation.name }}
             </a>
         </li>

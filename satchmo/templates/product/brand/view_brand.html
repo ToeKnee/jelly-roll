@@ -25,14 +25,14 @@
                     {% for parent in category.parents %}
                         <a href="{{ parent.get_absolute_url }}">{{ parent.translated_name }}</a> &gt;
                     {% empty %}
-                        <a href="{% url satchmo_category category.slug %}">{{ category.translated_name }}</a> &gt;
+                        <a href="{% url "satchmo_category" category.slug %}">{{ category.translated_name }}</a> &gt;
                     {% endfor %}
                     {% if forloop.last and translated.name %}
-                        <a href="{% url satchmo_category brand.slug %}">{{ translated.name }}</a> &gt;
+                        <a href="{% url "satchmo_category" brand.slug %}">{{ translated.name }}</a> &gt;
                     {% endif %}
                 {% endfor %}
             {% endif %}
-            <a href="{% url satchmo_brand_category_view brand.slug brand.brand.slug  %}">{{ brand.brand.translation.name }}</a>
+            <a href="{% url "satchmo_brand_category_view" brand.slug brand.brand.slug  %}">{{ brand.brand.translation.name }}</a>
         </div>
 
         {% if translated.picture %}

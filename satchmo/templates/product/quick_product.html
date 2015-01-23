@@ -23,10 +23,10 @@
     {% with product.category.all|first as category %}
         {% with product.brands.all|first as brand %}
             {% if brand %}
-                <a href="{% url satchmo_brand_view brand.slug %}" class="brand">{{ brand.translation.name }}</a> -
+                <a href="{% url "satchmo_brand_view" brand.slug %}" class="brand">{{ brand.translation.name }}</a> -
             {% endif %}
         {% endwith %}
-        <a href="{% url satchmo_category category.parent.slug category.slug %}" class="category">{{ category.translated_name }}</a>
+        <a href="{% url "satchmo_category" category.parent.slug category.slug %}" class="category">{{ category.translated_name }}</a>
     {% endwith %}
 
     <div class="description">
@@ -39,7 +39,7 @@
 
     {% endcache %}
 
-    <form action="{% url satchmo_smart_add %}" method="post">
+    <form action="{% url "satchmo_smart_add" %}" method="post">
         {% csrf_token %}
         <input type="hidden" name="productname" value="{{product.slug}}">
         {% if product.in_stock %}

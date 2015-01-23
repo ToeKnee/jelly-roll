@@ -31,13 +31,13 @@
 
     {% for cartitem in cart %}
         <tr><td>
-            <form action="{% url satchmo_cart_remove %}" method="post">
+            <form action="{% url "satchmo_cart_remove" %}" method="post">
                 <input type="hidden" name="cartitem" value="{{ cartitem.id }}" />
                 <input type="submit" value="{% trans 'Remove' %}" />
             </form>
             </td>
             <td align="center">
-                <form class="qtyform" id="form-{{ cartitem.id }}" action="{% url satchmo_cart_set_qty %}" method="post">
+                <form class="qtyform" id="form-{{ cartitem.id }}" action="{% url "satchmo_cart_set_qty" %}" method="post">
                     <input type="hidden" name="cartitem" value="{{ cartitem.id }}" />
 					<input type="text" name="quantity" id="id_quantity" value="{{ cartitem.quantity }}" />
                     <input type="submit" id="id_update_submit" value="{% trans 'update amount' %}" />
@@ -72,9 +72,9 @@
 	{% include "discount/some_eligible.html" %}
 	{% endif %}
 
-    <a href="{% url satchmo_checkout-step1 %}">{% trans "Check out" %}</a>
+    <a href="{% url "satchmo_checkout-step1" %}">{% trans "Check out" %}</a>
     {% if not not_enough_stock %}
-        <a href="{% url satchmo_checkout-step1 %}">
+        <a href="{% url "satchmo_checkout-step1" %}">
             {% trans "Check out" %}
         </a>
     {% endif %}

@@ -14,7 +14,7 @@
 {% endfor %}
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-<form id="options" action="{% url satchmo_smart_add %}" method="post">
+<form id="options" action="{% url "satchmo_smart_add" %}" method="post">
 
 <div>
 {% trans "Quantity (multiply the gift certificate by this amount)" %} <input type="text", size="2", name="quantity" id="quantity" value="1" class="priced" />

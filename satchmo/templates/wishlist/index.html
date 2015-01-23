@@ -41,14 +41,14 @@
                         {% endif %}</p>
 
                 Availability:{% if product.in_stock %} {{product.items_in_stock}} In Stock {% else %} Out of Stock {% endif %}</p>
-                <form id="options" action="{% url satchmo_smart_add %}" method="post" style="display:inline;">
+                <form id="options" action="{% url "satchmo_smart_add" %}" method="post" style="display:inline;">
                 <input type="hidden" name="productname" id="productname" value="{{product.slug}}" />
                 {% if product.in_stock %}
                     {% trans "Quantity" %} <input type="text", size="2", name="quantity" id="quantity" value="1" class="priced" />
                     <input type="submit" name="addcart" value="{% trans "Buy me!" %}" />
                 {% endif %}
                 </form>
-                <form name="addform" action="{% url satchmo_wishlist_remove %}" method="POST" style="display:inline;">
+                <form name="addform" action="{% url "satchmo_wishlist_remove" %}" method="POST" style="display:inline;">
                     <input type="hidden" name="id" value="{{ wish.id }}" />
                     <input type="submit" value="{% trans 'Remove from wishlist' %}" />
                     {% blocktrans with wish.create_date|date:"d/m/Y" as create_date %}Added to wishlist on {{ create_date }}{% endblocktrans %}

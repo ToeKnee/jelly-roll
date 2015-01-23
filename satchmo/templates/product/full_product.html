@@ -8,7 +8,7 @@
             {% if forloop.last %}
                 {% with product.brands.all|first as brand %}
                     {% if brand %}
-                        <a href="{% url satchmo_brand_category_view name|slugify brand.slug %}" class="brand">{{ brand.translation.name }}</a> &gt;
+                        <a href="{% url "satchmo_brand_category_view" name|slugify brand.slug %}" class="brand">{{ brand.translation.name }}</a> &gt;
                     {% endif %}
                 {% endwith %}
             {% endif %}
@@ -47,7 +47,7 @@
         Availability:{% if product.in_stock %} {{product.items_in_stock}} In Stock {% else %} Out of Stock {% endif %}
     </p>
 
-    <form action="{% url satchmo_smart_add %}" method="post">
+    <form action="{% url "satchmo_smart_add" %}" method="post">
         {% csrf_token %}
         <input type="hidden" name="productname" value="{{product.slug}}">
         {% if product.in_stock %}

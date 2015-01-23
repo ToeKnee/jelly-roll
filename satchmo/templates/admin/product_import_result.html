@@ -9,7 +9,7 @@
 {% block breadcrumbs %}{% if not is_popup %}
 <div class="breadcrumbs">
      <a href="/admin/">{% trans "Home" %}</a> &rsaquo;
-     <a href="{% url satchmo_admin_product_export %}">{% trans "Product import/export" %}</a> &rsaquo;
+     <a href="{% url "satchmo_admin_product_export" %}">{% trans "Product import/export" %}</a> &rsaquo;
      {% trans "Results" %}
 </div>
 {% endif %}{% endblock %}

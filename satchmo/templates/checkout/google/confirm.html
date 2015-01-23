@@ -2,7 +2,7 @@
 {% load l10n i18n satchmo_googlecheckout %}
 {# this is the Google confirm template #}
 
-{% block payment_step %}<a href="{% url GOOGLE_satchmo_checkout-step2 %}">{% trans "Payment" %}</a>{% endblock %}
+{% block payment_step %}<a href="{% url "GOOGLE_satchmo_checkout-step2" %}">{% trans "Payment" %}</a>{% endblock %}
 
 {% block payment_display %}
 <h4>{% trans "Payment" %}</h4>
