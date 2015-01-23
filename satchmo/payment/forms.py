@@ -1,9 +1,14 @@
+import calendar
+import datetime
+
 from django import forms
-from django.conf import settings
-from django.template import loader
-from django.template import RequestContext
+from django.template import (
+    loader,
+    RequestContext
+)
 from django.utils.translation import ugettext as _
-from satchmo.configuration import config_value, config_choice_values
+
+from satchmo.configuration import config_value
 from satchmo.contact.forms import ContactInfoForm
 from satchmo.contact.models import Contact
 from satchmo.discount.models import Discount
@@ -12,14 +17,12 @@ from satchmo.l10n.utils import money_format
 from satchmo.payment import signals
 from satchmo.payment.config import labelled_payment_choices
 from satchmo.payment.models import CreditCardDetail
-from satchmo.payment.utils import create_pending_payment, get_or_create_order, pay_ship_save
+from satchmo.payment.utils import create_pending_payment, get_or_create_order
 from satchmo.shipping.config import shipping_methods, shipping_method_by_key
 from satchmo.shop.models import Cart
 from satchmo.shop.views.utils import CreditCard
 from satchmo.tax.templatetags.satchmo_tax import _get_taxprocessor
 from satchmo.utils.dynamic import lookup_template
-import calendar
-import datetime
 
 
 MONTHS = [(month, '%02d' % month) for month in range(1, 13)]
@@ -83,7 +86,7 @@ class CustomChargeForm(forms.Form):
     orderitem = forms.IntegerField(required=True, widget=forms.HiddenInput())
     amount = forms.DecimalField(label=_('New price'), required=False)
     shipping = forms.DecimalField(label=_('Shipping adjustment'), required=False)
-    notes = forms.CharField(_("Notes"), required=False, initial="Your custom item is ready.")
+    notes = forms.CharField(label=_("Notes"), required=False, initial="Your custom item is ready.")
 
 
 class PaymentMethodForm(forms.Form):
@@ -111,15 +114,15 @@ class PaymentMethodForm(forms.Form):
         # list if neccessary.
         payment_choices = labelled_payment_choices()
         signals.payment_methods_query.send(
-                PaymentMethodForm,
-                methods=payment_choices,
-                cart=cart,
-                order=order
-                )
+            PaymentMethodForm,
+            methods=payment_choices,
+            cart=cart,
+            order=order
+        )
         if len(payment_choices) == 1:
-            self.fields['paymentmethod'].widget = forms.HiddenInput(attrs={'value' : payment_choices[0][0]})
+            self.fields['paymentmethod'].widget = forms.HiddenInput(attrs={'value': payment_choices[0][0]})
         else:
-            self.fields['paymentmethod'].widget = forms.RadioSelect(attrs={'value' : payment_choices[0][0]})
+            self.fields['paymentmethod'].widget = forms.RadioSelect(attrs={'value': payment_choices[0][0]})
         self.fields['paymentmethod'].choices = payment_choices
 
 
@@ -215,7 +218,7 @@ class CreditPayShipForm(SimplePayShipForm):
         self.fields['credit_type'].choices = creditchoices
 
         year_now = datetime.date.today().year
-        self.fields['year_expires'].choices = [(year, year) for year in range(year_now, year_now+6)]
+        self.fields['year_expires'].choices = [(year, year) for year in range(year_now, year_now + 6)]
 
         self.tempCart = Cart.objects.from_request(request)
 
@@ -223,10 +226,6 @@ class CreditPayShipForm(SimplePayShipForm):
             self.tempContact = Contact.objects.from_request(request)
         except Contact.DoesNotExist:
             self.tempContact = None
-
-        #shipping_choices, shipping_dict = _get_shipping_choices(paymentmodule, self.tempCart, self.tempContact)
-        #self.fields['shipping'].choices = shipping_choices
-        #self.shipping_dict = shipping_dict
 
     def clean_credit_number(self):
         """ Check if credit card is valid. """
@@ -252,7 +251,7 @@ class CreditPayShipForm(SimplePayShipForm):
     def clean_ccv(self):
         """ Validate a proper CCV is entered. Remember it can have a leading 0 so don't convert to int and return it"""
         try:
-            check = int(self.cleaned_data['ccv'])
+            int(self.cleaned_data['ccv'])
             return self.cleaned_data['ccv']
         except ValueError:
             raise forms.ValidationError(_('Invalid ccv.'))
@@ -261,10 +260,12 @@ class CreditPayShipForm(SimplePayShipForm):
         """Save the order and the credit card information for this orderpayment"""
         super(CreditPayShipForm, self).save(request, cart, contact, payment_module)
         data = self.cleaned_data
-        cc = CreditCardDetail(orderpayment=self.orderpayment,
+        cc = CreditCardDetail(
+            orderpayment=self.orderpayment,
             expire_month=data['month_expires'],
             expire_year=data['year_expires'],
-            credit_type=data['credit_type'])
+            credit_type=data['credit_type']
+        )
 
         cc.storeCC(data['credit_number'])
         cc.save()
