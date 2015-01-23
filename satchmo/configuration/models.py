@@ -1,10 +1,8 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
-from django.db import transaction
 from django.db.models import loading
 from django.utils.translation import ugettext_lazy as _
-
 from satchmo.caching import cache_key, cache_get, cache_set, NotCachedError
 from satchmo.caching.models import CachedObjectMixin
 
@@ -15,21 +13,15 @@ __all__ = ['SettingNotSet', 'Setting', 'LongSetting', 'find_setting']
 
 
 def _safe_get_siteid(site):
-    if not site:
+    if site:
+        siteid = site.id
+    else:
         try:
             site = Site.objects.get_current()
-        except:
-            transaction.rollback()
-        if site and site.id:
             siteid = site.id
-        else:
+        except Site.DoesNotExist:
             siteid = settings.SITE_ID
-    else:
-        siteid = site.id
-    transaction.commit()
     return siteid
-
-_safe_get_siteid = transaction.commit_manually(_safe_get_siteid)
 
 
 def find_setting(group, key, site=None):
@@ -134,9 +126,18 @@ class LongSetting(models.Model, CachedObjectMixin):
 
     class Meta:
         db_table = "configuration_longsetting"
+        unique_together = ('site', 'group', 'key')
 
     def __nonzero__(self):
         return self.id is not None
+
+    def save(self, *args, **kwargs):
+        try:
+            site = self.site
+        except Site.DoesNotExist:
+            self.site = Site.objects.get_current()
+        super(LongSetting, self).save(*args, **kwargs)
+        self.cache_set()
 
     def cache_key(self, *args, **kwargs):
         # note same cache pattern as Setting.  This is so we can look up in one check.
@@ -147,14 +148,3 @@ class LongSetting(models.Model, CachedObjectMixin):
     def delete(self):
         self.cache_delete()
         super(LongSetting, self).delete()
-
-    def save(self, *args, **kwargs):
-        try:
-            site = self.site
-        except Site.DoesNotExist:
-            self.site = Site.objects.get_current()
-        super(LongSetting, self).save(*args, **kwargs)
-        self.cache_set()
-
-    class Meta:
-        unique_together = ('site', 'group', 'key')
