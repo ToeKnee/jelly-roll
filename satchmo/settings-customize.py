@@ -120,7 +120,6 @@ INSTALLED_APPS = (
     'satchmo.payment',
     'satchmo.discount',
     'satchmo.giftcertificate',
-    'satchmo.supplier',
     'satchmo.thumbnail',
     'satchmo.l10n',
     'satchmo.tax',
@@ -151,7 +150,7 @@ INSTALLED_APPS = (
     # * jobs.
     # ****
     #'django_extensions',
-    
+
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -172,20 +171,20 @@ SATCHMO_SETTINGS = {
     #   enable brands here
     #    (r'^brand/', include('satchmo.product.brand.urls'))
     #}
-    
+
     # This is the base url for the shop.  Only include a leading slash
     # examples: '/shop' or '/mystore'
     # If you want the shop at the root directory, set SHOP_BASE to ''
     'SHOP_BASE' : '/store',
-    
+
     # Set this to true if you want to use the multi-shop features
     # of satchmo.  It requires the "threaded_multihost" application
     # to be on your pythonpath.
     'MULTISHOP' : False,
-    
+
     # This will turn on/off product translations in the admin for products
     'ALLOW_PRODUCT_TRANSLATIONS' : True,
-    
+
     # register custom external payment modules by listing their modules here
     # ex: 'CUSTOM_PAYMENT_MODULES' : ['client.payment.wondercharge',]
     'CUSTOM_PAYMENT_MODULES' : [],
