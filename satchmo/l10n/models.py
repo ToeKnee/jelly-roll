@@ -42,6 +42,9 @@ class Continent(models.Model):
     code = models.CharField(_('2 letter code'), max_length=2, unique=True)
     name = models.CharField(_('Official name'), max_length=128)
 
+    class Meta:
+        db_table = "l10n_continent"
+
     def __unicode__(self):
         return self.name
 
@@ -61,6 +64,7 @@ class Country(models.Model):
     eu = models.BooleanField(_('Country is a member of the European Union'), default=False)
 
     class Meta:
+        db_table = "l10n_country"
         verbose_name = _('Country')
         verbose_name_plural = _('Countries')
         ordering = ('name',)
@@ -79,6 +83,7 @@ class AdminArea(models.Model):
     active = models.BooleanField(_('Area is active'), default=True)
 
     class Meta:
+        db_table = "l10n_adminarea"
         verbose_name = _('Administrative Area')
         verbose_name_plural = _('Administrative Areas')
         ordering = ('name',)
