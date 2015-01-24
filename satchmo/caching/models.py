@@ -1,7 +1,7 @@
 from satchmo import caching
 import logging
 
-log = logging.getLogger('caching')
+log = logging.getLogger(__name__)
 
 class CachedObjectMixin(object):
     """Provides basic object caching for any objects using this as a mixin."""

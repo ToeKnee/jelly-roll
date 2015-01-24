@@ -12,7 +12,7 @@ import random
 import sys
 import types
 
-log = logging.getLogger('shop.utils')
+log = logging.getLogger(__name__)
 
 def add_month(date, n=1):
     """add n+1 months to date then subtract 1 day

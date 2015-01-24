@@ -9,7 +9,7 @@ import types
 from satchmo.discount.models import Discount, NullDiscount
 from satchmo.shop.models import Product
 
-log = logging.getLogger('discount.utils')
+log = logging.getLogger(__name__)
 
 def calc_by_percentage(price, percentage):
     if percentage > 1:

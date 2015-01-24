@@ -18,7 +18,7 @@ from django.contrib.sites.models import Site
 import logging
 
 GIFTCODE_KEY = 'GIFTCODE'
-log = logging.getLogger('giftcertificate.models')
+log = logging.getLogger(__name__)
 
 class GiftCertificateManager(models.Manager):
 

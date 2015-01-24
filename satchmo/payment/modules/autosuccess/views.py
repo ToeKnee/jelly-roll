@@ -11,7 +11,7 @@ from django.http import HttpResponseRedirect
 
 import logging
 
-log = logging.getLogger('autosuccess.views')
+log = logging.getLogger(__name__)
 
 def one_step(request):
     # Check that items are in stock

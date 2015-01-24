@@ -8,7 +8,7 @@ from satchmo.shop.views.utils import bad_or_missing
 from satchmo.shop.models import Order
 
 import logging
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 @csrf_exempt

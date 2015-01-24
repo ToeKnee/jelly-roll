@@ -12,7 +12,7 @@ from satchmo.utils.unique_id import generate_id
 import logging
 import signals
 
-log = logging.getLogger('accounts.forms')
+log = logging.getLogger(__name__)
 
 class RegistrationForm(forms.Form):
     """The basic account registration form."""

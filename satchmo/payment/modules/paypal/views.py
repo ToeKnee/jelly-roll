@@ -22,7 +22,7 @@ from satchmo.payment.config import payment_live
 from satchmo.shop.models import Cart
 from satchmo.utils.dynamic import lookup_url, lookup_template
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 def pay_ship_info(request):

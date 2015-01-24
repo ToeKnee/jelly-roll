@@ -16,7 +16,7 @@ from django.contrib.sites.models import Site
 from utils import generate_certificate_code, generate_code
 import datetime, logging
 
-log = logging.getLogger('giftcertificate.tests')
+log = logging.getLogger(__name__)
 
 alphabet = 'abcdefghijklmnopqrstuvwxyz'
 

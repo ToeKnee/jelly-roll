@@ -13,7 +13,7 @@ from satchmo.utils.dynamic import lookup_url, lookup_template
 from django.contrib.sites.models import Site
 import logging
 
-log = logging.getLogger("giftcertificate.views")
+log = logging.getLogger(__name__)
 
 gc = config_get_group('PAYMENT_GIFTCERTIFICATE')
     

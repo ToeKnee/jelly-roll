@@ -1,7 +1,7 @@
 import logging
 from satchmo.shop import CartAddProhibited
 
-log = logging.getLogger('upsell.views')
+log = logging.getLogger(__name__)
 
 def cart_add_listener(cart=None, product=None, form=None, request=None, **kwargs):
     """Post-processes the form, handling upsell formfields.

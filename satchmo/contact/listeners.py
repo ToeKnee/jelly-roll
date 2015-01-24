@@ -2,7 +2,7 @@ from django import forms
 from satchmo.contact import signals
 import logging
 
-log = logging.getLogger('contact.listeners')
+log = logging.getLogger(__name__)
 
 def au_postcode_validator(sender, postcode=None, country=None, **kwargs):
     if country.iso2_code == 'AU':

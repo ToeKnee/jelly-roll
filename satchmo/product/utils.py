@@ -5,7 +5,7 @@ from satchmo.shop.models import Config
 from satchmo.tax.utils import get_tax_processor
 import logging
 
-log = logging.getLogger('product.utils')
+log = logging.getLogger(__name__)
 
 def get_taxprocessor(user):
     if user.is_authenticated():

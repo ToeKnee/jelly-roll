@@ -12,7 +12,7 @@ from satchmo.contact.models import Contact
 from satchmo.shop.models import Config
 import logging
 
-log = logging.getLogger('satchmo.contact.views')
+log = logging.getLogger(__name__)
 
 def view(request):
     """View contact info."""

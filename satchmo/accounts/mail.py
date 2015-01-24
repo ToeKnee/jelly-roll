@@ -9,7 +9,7 @@ from satchmo.shop.models import Config
 from socket import error as SocketError
 import logging
 
-log = logging.getLogger('satchmo.accounts.mail')
+log = logging.getLogger(__name__)
 
 def send_welcome_email(email, first_name, last_name):
     """Send a store new account welcome mail to `email`."""

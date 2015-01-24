@@ -7,7 +7,7 @@ import signals
 
 _ = ugettext_lazy
 
-log = logging.getLogger('payment.config')
+log = logging.getLogger(__name__)
 
 PAYMENT_GROUP = ConfigurationGroup('PAYMENT', _('Payment Settings'))
 

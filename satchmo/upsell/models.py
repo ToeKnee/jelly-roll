@@ -18,7 +18,7 @@ except:
     from django.utils._decimal import Decimal, getcontext
 
 
-log = logging.getLogger('upsell.models')
+log = logging.getLogger(__name__)
 
 UPSELL_CHOICES=(
     ('CHECKBOX_1_FALSE', _('Checkbox to add 1')),

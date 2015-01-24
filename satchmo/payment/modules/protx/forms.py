@@ -5,7 +5,7 @@ from satchmo.payment.forms import CreditPayShipForm, MONTHS
 from satchmo.payment.modules.protx.config import REQUIRES_ISSUE_NUMBER
 import logging
 
-log = logging.getLogger('payment.protx.forms')
+log = logging.getLogger(__name__)
 
 class ProtxPayShipForm(CreditPayShipForm):
     """Adds fields required by Prot/X to the Credit form."""

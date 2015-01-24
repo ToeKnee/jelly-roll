@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 
 import logging
 
-log = logging.getLogger("satchmo_currency")
+log = logging.getLogger(__name__)
 
 register = template.Library()
 

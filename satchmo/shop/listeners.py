@@ -2,7 +2,7 @@ from django.conf import settings
 from satchmo.shop.exceptions import OutOfStockError
 import logging
 
-log = logging.getLogger('shop.listeners')
+log = logging.getLogger(__name__)
 
 def veto_out_of_stock(sender, cartitem=None, added_quantity=0, **kwargs):
     """Listener which vetoes adding products to the cart which are out of stock."""

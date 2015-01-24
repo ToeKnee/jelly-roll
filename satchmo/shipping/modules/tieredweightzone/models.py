@@ -17,7 +17,7 @@ import datetime
 import logging
 import operator
 
-log = logging.getLogger('shipping.TieredWeight')
+log = logging.getLogger(__name__)
 
 
 class TieredPriceException(Exception):

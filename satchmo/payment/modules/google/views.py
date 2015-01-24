@@ -17,7 +17,7 @@ import hmac
 import logging
 import sha
 
-log = logging.getLogger("payment.modules.google.processor")
+log = logging.getLogger(__name__)
 
 class GoogleCart(object):
     def __init__(self, order, payment_module, live):

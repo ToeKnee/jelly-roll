@@ -17,7 +17,7 @@ from satchmo.shop.models import Cart
 from satchmo.utils.dynamic import lookup_url, lookup_template
 import logging
 
-log = logging.getLogger('payship')
+log = logging.getLogger(__name__)
 selection = _("Please Select")
 
 def pay_ship_info_verify(request, payment_module):

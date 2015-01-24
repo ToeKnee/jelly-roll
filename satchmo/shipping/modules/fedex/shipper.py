@@ -20,7 +20,7 @@ import urllib2
 from xml.dom import minidom
 import logging
 
-log = logging.getLogger('fedex.shipper')
+log = logging.getLogger(__name__)
 
 class Shipper(BaseShipper):
     

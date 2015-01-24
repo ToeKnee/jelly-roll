@@ -17,7 +17,7 @@ import forms
 import logging
 import urllib2
 
-log = logging.getLogger('protx.processor')
+log = logging.getLogger(__name__)
 
 PROTOCOL = "2.22"
 

@@ -14,7 +14,7 @@ try:
 except:
     import md5
 
-log = logging.getLogger('caching')
+log = logging.getLogger(__name__)
 
 CACHED_KEYS = {}
 CACHE_CALLS = 0

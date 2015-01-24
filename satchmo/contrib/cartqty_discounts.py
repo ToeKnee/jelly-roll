@@ -5,7 +5,7 @@ To activate, simply import in your settings file.
 
 from satchmo.shop.signals import satchmo_cartitem_price_query
 import logging
-log = logging.getLogger('satchmo.contrib.cartqty_discounts')
+log = logging.getLogger(__name__)
 
 def lineitem_cartqty_price(cartitem=None, **kwargs):
     cart = cartitem.cart

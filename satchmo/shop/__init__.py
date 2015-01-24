@@ -3,7 +3,7 @@ from satchmo.shop import signals
 from satchmo.shop.exceptions import *
 from satchmo.shop.listeners import veto_out_of_stock
 import logging
-log = logging.getLogger('satchmo.shop')
+log = logging.getLogger(__name__)
 
 if get_satchmo_setting('MULTISHOP'):
     log.debug('patching for multishop')

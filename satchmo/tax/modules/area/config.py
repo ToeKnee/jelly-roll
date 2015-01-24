@@ -5,7 +5,7 @@ import logging
 from django.db import transaction, DatabaseError
 
 def config_tax():
-    log = logging.getLogger('tax.modules.area')
+    log = logging.getLogger(__name__)
 
     TAX_MODULE = config_get('TAX', 'MODULE')
     TAX_MODULE.add_choice(('satchmo.tax.modules.area', _('By Country/Area')))

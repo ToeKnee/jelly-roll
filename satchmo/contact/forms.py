@@ -9,7 +9,7 @@ import datetime
 import logging
 import signals
 
-log = logging.getLogger('satchmo.contact.forms')
+log = logging.getLogger(__name__)
 
 selection = ''
 

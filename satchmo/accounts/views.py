@@ -21,7 +21,7 @@ from satchmo.shop.models import Config
 import logging
 import signals
 
-log = logging.getLogger('satchmo.accounts.views')
+log = logging.getLogger(__name__)
 
 YESNO = (
     (1, _('Yes')),

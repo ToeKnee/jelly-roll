@@ -101,7 +101,7 @@ APIS = {'PRIORITY': 'PriorityMail',
         'INTL': '',
        }
 
-log = logging.getLogger('usps.shipper')
+log = logging.getLogger(__name__)
 class Shipper(BaseShipper):
 
     def __init__(self, cart=None, contact=None, service_type=None):

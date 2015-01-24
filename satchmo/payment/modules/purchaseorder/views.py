@@ -10,7 +10,7 @@ from django.core import urlresolvers
 from django.http import HttpResponseRedirect
 import logging
 
-log = logging.getLogger('purchaseorder.views')
+log = logging.getLogger(__name__)
 
 settings = config_get_group('PAYMENT_PURCHASEORDER')
     

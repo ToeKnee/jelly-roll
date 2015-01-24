@@ -7,7 +7,7 @@ from satchmo.utils import trunc_decimal
 import logging
 import math
 
-log = logging.getLogger('shop.templatetags.satchmo_cart')
+log = logging.getLogger(__name__)
 
 register = template.Library()
 

@@ -8,7 +8,7 @@ import config
 import logging
 import os
 
-log = logging.getLogger('thumbnail.fields')
+log = logging.getLogger(__name__)
 
 def _delete(sender, instance=None, **kwargs):
     if instance:

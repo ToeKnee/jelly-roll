@@ -9,7 +9,7 @@ from satchmo.shop.templatetags import get_filter_args
 from satchmo.tax.utils import get_tax_processor
 import logging
 
-log = logging.getLogger('satchmo.tax.templatetags')
+log = logging.getLogger(__name__)
 
 try:
     from threading import local

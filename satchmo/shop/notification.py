@@ -12,7 +12,7 @@ from django.utils.translation import ugettext as _
 from satchmo.configuration import config_value
 from smtplib import SMTPRecipientsRefused
 
-log = logging.getLogger('contact.notifications')
+log = logging.getLogger(__name__)
 
 def order_success_listener(order=None, **kwargs):
     """Listen for order_success signal, and send confirmations"""

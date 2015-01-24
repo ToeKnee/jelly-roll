@@ -17,7 +17,7 @@ try:
 except:
     from django.utils._decimal import Decimal
 
-log = logging.getLogger('payment.views.balance')
+log = logging.getLogger(__name__)
 
 def balance_remaining_order(request, order_id=None):
     """Load the order into the session, so we can charge the remaining amount"""

@@ -8,7 +8,7 @@ from django.core import urlresolvers
 from django.http import HttpResponseRedirect
 import logging
 
-log = logging.getLogger('protx.views')
+log = logging.getLogger(__name__)
     
 def pay_ship_info(request):
     # Check that items are in stock

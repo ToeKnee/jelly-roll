@@ -30,7 +30,7 @@ try:
 except ImportError:
     from elementtree.ElementTree import fromstring, tostring
 
-log = logging.getLogger('ups.shipper')
+log = logging.getLogger(__name__)
 class Shipper(BaseShipper):
     
     def __init__(self, cart=None, contact=None, service_type=None):

@@ -11,7 +11,7 @@ from satchmo.shop.models import Config, Cart
 from satchmo.utils import current_media_url, request_is_secure
 import logging
 
-log = logging.getLogger('shop_context')
+log = logging.getLogger(__name__)
 
 
 def settings(request):

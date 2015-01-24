@@ -13,7 +13,7 @@ import datetime
 import logging
 import sys
 
-log = logging.getLogger('contact.models')
+log = logging.getLogger(__name__)
 
 CONTACT_CHOICES = (
     ('Customer', _('Customer')),

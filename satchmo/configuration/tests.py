@@ -6,7 +6,7 @@ from satchmo.configuration import *
 import re
 import time
 import logging
-log = logging.getLogger('test');
+log = logging.getLogger(__name__);
 
 class ConfigurationFunctionTest(TestCase):
     

@@ -17,7 +17,7 @@ from satchmo.utils.dynamic import lookup_url
 
 import logging
 
-log = logging.getLogger('satchmo.contact.contact')
+log = logging.getLogger(__name__)
 
 def authentication_required(request, template='checkout/authentication_required.html'):
     return render_to_response(

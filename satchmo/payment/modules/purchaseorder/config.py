@@ -2,7 +2,7 @@ from satchmo.configuration import *
 from django.utils.translation import ugettext_lazy as _
 import logging
 
-log = logging.getLogger('purchaseorder.config')
+log = logging.getLogger(__name__)
 
 PAYMENT_MODULES = config_get('PAYMENT', 'MODULES')
 PAYMENT_MODULES.add_choice(('PAYMENT_PURCHASEORDER', _('Purchase Order')))

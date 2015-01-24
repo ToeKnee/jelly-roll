@@ -3,7 +3,7 @@ from django.core import urlresolvers
 from satchmo.utils import url_join
 from django.contrib.sites.models import Site
 import logging
-log = logging.getLogger('satchmo.utils')
+log = logging.getLogger(__name__)
 
 def lookup_template(settings, template):
     """Return a template name, which may have been overridden in the settings."""

@@ -2,7 +2,7 @@ from django import template
 from satchmo.configuration import config_value, SettingNotSet
 import logging
 
-log = logging.getLogger('configuration.config_tags')
+log = logging.getLogger(__name__)
 
 register = template.Library()
 

@@ -13,7 +13,7 @@ import datetime
 import logging
 import operator
 
-log = logging.getLogger('Discount.models')
+log = logging.getLogger(__name__)
 
 
 class NullDiscount(object):

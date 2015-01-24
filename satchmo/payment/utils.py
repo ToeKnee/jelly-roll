@@ -10,7 +10,7 @@ from satchmo.shop.signals import satchmo_post_copy_item_to_order
 from socket import error as SocketError
 import logging
 
-log = logging.getLogger('payment.utils')
+log = logging.getLogger(__name__)
 
 NOTSET = object()
 

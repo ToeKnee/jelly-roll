@@ -2,7 +2,7 @@ from django import forms
 from satchmo.configuration import *
 import logging
 
-log = logging.getLogger('configuration')
+log = logging.getLogger(__name__)
 
 class SettingsEditor(forms.Form):
     "Base editor, from which customized forms are created"

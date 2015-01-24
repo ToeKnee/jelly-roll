@@ -3,7 +3,7 @@ from django import forms
 import logging
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-log = logging.getLogger('payment.listeners')
+log = logging.getLogger(__name__)
 
 def form_terms_listener(sender, form=None, **kwargs):
     """Adds a 'do you accept the terms and conditions' checkbox to the form"""

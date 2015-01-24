@@ -7,7 +7,7 @@ from django.contrib.sites.models import Site
 from django.db.models import Q
 from satchmo.product.models import Product, Category
 import logging
-log = logging.getLogger('search listener')
+log = logging.getLogger(__name__)
 
 def default_product_search_listener(sender, request=None, category=None, keywords=[], results={}, **kwargs):
     """Performs the base satchmo search.  This is easily overridden by unregistering the listener and creating your own.

@@ -8,7 +8,7 @@ from satchmo import caching
 import logging
 from django.conf import settings
 
-log = logging.getLogger('satchmo.l10n.mixins')
+log = logging.getLogger(__name__)
 
 class TranslatedObjectMixin(object):
     """Allows any object with a "translations" object to find the proper translation.

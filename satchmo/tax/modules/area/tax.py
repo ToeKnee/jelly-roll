@@ -13,7 +13,7 @@ from satchmo.utils import is_string_like
 from satchmo.tax.models import TaxRate, TaxClass
 import logging
 
-log = logging.getLogger('tax.area')
+log = logging.getLogger(__name__)
 
 class Processor(object):
     

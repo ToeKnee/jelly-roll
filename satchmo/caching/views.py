@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from satchmo.caching.models import *
 import logging
 
-log = logging.getLogger('caching.views')
+log = logging.getLogger(__name__)
 
 YN = (
     ('Y', _('Yes')),

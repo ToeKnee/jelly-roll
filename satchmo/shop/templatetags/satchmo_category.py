@@ -12,7 +12,7 @@ from django.template import Node
 from satchmo.product.models import Category
 from satchmo.product.brand.models import Brand
 from satchmo.shop.templatetags import get_filter_args
-log = logging.getLogger('shop.templatetags')
+log = logging.getLogger(__name__)
 try:
     from xml.etree.ElementTree import Element, SubElement, tostring
 except ImportError:

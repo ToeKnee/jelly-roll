@@ -5,7 +5,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from satchmo.configuration import ConfigurationSettings, forms
 import logging
 
-log = logging.getLogger('configuration.views')
+log = logging.getLogger(__name__)
 
 def group_settings(request, group, template='configuration/group_settings.html'):
     # Determine what set of settings this editor is used for

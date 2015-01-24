@@ -25,7 +25,7 @@ try:
 except NameError:
     from sets import Set as set   # Python 2.3 fallback
 
-log = logging.getLogger('product.forms')
+log = logging.getLogger(__name__)
 
 def export_choices():
     fmts = serializers.get_serializer_formats()

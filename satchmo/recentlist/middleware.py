@@ -3,7 +3,7 @@ from satchmo.configuration import config_value
 import logging
 import re
 
-log = logging.getLogger('recentlist.middleware')
+log = logging.getLogger(__name__)
 
 try:
     producturl = reverse('satchmo_product',

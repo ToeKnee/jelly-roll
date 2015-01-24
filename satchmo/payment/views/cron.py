@@ -11,7 +11,7 @@ try:
 except:
     from django.utils._decimal import Decimal
 
-log = logging.getLogger('payment.views.cron')
+log = logging.getLogger(__name__)
 
 def cron_rebill(request=None):
     """Rebill customers with expiring recurring subscription products

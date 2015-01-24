@@ -6,7 +6,7 @@ class BasePaymentProcessor(object):
     def __init__(self, label, payment_module):
         self.settings = payment_module
         self.label = label
-        self.log = logging.getLogger('payment.' + label)
+        self.log = logging.getLogger(__name__)
         self.order = None
                 
     def allowed(self, user, amount):
