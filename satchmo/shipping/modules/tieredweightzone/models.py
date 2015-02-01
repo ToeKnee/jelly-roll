@@ -1,10 +1,8 @@
 """
-Tiered shipping models
+Tiered Weight Zoned shipping models
 """
-try:
-    from decimal import Decimal
-except ImportError:
-    from django.utils._decimal import Decimal
+import datetime
+from decimal import Decimal
 
 from django.conf import settings
 from django.db import models
@@ -13,10 +11,7 @@ from django.utils.translation import get_language, ugettext_lazy as _
 from satchmo.shipping.modules.base import BaseShipper
 from satchmo.l10n.models import Continent, Country
 
-import datetime
 import logging
-import operator
-
 log = logging.getLogger(__name__)
 
 
@@ -27,7 +22,6 @@ class TieredPriceException(Exception):
 
 
 class Shipper(BaseShipper):
-
     def __init__(self, carrier):
         self.id = carrier.key
         self.carrier = carrier
@@ -88,24 +82,10 @@ class Shipper(BaseShipper):
         For example, may check to see if the recipient is in an allowed country
         or location.
         """
-        if order:
-            wgt = [ item.product.weight for item in order.orderitem_set.all() if item.product.is_shippable]
-            if wgt:
-                weight = reduce(operator.add, itemprices)
-            else:
-                weight = Decimal('0.00')
-            try:
-                country = self.contact.shipping_address.county_id
-                price = self.carrier.price(sub_total, country)
-
-            except TieredPriceException:
-                return False
-
-        elif self.cart:
-            try:
-                price = self.cost()
-            except TieredPriceException:
-                return False
+        try:
+            self.cost()
+        except TieredPriceException:
+            return False
         return True
 
 
@@ -118,26 +98,26 @@ class Carrier(models.Model):
         if not language_code:
             language_code = get_language()
 
-        c = self.translations.filter(languagecode__exact = language_code)
+        c = self.translations.filter(languagecode__exact=language_code)
         ct = c.count()
 
         if not c or ct == 0:
             pos = language_code.find('-')
-            if pos>-1:
+            if pos > -1:
                 short_code = language_code[:pos]
                 log.debug("%s: Trying to find root language content for: [%s]", self.id, short_code)
-                c = self.translations.filter(languagecode__exact = short_code)
+                c = self.translations.filter(languagecode__exact=short_code)
                 ct = c.count()
-                if ct>0:
+                if ct > 0:
                     log.debug("%s: Found root language content for: [%s]", self.id, short_code)
 
         if not c or ct == 0:
-            #log.debug("Trying to find default language content for: %s", self)
-            c = self.translations.filter(languagecode__istartswith = settings.LANGUAGE_CODE)
+            log.debug("Trying to find default language content for: %s", self)
+            c = self.translations.filter(languagecode__istartswith=settings.LANGUAGE_CODE)
             ct = c.count()
 
         if not c or ct == 0:
-            #log.debug("Trying to find *any* language content for: %s", self)
+            log.debug("Trying to find *any* language content for: %s", self)
             c = self.translations.all()
             ct = c.count()
 
@@ -196,7 +176,7 @@ class Carrier(models.Model):
 
     def price(self, wgt, country):
         """Get a price for this weight and country."""
-        #Check delivery address' continent
+        # Check delivery address' continent
         destination_country = Country.objects.get(id=country)
         continent = destination_country.continent
 
@@ -250,26 +230,26 @@ class Zone(models.Model):
         if not language_code:
             language_code = get_language()
 
-        c = self.translations.filter(languagecode__exact = language_code)
+        c = self.translations.filter(languagecode__exact=language_code)
         ct = c.count()
 
         if not c or ct == 0:
             pos = language_code.find('-')
-            if pos>-1:
+            if pos > -1:
                 short_code = language_code[:pos]
                 log.debug("%s: Trying to find root language content for: [%s]", self.id, short_code)
-                c = self.translations.filter(languagecode__exact = short_code)
+                c = self.translations.filter(languagecode__exact=short_code)
                 ct = c.count()
-                if ct>0:
+                if ct > 0:
                     log.debug("%s: Found root language content for: [%s]", self.id, short_code)
 
         if not c or ct == 0:
-            #log.debug("Trying to find default language content for: %s", self)
-            c = self.translations.filter(languagecode__istartswith = settings.LANGUAGE_CODE)
+            log.debug("Trying to find default language content for: %s", self)
+            c = self.translations.filter(languagecode__istartswith=settings.LANGUAGE_CODE)
             ct = c.count()
 
         if not c or ct == 0:
-            #log.debug("Trying to find *any* language content for: %s", self)
+            log.debug("Trying to find *any* language content for: %s", self)
             c = self.translations.all()
             ct = c.count()
 
@@ -308,6 +288,7 @@ class Zone(models.Model):
     class Meta:
         pass
 
+
 class ZoneTranslation(models.Model):
     zone = models.ForeignKey('Zone', related_name='translations')
     languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES, )
@@ -315,13 +296,14 @@ class ZoneTranslation(models.Model):
     description = models.CharField(_('Description'), max_length=200)
 
     class Meta:
-        ordering=('languagecode','name')
+        ordering = ('languagecode', 'name')
 
 
 class WeightTier(models.Model):
     carrier = models.ForeignKey('Carrier', related_name='tiers')
     zone = models.ForeignKey('Zone', related_name='tiers')
-    min_weight = models.DecimalField(_("Min Weight"),
+    min_weight = models.DecimalField(
+        _("Min Weight"),
         help_text=_('The minumum weight for this tier to apply'),
         max_digits=10, decimal_places=2, )
     price = models.DecimalField(_("Shipping Price"), max_digits=10, decimal_places=2, )
@@ -331,7 +313,7 @@ class WeightTier(models.Model):
         return u"%s @ %s" % (self.price, self.min_weight)
 
     class Meta:
-        ordering = ('zone','carrier','price')
+        ordering = ('zone', 'carrier', 'price')
 
 
 class ShippingDiscount(models.Model):
@@ -346,6 +328,3 @@ class ShippingDiscount(models.Model):
         if self.start_date is None:
             self.start_date = datetime.date.today()
         super(ShippingDiscount, self).save(*args, **kwargs)
-
-
-import config

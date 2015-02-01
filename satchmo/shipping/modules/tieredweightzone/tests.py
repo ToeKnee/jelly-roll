@@ -1,17 +1,17 @@
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
+from datetime import datetime
+from decimal import Decimal
 
 from django.test import TestCase
-from satchmo.shipping.modules.tiered.models import Carrier
-from satchmo.shipping.modules.tiered.models import ShippingTier
-from satchmo.shipping.modules.tiered.models import Shipper
-from datetime import datetime
+from satchmo.shipping.modules.tieredweightzone.models import (
+    Carrier,
+    ShippingTier,
+)
+
 
 def make_tiers(carrier, prices, expires=None):
     for min_total, price in prices:
-        t = ShippingTier(carrier=carrier,
+        t = ShippingTier(
+            carrier=carrier,
             min_total=Decimal("%i.00" % min_total),
             price=Decimal("%i.00" % price),
             expires=expires
@@ -25,10 +25,11 @@ class TieredCarrierSimpleTest(TestCase):
     def testCreate(self):
         c = Carrier(key="test", active=True)
         c.save()
-        t = ShippingTier(carrier=c,
+        t = ShippingTier(
+            carrier=c,
             min_total=Decimal("0.00"),
             price=Decimal("10.00"),
-            )
+        )
         t.save()
 
         self.assertEqual(c.price(Decimal("0.00")), Decimal("10.00"))
@@ -40,20 +41,22 @@ class TieredCarrierPricingTest(TestCase):
     def setUp(self):
         self.carrier = Carrier(name="pricing", active=True)
         self.carrier.save()
-        t = ShippingTier(carrier=self.carrier,
+        t = ShippingTier(
+            carrier=self.carrier,
             min_total=Decimal("0.00"),
             price=Decimal("10.00"),
-            )
+        )
         t.save()
 
     def testBase(self):
         self.assertEqual(self.carrier.price(Decimal("0.00")), Decimal("10.00"))
 
     def test2Prices(self):
-        t = ShippingTier(carrier=self.carrier,
+        t = ShippingTier(
+            carrier=self.carrier,
             min_total=Decimal("20.00"),
             price=Decimal("15.00"),
-            )
+        )
         t.save()
 
         self.assertEqual(self.carrier.price(Decimal("0.00")), Decimal("10.00"))
@@ -111,7 +114,7 @@ class TieredCarrierExpiringTest(TestCase):
     def testNotExpired(self):
 
         now = datetime.now()
-        nextyear = datetime(now.year+1, now.month, now.day)
+        nextyear = datetime(now.year + 1, now.month, now.day)
         sale_prices = (
             (0, 1),
             (20, 2),
