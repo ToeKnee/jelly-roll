@@ -94,6 +94,12 @@ class Carrier(models.Model):
     ordering = models.IntegerField(_('Ordering'), default=0)
     active = models.BooleanField(_('Active'), default=True)
 
+    class Meta:
+        db_table = "tieredweightzone_carrier"
+
+    def __unicode__(self):
+        return u"%s (%s)" % (self.name, self.description)
+
     def _find_translation(self, language_code=None):
         if not language_code:
             language_code = get_language()
@@ -202,12 +208,6 @@ class Carrier(models.Model):
             log.debug("No tiered price found for %s: weight=%s", self.id, wgt)
             raise TieredPriceException('No price available. Please contact us for a price.')
 
-    def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.description)
-
-    class Meta:
-        pass
-
 
 class CarrierTranslation(models.Model):
     carrier = models.ForeignKey('Carrier', related_name='translations')
@@ -218,13 +218,20 @@ class CarrierTranslation(models.Model):
     delivery = models.CharField(_('Delivery Days'), max_length=200)
 
     class Meta:
+        db_table = "tieredweightzone_carriertranslation"
         ordering = ('languagecode', 'name')
 
 
 class Zone(models.Model):
     key = models.SlugField(_('Key'))
-    continent = models.ManyToManyField(Continent, related_name='continent')
-    country = models.ManyToManyField(Country, related_name='zone', blank=True, null=True)
+    continent = models.ManyToManyField(Continent, related_name='continent', db_table="tieredweightzone_zone_continent")
+    country = models.ManyToManyField(Country, related_name='zone', db_table="tieredweightzone_zone_country", blank=True, null=True)
+
+    class Meta:
+        db_table = "tieredweightzone_zone"
+
+    def __unicode__(self):
+        return u"%s (%s)" % (self.name, self.description)
 
     def _find_translation(self, language_code=None):
         if not language_code:
@@ -260,6 +267,7 @@ class Zone(models.Model):
 
         return trans
 
+    @property
     def description(self):
         """Get the description, looking up by language code, falling back intelligently.
         """
@@ -268,8 +276,8 @@ class Zone(models.Model):
             return trans.description
         else:
             return ""
-    description = property(description)
 
+    @property
     def name(self):
         """Get the name, looking up by language code, falling back intelligently.
         """
@@ -280,14 +288,6 @@ class Zone(models.Model):
         else:
             return ""
 
-    name = property(name)
-
-    def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.description)
-
-    class Meta:
-        pass
-
 
 class ZoneTranslation(models.Model):
     zone = models.ForeignKey('Zone', related_name='translations')
@@ -296,6 +296,7 @@ class ZoneTranslation(models.Model):
     description = models.CharField(_('Description'), max_length=200)
 
     class Meta:
+        db_table = "tieredweightzone_zonetranslation"
         ordering = ('languagecode', 'name')
 
 
@@ -309,11 +310,12 @@ class WeightTier(models.Model):
     price = models.DecimalField(_("Shipping Price"), max_digits=10, decimal_places=2, )
     expires = models.DateField(_("Expires"), null=True, blank=True)
 
+    class Meta:
+        db_table = "tieredweightzone_weighttier"
+        ordering = ('zone', 'carrier', 'price')
+
     def __unicode__(self):
         return u"%s @ %s" % (self.price, self.min_weight)
-
-    class Meta:
-        ordering = ('zone', 'carrier', 'price')
 
 
 class ShippingDiscount(models.Model):
@@ -323,6 +325,9 @@ class ShippingDiscount(models.Model):
     minimum_order_value = models.DecimalField(_("Minimum Order Value"), max_digits=10, decimal_places=2)
     start_date = models.DateField(_("Start Date"))
     end_date = models.DateField(_("End Date"), null=True, blank=True)
+
+    class Meta:
+        db_table = "tieredweightzone_shippingdiscount"
 
     def save(self, *args, **kwargs):
         if self.start_date is None:
