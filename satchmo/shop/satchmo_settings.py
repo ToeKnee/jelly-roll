@@ -12,7 +12,6 @@ satchmo_settings_defaults = {
 
     'SHOP_URLS' : [],
     'SHOP_BASE' : '/shop',
-    'MULTISHOP' : False    ,
     'CUSTOM_PAYMENT_MODULES' : [],
     'CUSTOM_SHIPPING_MODULES' : [],
     'CUSTOM_PRODUCT_MODULES' : [],
@@ -25,7 +24,7 @@ def add_setting_defaults(newdefaults):
     """
     This method can be used by other applications to define their
     default values.
-    
+
     newdefaults has to be a dictionary containing name -> value of
     the settings.
     """
@@ -36,11 +35,10 @@ def set_satchmo_setting(name, value):
     if not hasattr(settings, 'SATCHMO_SETTINGS'):
         settings.SATCHMO_SETTINGS = {}
     settings.SATCHMO_SETTINGS[name] = value
-    
+
 
 def get_satchmo_setting(name, default_value = None):
     if not hasattr(settings, 'SATCHMO_SETTINGS'):
         return satchmo_settings_defaults.get(name, default_value)
 
     return settings.SATCHMO_SETTINGS.get(name, satchmo_settings_defaults.get(name, default_value))
-

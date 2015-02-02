@@ -69,9 +69,6 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.locale.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.doc.XViewMiddleware",
-    #The next middleware is required if you want to use satchmo
-    #to serve multiple simultaneous shops.
-    #"threaded_multihost.middleware.ThreadLocalMiddleware",
     "satchmo.shop.SSLMiddleware.SSLRedirect",
     "satchmo.recentlist.middleware.RecentProductMiddleware",
 )
@@ -139,11 +136,6 @@ INSTALLED_APPS = (
     # ****
     #'satchmo.feeds',
     # ****
-    # * Optional feature, tiered pricing
-    # * uncomment below, then set up in your main admin page.
-    # ****
-    #'satchmo.product.tieredpricing',
-    # ****
     # * Highly recommended app - use this to have access to the great
     # * "Jobs" system.  See http://code.google.com/p/django-command-extensions/
     # * Make sure to set up your crontab to run the daily, hourly and monthly
@@ -177,11 +169,6 @@ SATCHMO_SETTINGS = {
     # If you want the shop at the root directory, set SHOP_BASE to ''
     'SHOP_BASE' : '/store',
 
-    # Set this to true if you want to use the multi-shop features
-    # of satchmo.  It requires the "threaded_multihost" application
-    # to be on your pythonpath.
-    'MULTISHOP' : False,
-
     # This will turn on/off product translations in the admin for products
     'ALLOW_PRODUCT_TRANSLATIONS' : True,
 
@@ -200,6 +187,3 @@ SATCHMO_SETTINGS = {
 
 # Load the local settings
 from local_settings import *
-
-# if you want to use a multi-shop, uncomment the patch
-#from threaded_multihost import multihost_patch
