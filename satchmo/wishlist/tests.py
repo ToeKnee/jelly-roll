@@ -9,7 +9,7 @@ from satchmo.configuration import config_value, config_get
 from satchmo.contact.models import Contact
 from satchmo.l10n.models import Country
 from satchmo.product.models import Product
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.templatetags import get_filter_args
 from satchmo.wishlist.models import *
 

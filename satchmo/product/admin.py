@@ -7,7 +7,7 @@ from satchmo.product.models import Category, CategoryTranslation, CategoryImage,
 from django.contrib import admin
 from django.forms import models, ValidationError
 from django.utils.translation import get_language, ugettext_lazy as _
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.thumbnail.field import ImageWithThumbnailField
 from satchmo.thumbnail.widgets import AdminImageWithThumbnailWidget
 

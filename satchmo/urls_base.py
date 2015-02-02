@@ -3,7 +3,7 @@
 Split out from urls.py to allow much easier overriding and integration with larger apps.
 """
 from django.conf.urls import patterns, include
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.views.sitemaps import sitemaps
 
 shop_base = get_satchmo_setting('SHOP_BASE')

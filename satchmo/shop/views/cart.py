@@ -14,7 +14,7 @@ from satchmo.configuration import config_value
 from satchmo.discount.utils import find_best_auto_discount
 from satchmo.product.models import Product, OptionManager
 from satchmo.product.views import find_product_template, optionids_from_post
-from satchmo.shop import CartAddProhibited
+from satchmo.shop.exceptions import CartAddProhibited
 from satchmo.shop.models import Cart, CartItem, NullCart, NullCartItem
 from satchmo.shop.signals import satchmo_cart_changed, satchmo_cart_add_complete, satchmo_cart_details_query
 from satchmo.utils import trunc_decimal

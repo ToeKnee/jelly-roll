@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.sitemaps import Sitemap
 from django.core import urlresolvers
 from satchmo.product.models import Category, Product
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 
 
 class CategorySitemap(Sitemap):

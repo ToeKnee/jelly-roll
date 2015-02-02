@@ -4,7 +4,7 @@ from django.core import urlresolvers
 from django.template import Context, Template
 from django.utils.translation import get_language, ugettext_lazy as _
 from satchmo.configuration import config_value
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 
 register = template.Library()
 

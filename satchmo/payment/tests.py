@@ -11,7 +11,7 @@ from satchmo.configuration import config_get_group, config_value, config_get
 from satchmo.contact.models import *
 from satchmo.l10n.models import *
 from satchmo.product.models import *
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.models import *
 from satchmo.utils.dynamic import lookup_template, lookup_url
 from urls import make_urlpatterns

@@ -82,7 +82,7 @@ from django.test import TestCase
 from satchmo import caching
 from satchmo.product.models import Category, ConfigurableProduct, ProductVariation, Option, OptionGroup, Product, Price
 from satchmo.product.utils import serialize_options, productvariation_details
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 
 try:
     from decimal import Decimal

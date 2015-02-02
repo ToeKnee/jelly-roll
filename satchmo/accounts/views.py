@@ -16,7 +16,7 @@ from satchmo.configuration import config_get_group, config_value
 from satchmo.contact import CUSTOMER_ID
 from satchmo.contact.models import Contact
 from satchmo.l10n.models import Country
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.models import Config
 import logging
 import signals

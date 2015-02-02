@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext_lazy as _
 from satchmo.configuration import *
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.utils import load_module
 
 SHIPPING_GROUP = ConfigurationGroup('SHIPPING', _('Shipping Settings'))

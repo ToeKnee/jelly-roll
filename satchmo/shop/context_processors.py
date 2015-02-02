@@ -6,7 +6,7 @@ It is used to add some common variables to all the templates
 """
 from django.conf import settings as site_settings
 from satchmo.product.models import Category
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.models import Config, Cart
 from satchmo.utils import current_media_url, request_is_secure
 import logging

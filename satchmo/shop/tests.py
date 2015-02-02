@@ -28,7 +28,8 @@ from satchmo.contact import CUSTOMER_ID
 from satchmo.contact.models import Contact, AddressBook
 from satchmo.l10n.models import Country
 from satchmo.product.models import Product
-from satchmo.shop import get_satchmo_setting, CartAddProhibited
+from satchmo.shop.exceptions import CartAddProhibited
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.models import *
 from satchmo.shop.templatetags import get_filter_args
 

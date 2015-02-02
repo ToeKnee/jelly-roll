@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from satchmo.contact.models import Contact
 from satchmo.shop.signals import order_success
 from satchmo.product.models import Product
-from satchmo.shop import CartAddProhibited
+from satchmo.shop.exceptions import CartAddProhibited
 from satchmo.shop.models import Cart, Order
 from satchmo.shop.signals import satchmo_cart_changed
 from satchmo.shop.views.cart import product_from_post

@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core import urlresolvers
 from django.test import TestCase
 from satchmo import caching
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 
 domain = 'http://example.com'
 prefix = get_satchmo_setting('SHOP_BASE')

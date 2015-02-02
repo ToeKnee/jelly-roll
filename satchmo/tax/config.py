@@ -2,7 +2,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from satchmo.configuration import *
 from satchmo.utils import is_string_like, load_module
-from satchmo.shop import get_satchmo_setting
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 
 TAX_GROUP = ConfigurationGroup('TAX', _('Tax Settings'))
 TAX_MODULE = config_register(StringValue(TAX_GROUP,
