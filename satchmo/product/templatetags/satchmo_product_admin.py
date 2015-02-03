@@ -50,7 +50,7 @@ register.simple_tag(edit_subtypes)
 
 def list_variations(configurableproduct):
     opts = configurableproduct.get_all_options()
-    output = "{% load admin_modify adminmedia %}"
+    output = "{% load admin_modify static %}"
     output += "<table>"
     for p_opt in opts:
         opt_strs = []
@@ -82,7 +82,7 @@ def list_variations(configurableproduct):
             <tr>
             <td>%s</td>
             <td/>
-            <td><a href="%s" class="add-another" id="add_productvariation"> <img src="{%% admin_media_prefix %%}img/admin/icon_addlink.gif" width="10" height="10" alt="Add ProductVariation"/> Add Variation</a></td>
+            <td><a href="%s" class="add-another" id="add_productvariation"> <img src="{%% static "admin/img/admin/icon_addlink.gif" %%}" width="10" height="10" alt="Add ProductVariation"/> Add Variation</a></td>
             </tr>
             """ % (opt_str, add_url)
     output += "</table>"

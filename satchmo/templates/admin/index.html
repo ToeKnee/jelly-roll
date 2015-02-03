@@ -1,8 +1,7 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
-{% load satchmo_util %}
+{% load i18n satchmo_util static %}
 
-{% block stylesheet %}{% load adminmedia %}{% admin_media_prefix %}css/dashboard.css{% endblock %}
+{% block stylesheet %}{% static "admin/css/dashboard.css" %}{% endblock %}
 
 {% block coltype %}colMS{% endblock %}
 

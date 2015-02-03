@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_modify %}
+{% load i18n admin_modify static %}
 
-{% block stylesheet %}{% load adminmedia %}{% admin_media_prefix %}css/forms.css{% endblock %}
+{% block stylesheet %}{% static "admin/css/forms.css" %}{% endblock %}
 
 {% block coltype %}colMS{% endblock %}
 {% block bodyclass %}dashboard{% endblock %}

@@ -1,11 +1,10 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_modify config_tags satchmo_adminsite_tags %}
+{% load i18n admin_modify config_tags satchmo_adminsite_tags static %}
 
-{% block stylesheet %}{% load adminmedia %}{% admin_media_prefix %}css/forms.css{% endblock %}
+{% block stylesheet %}{% static "admin/css/forms.css" %}{% endblock %}
 {% block extrahead %}
 <script type="text/javascript" src="/admin/jsi18n/"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/core.js"></script>
-<script type="text/javascript" src="{% admin_media_prefix %}js/admin/CollapsedFieldsets.js"></script>
+<script type="text/javascript" src="{% static "admin/js/core.js" %}"></script>
 {% endblock %}
 {% block extrastyle %}
 {{ block.super }}
@@ -83,7 +82,6 @@ div.fieldcontainer { float: left; margin-right: 0; }
 {% admin_site_views 'satchmo_site_settings' %}
 <br class="clear:both;" />
 <input type="submit" value="Save" class="default" />
-<p><a onclick="javascript:CollapsedFieldsets.uncollapse_all(); return false;" href="#">{% trans 'Uncollapse all' %}</a></p>
 </form>
 {% else %}
     <p>{% trans "You don't have permission to edit values." %}</p>
