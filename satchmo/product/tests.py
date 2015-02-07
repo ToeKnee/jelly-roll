@@ -29,7 +29,6 @@ r"""
 ...     option_white.save()
 ...     assert False
 ... except db.IntegrityError: pass
->>> db.transaction.rollback()
 
 # Check the values that were saved to the database
 >>> option_white = Option.objects.get(id=option_white.id)

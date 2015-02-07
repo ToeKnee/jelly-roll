@@ -39,7 +39,7 @@ def pay_ship_info(request):
     )
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def confirm_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
@@ -136,7 +136,7 @@ def confirm_info(request):
 
 
 @csrf_exempt
-@transaction.commit_on_success
+@transaction.atomic
 def ipn(request):
     """PayPal IPN (Instant Payment Notification)
     Cornfirms that payment has been completed and marks invoice as paid.
@@ -162,7 +162,7 @@ def ipn(request):
         except KeyError:
             invoice = data['item_number']
 
-        if not 'payment_status' in data or not data['payment_status'] == "Completed":
+        if 'payment_status' not in data or not data['payment_status'] == "Completed":
             # We want to respond to anything that isn't a payment - but we won't insert into our database.
             order = Order.objects.get(pk=invoice)
             if data['payment_status'] == "Pending":

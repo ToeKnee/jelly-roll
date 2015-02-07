@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 @csrf_exempt
-@transaction.commit_on_success
+@transaction.atomic
 def success(request, template='checkout/success.html'):
     """
     The order has been succesfully processed.  This can be used to generate a receipt or some other confirmation
@@ -24,7 +24,7 @@ def success(request, template='checkout/success.html'):
 
     # Track total sold for each product
     for item in order.orderitem_set.all():
-        if item.stock_updated == False:
+        if item.stock_updated is False:
             product = item.product
             product.total_sold += item.quantity
             product.items_in_stock -= item.quantity
@@ -38,7 +38,9 @@ def success(request, template='checkout/success.html'):
     order.save()
     if 'cart' in request.session:
         del request.session['cart']
+
     del request.session['orderID']
+
     log.info("Successully processed " % (order))
     context = RequestContext(request, {'order': order})
     return render_to_response(template, context)

@@ -1,9 +1,11 @@
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+import config
+import os
+import time
+import zipfile
+
+from cStringIO import StringIO
 from django import forms
-from django.db import transaction
+from django.db import connection, transaction
 from django.conf import settings
 from django.core import serializers
 from django.core.management.base import CommandError
@@ -14,22 +16,14 @@ from django.utils.translation import ugettext as _
 from satchmo.configuration import config_value
 from satchmo.product.models import Product, Price, Option
 
-import config
 import logging
-import os
-import time
-import zipfile
-
-try:
-    set
-except NameError:
-    from sets import Set as set   # Python 2.3 fallback
-
 log = logging.getLogger(__name__)
+
 
 def export_choices():
     fmts = serializers.get_serializer_formats()
-    return zip(fmts,fmts)
+    return zip(fmts, fmts)
+
 
 class ProductExportForm(forms.Form):
 
@@ -51,11 +45,12 @@ class ProductExportForm(forms.Form):
             extclasses = " ".join(expclasses)
 
             kw = {
-            'label' : product.slug,
-            'help_text' : product.name,
-            'initial' : False,
-            'required' : False,
-            'widget' : forms.CheckboxInput(attrs={'class': extclasses}) }
+                'label': product.slug,
+                'help_text': product.name,
+                'initial': False,
+                'required': False,
+                'widget': forms.CheckboxInput(attrs={'class': extclasses})
+            }
 
             chk = forms.BooleanField(**kw)
             chk.slug = product.slug
@@ -85,7 +80,7 @@ class ProductExportForm(forms.Form):
 
             opt, key = name.split('__')
 
-            if opt=='export':
+            if opt == 'export':
                 if value:
                     selected.append(key)
 
@@ -101,7 +96,7 @@ class ProductExportForm(forms.Form):
             product = Product.objects.get(slug=slug)
             objects.append(product)
             for subtype in product.get_subtypes():
-                objects.append(getattr(product,subtype.lower()))
+                objects.append(getattr(product, subtype.lower()))
             objects.extend(list(product.price_set.all()))
             objects.extend(list(product.productimage_set.all()))
             if include_images:
@@ -160,7 +155,7 @@ class ProductExportForm(forms.Form):
             format = "zip"
         else:
             mimetype = "text/" + format
-        #TODO: WTF? HTTPResponse from a form? srsly?
+        # TODO: WTF? HTTPResponse from a form? srsly?
         response = HttpResponse(content_type=mimetype, content=raw)
         response['Content-Disposition'] = 'attachment; filename="products-%s.%s"' % (time.strftime('%Y%m%d-%H%M'), format)
 
@@ -178,13 +173,8 @@ class ProductImportForm(forms.Form):
         errors = []
         results = []
 
-        filetype = infile.content_type
         filename = infile.name
         raw = infile.read()
-
-        # filelen = len(raw)
-        # if filelen > maxsize:
-        #     errors.append(_('Import too large, must be smaller than %i bytes.' % maxsize ))
 
         format = os.path.splitext(filename)[1]
         if format and format.startswith('.'):
@@ -243,44 +233,33 @@ class ProductImportForm(forms.Form):
         else:
             raw = StringIO(str(raw))
 
-        if not format in serializers.get_serializer_formats():
+        if format not in serializers.get_serializer_formats():
             errors.append(_('Unknown file format: %s') % format)
 
         if not errors:
 
-            from django.db import connection, transaction
+            with transaction.atomic():
+                try:
+                    ct = 0
+                    models = set()
 
-            transaction.commit_unless_managed()
-            transaction.enter_transaction_management()
-            transaction.managed(True)
+                    for obj in serializers.deserialize(format, raw):
+                        obj.save()
+                        models.add(obj.object.__class__)
+                        ct += 1
+                    if ct > 0:
+                        style = no_style()
+                        sequence_sql = connection.ops.sequence_reset_sql(style, models)
+                        if sequence_sql:
+                            cursor = connection.cursor()
+                            for line in sequence_sql:
+                                cursor.execute(line)
 
-            try:
+                    results.append(_('Added %(count)i objects from %(filename)s') % {'count': ct, 'filename': filename})
 
-                ct = 0
-                models = set()
-
-                for obj in serializers.deserialize(format, raw):
-                    obj.save()
-                    models.add(obj.object.__class__)
-                    ct += 1
-                if ct>0:
-                    style=no_style()
-                    sequence_sql = connection.ops.sequence_reset_sql(style, models)
-                    if sequence_sql:
-                        cursor = connection.cursor()
-                        for line in sequence_sql:
-                            cursor.execute(line)
-
-                results.append(_('Added %(count)i objects from %(filename)s') % {'count': ct, 'filename': filename})
-                transaction.commit()
-                #label_found = True
-            except Exception, e:
-                #fixture.close()
-                errors.append(_("Problem installing fixture '%(filename)s': %(error_msg)s\n") % {'filename': filename, 'error_msg': str(e)})
-                errors.append("Raw: %s" % raw)
-                transaction.rollback()
-                transaction.leave_transaction_management()
-
+                except Exception, e:
+                    errors.append(_("Problem installing fixture '%(filename)s': %(error_msg)s\n") % {'filename': filename, 'error_msg': str(e)})
+                    errors.append("Raw: %s" % raw)
         return results, errors
 
 
@@ -408,15 +387,15 @@ class VariationManagerForm(forms.Form):
         super(VariationManagerForm, self).__init__(*args, **kwargs)
 
         if self.product:
-            configurableproduct = self.product.configurableproduct;
+            configurableproduct = self.product.configurableproduct
 
             for grp in configurableproduct.option_group.all():
                 optchoices = [("%i_%i" % (opt.option_group.id, opt.id), opt.name) for opt in grp.option_set.all()]
                 kw = {
-                    'label' : grp.name,
-                    'widget' : forms.CheckboxSelectMultiple(),
-                    'required' : False,
-                    'choices' : optchoices,
+                    'label': grp.name,
+                    'widget': forms.CheckboxSelectMultiple(),
+                    'required': False,
+                    'choices': optchoices,
                 }
                 fld = forms.MultipleChoiceField(**kw)
                 key = 'optiongroup__%s' % grp.id
@@ -429,9 +408,9 @@ class VariationManagerForm(forms.Form):
                 variation = configurableproduct.get_product_from_options(opts)
                 optnames = [opt.value for opt in opts]
                 kw = {
-                    'initial' : None,
-                    'label' : " ".join(optnames),
-                    'required' : False
+                    'initial': None,
+                    'label': " ".join(optnames),
+                    'required': False
                 }
 
                 opt_str = '__'.join(["%i_%i" % (opt.option_group.id, opt.id) for opt in opts])
@@ -479,12 +458,13 @@ class VariationManagerForm(forms.Form):
                 self.fields[slugkey] = sf
                 self.slugdict[key] = slugkey
 
-    def _save(self, request):
+    @transaction.atomic
+    def save(self, request):
         self.full_clean()
         data = self.cleaned_data
         optiondict = _get_optiondict()
 
-        #dirty is a comma delimited list of groupid__optionid strings
+        # dirty is a comma delimited list of groupid__optionid strings
         dirty = self.cleaned_data['dirty'].split(',')
         if dirty:
             for key in dirty:
@@ -499,8 +479,6 @@ class VariationManagerForm(forms.Form):
                             self._delete_variation(opts, request)
                 except KeyError:
                     pass
-
-    save = transaction.commit_on_success(_save)
 
     def _create_variation(self, opts, key, data, request):
         namekey = "name__" + key
@@ -526,13 +504,15 @@ class VariationManagerForm(forms.Form):
             request.user.message_set.create(message='Deleted %s' % variation)
             variation.delete()
 
+
 def _get_optiondict():
     site = Site.objects.get_current()
-    opts = Option.objects.filter(option_group__site__id = site.id)
+    opts = Option.objects.filter(option_group__site__id=site.id)
     d = {}
     for opt in opts:
         d.setdefault(opt.option_group.id, {})[opt.id] = opt
     return d
+
 
 def _get_options_for_key(key, optiondict):
     ids = key.split('__')
