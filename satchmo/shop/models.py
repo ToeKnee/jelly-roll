@@ -1089,7 +1089,7 @@ class DownloadLink(models.Model):
     order = models.ForeignKey(Order, verbose_name=_('Order'))
     key = models.CharField(_('Key'), max_length=40)
     num_attempts = models.IntegerField(_('Number of attempts'), )
-    time_stamp = models.DateTimeField(_('Time stamp'), default=datetime.datetime.now(), editable=True)
+    time_stamp = models.DateTimeField(_('Time stamp'), default=datetime.datetime.now, editable=True)
     active = models.BooleanField(_('Active'), default=True)
 
     def _attempts_left(self):
@@ -1170,7 +1170,7 @@ class OrderPayment(models.Model):
     order = models.ForeignKey(Order, related_name="payments")
     payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
     amount = models.DecimalField(_("amount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    time_stamp = models.DateTimeField(_("timestamp"), default=datetime.datetime.now(), editable=True)
+    time_stamp = models.DateTimeField(_("timestamp"), default=datetime.datetime.now, editable=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
 
     def _credit_card(self):

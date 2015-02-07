@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import loading
+from django.db.utils import DatabaseError
 from django.utils.translation import ugettext_lazy as _
 from satchmo.caching import cache_key, cache_get, cache_set, NotCachedError
 from satchmo.caching.models import CachedObjectMixin
@@ -19,7 +20,9 @@ def _safe_get_siteid(site):
         try:
             site = Site.objects.get_current()
             siteid = site.id
-        except Site.DoesNotExist:
+        # DatabaseError is likely to occur when running tests/initial
+        # migrations as the django_site table may not exist yet.
+        except (Site.DoesNotExist, DatabaseError):
             siteid = settings.SITE_ID
     return siteid
 
