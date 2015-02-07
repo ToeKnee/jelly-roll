@@ -91,7 +91,6 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    'south',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.auth',
@@ -100,7 +99,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sitemaps',
     'django.contrib.sites',
-    #'registration',
+
     'satchmo',
     'satchmo.caching',
     'satchmo.configuration',
