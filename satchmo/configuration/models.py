@@ -1,7 +1,7 @@
+from django.apps import apps
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
-from django.db.models import loading
 from django.db.utils import DatabaseError
 from django.utils.translation import ugettext_lazy as _
 from satchmo.caching import cache_key, cache_get, cache_set, NotCachedError
@@ -38,7 +38,7 @@ def find_setting(group, key, site=None):
         setting = cache_get(ck)
 
     except NotCachedError:
-        if loading.app_cache_ready():
+        if apps.ready:
             try:
                 setting = Setting.objects.get(site__id__exact=siteid, key__exact=key, group__exact=group)
 
