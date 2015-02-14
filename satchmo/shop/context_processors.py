@@ -19,11 +19,16 @@ def settings(request):
     cart = Cart.objects.from_request(request)
 
     all_categories = Category.objects.by_site()
+    site = shop_config.site
+    if site:
+        domain = site.domain
+    else:
+        domain = None
     return {
         'shop_base': get_satchmo_setting('SHOP_BASE'),
         'shop': shop_config,
         'shop_name': shop_config.store_name,
-        'shop_domain': shop_config.site.domain,
+        'shop_domain': domain,
         'shop_description': shop_config.store_description,
         'media_url': current_media_url(request),
         'cart_count': cart.numItems,
