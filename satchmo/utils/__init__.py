@@ -1,37 +1,37 @@
-try:
-    from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
-except:
-    from django.utils._decimal import Decimal, ROUND_HALF_UP, InvalidOperation
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 
-from django.conf import settings
-from django.db import models
 import datetime
-import logging
 import os
 import random
 import sys
 import types
 
+from django.apps import apps
+from django.conf import settings
+
+import logging
 log = logging.getLogger(__name__)
+
 
 def add_month(date, n=1):
     """add n+1 months to date then subtract 1 day
     to get eom, last day of target month"""
     oneday = datetime.timedelta(days=1)
-    q,r = divmod(date.month+n, 12)
-    eom = datetime.date(date.year+q, r+1, 1) - oneday
-    if date.month != (date+oneday).month or date.day >= eom.day:
+    q, r = divmod(date.month + n, 12)
+    eom = datetime.date(date.year + q, r + 1, 1) - oneday
+    if date.month != (date + oneday).month or date.day >= eom.day:
         return eom
     return eom.replace(day=date.day)
 
+
 def app_enabled(appname):
     """Check the app list to see if a named app is installed."""
-    all_apps = {}
-    for app in models.get_apps():
+    for app in [a.models_module for a in apps.get_app_configs() if a.models_module is not None]:
         n = app.__name__.split('.')[-2]
-        if n  == appname:
+        if n == appname:
             return True
     return False
+
 
 def can_loop_over(maybe):
     """Test value to see if it is list like"""
@@ -42,17 +42,19 @@ def can_loop_over(maybe):
     else:
         return 1
 
+
 def cross_list(sequences):
     """
     Code taken from the Python cookbook v.2 (19.9 - Looping through the cross-product of multiple iterators)
     This is used to create all the variations associated with an product
     """
-    result =[[]]
+    result = [[]]
     for seq in sequences:
-        result = [sublist+[item] for sublist in result for item in seq]
+        result = [sublist + [item] for sublist in result for item in seq]
     return result
 
-def current_media_url(request):    
+
+def current_media_url(request):
     """Return the media_url, taking into account SSL."""
     media_url = settings.MEDIA_URL
     secure = request_is_secure(request)
@@ -60,12 +62,14 @@ def current_media_url(request):
         try:
             media_url = settings.MEDIA_SECURE_URL
         except AttributeError:
-            media_url = media_url.replace('http://','https://')
+            media_url = media_url.replace('http://', 'https://')
     return media_url
+
 
 def is_scalar(maybe):
     """Test to see value is a string, an int, or some other scalar type"""
     return is_string_like(maybe) or not can_loop_over(maybe)
+
 
 def flatten_list(sequence, scalarp=is_scalar, result=None):
     """flatten out a list by putting sublist entries in the main list"""
@@ -78,6 +82,7 @@ def flatten_list(sequence, scalarp=is_scalar, result=None):
         else:
             flatten_list(item, scalarp, result)
 
+
 def flatten(sequence, scalarp=is_scalar):
     """flatten out a list by putting sublist entries in the main list"""
     for item in sequence:
@@ -87,23 +92,27 @@ def flatten(sequence, scalarp=is_scalar):
             for subitem in flatten(item, scalarp):
                 yield subitem
 
+
 def get_flat_list(sequence):
     """flatten out a list and return the flat list"""
     flat = []
     flatten_list(sequence, result=flat)
     return flat
 
+
 def is_list_or_tuple(maybe):
     return isinstance(maybe, (types.TupleType, types.ListType))
+
 
 def is_string_like(maybe):
     """Test value to see if it acts like a string"""
     try:
-        maybe+""
+        maybe + ""
     except TypeError:
         return 0
     else:
         return 1
+
 
 def load_module(module):
     """Load a named python module."""
@@ -115,10 +124,13 @@ def load_module(module):
     return module
 
 _MODULES = []
+
+
 def load_once(key, module):
     if key not in _MODULES:
         load_module(module)
         _MODULES.append(key)
+
 
 def normalize_dir(dir_name):
     if not dir_name.startswith('./'):
@@ -129,10 +141,12 @@ def normalize_dir(dir_name):
 
 _LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
+
 def random_string(length, variable=False, charset=_LETTERS):
     if variable:
-        length = random.randrange(1, length+1)
+        length = random.randrange(1, length + 1)
     return ''.join([random.choice(charset) for x in xrange(length)])
+
 
 def request_is_secure(request):
     if request.is_secure():
@@ -143,11 +157,12 @@ def request_is_secure(request):
         return request.META['HTTP_X_FORWARDED_SSL'] == 'on'
 
     return False
-            
+
+
 def trunc_decimal(val, places):
     roundfmt = "0."
     if places > 1:
-        zeros = "0" * (places-1)
+        zeros = "0" * (places - 1)
         roundfmt += zeros
     if places > 0:
         roundfmt += "1"
@@ -160,6 +175,7 @@ def trunc_decimal(val, places):
             log.warn("invalid operation trying to convert '%s' to decimal, returning raw", val)
             return val
     return val.quantize(Decimal(roundfmt), ROUND_HALF_UP)
+
 
 def url_join(*args):
     """Join any arbitrary strings into a forward-slash delimited string.
