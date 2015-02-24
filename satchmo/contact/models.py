@@ -1,18 +1,16 @@
 """
 Stores customer, organization, and order information.
 """
-from django.conf import settings
+import datetime
+
 from django.contrib.auth.models import User
-from django.core import urlresolvers
 from django.db import models
-from django.utils.translation import ugettext, ugettext_lazy as _
-from satchmo.configuration import config_get_group
+from django.utils.translation import ugettext_lazy as _
+
 from satchmo.l10n.models import Country
 from satchmo.contact import CUSTOMER_ID
-import datetime
-import logging
-import sys
 
+import logging
 log = logging.getLogger(__name__)
 
 CONTACT_CHOICES = (
@@ -34,6 +32,7 @@ ORGANIZATION_ROLE_CHOICES = (
     ('Customer', _('Customer')),
 )
 
+
 class OrganizationManager(models.Manager):
     def by_name(self, name, create=False, role='Customer', orgtype='Company'):
         org = None
@@ -51,15 +50,16 @@ class OrganizationManager(models.Manager):
 
         return org
 
+
 class Organization(models.Model):
     """
     An organization can be a company, government or any kind of group.
     """
     name = models.CharField(_("Name"), max_length=50, )
     type = models.CharField(_("Type"), max_length=30,
-        choices=ORGANIZATION_CHOICES)
+                            choices=ORGANIZATION_CHOICES)
     role = models.CharField(_("Role"), max_length=30,
-        choices=ORGANIZATION_ROLE_CHOICES)
+                            choices=ORGANIZATION_ROLE_CHOICES)
     create_date = models.DateField(_("Creation Date"))
     notes = models.TextField(_("Notes"), max_length=200, blank=True, null=True)
 
@@ -77,6 +77,7 @@ class Organization(models.Model):
     class Meta:
         verbose_name = _("Organization")
         verbose_name_plural = _("Organizations")
+
 
 class ContactManager(models.Manager):
 
@@ -124,7 +125,7 @@ class Contact(models.Model):
     last_name = models.CharField(_("Last name"), max_length=30, )
     user = models.ForeignKey(User, blank=True, null=True, unique=True)
     role = models.CharField(_("Role"), max_length=20, blank=True, null=True,
-        choices=CONTACT_CHOICES)
+                            choices=CONTACT_CHOICES)
     organization = models.ForeignKey(Organization, verbose_name=_("Organization"), blank=True, null=True)
     dob = models.DateField(_("Date of birth"), blank=True, null=True)
     email = models.EmailField(_("Email"), blank=True)
@@ -133,10 +134,21 @@ class Contact(models.Model):
 
     objects = ContactManager()
 
-    def _get_full_name(self):
+    @property
+    def full_name(self):
         """Return the person's full name."""
-        return u'%s %s' % (self.first_name, self.last_name)
-    full_name = property(_get_full_name)
+        if self.title:
+            name = u"{title} {first} {last}".format(
+                title=self.title,
+                first=self.first_name,
+                last=self.last_name,
+            )
+        else:
+            name = u"{first} {last}".format(
+                first=self.first_name,
+                last=self.last_name,
+            )
+        return name
 
     def _shipping_address(self):
         """Return the default shipping address or None."""
@@ -192,13 +204,14 @@ INTERACTION_CHOICES = (
     ('In Person', _('In Person')),
 )
 
+
 class Interaction(models.Model):
     """
     A type of activity with the customer.  Useful to track emails, phone calls,
     or in-person interactions.
     """
     contact = models.ForeignKey(Contact, verbose_name=_("Contact"))
-    type = models.CharField(_("Type"), max_length=30,choices=INTERACTION_CHOICES)
+    type = models.CharField(_("Type"), max_length=30, choices=INTERACTION_CHOICES)
     date_time = models.DateTimeField(_("Date and Time"), )
     description = models.TextField(_("Description"), max_length=200)
 
@@ -209,15 +222,15 @@ class Interaction(models.Model):
         verbose_name = _("Interaction")
         verbose_name_plural = _("Interactions")
 
+
 class PhoneNumber(models.Model):
     """
     Phone number associated with a contact.
     """
     contact = models.ForeignKey(Contact)
     type = models.CharField(_("Description"), choices=PHONE_CHOICES,
-        max_length=20, blank=True)
-    phone = models.CharField(_("Phone Number"), blank=True, max_length=30,
-        )
+                            max_length=20, blank=True)
+    phone = models.CharField(_("Phone Number"), blank=True, max_length=30)
     primary = models.BooleanField(_("Primary"), default=False)
 
     def __unicode__(self):
@@ -243,13 +256,14 @@ class PhoneNumber(models.Model):
         verbose_name = _("Phone Number")
         verbose_name_plural = _("Phone Numbers")
 
+
 class AddressBook(models.Model):
     """
     Address information associated with a contact.
     """
     contact = models.ForeignKey(Contact)
     description = models.CharField(_("Description"), max_length=20, blank=True,
-        help_text=_('Description of address - Home, Office, Warehouse, etc.',))
+                                   help_text=_('Description of address - Home, Office, Warehouse, etc.',))
     addressee = models.CharField(_("Addressee"), max_length=80)
     street1 = models.CharField(_("Street"), max_length=80)
     street2 = models.CharField(_("Street"), max_length=80, blank=True)
@@ -258,9 +272,13 @@ class AddressBook(models.Model):
     postal_code = models.CharField(_("Post Code"), max_length=30)
     country = models.ForeignKey(Country, verbose_name=_("Country"))
     is_default_shipping = models.BooleanField(_("Default Shipping Address"),
-        default=False)
+                                              default=False)
     is_default_billing = models.BooleanField(_("Default Billing Address"),
-        default=False)
+                                             default=False)
+
+    class Meta:
+        verbose_name = _("Address Book")
+        verbose_name_plural = _("Address Books")
 
     def __unicode__(self):
         return u'%s - %s' % (self.contact.full_name, self.city)
@@ -288,9 +306,5 @@ class AddressBook(models.Model):
             self.is_default_shipping = True
 
         super(AddressBook, self).save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = _("Address Book")
-        verbose_name_plural = _("Address Books")
 
 import config
