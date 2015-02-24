@@ -4,8 +4,10 @@ from satchmo.l10n.models import Continent
 from satchmo.l10n.models import Country
 
 
-class ContinentFactory(factory.Factory):
-    FACTORY_FOR = Continent
+class ContinentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Continent
+        django_get_or_create = ('code',)
 
     code = "PG"
     name = "Patagonia"
@@ -26,8 +28,10 @@ class OCFactory(ContinentFactory):
     name = "Oceania"
 
 
-class CountryFactory(factory.Factory):
-    FACTORY_FOR = Country
+class CountryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Country
+        django_get_or_create = ('iso2_code',)
 
     iso2_code = "gb"
     name = "United Kingdom of Great Britain & Northern Ireland"
@@ -35,7 +39,7 @@ class CountryFactory(factory.Factory):
     iso3_code = "gbr"
     numcode = 826
     active = True
-    continent = factory.SubFactory(ContinentFactory)
+    continent = factory.SubFactory(EUFactory)
 
 
 class UKFactory(CountryFactory):
