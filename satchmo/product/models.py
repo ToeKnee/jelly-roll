@@ -1809,18 +1809,19 @@ class ProductAttribute(models.Model):
 
 
 class Price(models.Model):
-    """
-    A Price!
-    Separating it out lets us have different prices for the same product for different purposes.
-    For example for quantity discounts.
-    The current price should be the one with the earliest expires date, and the highest quantity
-    that's still below the user specified (IE: ordered) quantity, that matches a given product.
+    """A Price for a product.
+
+    Separating it out lets us have different prices for the same
+    product for different purposes.  For example for quantity
+    discounts.  The current price should be the one with the earliest
+    expires date, and the highest quantity that's still below the user
+    specified (IE: ordered) quantity, that matches a given product.
+
     """
     product = models.ForeignKey(Product)
     price = models.DecimalField(_("Price"), max_digits=14, decimal_places=6, )
     quantity = models.IntegerField(_("Discount Quantity"), default=1, help_text=_("Use this price only for this quantity or higher"))
     expires = models.DateField(_("Expires"), null=True, blank=True)
-    #TODO: add fields here for locale/currency specific pricing
 
     def __unicode__(self):
         return unicode(self.price)
