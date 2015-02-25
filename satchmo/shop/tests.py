@@ -30,6 +30,7 @@ from satchmo.l10n.models import Country
 from satchmo.product.models import Product
 from satchmo.shop.exceptions import CartAddProhibited
 from satchmo.shop.satchmo_settings import get_satchmo_setting
+from satchmo.shop.factories import TestOrderFactory
 from satchmo.shop.models import *
 from satchmo.shop.templatetags import get_filter_args
 
@@ -617,50 +618,49 @@ def make_test_order(country, state, include_non_taxed=False, site=None):
 
 
 class OrderTest(TestCase):
-    fixtures = ['l10n_data.xml', 'test_multishop.yaml', 'products.yaml']
-
-    def setUp(self):
-        caching.cache_delete()
-        self.US = Country.objects.get(iso2_code__iexact='US')
-
     def tearDown(self):
         cache_delete()
 
     def testBalanceMethods(self):
-        order = make_test_order(self.US, '', include_non_taxed=True)
+        order = TestOrderFactory()
         order.recalculate_total(save=False)
         price = order.total
         subtotal = order.sub_total
 
-        self.assertEqual(subtotal, Decimal('105.00'))
-        self.assertEqual(price, Decimal('115.00'))
+        self.assertEqual(subtotal, Decimal('25.00'))
+        self.assertEqual(price, Decimal('35.00'))
         self.assertEqual(order.balance, price)
 
         paytype = config_value('PAYMENT', 'MODULES')[0]
         pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("5.00"))
         pmt.save()
 
-        self.assertEqual(order.balance, Decimal("110.00"))
+        self.assertEqual(order.balance, Decimal("30.00"))
         self.assertEqual(order.balance_paid, Decimal("5.00"))
 
-        self.assert_(order.is_partially_paid)
+        self.assertTrue(order.is_partially_paid)
 
-        pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("110.00"))
+        pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("30.00"))
         pmt.save()
 
         self.assertEqual(order.balance, Decimal("0.00"))
-        self.assertEqual(order.is_partially_paid, False)
-        self.assert_(order.paid_in_full)
+        self.assertFalse(order.is_partially_paid)
+        self.assertTrue(order.paid_in_full)
 
     def testSmallPayment(self):
-        order = make_test_order(self.US, '', include_non_taxed=True)
+        order = TestOrderFactory()
         order.recalculate_total(save=False)
 
         paytype = config_value('PAYMENT', 'MODULES')[0]
         pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("0.000001"))
         pmt.save()
 
-        self.assert_(order.is_partially_paid)
+        self.assertTrue(order.is_partially_paid)
+
+    def test_verification_hash(self):
+        with self.settings(SECRET_KEY="123"):
+            order = Order(id=1, contact_id=1)
+            self.assertEqual(order.verification_hash, "97f97b0cd887f1b61e6f7e136aa752b1")
 
 
 def vetoAllListener(sender, vetoes={}, **kwargs):
@@ -687,7 +687,7 @@ class SignalTest(TestCase):
             cart.save()
             p = Product.objects.get(slug='dj-rocks-s-b')
             cart.add_item(p, 1)
-            make_test_order(self.US, '', include_non_taxed=True)
+            TestOrderFactory()
             self.fail('Should have thrown a CartAddProhibited error')
         except CartAddProhibited:
             pass

@@ -11,8 +11,9 @@ from satchmo.shop.models import Config, Order, OrderItem
 from satchmo.product.factories import ProductFactory, TaxableProductFactory
 
 
-class ShopConfigFactory(factory.Factory):
-    FACTORY_FOR = Config
+class ShopConfigFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Config
 
     site_id = 1
     store_name = "Test Shop"
@@ -20,10 +21,19 @@ class ShopConfigFactory(factory.Factory):
     country = factory.LazyAttribute(lambda a: CountryFactory())
 
 
-class OrderItemFactory(factory.Factory):
-    FACTORY_FOR = OrderItem
+class OrderFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Order
 
-    #order = factory.CircularSubFactory('satchmo.shop.factories', 'OrderFactory')
+    contact = factory.SubFactory(ContactFactory)
+    site = factory.LazyAttribute(lambda a: Site.objects.get_current())
+
+
+class OrderItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OrderItem
+
+    order = factory.SubFactory(OrderFactory)
     product = factory.SubFactory(ProductFactory)
     quantity = 5
 
@@ -40,17 +50,14 @@ class TaxableOrderItemFactory(OrderItemFactory):
     product = factory.SubFactory(TaxableProductFactory)
 
 
-class OrderFactory(factory.Factory):
-    FACTORY_FOR = Order
-
-    contact = factory.RelatedFactory(ContactFactory)
-    site = factory.LazyAttribute(lambda a: Site.objects.get_current())
-
-
 class TestOrderFactory(OrderFactory):
     shipping_cost = Decimal('10.00')
-    order_item = factory.RelatedFactory(TaxableOrderItemFactory)
+    discount = Decimal('0.00')
+    shipping_discount = Decimal('0.00')
+    sub_total = Decimal('25.00')
+    tax = Decimal('0.00')
+    total = Decimal('35.00')
 
-
-class TestOrderNonTaxedFactory(TestOrderFactory):
-    order_item = factory.RelatedFactory(OrderItemFactory)
+    @factory.post_generation
+    def add_order_item(obj, create, extracted, **kwargs):
+        TaxableOrderItemFactory(order=obj)

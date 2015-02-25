@@ -3,10 +3,12 @@ Configuration items for the shop.
 Also contains shopping cart and related classes.
 """
 import datetime
+import hmac
 import logging
 import operator
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.encoding import force_unicode
@@ -978,6 +980,14 @@ class Order(models.Model):
         for item in self.orderitem_set.all():
             total_weight += item.weight
         return total_weight
+
+    @property
+    def verification_hash(self):
+        value = "{id} {user_id}".format(
+            id=self.id,
+            user_id=self.contact_id,
+        )
+        return hmac.new(settings.SECRET_KEY, value).hexdigest()
 
 
 class OrderItem(models.Model):
