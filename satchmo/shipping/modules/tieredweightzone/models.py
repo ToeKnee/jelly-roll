@@ -8,6 +8,8 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import get_language, ugettext_lazy as _
+
+from satchmo.shipping.models import POSTAGE_SPEED_CHOICES, STANDARD
 from satchmo.shipping.modules.base import BaseShipper
 from satchmo.l10n.models import Continent, Country
 
@@ -92,7 +94,10 @@ class Shipper(BaseShipper):
 class Carrier(models.Model):
     key = models.SlugField(_('Key'))
     ordering = models.IntegerField(_('Ordering'), default=0)
-    active = models.BooleanField(_('Active'), default=True)
+    active = models.BooleanField(_('Active'), default=False)
+    signed_for = models.BooleanField(_('Signed For'), default=False)
+    tracked = models.BooleanField(_('Tracked'), default=False)
+    postage_speed = models.PositiveIntegerField(_('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
 
     class Meta:
         db_table = "tieredweightzone_carrier"

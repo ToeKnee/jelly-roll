@@ -26,6 +26,7 @@ from satchmo.payment.fields import PaymentChoiceCharField
 from satchmo.product import signals as product_signals
 from satchmo.product.models import Product, DownloadableProduct
 from satchmo.shipping.fields import ShippingChoiceCharField
+from satchmo.shipping.models import POSTAGE_SPEED_CHOICES, STANDARD
 from satchmo.tax.utils import get_tax_processor
 from satchmo.shop import signals
 from satchmo.shop.notification import order_success_listener, send_order_update_notice
@@ -618,6 +619,9 @@ class Order(models.Model):
     shipping_description = models.CharField(_("Shipping Description"), max_length=200, blank=True, null=True)
     shipping_method = models.CharField(_("Shipping Method"), max_length=200, blank=True, null=True)
     shipping_model = ShippingChoiceCharField(_("Shipping Models"), max_length=30, blank=True, null=True)
+    shipping_signed_for = models.BooleanField(_('Signed For'), default=False)
+    shipping_tracked = models.BooleanField(_('Tracked'), default=False)
+    shipping_postage_speed = models.PositiveIntegerField(_('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
 
     sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
     shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=10, blank=True, null=True)
