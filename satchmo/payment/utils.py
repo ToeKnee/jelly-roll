@@ -1,64 +1,78 @@
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
+from decimal import Decimal
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from satchmo.shipping.utils import update_shipping
 from satchmo.shop.models import Order, OrderItem, OrderItemDetail, OrderPayment
 from satchmo.shop.signals import satchmo_post_copy_item_to_order
-from socket import error as SocketError
-import logging
 
+import logging
 log = logging.getLogger(__name__)
 
 NOTSET = object()
 
+
 def create_pending_payment(order, config, amount=NOTSET):
-    """Create a placeholder payment entry for the order.  
+    """Create a placeholder payment entry for the order.
     This is done by step 2 of the payment process."""
     key = unicode(config.KEY.value)
     if amount == NOTSET:
         amount = Decimal("0.00")
 
-    # kill old pending payments
-    payments = order.payments.filter(transaction_id__exact="PENDING", 
-        payment__exact=key)
+    # Kill old pending payments
+    payments = order.payments.filter(
+        transaction_id__exact="PENDING",
+        payment__exact=key
+    )
     ct = payments.count()
     if ct > 0:
         log.debug("Deleting %i expired pending payment entries for order #%i", ct, order.id)
 
         for pending in payments:
             pending.delete()
-        
+
     log.debug("Creating pending %s payment for %s", key, order)
 
-    orderpayment = OrderPayment(order=order, amount=amount, payment=key, 
-        transaction_id="PENDING")
+    orderpayment = OrderPayment(
+        order=order,
+        amount=amount,
+        payment=key,
+        transaction_id="PENDING"
+    )
     orderpayment.save()
 
     return orderpayment
 
 
 def get_or_create_order(request, working_cart, contact, data):
-    """Get the existing order from the session, else create using 
+    """Get the existing order from the session, else create using
     the working_cart, contact and data"""
     shipping = data['shipping']
     discount = data['discount']
-    
+
     try:
         newOrder = Order.objects.from_request(request)
-        pay_ship_save(newOrder, working_cart, contact,
-            shipping=shipping, discount=discount, update=True)
-        
+        pay_ship_save(
+            newOrder,
+            working_cart,
+            contact,
+            shipping=shipping,
+            discount=discount,
+            update=True
+        )
+
     except Order.DoesNotExist:
         # Create a new order.
         newOrder = Order(contact=contact)
-        pay_ship_save(newOrder, working_cart, contact,
-            shipping=shipping, discount=discount)
-            
+        pay_ship_save(
+            newOrder,
+            working_cart,
+            contact,
+            shipping=shipping,
+            discount=discount
+        )
+
         request.session['orderID'] = newOrder.id
-    
+
     return newOrder
 
 
@@ -87,16 +101,22 @@ def record_payment(order, config, amount=NOTSET, transaction_id=""):
     key = unicode(config.KEY.value)
     if amount == NOTSET:
         amount = order.balance
-        
+
     log.debug("Recording %s payment of %s for %s", key, amount, order)
-    payments = order.payments.filter(transaction_id__exact="PENDING", 
-        payment__exact=key)
+    payments = order.payments.filter(
+        transaction_id__exact="PENDING",
+        payment__exact=key
+    )
     ct = payments.count()
     if ct == 0:
         log.debug("No pending %s payments for %s", key, order)
-        orderpayment = OrderPayment(order=order, amount=amount, payment=key,
-            transaction_id=transaction_id)
-    
+        orderpayment = OrderPayment(
+            order=order,
+            amount=amount,
+            payment=key,
+            transaction_id=transaction_id
+        )
+
     else:
         orderpayment = payments[0]
         orderpayment.amount = amount
@@ -104,15 +124,15 @@ def record_payment(order, config, amount=NOTSET, transaction_id=""):
 
         if ct > 1:
             for payment in payments[1:len(payments)]:
-                payment.transaction_id="ABORTED"
+                payment.transaction_id = "ABORTED"
                 payment.save()
-            
+
     orderpayment.time_stamp = datetime.now()
     orderpayment.save()
-    
+
     if order.paid_in_full:
         order.order_success()
-    
+
     return orderpayment
 
 
@@ -125,19 +145,21 @@ def update_orderitem_details(new_order_item, item):
         #obj = CustomTextField.objects.get(id=item.details.values()[0]['customfield_id'])
         #val = item.details.values()[0]['detail']
         for detail in item.details.all():
-            new_details = OrderItemDetail(item=new_order_item,
+            new_details = OrderItemDetail(
+                item=new_order_item,
                 value=detail.value,
                 name=detail.name,
                 price_change=detail.price_change,
-                sort_order=detail.sort_order)
+                sort_order=detail.sort_order
+            )
             new_details.save()
 
 
 def update_orderitem_for_subscription(new_order_item, item):
     """Update orderitem subscription details, if any.
     """
-    #if product is recurring, set subscription end
-    #if item.product.expire_length:
+    # If product is recurring, set subscription end
+    # if item.product.expire_length:
     if item.product.is_subscription:
         subscription = item.product.subscriptionproduct
         if subscription.expire_length:
@@ -145,7 +167,7 @@ def update_orderitem_for_subscription(new_order_item, item):
     else:
         subscription = None
 
-    #if product has trial price, set it here and update expire_date with trial period.
+    # If product has trial price, set it here and update expire_date with trial period.
     trial = None
 
     if subscription:
@@ -173,11 +195,13 @@ def update_orderitems(new_order, cart, update=False):
 
     # Add all the items in the cart to the order
     for item in cart.cartitem_set.all():
-        new_order_item = OrderItem(order=new_order,
+        new_order_item = OrderItem(
+            order=new_order,
             product=item.product,
             quantity=item.quantity,
             unit_price=item.unit_price,
-            line_item_price=item.line_total)
+            line_item_price=item.line_total
+        )
 
         update_orderitem_for_subscription(new_order_item, item)
         update_orderitem_details(new_order_item, item)
@@ -185,9 +209,10 @@ def update_orderitems(new_order, cart, update=False):
         # Send a signal after copying items
         # External applications can copy their related objects using this
         satchmo_post_copy_item_to_order.send(
-                cart,
-                cartitem=item,
-                order=new_order, orderitem=new_order_item
-                )
+            cart,
+            cartitem=item,
+            order=new_order,
+            orderitem=new_order_item,
+        )
 
     new_order.recalculate_total()
