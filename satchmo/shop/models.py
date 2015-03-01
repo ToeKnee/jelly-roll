@@ -993,6 +993,9 @@ class Order(models.Model):
         )
         return hmac.new(settings.SECRET_KEY, value).hexdigest()
 
+    def verify_hash(self, verification_hash):
+        return hmac.compare_digest(self.verification_hash, verification_hash)
+
 
 class OrderItem(models.Model):
     """
