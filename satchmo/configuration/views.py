@@ -1,10 +1,12 @@
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.contrib.admin.views.decorators import staff_member_required
-from satchmo.configuration import ConfigurationSettings, forms
-import logging
 
+from satchmo.configuration import ConfigurationSettings, forms
+
+import logging
 log = logging.getLogger(__name__)
 
 
@@ -30,7 +32,7 @@ def group_settings(request, group, template='configuration/group_settings.html')
                 cfg = mgr.get_config(group, key)
                 if cfg.update(value):
                     # Give user feedback as to which settings were changed
-                    request.user.message_set.create(message='Updated %s on %s' % (cfg.key, cfg.group.key))
+                    messages.add_message(request, messages.SUCCESS, u'Updated %s on %s' % (cfg.key, cfg.group.key))
 
             return HttpResponseRedirect(request.path)
     else:
