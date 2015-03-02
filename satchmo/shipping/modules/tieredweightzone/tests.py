@@ -4,13 +4,13 @@ from decimal import Decimal
 from django.test import TestCase
 from satchmo.shipping.modules.tieredweightzone.models import (
     Carrier,
-    ShippingTier,
+    WeightTier,
 )
 
 
 def make_tiers(carrier, prices, expires=None):
     for min_total, price in prices:
-        t = ShippingTier(
+        t = WeightTier(
             carrier=carrier,
             min_total=Decimal("%i.00" % min_total),
             price=Decimal("%i.00" % price),
@@ -25,7 +25,7 @@ class TieredCarrierSimpleTest(TestCase):
     def testCreate(self):
         c = Carrier(key="test", active=True)
         c.save()
-        t = ShippingTier(
+        t = WeightTier(
             carrier=c,
             min_total=Decimal("0.00"),
             price=Decimal("10.00"),
@@ -41,7 +41,7 @@ class TieredCarrierPricingTest(TestCase):
     def setUp(self):
         self.carrier = Carrier(name="pricing", active=True)
         self.carrier.save()
-        t = ShippingTier(
+        t = WeightTier(
             carrier=self.carrier,
             min_total=Decimal("0.00"),
             price=Decimal("10.00"),
@@ -52,7 +52,7 @@ class TieredCarrierPricingTest(TestCase):
         self.assertEqual(self.carrier.price(Decimal("0.00")), Decimal("10.00"))
 
     def test2Prices(self):
-        t = ShippingTier(
+        t = WeightTier(
             carrier=self.carrier,
             min_total=Decimal("20.00"),
             price=Decimal("15.00"),
