@@ -68,5 +68,5 @@ config_register_list(
                         requires=SHIP_MODULES,
                         requiresvalue='satchmo.shipping.modules.royalmailcontract',
                         default=[],
-                        choices=Country.objects.exclude(iso2_code="GB").values_list('iso2_code', 'printable_name'))
+                        choices=lambda: Country.objects.exclude(iso2_code="GB").values_list('iso2_code', 'printable_name'))
 )
