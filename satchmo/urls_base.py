@@ -2,7 +2,7 @@
 
 Split out from urls.py to allow much easier overriding and integration with larger apps.
 """
-from django.conf.urls import patterns, include
+from django.conf.urls import include, patterns
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.views.sitemaps import sitemaps
 

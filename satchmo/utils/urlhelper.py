@@ -1,3 +1,7 @@
+from django.conf import settings
+from django.contrib.sites.models import Site
+
+
 def remove_duplicate_urls(urls, names):
     """Remove any URLs whose names are already in use."""
     for pattern in urls:
@@ -10,15 +14,16 @@ def remove_duplicate_urls(urls, names):
             else:
                 names.append(pattern.name)
 
+
 def replace_urlpattern(urlpatterns, replacement):
     """Delete the old urlpattern, and add a new one.
-    
+
     parameters:
         urlpatterns: list
         replacement: an `django.conf.urls.defaults.url` object.
-    
+
     example:
-    
+
         replacement = url(r'^accounts/login/', 'my.site.login_signup', {}, name='auth_login'))
         replace_urlpattern(urlpatterns, replacement)
     """
@@ -31,7 +36,7 @@ def replace_urlpattern(urlpatterns, replacement):
     else:
         name = None
         regex = replacement.regex.pattern
-    
+
     while not found and ix < len(urlpatterns):
         pattern = urlpatterns[ix]
         if hasattr(pattern, 'url_patterns'):
@@ -46,12 +51,28 @@ def replace_urlpattern(urlpatterns, replacement):
                 del urlpatterns[ix]
                 urlpatterns.append(replacement)
                 found = True
-                    
+
         if not found:
             ix += 1
-            
+
     return found
-    
+
+
 def replace_urlpatterns(urlpatterns, replacelist):
     for replace in replacelist:
         replace_urlpattern(urlpatterns, replace)
+
+
+def external_url(url):
+    if settings.SESSION_COOKIE_SECURE and settings.CSRF_COOKIE_SECURE:
+        protocol = "https://"
+    else:
+        protocol = "http://"
+
+    site = Site.objects.get_current()
+    full_url = "{protocol}{domain}{url}".format(
+        protocol=protocol,
+        domain=site.domain,
+        url=url,
+    )
+    return full_url

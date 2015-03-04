@@ -88,7 +88,7 @@ class OrderTaxDetail_Inline(admin.TabularInline):
 class OrderOptions(admin.ModelAdmin):
     fieldsets = (
         (None,
-         {'fields': ('contact', 'method', 'discount_code', 'notes', 'time_stamp', 'frozen')}),
+         {'fields': ('contact', 'method', 'discount_code', 'tracking_number', 'tracking_url', 'notes', 'time_stamp', 'frozen', )}),
         (_('Shipping Method'),
          {'fields': ('shipping_method', 'shipping_description')}),
         (_('Shipping Address'),
@@ -102,7 +102,7 @@ class OrderOptions(admin.ModelAdmin):
          )
     )
     readonly_fields = ('contact', 'time_stamp', 'frozen',)
-    list_display = ('id', 'contact', 'contact_user', 'time_stamp', 'order_total', 'balance_forward', 'status', 'invoice', 'packingslip', 'shippinglabel', 'frozen')
+    list_display = ('id', 'contact', 'contact_user', 'time_stamp', 'order_total', 'balance_forward', 'status', 'tracking_number', 'invoice', 'frozen')
     list_filter = ['time_stamp', 'status__status', 'frozen']
     search_fields = ['id', 'contact__user__username', 'contact__user__email', 'contact__first_name', 'contact__last_name', 'contact__email']
     date_hierarchy = 'time_stamp'

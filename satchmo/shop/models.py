@@ -549,6 +549,13 @@ class OrderManager(models.Manager):
     def live(self):
         return self.filter(frozen=False)
 
+    def unfulfilled(self):
+        return self.filter(
+            frozen=True,
+            fulfilled=False,
+            status__status__status="Processing",
+        )
+
     def from_request(self, request):
         """Get the order from the session
 
@@ -595,6 +602,7 @@ class Order(models.Model):
     site = models.ForeignKey(Site, verbose_name=_('Site'), editable=False)
     contact = models.ForeignKey(Contact, verbose_name=_('Contact'), editable=False)
     frozen = models.BooleanField(default=False)
+    fulfilled = models.BooleanField(default=False)
     time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
     notes = models.TextField(_("Notes"), blank=True, null=True)
     method = models.CharField(_("Order method"), choices=ORDER_CHOICES, max_length=200, blank=True)
@@ -621,6 +629,8 @@ class Order(models.Model):
     shipping_model = ShippingChoiceCharField(_("Shipping Models"), max_length=30, blank=True, null=True)
     shipping_signed_for = models.BooleanField(_('Signed For'), default=False)
     shipping_tracked = models.BooleanField(_('Tracked'), default=False)
+    tracking_number = models.CharField(_('Tracking Number'), max_length=64, blank=True, null=True)
+    tracking_url = models.URLField(_('Tracking URL'), blank=True, null=True)
     shipping_postage_speed = models.PositiveIntegerField(_('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
 
     sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
@@ -654,7 +664,7 @@ class Order(models.Model):
         self.frozen = True
         self.time_stamp = datetime.datetime.now()
 
-    def add_status(self, status=None, notes=None):
+    def add_status(self, status=None, notes=None, status_notify_by_default=False):
         orderstatus = OrderStatus()
         if not status:
             if self.orderstatus_set.count() > 0:
@@ -662,7 +672,10 @@ class Order(models.Model):
             else:
                 status_obj, __ = Status.objects.get_or_create(status="Pending")
         else:
-            status_obj, __ = Status.objects.get_or_create(status=status)
+            status_obj, __ = Status.objects.get_or_create(
+                status=status,
+                notify=status_notify_by_default,
+            )
 
         orderstatus.status = status_obj
         orderstatus.notes = notes
