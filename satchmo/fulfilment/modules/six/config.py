@@ -53,11 +53,11 @@ config_register_list(
         default=True
     ),
 
-    StringValue(
+    BooleanValue(
         FULILMENT_HOUSE,
-        'TIME',
-        description=_("Order before"),
-        help_text=_("Order before this time to ensure same day postage.  Leave blank to disable this feature."),
-        default=u""
+        'ALLOW_PREORDER',
+        description=_("Allow Preorder"),
+        help_text=_("If true, permits acceptance of orders which contain lines currently out of stock. Disables Out-Of-Stock feedback in API response."),
+        default=False
     ),
 )

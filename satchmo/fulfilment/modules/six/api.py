@@ -34,7 +34,7 @@ def order_payload(order):
     data = {}
     data["api_key"] = config_value("satchmo.fulfilment.modules.six", "API_KEY")
     data["test"] = config_value("satchmo.fulfilment.modules.six", "TEST_MODE")
-    data["allow_preorder"] = False
+    data["allow_preorder"] = config_value("satchmo.fulfilment.modules.six", "ALLOW_PREORDER")
     data["update_stock"] = config_value("satchmo.fulfilment.modules.six", "UPDATE_STOCK")
     data["order"] = {}
 
