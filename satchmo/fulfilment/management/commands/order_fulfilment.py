@@ -17,5 +17,7 @@ class Command(BaseCommand):
             )
             module = importlib.import_module(api_module)
             for order in Order.objects.unfulfilled().order_by("time_stamp"):
-                module.send_order(order)
-                self.stdout.write(u'Order fulfilment processed "%s"' % order)
+                if module.send_order(order):
+                    self.stdout.write(u'Order fulfilment processed "%s"' % order)
+                else:
+                    self.stdout.write(u'Order fulfilment not processed,  Something went wrong. "%s"' % order)

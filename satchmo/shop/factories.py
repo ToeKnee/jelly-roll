@@ -7,7 +7,7 @@ from factory import lazy_attribute
 
 from satchmo.contact.factories import ContactFactory
 from satchmo.l10n.factories import CountryFactory
-from satchmo.shop.models import Config, Order, OrderItem
+from satchmo.shop.models import Config, Order, OrderItem, OrderPayment
 from satchmo.product.factories import ProductFactory, TaxableProductFactory
 
 
@@ -61,3 +61,18 @@ class TestOrderFactory(OrderFactory):
     @factory.post_generation
     def add_order_item(obj, create, extracted, **kwargs):
         TaxableOrderItemFactory(order=obj)
+
+
+class PaidOrderFactory(TestOrderFactory):
+    @factory.post_generation
+    def add_payment(obj, create, extracted, **kwargs):
+        OrderPaymentFactory(order=obj)
+
+
+class OrderPaymentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OrderPayment
+
+    order = factory.SubFactory(PaidOrderFactory)
+    payment = "PAYMENT_AUTOSUCCESS"
+    amount = factory.LazyAttribute(lambda obj: obj.order.total)

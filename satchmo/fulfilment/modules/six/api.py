@@ -87,6 +87,11 @@ def order_payload(order):
 
 @transaction.atomic
 def send_order(order):
+    # Check that order is ready before sending to fulfilment house
+    if order.balance:
+        logger.info("Order #%s not paid in full, not processing", order.id)
+        return False
+
     url = config_value("satchmo.fulfilment.modules.six", "URL")
     payload = order_payload(order)
     headers = {'content-type': 'application/json'}
@@ -95,17 +100,19 @@ def send_order(order):
         response = requests.post(url, data=payload, headers=headers)
     except requests.exceptions.RequestException as e:
         logger.exception(e)
+        return False
     else:
         try:
             payload = response.json()
         except ValueError as e:
             logger.exception(e)
+            return False
         else:
             logger.debug(payload)
 
             if payload["order_ref"] != order.id:
-                logger.warning("Order id has changed.  Expecting %s, got %s.  Processing anyway.", order.id, payload["order_ref"])
-                order = Order.objects.get(id=order.id)
+                logger.warning("Order id is wrong.  Expecting %s, got %s.", order.id, payload["order_ref"])
+                return False
 
             # Ensure that notes is a string, even when empty.
             if order.notes is None:
@@ -154,7 +161,7 @@ def send_order(order):
                         # one match, log an error.
                         try:
                             product = Product.objects.get(slug__startswith=slug)
-                        except MultipleObjectsReturned:
+                        except (Product.DoesNotExist, MultipleObjectsReturned):
                             logger.error("Could not find a product with slug %s", slug)
                             product = None
 
@@ -162,3 +169,4 @@ def send_order(order):
                         logger.warning("%s: Stock was %s, now %s", product, product.items_in_stock, stock)
                         product.items_in_stock = stock
                         product.save()
+            return True
