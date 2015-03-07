@@ -12,9 +12,9 @@ from decimal import Decimal
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.text import force_text
 from django.utils.datastructures import SortedDict
-from django.utils.encoding import smart_str
-from django.utils.translation import gettext, ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _
 from satchmo.configuration.models import find_setting, LongSetting, Setting, SettingNotSet
 from satchmo.utils import load_module, is_string_like, is_list_or_tuple
 
@@ -203,11 +203,11 @@ class Value(object):
                 work = []
                 for x in self.choices:
                     if x[0] in self.default:
-                        work.append(smart_str(x[1]))
-                note = gettext('Default value: ') + ", ".join(work)
+                        work.append(force_text(x[1]))
+                note = ugettext('Default value: ') + u", ".join(work)
 
             else:
-                note = _("Default value: %s") % unicode(self.default)
+                note = _("Default value: %s") % force_text(self.default)
 
         return note
 
