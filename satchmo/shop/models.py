@@ -6,6 +6,8 @@ import datetime
 import hmac
 import logging
 import operator
+import time
+import random
 from decimal import Decimal
 
 from django.conf import settings
@@ -1007,7 +1009,13 @@ class Order(models.Model):
         return hmac.new(settings.SECRET_KEY, value).hexdigest()
 
     def verify_hash(self, verification_hash):
-        return hmac.compare_digest(self.verification_hash, verification_hash)
+        if hasattr(hmac, "compare_digest"):
+            return hmac.compare_digest(self.verification_hash, verification_hash)
+        else:
+            # Avoid timing attacks
+            sleep_for = random.random() / 100
+            time.sleep(sleep_for)
+            return self.verification_hash == verification_hash
 
 
 class OrderItem(models.Model):
