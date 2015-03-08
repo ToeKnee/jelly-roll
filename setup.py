@@ -16,40 +16,37 @@ if root_dir:
 for dirpath, dirnames, filenames in os.walk('satchmo'):
     # Ignore dirnames that start with '.'
     for i, dirname in enumerate(dirnames):
-        if dirname.startswith('.'): del dirnames[i]
+        if dirname.startswith('.'):
+            del dirnames[i]
     if '__init__.py' in filenames:
         pkg = dirpath.replace(os.path.sep, '.')
         if os.path.altsep:
             pkg = pkg.replace(os.path.altsep, '.')
         packages.append(pkg)
     elif filenames:
-        prefix = dirpath[8:] # Strip "satchmo/" or "satchmo\"
+        prefix = dirpath[8:]  # Strip "satchmo/" or "satchmo\"
         for f in filenames:
             data_files.append(os.path.join(prefix, f))
 
 # Dynamically calculate the version based on django.VERSION.
-version_tuple = __import__('satchmo').VERSION
-if version_tuple[2] is not None:
-    version = "%d.%d_%s" % version_tuple
-else:
-    version = "%d.%d" % version_tuple[:2]
+version = __import__('satchmo').__version__
 
-setup(name = "Satchmo",
-      version = version,
-      author = "Chris Moffitt",
-      author_email = "chris@moffitts.net",
-      url = "http://www.satchmoproject.com",
-      license = "BSD",
-      description = "The webshop for perfectionists with deadlines.",
-      long_description = "Satchmo is an ecommerce framework created using Django.",
-      package_dir = {'satchmo': 'satchmo'},
-      packages = packages,
-      package_data = {'satchmo': data_files},
-      classifiers = [
-      'Development Status :: 4 - Beta',
-      'License :: OSI Approved :: BSD License',
-      'Operating System :: OS Independent', 
-      'Topic :: Office/Business',
-      ]
-     )
-
+setup(
+    name="Satchmo",
+    version=version,
+    author="Chris Moffitt",
+    author_email="chris@moffitts.net",
+    url="http://www.satchmoproject.com",
+    license="BSD",
+    description="The webshop for perfectionists with deadlines.",
+    long_description="Satchmo is an ecommerce framework created using Django.",
+    package_dir={'satchmo': 'satchmo'},
+    packages=packages,
+    package_data={'satchmo': data_files},
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Topic :: Office/Business',
+    ]
+)
