@@ -9,7 +9,6 @@ from django.utils.translation import ugettext as _
 
 from satchmo.configuration import config_value
 from satchmo.product.models import Product
-from satchmo.shop.models import Order
 from satchmo.utils.urlhelper import external_url
 
 import logging
@@ -132,7 +131,7 @@ def send_order(order):
                 order.save()
                 order.add_status(
                     status=_("Pick & Pack"),
-                    notes=_("Your order has been passed to the warehouse and is awaiting picking.")
+                    notes=_("We're currently selecting your products and packaging them for delivery.")
                 )
                 logger.info("Successfully processed order #%s", order.id)
             else:
