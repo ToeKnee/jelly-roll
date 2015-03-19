@@ -674,10 +674,12 @@ class Order(models.Model):
             else:
                 status_obj, __ = Status.objects.get_or_create(status="Pending")
         else:
-            status_obj, __ = Status.objects.get_or_create(
+            status_obj, created = Status.objects.get_or_create(
                 status=status,
-                notify=status_notify_by_default,
             )
+            if created:
+                status_obj.notify = status_notify_by_default
+                status.obj.save()
 
         orderstatus.status = status_obj
         orderstatus.notes = notes
