@@ -679,7 +679,7 @@ class Order(models.Model):
             )
             if created:
                 status_obj.notify = status_notify_by_default
-                status.obj.save()
+                status_obj.save()
 
         orderstatus.status = status_obj
         orderstatus.notes = notes
