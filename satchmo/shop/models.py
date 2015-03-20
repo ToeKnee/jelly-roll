@@ -1012,7 +1012,7 @@ class Order(models.Model):
 
     def verify_hash(self, verification_hash):
         if hasattr(hmac, "compare_digest"):
-            return hmac.compare_digest(self.verification_hash, verification_hash)
+            return hmac.compare_digest(str(self.verification_hash), str(verification_hash))
         else:
             # Avoid timing attacks
             sleep_for = random.random() / 100
