@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 
 from django.http import JsonResponse
@@ -38,6 +39,9 @@ def despatch(request, order_id, verification_hash):
                 )
                 order.notes += u"Postage Method: {method}\n".format(
                     method=payload.get("postage_method"),
+                )
+                order.notes += u"Postage Cost: £{cost}\n".format(
+                    cost=payload.get("postage_cost"),
                 )
                 order.notes += u"Boxed Weight: {weight}g\n".format(
                     weight=payload.get("boxed_weight"),

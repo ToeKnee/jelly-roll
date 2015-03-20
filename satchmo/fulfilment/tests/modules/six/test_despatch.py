@@ -8,6 +8,7 @@ from django.utils import timezone
 from satchmo.shop.factories import TestOrderFactory
 from satchmo.shop.models import Order
 from satchmo.fulfilment.modules.six.views import despatch
+from satchmo.fulfilment.modules.six.api import float_price
 
 
 class DespatchTest(TestCase):
@@ -117,6 +118,7 @@ class DespatchTest(TestCase):
             "date_despatched": str(timezone.now()),
             "client_area_link": "http://subdomain.sixworks.co.uk/order/101",
             "postage_method": "1st Class Packet",
+            "postage_cost": str(float_price(order.shipping_cost)),
             "boxed_weight": 645,
             "tracking_number": "GB1010101010A",
             "tracking_link": "http://royalmail.com/track?tracking_number=GB1010101010A",
@@ -141,6 +143,7 @@ class DespatchTest(TestCase):
         self.assertIn(data["date_despatched"], order.notes)
         self.assertIn(data["client_area_link"], order.notes)
         self.assertIn(data["postage_method"], order.notes)
+        self.assertIn(data["postage_cost"], order.notes)
         self.assertIn(str(data["boxed_weight"]), order.notes)
 
         self.assertEqual(order.tracking_number, data["tracking_number"])
