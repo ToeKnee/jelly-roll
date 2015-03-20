@@ -2,6 +2,7 @@ import json
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 
 from satchmo.shop.models import Order
 
@@ -9,6 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+@csrf_exempt
 def despatch(request, order_id, verification_hash):
     success = False
     order = get_object_or_404(Order, id=order_id)

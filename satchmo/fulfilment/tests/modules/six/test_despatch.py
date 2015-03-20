@@ -1,5 +1,6 @@
 import json
 
+from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.test import TestCase, RequestFactory
 from django.utils import timezone
@@ -92,6 +93,49 @@ class DespatchTest(TestCase):
         }
         request = self.factory.post("/", data=json.dumps(data), content_type="application/json")
         response = despatch(request, order_id=order.id, verification_hash=order.verification_hash)
+        self.assertEqual(response.content, '{"success": true}')
+        order = Order.objects.get(id=order.id)
+        self.assertIn(data["date_despatched"], order.notes)
+        self.assertIn(data["client_area_link"], order.notes)
+        self.assertIn(data["postage_method"], order.notes)
+        self.assertIn(str(data["boxed_weight"]), order.notes)
+
+        self.assertEqual(order.tracking_number, data["tracking_number"])
+        self.assertEqual(order.tracking_url, data["tracking_link"])
+
+        order_status = u"""Thanks for your order!\nYour tracking number is: {tracking_number}\nYou can track your order at {tracking_url}\n"""
+        self.assertEqual(order.status.notes, order_status.format(
+            tracking_number=order.tracking_number,
+            tracking_url=order.tracking_url,
+        ))
+
+    def test__web_client(self):
+        order = TestOrderFactory()
+        data = {
+            "type": "despatch",
+            "client_ref": str(order.id),
+            "date_despatched": str(timezone.now()),
+            "client_area_link": "http://subdomain.sixworks.co.uk/order/101",
+            "postage_method": "1st Class Packet",
+            "boxed_weight": 645,
+            "tracking_number": "GB1010101010A",
+            "tracking_link": "http://royalmail.com/track?tracking_number=GB1010101010A",
+            "items": [{
+                "client_ref": order.orderitem_set.all()[0].product.slug,
+                "quantity": order.orderitem_set.all()[0].quantity,
+                "batches_used": [
+                    {
+                        "client_ref": order.orderitem_set.all()[0].product.slug,
+                        "batch": "0014",
+                        "quantity": order.orderitem_set.all()[0].quantity
+                    },
+                ]
+            }],
+        }
+        response = self.client.post(reverse("six_despatch", kwargs={
+            "order_id": str(order.id),
+            "verification_hash": str(order.verification_hash),
+        }), data=json.dumps(data), content_type="application/json")
         self.assertEqual(response.content, '{"success": true}')
         order = Order.objects.get(id=order.id)
         self.assertIn(data["date_despatched"], order.notes)
