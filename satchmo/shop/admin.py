@@ -88,7 +88,7 @@ class OrderTaxDetail_Inline(admin.TabularInline):
 class OrderOptions(admin.ModelAdmin):
     fieldsets = (
         (None,
-         {'fields': ('contact', 'method', 'discount_code', 'tracking_number', 'tracking_url', 'notes', 'time_stamp', 'frozen', )}),
+         {'fields': ('contact', 'method', 'discount_code', 'tracking_number', 'tracking_url', 'notes', 'time_stamp', 'frozen', 'fulfilled')}),
         (_('Shipping Method'),
          {'fields': ('shipping_method', 'shipping_description')}),
         (_('Shipping Address'),
