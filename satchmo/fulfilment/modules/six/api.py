@@ -148,7 +148,7 @@ def send_order(order):
                     notes=_("Something went wrong with your order.  We are taking a look at it and will update you when we have resolved the issue.")
                 )
 
-            if payload.get("update_stock"):
+            if payload.get("update_stock") and hasattr(payload["stock_changes"], "items"):
                 logger.info("Updating stock")
                 for slug, stock in payload["stock_changes"].items():
                     try:
