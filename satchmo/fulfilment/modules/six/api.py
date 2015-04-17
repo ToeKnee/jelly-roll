@@ -160,8 +160,8 @@ def send_order(order):
                     try:
                         product = Product.objects.get(slug=slug)
                     except Product.DoesNotExist:
-                        logger.warning("Could not find a product with slug %s.  Six truncates slugs to 32 characters.  Trying to find a product that starts with %s", slug, slug)
-                        # Six truncates long slugs (32 characters) Try
+                        logger.warning("Could not find a product with slug %s.  Six truncates slugs to 40 characters.  Trying to find a product that starts with %s", slug, slug)
+                        # Six truncates long slugs (40 characters) Try
                         # and look-up one that matches.  If more than
                         # one match, log an error.
                         try:
