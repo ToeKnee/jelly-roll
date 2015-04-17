@@ -73,7 +73,13 @@ def order_payload(order):
     }
     data["order"]["items"] = [
         {
-            "client_ref": item.product.slug,
+            # Six limits slugs to 32 characters.  Six stores
+            # client_refs with a length of 32 characters (truncated
+            # silently).  When passing a > 32 character slug, the
+            # whole slug is checked against the 32 character
+            # client_ref and doesn't match.  So, we just truncate
+            # slugs to 32 characters.
+            "client_ref": item.product.slug[:32],
             "quantity": item.quantity,
             "price": float_price(item.unit_price),
 
