@@ -84,12 +84,12 @@ def success(request):
     The order has been succesfully processed.
     """
 
-    session = SessionStore(session_key=request.POST['M_session'])
-    transaction_id = request.POST['cartId']
-    amount = request.POST['authAmount']
+    session = SessionStore(session_key=request.POST.get('M_session'))
+    transaction_id = request.POST.get('cartId')
+    amount = request.POST.get('authAmount')
     request.session = session
 
-    if request.POST['transStatus'] == 'Y':
+    if request.POST.get('transStatus', 'N') == 'Y':
         order = Order.objects.get(pk=transaction_id)
         order.add_status(status='Processing', notes=_("Paid through WorldPay."))
         request.user = order.contact.user
@@ -99,5 +99,5 @@ def success(request):
         return generic_success(request, template='checkout/worldpay/success.html')
     else:
         context = RequestContext(request,
-            {'message': _('Your transaction was rejected.')})
+                                 {'message': _('Your transaction was rejected.')})
         return render_to_response('shop_404.html', context)
