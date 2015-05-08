@@ -154,3 +154,44 @@ class DespatchTest(TestCase):
             tracking_number=order.tracking_number,
             tracking_url=order.tracking_url,
         ))
+
+    def test_despatch__replacement_order(self):
+        # Replacement orders have "-a" or similar tacked onto the end
+        # of the order number
+        order = TestOrderFactory()
+        data = {
+            "type": "despatch",
+            "client_ref": str(order.id),
+            "date_despatched": str(timezone.now()),
+            "client_area_link": "http://subdomain.sixworks.co.uk/order/101",
+            "postage_method": "1st Class Packet",
+            "boxed_weight": 645,
+            "items": [{
+                "client_ref": order.orderitem_set.all()[0].product.slug,
+                "quantity": order.orderitem_set.all()[0].quantity,
+                "batches_used": [
+                    {
+                        "client_ref": order.orderitem_set.all()[0].product.slug,
+                        "batch": "0014",
+                        "quantity": order.orderitem_set.all()[0].quantity
+                    },
+                ]
+            }],
+        }
+        url = reverse("six_despatch_replacement", kwargs={
+            "order_id": "{order_id}-a".format(order_id=order.id),
+            "verification_hash": order.verification_hash,
+        })
+        request = self.factory.post(url, data=json.dumps(data), content_type="application/json")
+        response = despatch(request, order_id="{order_id}-a".format(order_id=order.id), verification_hash=order.verification_hash)
+        self.assertEqual(response.content, '{"success": true}')
+        order = Order.objects.get(id=order.id)
+        self.assertIn(data["date_despatched"], order.notes)
+        self.assertIn(data["client_area_link"], order.notes)
+        self.assertIn(data["postage_method"], order.notes)
+        self.assertIn(str(data["boxed_weight"]), order.notes)
+
+        self.assertIsNone(order.tracking_number)
+        self.assertIsNone(order.tracking_url)
+
+        self.assertEqual(order.status.notes, u"Thanks for your order!\n")

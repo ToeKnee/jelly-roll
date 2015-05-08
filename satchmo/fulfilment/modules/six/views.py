@@ -14,6 +14,13 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 def despatch(request, order_id, verification_hash):
     success = False
+
+    # Orders duplicated by Six has -a (or whatever letter) append to
+    # the order_id.  Drop the -a.
+    if isinstance(order_id, basestring) and "-" in order_id:
+        logging.info("Trimming order id: %s", order_id)
+        order_id = order_id.split("-")[0]
+
     order = get_object_or_404(Order, id=order_id)
     if order.verify_hash(verification_hash):
         logging.info(request.POST)
