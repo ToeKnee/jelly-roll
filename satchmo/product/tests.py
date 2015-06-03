@@ -73,12 +73,16 @@ True
 <django.http.HttpResponse object at ...>
 """
 
-#from django.core.validators import ValidationError
+import datetime
+
 from django.conf import settings
+
 from django.contrib.sites.models import Site
 from django.db.models import Model
 from django.test import TestCase
 from satchmo import caching
+from satchmo.product.brand.factories import BrandFactory
+from satchmo.product.factories import ProductFactory
 from satchmo.product.models import Category, ConfigurableProduct, ProductVariation, Option, OptionGroup, Product, Price
 from satchmo.product.utils import serialize_options, productvariation_details
 from satchmo.shop.satchmo_settings import get_satchmo_setting
@@ -260,6 +264,79 @@ class ProductTest(TestCase):
         # no height
         self.assertEqual(p.smart_attr('height'), None)
         self.assertEqual(sb.smart_attr('height'), None)
+
+class ProductStockDueTest(TestCase):
+    """Test Product functions"""
+
+    def tearDown(self):
+        caching.cache_delete()
+
+    def test_has_stock(self):
+        product = ProductFactory(items_in_stock=1)
+        self.assertIsNone(product.stock_due_date())
+
+    def test_we_know_when_its_coming(self):
+        due_on = datetime.date.today() + datetime.timedelta(days=7)
+        brand = BrandFactory(
+            stock_due_on=due_on
+        )
+        product = ProductFactory()
+        product.brands.add(brand)
+
+        self.assertEqual(product.stock_due_date(), due_on)
+
+    def test_its_within_a_normal_range(self):
+        last_week = datetime.date.today() - datetime.timedelta(days=7)
+        expected_date = datetime.date.today() + datetime.timedelta(days=7)
+        brand = BrandFactory(
+            restock_interval=14,
+            last_restocked=last_week,
+        )
+        product = ProductFactory()
+        product.brands.add(brand)
+
+        self.assertEqual(product.stock_due_date(), expected_date)
+
+    def test_we_have_no_idea(self):
+        expected_date = datetime.date.today() + datetime.timedelta(days=14)
+        last_month = datetime.date.today() - datetime.timedelta(days=31)
+        brand = BrandFactory(
+            restock_interval=14,
+            stock_due_on=last_month,
+            last_restocked=last_month,
+        )
+        product = ProductFactory()
+        product.brands.add(brand)
+
+        self.assertEqual(product.stock_due_date(), expected_date)
+
+    def test_stock_due_on_is_none(self):
+        expected_date = datetime.date.today() + datetime.timedelta(days=14)
+        brand = BrandFactory(
+            restock_interval=14,
+        )
+        product = ProductFactory()
+        product.brands.add(brand)
+
+        self.assertEqual(product.stock_due_date(), expected_date)
+
+    def test_restock_interval_is_none(self):
+        brand = BrandFactory()
+        product = ProductFactory()
+        product.brands.add(brand)
+
+        self.assertIsNone(product.stock_due_date())
+
+    def test_last_restocked_is_none(self):
+        expected_date = datetime.date.today() + datetime.timedelta(days=7)
+        brand = BrandFactory(
+            restock_interval=7
+            )
+        product = ProductFactory()
+        product.brands.add(brand)
+
+        self.assertEqual(product.stock_due_date(), expected_date)
+
 
 class ConfigurableProductTest(TestCase):
     """Test ConfigurableProduct."""

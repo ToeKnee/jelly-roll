@@ -939,6 +939,35 @@ class Product(models.Model):
                         min_carrier = method.carrier
         return {"carrier": min_carrier, "price": min_price}
 
+    def days_since_last_stocked(self):
+        try:
+            brand = self.brands.all()[0]
+        except IndexError:
+           return None
+        days_since_last_stocked = datetime.date.today() - brand.last_restocked
+        return days_since_last_stocked
+
+    def stock_due_date(self):
+        "Returns the date stock is due"
+
+        if self.items_in_stock < 1:
+            try:
+                brand = self.brands.all()[0]
+            except IndexError:
+                return None
+
+            if brand.stock_due_on is not None and brand.stock_due_on > datetime.date.today():
+                # If we know when it's coming
+                return brand.stock_due_on
+            elif brand.last_restocked is not None and self.days_since_last_stocked().days < brand.restock_interval:
+                # It's within a normal range
+                return brand.last_restocked + datetime.timedelta(days=brand.restock_interval)
+            elif brand.restock_interval is not None:
+                # No idea when stock due, give estimate
+                return datetime.date.today() + datetime.timedelta(days=brand.restock_interval)
+            else:
+                return None
+        return None
 
 class ProductTranslation(models.Model):
     """A specific language translation for a `Product`.  This is intended for all descriptions which are not the
