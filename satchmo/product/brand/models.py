@@ -39,6 +39,12 @@ class Brand(models.Model, TranslatedObjectMixin):
                                         verbose_name=_("Category"))
     ordering = models.IntegerField(_("Ordering"))
     active = models.BooleanField(default=True)
+    restock_interval = models.IntegerField(_("Restock Interval"), null=True,
+        blank=False, help_text=_("Typical value in days between restocks"))
+    last_restocked = models.DateField(_("Last Restocked"), null=True, blank=True,
+                           help_text=_("Date of last restock"))
+    stock_due_on = models.DateField(_("Stock Due On"), null=True, blank=True,
+                           help_text=_("Date of next restock if known"))
 
     objects = BrandManager()
 
