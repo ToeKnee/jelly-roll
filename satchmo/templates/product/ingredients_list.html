@@ -1,0 +1,12 @@
+{% extends "base_satchmo.html" %}
+
+{% block content %}
+  {% for product in object_list %}
+    <h1>{{product.description}}</h1>
+    {{product.ingredients}}
+
+  {% endfor %}
+  hello
+  {{object_list|pprint}}!!!!!!
+{% endblock %}
+
