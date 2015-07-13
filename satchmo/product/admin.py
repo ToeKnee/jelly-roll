@@ -132,7 +132,7 @@ class ProductOptions(admin.ModelAdmin):
     list_filter = ('category', 'date_added')
     fieldsets = (
     (None, {'fields': ('site', 'category', 'name', 'slug', 'sku', 'description', 'short_description',
-            'active', 'featured', 'items_in_stock','total_sold','ordering', 'shipclass', 'ingredients', 'instructions', 'precautions')}),
+            'active', 'featured', 'items_in_stock','total_sold','ordering', 'shipclass', 'instructions', 'precautions')}),
             (_('Meta Data'), {'fields': ('meta',), 'classes': ('collapse',)}),
             (_('Item Dimensions'), {'fields': (('length', 'length_units','width','width_units','height','height_units'),('weight','weight_units')), 'classes': ('collapse',)}),
             (_('Tax'), {'fields':('taxable', 'taxClass'), 'classes': ('collapse',)}),
