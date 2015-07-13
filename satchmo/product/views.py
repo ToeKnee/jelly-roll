@@ -13,6 +13,8 @@ from satchmo.product.signals import index_prerender
 from satchmo.product.utils import get_tax
 from satchmo.shop.views.utils import bad_or_missing
 from satchmo.utils.json import json_encode
+from satchmo.product.models import IngredientsList
+from django.views.generic.list import ListView
 
 import logging
 log = logging.getLogger(__name__)
@@ -208,7 +210,11 @@ def get_price(request, product_slug):
 
     return http.HttpResponse(json_encode((prod_slug, price)), mimetype="text/javascript")
 
+class ArticlesByCategoryView(ListView):
+    template_name = "article/category_list.html"
 
+    def get_queryset(self):
+        return Article.objects.live().filter(category__slug=self.kwargs["category_slug"])
 def get_price_detail(request, product_slug):
     """Get all price details for a product, returning the response encoded as JSON."""
     results = {
@@ -259,3 +265,11 @@ def get_price_detail(request, product_slug):
         return http.HttpResponse(data, mimetype="text/javascript")
     else:
         return http.HttpResponseNotFound(data, mimetype="text/javascript")
+
+
+class IngredientsListView(ListView):
+    template_name = "product/ingredients_list.html"
+
+    def get_queryset(self):
+        return IngredientsList.objects.all().order_by("description")
+
