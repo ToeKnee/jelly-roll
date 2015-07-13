@@ -1,4 +1,5 @@
 from django.conf.urls import include, patterns, url
+from satchmo.product.views import IngredientsListView
 
 urlpatterns = patterns(
     'satchmo.product.filterviews',
@@ -7,6 +8,7 @@ urlpatterns = patterns(
         'display_recent', {}, 'satchmo_product_recently_added'),
     (r'^product/view/bestsellers/$',
         'display_bestsellers', {}, 'satchmo_product_best_selling'),
+    url(r'^product/ingredients/$', IngredientsListView.as_view(), name="ingredients_list"),
 )
 
 urlpatterns += patterns(

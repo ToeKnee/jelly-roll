@@ -586,10 +586,8 @@ class Product(models.Model):
     shipclass = models.CharField(_('Shipping'), choices=SHIP_CLASS_CHOICES, default="YES", max_length=10,
                                  help_text=_("If this is 'Default', then we'll use the product type to determine if it is shippable.")
                                  )
-    ingredients = models.ForeignKey("IngredientsList", null=True, blank=True)
     instructions = models.ForeignKey("Instruction", null=True, blank=True)
     precautions = models.ForeignKey("Precaution", null=True, blank=True)
-
     objects = ProductManager()
 
     class Meta:
