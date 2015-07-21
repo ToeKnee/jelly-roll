@@ -1,6 +1,6 @@
-import locale
 import logging
 from decimal import Decimal
+from satchmo.configuration import config_value
 
 log = logging.getLogger(__name__)
 
@@ -11,4 +11,9 @@ def money_format(value, grouping=True):
     """
     if value is None:
         value = Decimal("0.00")
-    return locale.currency(value, grouping=grouping).decode("utf-8")
+    currency_symbol = config_value("SHOP", "CURRENCY")
+    return u"{currency_symbol}{value:.2f}".format(
+        currency_symbol=currency_symbol,
+        value=value,
+    )
+
