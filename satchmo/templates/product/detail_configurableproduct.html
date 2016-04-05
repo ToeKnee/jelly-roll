@@ -1,15 +1,10 @@
 {% extends "base_product.html" %}
-{% load i18n %}
-{% load satchmo_thumbnail %}
-{% load satchmo_price %}
-{% load satchmo_util %}
-{% load satchmo_currency satchmo_category%}
-{% block extra-head %}
+{% load i18n satchmo_currency satchmo_category satchmo_thumbnail satchmo_price satchmo_util %}
 
+{% block extra-head %}
 <script type="text/javascript" src="{{media_url}}js/jquery.js"></script>
 <script type="text/javascript" src="{{media_url}}js/jquery.form.js"></script>
 <script type="text/javascript" src="{{media_url}}js/satchmo_product.js"></script>
-{% blackbird_logging %}
 <script type="text/javascript">{# Javascript which is generated uniquely for each page #}
 satchmo.default_view_tax = {% if default_view_tax %}true{% else %}false{% endif %};
 

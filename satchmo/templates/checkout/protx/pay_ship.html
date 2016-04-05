@@ -6,7 +6,6 @@
 {{ block.super }}
 <script type="text/javascript" src="{{ media_url }}js/jquery.js"></script>
 <script type="text/javascript" src="{{ media_url }}js/jquery.form.js"></script>
-{% blackbird_logging %}
 <script type="text/javascript" src="{{ media_url }}js/satchmo_pay_ship.js"></script>
 <script type="text/javascript"><!--
 $(function() {satchmo.setup_issue_fields({{ form.requires_issue_number|as_json }})});
