@@ -64,10 +64,6 @@ def despatch(request, order_id, verification_hash):
                 order.save()
 
                 status_notes = u"Thanks for your order!\n"
-                if order.tracking_number:
-                    status_notes += u"Your tracking number is: {tracking_number}\n".format(
-                        tracking_number=order.tracking_number,
-                    )
                 if order.tracking_url:
                     status_notes += u"You can track your order at {tracking_url}\n".format(
                         tracking_url=order.tracking_url,
