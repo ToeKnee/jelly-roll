@@ -111,6 +111,7 @@ def send_order(order):
             payload = response.json()
         except ValueError as e:
             logger.exception(e)
+            logger.error(response.content)
             return False
         else:
             logger.debug(payload)
