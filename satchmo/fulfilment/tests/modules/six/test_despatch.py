@@ -104,7 +104,7 @@ class DespatchTest(TestCase):
         self.assertEqual(order.tracking_number, data["tracking_number"])
         self.assertEqual(order.tracking_url, data["tracking_link"])
 
-        order_status = u"""Thanks for your order!\nYour tracking number is: {tracking_number}\nYou can track your order at {tracking_url}\n"""
+        order_status = u"""Thanks for your order!\nYou can track your order at {tracking_url}\n"""
         self.assertEqual(order.status.notes, order_status.format(
             tracking_number=order.tracking_number,
             tracking_url=order.tracking_url,
@@ -149,7 +149,7 @@ class DespatchTest(TestCase):
         self.assertEqual(order.tracking_number, data["tracking_number"])
         self.assertEqual(order.tracking_url, data["tracking_link"])
 
-        order_status = u"""Thanks for your order!\nYour tracking number is: {tracking_number}\nYou can track your order at {tracking_url}\n"""
+        order_status = u"""Thanks for your order!\nYou can track your order at {tracking_url}\n"""
         self.assertEqual(order.status.notes, order_status.format(
             tracking_number=order.tracking_number,
             tracking_url=order.tracking_url,
