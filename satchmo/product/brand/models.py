@@ -110,8 +110,9 @@ class BrandTranslation(models.Model):
     brand = models.ForeignKey(Brand, related_name="translations")
     languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES)
     name = models.CharField(_('title'), max_length=100, blank=False)
-    short_description = models.CharField(_('Short Description'), blank=True, max_length=200)
-    description = models.TextField(_('Full Description'), blank=True)
+    short_description = models.CharField(_('Short Description'), blank=True, max_length=200) # TODO: This should be changed to meta_keywords
+    meta_description = models.TextField(_('Meta Description'), blank=True)
+    description = models.TextField(_('Full description, visible to customers'), blank=True) # TODO: Rename this to "full description"
     picture = ImageWithThumbnailField(verbose_name=_('Picture'),
                                       upload_to="__DYNAMIC__",
                                       name_field="_filename",
