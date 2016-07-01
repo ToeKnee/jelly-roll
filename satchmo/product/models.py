@@ -1898,6 +1898,7 @@ class ProductImage(models.Model):
     caption = models.CharField(_("Optional caption"), max_length=100,
                                null=True, blank=True)
     sort = models.IntegerField(_("Sort Order"), )
+    is_swatch = models.BooleanField(_("Is Swatch"), default=True) # if it's a swatch we can style differently
 
     class Meta:
         ordering = ['sort']
