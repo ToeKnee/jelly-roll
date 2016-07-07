@@ -116,7 +116,8 @@ def quick_product(product, show_wishlist=True):
     }
 
 
-@register.inclusion_tag('product/full_product.html')
-def full_product(product):
-    ''' Renders a product in a way that is usefull for the product detail page '''
-    return {"product": product}
+@register.inclusion_tag('product/full_product.html', takes_context=True)
+def full_product(context, product):
+    ''' Renders a product in a way that is useful for the product detail page '''
+    context["product"] = product
+    return context
