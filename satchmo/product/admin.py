@@ -139,7 +139,7 @@ class ProductOptions(admin.ModelAdmin):
             None, {
                 'fields': (
                     'site', 'category', 'name', 'slug', 'sku',
-                    'description', 'short_description',
+                    'description', 'enhanced_description', 'short_description',
                     'active', 'featured', 'items_in_stock',
                     'total_sold', 'ordering', 'shipclass',
                     'instructions', 'precautions'
