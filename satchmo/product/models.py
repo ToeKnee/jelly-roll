@@ -519,6 +519,9 @@ class ProductManager(models.Manager):
     def active_by_site(self, variations=True, **kwargs):
         return self.by_site(active=True, variations=variations, **kwargs)
 
+    def in_stock(self, **kwargs):
+        return self.filter(active=True, items_in_stock__gt=0, **kwargs)
+
     def by_site(self, site=None, variations=True, **kwargs):
         if not site:
             site = Site.objects.get_current()
