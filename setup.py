@@ -48,5 +48,9 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Topic :: Office/Business',
-    ]
+    ],
+    install_requires=[
+        "Django>=1.7,<1.8",
+        "workdays>=1.4,<2",
+    ],
 )
