@@ -2,7 +2,10 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import satchmo.thumbnail.field
+try:
+    import satchmo.thumbnail.field
+except ImportError:
+    pass
 import satchmo.l10n.mixins
 
 
@@ -35,7 +38,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100, verbose_name='title')),
                 ('short_description', models.CharField(max_length=200, verbose_name='Short Description', blank=True)),
                 ('description', models.TextField(verbose_name='Full Description', blank=True)),
-                ('picture', satchmo.thumbnail.field.ImageWithThumbnailField(max_length=200, upload_to=satchmo.thumbnail.field.upload_dir, null=True, verbose_name='Picture', blank=True)),
+                ('picture', models.ImageField(max_length=200, null=True, verbose_name='Picture', blank=True)),
                 ('brand', models.ForeignKey(related_name='translations', to='brand.Brand')),
             ],
             options={

@@ -50,7 +50,9 @@ setup(
         'Topic :: Office/Business',
     ],
     install_requires=[
+        "crypto>2.6.1,<3.0.0",
         "Django>=1.7,<1.8",
+        "Pillow>=3.3.0,<4.0.0",
         "workdays>=1.4,<2",
     ],
 )

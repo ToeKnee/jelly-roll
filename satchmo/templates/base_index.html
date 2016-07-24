@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n satchmo_thumbnail satchmo_util %}
+{% load i18n satchmo_util %}
 
 {% block navbar %}
    <li class="first">{% trans "Home" %}</li>
@@ -10,13 +10,13 @@
 
 {% if all_products_list %}
     <h4>{% trans "Featured Items" %}</h4>
-    {% for product in all_products_list %} 
-            <div class = "productImage">    
+    {% for product in all_products_list %}
+            <div class = "productImage">
            {% if product.main_image %}
               <center>
-              <a href="{{ product.get_absolute_url }}"><img src="{{ product.main_image.picture.url|thumbnail:"width=85" }}" width="85" /> </a>
+              <a href="{{ product.get_absolute_url }}"><img src="{{ product.main_image.picture.url }}" width="85" /> </a>
               </center>
-           {% endif %}     
+           {% endif %}
             <p><a href="{{ product.get_absolute_url }}">{{ product.translated_name }}</a></p>
         </div>
     {% endfor %}

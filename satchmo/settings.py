@@ -111,12 +111,11 @@ INSTALLED_APPS = (
     # * Uncomment below, and add the brand url in your satchmo_urls setting
     # * usually in local_settings.py
     # ****
-    #'satchmo.product.brand'
+    'satchmo.product.brand',
     'satchmo.shipping',
     'satchmo.payment',
     'satchmo.discount',
     'satchmo.giftcertificate',
-    'satchmo.thumbnail',
     'satchmo.l10n',
     'satchmo.tax',
     'satchmo.recentlist',

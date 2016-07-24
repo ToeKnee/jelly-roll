@@ -1,5 +1,5 @@
 {% extends "base_satchmo.html" %}
-{% load satchmo_thumbnail i18n %}
+{% load i18n %}
 {% block pagename %}{% trans 'Brands' %}{% endblock %}
 
 {% block navbar %}
@@ -14,7 +14,7 @@
 	{% for brand in brands %}{% with brand.translation as translated %}
 	<div class="brandImage">
        	<a href="{{ brand.get_absolute_url }}">
-       		<img src="{{ translated.picture.url|thumbnail:"width=85" }}" width="85" /> 
+       		<img src="{{ translated.picture.url }}" width="85" />
 		</a>
 		<br/>
        	<a href="{{ brand.get_absolute_url }}">{{ translated.name }}</a>
