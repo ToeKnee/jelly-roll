@@ -68,7 +68,6 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.locale.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.doc.XViewMiddleware",
-    "satchmo.shop.SSLMiddleware.SSLRedirect",
     "satchmo.recentlist.middleware.RecentProductMiddleware",
 )
 
