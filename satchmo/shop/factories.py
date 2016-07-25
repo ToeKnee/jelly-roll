@@ -64,6 +64,8 @@ class TestOrderFactory(OrderFactory):
 
 
 class PaidOrderFactory(TestOrderFactory):
+    frozen = True
+
     @factory.post_generation
     def add_payment(obj, create, extracted, **kwargs):
         OrderPaymentFactory(order=obj)

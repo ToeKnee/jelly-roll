@@ -9,6 +9,7 @@ import operator
 import time
 import random
 from decimal import Decimal
+from workdays import workday
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -17,6 +18,7 @@ from django.utils.encoding import force_unicode
 from django.core import urlresolvers
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 
 from satchmo import caching
 from satchmo.configuration import ConfigurationSettings, config_value
@@ -370,7 +372,7 @@ class Cart(models.Model):
     def save(self, *args, **kwargs):
         """Ensure we have a date_time_created before saving the first time."""
         if not self.pk:
-            self.date_time_created = datetime.datetime.now()
+            self.date_time_created = timezone.now()
         try:
             self.site
         except Site.DoesNotExist:
@@ -533,6 +535,7 @@ class Status(models.Model):
     description = models.TextField(_("description"), null=True, blank=True)
     notify = models.BooleanField(_("Notify"), help_text="Notify the user on status update", default=True)
     display = models.BooleanField(_("Display"), help_text="Show orders of this status in the admin area home page", default=True)
+    time_stamp = models.DateTimeField(_("Time stamp"), default=timezone.now)
 
     def __unicode__(self):
         return self.status
@@ -659,12 +662,12 @@ class Order(models.Model):
         """
         if self.pk is None:
             self.copy_addresses()
-            self.time_stamp = datetime.datetime.now()
+            self.time_stamp = timezone.now()
         super(Order, self).save(*args, **kwargs)  # Call the "real" save() method.
 
     def freeze(self):
         self.frozen = True
-        self.time_stamp = datetime.datetime.now()
+        self.time_stamp = timezone.now()
 
     def add_status(self, status=None, notes=None, status_notify_by_default=False):
         orderstatus = OrderStatus()
@@ -683,7 +686,7 @@ class Order(models.Model):
 
         orderstatus.status = status_obj
         orderstatus.notes = notes
-        orderstatus.time_stamp = datetime.datetime.now()
+        orderstatus.time_stamp = timezone.now()
         orderstatus.order = self
         orderstatus.save()
 
@@ -914,7 +917,7 @@ class Order(models.Model):
     shippinglabel.allow_tags = True
 
     def _order_total(self):
-        #Needed for the admin list display
+        # Needed for the admin list display
         return money_format(self.total)
     order_total = property(_order_total)
 
@@ -977,6 +980,35 @@ class Order(models.Model):
     def _shipping_with_tax(self):
         return self.shipping_sub_total + self.shipping_tax
     shipping_with_tax = property(_shipping_with_tax)
+
+    @property
+    def shipped(self):
+        """ Returns True if the order has a Shipped status """
+        return self.orderstatus_set.filter(status__status="Shipped").exists()
+
+    def shipping_date(self):
+        """Returns the shipping date.
+
+        If the order has not shipped yet, it will do it's best to
+        estimate the shipping date base off of business days and
+        before/after midday (assumes orders placed before midday
+        working days are shipped the same day).
+
+        """
+        if self.shipped:
+            # Most recent shipped status
+            shipped = self.orderstatus_set.filter(
+                status__status="Shipped"
+            ).order_by("-time_stamp")[0]
+            ship_date = shipped.time_stamp.date()
+        elif (self.time_stamp.isoweekday() >= 6  # Weekend 6th and 7th day of week
+              or self.time_stamp.hour >= 12):  # Midday
+            # Ships next business day
+            ship_date = workday(self.time_stamp, 1).date()
+        else:
+            # Ships same day
+            ship_date = self.time_stamp.date()
+        return ship_date
 
     def sub_total_with_tax(self):
         return reduce(operator.add, [o.total_with_tax for o in self.orderitem_set.all()])
@@ -1129,7 +1161,7 @@ class DownloadLink(models.Model):
     order = models.ForeignKey(Order, verbose_name=_('Order'))
     key = models.CharField(_('Key'), max_length=40)
     num_attempts = models.IntegerField(_('Number of attempts'), )
-    time_stamp = models.DateTimeField(_('Time stamp'), default=datetime.datetime.now, editable=True)
+    time_stamp = models.DateTimeField(_('Time stamp'), default=timezone.now, editable=True)
     active = models.BooleanField(_('Active'), default=True)
 
     def _attempts_left(self):
@@ -1143,7 +1175,7 @@ class DownloadLink(models.Model):
         if self.num_attempts >= self.downloadable_product.num_allowed_downloads:
             return (False, _("You have exceeded the number of allowed downloads."))
         expire_time = datetime.timedelta(minutes=self.downloadable_product.expire_minutes) + self.time_stamp
-        if datetime.datetime.now() > expire_time:
+        if timezone.now() > expire_time:
             return (False, _("This download link has expired."))
         return (True, "")
 
@@ -1188,7 +1220,7 @@ class OrderStatus(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk is None:
-            self.time_stamp = datetime.datetime.now()
+            self.time_stamp = timezone.now()
         super(OrderStatus, self).save(*args, **kwargs)
 
         # Set the most recent status
@@ -1210,7 +1242,7 @@ class OrderPayment(models.Model):
     order = models.ForeignKey(Order, related_name="payments")
     payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
     amount = models.DecimalField(_("amount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    time_stamp = models.DateTimeField(_("timestamp"), default=datetime.datetime.now, editable=True)
+    time_stamp = models.DateTimeField(_("timestamp"), default=timezone.now, editable=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
 
     def _credit_card(self):
