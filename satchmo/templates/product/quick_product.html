@@ -5,7 +5,7 @@
     {% if product.main_image %}
         <a href="{{ product.get_absolute_url }}">
             {% with product.main_image.picture.url as img %}
-            <img src="{{ img }}" width="{{ img|image_width }}" height="{{ img|image_height }}" alt="{{ product.translated_name }}" title="{{ product.translated_name }} - {{ product.description }}">
+            <img src="{{ img }}" width="80" height="80" alt="{{ product.translated_name }}" title="{{ product.translated_name }} - {{ product.description }}">
             {% endwith %}
         </a>
     {% endif %}

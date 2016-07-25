@@ -18,7 +18,7 @@
 
     {% if product.main_image %}
         {% with product.main_image.picture.url as img %}
-        <img src="{{ img }}" title="{{ product.description }}" width="{{ img|image_width }}" height="{{ img|image_height }}" class="photo">
+        <img src="{{ img }}" title="{{ product.description }}" width="" height="80" class="photo">
         {% endwith %}
     {% endif %}
 
