@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.contrib.sites.models import Site
 from django.template.defaultfilters import slugify
 
+from satchmo.product.brand.factories import BrandFactory
 from satchmo.product.models import (
     ConfigurableProduct,
     Product,
@@ -22,6 +23,10 @@ class ProductFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def create_price(obj, create, extracted, **kwargs):
         PriceFactory(product=obj)
+
+    @factory.post_generation
+    def create_brand(obj, create, extracted, **kwargs):
+        BrandFactory(products=[obj])
 
 
 class TaxableProductFactory(ProductFactory):
