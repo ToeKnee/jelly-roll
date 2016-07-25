@@ -13,7 +13,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-     ('', ''),
+    ('', ''),
 )
 
 MANAGERS = ADMINS
@@ -63,21 +63,27 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    "django.middleware.common.CommonMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.middleware.doc.XViewMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.admindocs.middleware.XViewMiddleware",
+    "django.middleware.http.ConditionalGetMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "satchmo.recentlist.middleware.RecentProductMiddleware",
 )
 
-#this is used to add additional config variables to each request
+# This is used to add additional config variables to each request
 TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.auth',
-    'django.core.context_processors.media',
-    'satchmo.recentlist.context_processors.recent_products',
-    'satchmo.shop.context_processors.settings',
-    'django.core.context_processors.i18n'
+    "django.contrib.auth.context_processors.auth",
+    "django.contrib.messages.context_processors.messages",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "satchmo.recentlist.context_processors.recent_products",
+    "satchmo.recentlist.context_processors.recent_products",
+    "satchmo.shop.context_processors.settings",
+    "satchmo.shop.context_processors.settings",
 )
 
 ROOT_URLCONF = 'satchmo.urls'
@@ -93,7 +99,6 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.comments',
     'django.contrib.sessions',
     'django.contrib.sitemaps',
     'django.contrib.sites',
@@ -146,7 +151,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-AUTH_PROFILE_MODULE='contact.Contact'
+AUTH_PROFILE_MODULE = 'contact.Contact'
 LOGIN_REDIRECT_URL = '/accounts/'
 
 SATCHMO_SETTINGS = {
