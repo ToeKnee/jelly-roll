@@ -24,7 +24,6 @@ from satchmo import caching
 from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
-from satchmo.discount.utils import find_discount_for_code
 from satchmo.l10n.models import Country
 from satchmo.l10n.utils import money_format
 from satchmo.payment.fields import PaymentChoiceCharField
@@ -35,6 +34,7 @@ from satchmo.shipping.models import POSTAGE_SPEED_CHOICES, STANDARD
 from satchmo.shop import signals
 from satchmo.shop.notification import order_success_listener, send_order_update_notice
 from satchmo.tax.utils import get_tax_processor
+from satchmo.discount.utils import find_discount_for_code
 
 log = logging.getLogger(__name__)
 
