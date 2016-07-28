@@ -51,7 +51,9 @@ setup(
     ],
     install_requires=[
         "pycrypto>2.6.1,<3.0.0",
+        "factory-boy>=2.7.0,<3.0.0",
         "Django>=1.7,<1.8",
+        "mock>=2.0.0,<3.0.0",
         "Pillow>=3.3.0,<4.0.0",
         "workdays>=1.4,<2.0",
     ],
