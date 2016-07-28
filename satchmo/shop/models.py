@@ -6,24 +6,25 @@ import datetime
 import hmac
 import logging
 import operator
-import time
 import random
+import time
 from decimal import Decimal
 from workdays import workday
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.db import models
-from django.utils.encoding import force_unicode
 from django.core import urlresolvers
+from django.db import models
+from django.utils import timezone
+from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-from django.utils import timezone
 
 from satchmo import caching
 from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
+from satchmo.discount.utils import find_discount_for_code
 from satchmo.l10n.models import Country
 from satchmo.l10n.utils import money_format
 from satchmo.payment.fields import PaymentChoiceCharField
@@ -31,10 +32,9 @@ from satchmo.product import signals as product_signals
 from satchmo.product.models import Product, DownloadableProduct
 from satchmo.shipping.fields import ShippingChoiceCharField
 from satchmo.shipping.models import POSTAGE_SPEED_CHOICES, STANDARD
-from satchmo.tax.utils import get_tax_processor
 from satchmo.shop import signals
 from satchmo.shop.notification import order_success_listener, send_order_update_notice
-from satchmo.discount.utils import find_discount_for_code
+from satchmo.tax.utils import get_tax_processor
 
 log = logging.getLogger(__name__)
 
@@ -632,6 +632,9 @@ class Order(models.Model):
     shipping_description = models.CharField(_("Shipping Description"), max_length=200, blank=True, null=True)
     shipping_method = models.CharField(_("Shipping Method"), max_length=200, blank=True, null=True)
     shipping_model = ShippingChoiceCharField(_("Shipping Models"), max_length=30, blank=True, null=True)
+    estimated_delivery_min_days = models.PositiveIntegerField(_('Minimum number of days after shipping until delivery'), default=1)
+    estimated_delivery_expected_days = models.PositiveIntegerField(_('Usual number of days after shipping until delivery'), default=7)
+    estimated_delivery_max_days = models.PositiveIntegerField(_('Maximum number of days after shipping until delivery'), default=25)
     shipping_signed_for = models.BooleanField(_('Signed For'), default=False)
     shipping_tracked = models.BooleanField(_('Tracked'), default=False)
     tracking_number = models.CharField(_('Tracking Number'), max_length=64, blank=True, null=True)
@@ -1009,6 +1012,15 @@ class Order(models.Model):
             # Ships same day
             ship_date = self.time_stamp.date()
         return ship_date
+
+    def estimated_delivery_min_date(self):
+        return workday(self.shipping_date(), self.estimated_delivery_min_days)
+
+    def estimated_delivery_expected_date(self):
+        return workday(self.shipping_date(), self.estimated_delivery_expected_days + 1)
+
+    def estimated_delivery_max_date(self):
+        return workday(self.shipping_date(), self.estimated_delivery_max_days + 1)
 
     def sub_total_with_tax(self):
         return reduce(operator.add, [o.total_with_tax for o in self.orderitem_set.all()])
