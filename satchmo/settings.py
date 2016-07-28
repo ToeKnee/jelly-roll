@@ -106,44 +106,21 @@ INSTALLED_APPS = (
     'satchmo',
     'satchmo.caching',
     'satchmo.configuration',
-    'satchmo.shop',
     'satchmo.contact',
-    'satchmo.product',
-    # ****
-    # * Optional feature, product brands
-    # * Uncomment below, and add the brand url in your satchmo_urls setting
-    # * usually in local_settings.py
-    # ****
-    'satchmo.product.brand',
-    'satchmo.shipping',
-    'satchmo.payment',
     'satchmo.discount',
+    'satchmo.fulfilment',
     'satchmo.giftcertificate',
     'satchmo.l10n',
-    'satchmo.tax',
+    'satchmo.payment',
+    'satchmo.product',
+    'satchmo.product.brand',
     'satchmo.recentlist',
-    'satchmo.wishlist',
+    'satchmo.shipping',
+    'satchmo.shipping.modules.tieredweightzone',
+    'satchmo.shop',
+    'satchmo.tax',
     'satchmo.upsell',
-    # ****
-    # * Optional Feature, Tiered shipping
-    # * uncomment below to make that shipping module available in your live site
-    # * settings page. enable it there, then configure it in the
-    # * admin/tiered section of the main admin page.
-    # ****
-    #'satchmo.shipping.modules.tiered'
-    # ****
-    # * Optional feature product feeds
-    # * These are usually for googlebase
-    # ****
-    #'satchmo.feeds',
-    # ****
-    # * Highly recommended app - use this to have access to the great
-    # * "Jobs" system.  See http://code.google.com/p/django-command-extensions/
-    # * Make sure to set up your crontab to run the daily, hourly and monthly
-    # * jobs.
-    # ****
-    #'django_extensions',
-
+    'satchmo.wishlist',
 )
 
 AUTHENTICATION_BACKENDS = (
