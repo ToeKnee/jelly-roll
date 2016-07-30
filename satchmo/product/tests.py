@@ -74,23 +74,25 @@ True
 """
 
 import datetime
+from decimal import Decimal
 
-from django.conf import settings
 
 from django.contrib.sites.models import Site
-from django.db.models import Model
 from django.test import TestCase
+
 from satchmo import caching
 from satchmo.product.brand.factories import BrandFactory
 from satchmo.product.factories import ProductFactory
-from satchmo.product.models import Category, ConfigurableProduct, ProductVariation, Option, OptionGroup, Product, Price
+from satchmo.product.models import (
+    ConfigurableProduct,
+    Option,
+    OptionGroup,
+    Price,
+    Product,
+    ProductVariation,
+)
 from satchmo.product.utils import serialize_options, productvariation_details
 from satchmo.shop.satchmo_settings import get_satchmo_setting
-
-try:
-    from decimal import Decimal
-except ImportError:
-    from django.utils._decimal import Decimal
 
 
 class CategoryTest(TestCase):
@@ -141,6 +143,7 @@ class CategoryTest(TestCase):
 #        kids = Category.objects.by_site(site=self.site).order_by('name')
 #        slugs = [cat.slug for cat in kids]
 #        self.assertEqual(slugs, [u'pet-jewelry', u'womens-jewelry'])
+
 
 class ProductExportTest(TestCase):
     """
@@ -202,9 +205,10 @@ class ProductExportTest(TestCase):
         self.assertTrue(response.has_header('Content-Type'))
         self.assertEqual('application/zip', response['Content-Type'])
 
+
 class ProductTest(TestCase):
     """Test Product functions"""
-    fixtures = ['l10n_data.xml','sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
+    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
 
     def tearDown(self):
         caching.cache_delete()
@@ -264,6 +268,7 @@ class ProductTest(TestCase):
         # no height
         self.assertEqual(p.smart_attr('height'), None)
         self.assertEqual(sb.smart_attr('height'), None)
+
 
 class ProductStockDueTest(TestCase):
     """Test Product functions"""
@@ -331,7 +336,7 @@ class ProductStockDueTest(TestCase):
         expected_date = datetime.date.today() + datetime.timedelta(days=7)
         brand = BrandFactory(
             restock_interval=7
-            )
+        )
         product = ProductFactory()
         product.brands.add(brand)
 
@@ -353,19 +358,33 @@ class ConfigurableProductTest(TestCase):
         option_hard_cover = Option.objects.get(pk=7)
 
         # Test filtering for one valid option.
-        self.assertEqual([variation.pk for variation in
-            dj_rocks.get_variations_for_options([option_small])], [6, 7, 8])
+        self.assertEqual(
+            [
+                variation.pk for variation in
+                dj_rocks.get_variations_for_options([option_small])
+            ],
+            [6, 7, 8]
+        )
         # Test filtering for two valid options.
-        self.assertEqual([variation.pk for variation in
-            dj_rocks.get_variations_for_options([option_small, option_black])],
-            [6])
+        self.assertEqual(
+            [
+                variation.pk for variation in
+                dj_rocks.get_variations_for_options([option_small, option_black])
+            ],
+            [6]
+        )
         # Test filtering for an option that cannot apply to the product.
         self.assertEqual(
             len(dj_rocks.get_variations_for_options([option_hard_cover])), 0)
         # Test filtering for nothing.
-        self.assertEqual([variation.pk for variation in
-            dj_rocks.get_variations_for_options([])],
-            [6, 7, 8, 9, 10, 11, 12, 13, 14])
+        self.assertEqual(
+            [
+                variation.pk for variation in
+                dj_rocks.get_variations_for_options([])
+            ],
+            [6, 7, 8, 9, 10, 11, 12, 13, 14]
+        )
+
 
 class OptionUtilsTest(TestCase):
     """Test the utilities used for serialization of options and selected option details."""
@@ -377,7 +396,7 @@ class OptionUtilsTest(TestCase):
         self.assert_(len(serialized), 2)
         self.assertEqual(serialized[0]['id'], 1)
         got_vals = [opt.value for opt in serialized[0]['items']]
-        self.assertEqual(got_vals, ['S','M','L'])
+        self.assertEqual(got_vals, ['S', 'M', 'L'])
         self.assertEqual(serialized[1]['id'], 2)
 
     def test_reordered(self):
@@ -393,14 +412,14 @@ class OptionUtilsTest(TestCase):
 
         # reverse ordering
         for opt in sizegroup.option_set.all():
-            opt.sort_order = 100-opt.sort_order
+            opt.sort_order = 100 - opt.sort_order
             opt.save()
 
         serialized = serialize_options(p.configurableproduct)
         self.assert_(len(serialized), 2)
         self.assertEqual(serialized[1]['id'], 1)
         got_vals = [opt.value for opt in serialized[1]['items']]
-        self.assertEqual(got_vals, ['L','M','S'])
+        self.assertEqual(got_vals, ['L', 'M', 'S'])
 
         pv2 = ProductVariation.objects.get(pk=pv.pk)
         self.assertEqual(orig_key, pv2.optionkey)
