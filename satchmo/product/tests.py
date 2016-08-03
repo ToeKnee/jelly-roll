@@ -285,8 +285,7 @@ class ProductStockDueTest(TestCase):
         brand = BrandFactory(
             stock_due_on=due_on
         )
-        product = ProductFactory()
-        product.brands.add(brand)
+        product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), due_on)
 
@@ -297,8 +296,7 @@ class ProductStockDueTest(TestCase):
             restock_interval=14,
             last_restocked=last_week,
         )
-        product = ProductFactory()
-        product.brands.add(brand)
+        product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), expected_date)
 
@@ -310,8 +308,7 @@ class ProductStockDueTest(TestCase):
             stock_due_on=last_month,
             last_restocked=last_month,
         )
-        product = ProductFactory()
-        product.brands.add(brand)
+        product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), expected_date)
 
@@ -320,15 +317,13 @@ class ProductStockDueTest(TestCase):
         brand = BrandFactory(
             restock_interval=14,
         )
-        product = ProductFactory()
-        product.brands.add(brand)
+        product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), expected_date)
 
     def test_restock_interval_is_none(self):
         brand = BrandFactory()
-        product = ProductFactory()
-        product.brands.add(brand)
+        product = ProductFactory(brands=[brand])
 
         self.assertIsNone(product.stock_due_date())
 
@@ -337,8 +332,7 @@ class ProductStockDueTest(TestCase):
         brand = BrandFactory(
             restock_interval=7
         )
-        product = ProductFactory()
-        product.brands.add(brand)
+        product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), expected_date)
 

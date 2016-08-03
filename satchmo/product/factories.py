@@ -21,12 +21,19 @@ class ProductFactory(factory.django.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda a: slugify(a.name))
 
     @factory.post_generation
-    def create_price(obj, create, extracted, **kwargs):
-        PriceFactory(product=obj)
+    def create_price(self, create, extracted, **kwargs):
+        PriceFactory(product=self)
 
     @factory.post_generation
-    def create_brand(obj, create, extracted, **kwargs):
-        BrandFactory(products=[obj])
+    def brands(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            # A list of products were passed in, use them
+            for brand in extracted:
+                self.brands.add(brand)
 
 
 class TaxableProductFactory(ProductFactory):
