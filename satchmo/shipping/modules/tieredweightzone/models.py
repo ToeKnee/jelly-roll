@@ -98,6 +98,9 @@ class Carrier(models.Model):
     signed_for = models.BooleanField(_('Signed For'), default=False)
     tracked = models.BooleanField(_('Tracked'), default=False)
     postage_speed = models.PositiveIntegerField(_('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
+    estimated_delivery_min_days = models.PositiveIntegerField(_('Minimum number of days after shipping until delivery'), default=1)
+    estimated_delivery_expected_days = models.PositiveIntegerField(_('Usual number of days after shipping until delivery'), default=7)
+    estimated_delivery_max_days = models.PositiveIntegerField(_('Maximum number of days after shipping until delivery'), default=25)
 
     class Meta:
         db_table = "tieredweightzone_carrier"
@@ -216,7 +219,7 @@ class Carrier(models.Model):
 
 class CarrierTranslation(models.Model):
     carrier = models.ForeignKey('Carrier', related_name='translations')
-    languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES, )
+    languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES,)
     name = models.CharField(_('Carrier'), max_length=50, )
     description = models.CharField(_('Description'), max_length=200)
     method = models.CharField(_('Method'), help_text=_("i.e. US Mail"), max_length=200)
