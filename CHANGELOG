@@ -2,6 +2,16 @@
 Satchmo Change Log
 ==================
 
+Version 0.9, 15 August, 2016
+---------------------------
+ * A sudden and unexpected return to version numbers, changelogs and
+   good branching practices.
+ * Add shipping estimates (to tieredweightzone)
+ * Make optional apps required
+ * Refactor tests (still more to do)
+ * Remove thumbnail app
+
+
 Version 0.8, November 25, 2008
 -----------------------------
  * Add USPS shipping module
@@ -40,7 +50,7 @@ Version 0.8, November 25, 2008
  * Improved performance of price lookups
  * Recurring billing support for Authorize.net
  * New Purchase Order payment module
- 
+
 
 
 Version 0.7, May 26, 2008

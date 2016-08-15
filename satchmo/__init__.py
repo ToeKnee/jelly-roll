@@ -1,4 +1,4 @@
-__version__ = "0.6.4"
+__version__ = "0.9.0"
 
 import locale
 locale.setlocale(locale.LC_ALL, '')
