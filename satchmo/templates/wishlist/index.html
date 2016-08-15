@@ -1,6 +1,6 @@
 {% extends "base_satchmo.html" %}
 {% load i18n %}
-{% load i18n satchmo_thumbnail satchmo_price satchmo_currency satchmo_util satchmo_discounts %}
+{% load i18n satchmo_price satchmo_currency satchmo_util satchmo_discounts %}
 
 {% block navbar %}
     <li class="first"><a href="{{ shop_base }}/">{% trans "Home" %}</a></li>
@@ -22,12 +22,12 @@
 <div id="wishlist">
 <h2>{% trans "Wishlist" %}</h2>
     <ul>
-    {% for wish in wishlist %} 
+    {% for wish in wishlist %}
     {% with wish.product as product %}
             <li>
                 <p>
                     {% if product.main_image %}
-                        <img style="float:left; padding: 0 1em 0 0" src="{{ product.main_image.picture.url|thumbnail:"width=80" }}" />
+                        <img style="float:left; padding: 0 1em 0 0" src="{{ product.main_image.picture.url }}" />
                     {% endif %}
                     <h3>{{ product }}</h3>
                     {{ product.description|linebreaksbr }}

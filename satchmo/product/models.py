@@ -35,7 +35,6 @@ from satchmo.configuration import (
 from satchmo.shipping.config import shipping_methods
 from satchmo.shop.signals import satchmo_search
 from satchmo.tax.models import TaxClass
-from satchmo.thumbnail.field import ImageWithThumbnailField
 from satchmo.utils import (
     add_month,
     cross_list,
@@ -189,12 +188,12 @@ class Category(models.Model):
                     img = self.parent.main_image
 
             if not img:
-                #This should be a "Image Not Found" placeholder image
+                # This should be a "Image Not Found" placeholder image
                 try:
                     img = CategoryImage.objects.filter(category__isnull=True).order_by('sort')[0]
                 except IndexError:
                     import sys
-                    print >>sys.stderr, 'Warning: default category image not found - try syncdb'
+                    print >>sys.stderr, 'Warning: default category image not found'
             cache.set(key, img)
         return img
 
@@ -328,14 +327,14 @@ class CategoryTranslation(models.Model):
 class CategoryImage(models.Model):
     """
     A picture of an item.  Can have many pictures associated with an item.
-    Thumbnails are automatically created.
     """
     category = models.ForeignKey(Category, null=True, blank=True,
                                  related_name="images")
-    picture = ImageWithThumbnailField(verbose_name=_('Picture'),
-                                      upload_to="__DYNAMIC__",
-                                      name_field="_filename",
-                                      max_length=200)  # Media root is automatically prepended
+    picture = models.ImageField(
+        verbose_name=_('Picture'),
+        upload_to="product-category/",
+        max_length=200
+    )
     caption = models.CharField(_("Optional caption"), max_length=100,
                                null=True, blank=True)
     sort = models.IntegerField(_("Sort Order"), )
@@ -1889,17 +1888,17 @@ class Price(models.Model):
 class ProductImage(models.Model):
     """
     A picture of an item.  Can have many pictures associated with an item.
-    Thumbnails are automatically created.
     """
     product = models.ForeignKey(Product, null=True, blank=True)
-    picture = ImageWithThumbnailField(verbose_name=_('Picture'),
-                                      upload_to="__DYNAMIC__",
-                                      name_field="_filename",
-                                      max_length=200)  # Media root is automatically prepended
+    picture = models.ImageField(
+        verbose_name=_('Picture'),
+        upload_to="products/",
+        max_length=200
+    )
     caption = models.CharField(_("Optional caption"), max_length=100,
                                null=True, blank=True)
     sort = models.IntegerField(_("Sort Order"), )
-    is_swatch = models.BooleanField(_("Is Swatch"), default=True) # if it's a swatch we can style differently
+    is_swatch = models.BooleanField(_("Is Swatch"), default=True)  # If it's a swatch we can style differently
 
     class Meta:
         ordering = ['sort']
@@ -2082,7 +2081,7 @@ def make_option_unique_id(groupid, value):
 def sorted_tuple(lst):
     ret = []
     for x in lst:
-        if not x in ret:
+        if x not in ret:
             ret.append(x)
     ret.sort()
     return tuple(ret)

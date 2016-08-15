@@ -13,27 +13,26 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-     ('', ''),
+    ('', ''),
 )
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = ''           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-# The following variables should be configured in your local_settings.py file
-#DATABASE_NAME = ''             # Or path to database file if using sqlite3.
-#DATABASE_USER = ''             # Not used with sqlite3.
-#DATABASE_PASSWORD = ''         # Not used with sqlite3.
-DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'jelly-roll.db',
+    }
+}
 
 # Local time zone for this installation. All choices can be found here:
 # http://www.postgresql.org/docs/8.1/static/datetime-keywords.html#DATETIME-TIMEZONE-SET-TABLE
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'UTC'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 # For windows, you must use 'us' instead
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-gb'
 
 SITE_ID = 1
 
@@ -54,32 +53,37 @@ MEDIA_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
-# SECRET_KEY = ''
+SECRET_KEY = 'Make this unique, and dont share it with anybody.'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
-    "django.middleware.common.CommonMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.middleware.doc.XViewMiddleware",
-    "satchmo.shop.SSLMiddleware.SSLRedirect",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.admindocs.middleware.XViewMiddleware",
+    "django.middleware.http.ConditionalGetMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     "satchmo.recentlist.middleware.RecentProductMiddleware",
 )
 
-#this is used to add additional config variables to each request
+# This is used to add additional config variables to each request
 TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.core.context_processors.auth',
-    'django.core.context_processors.media',
-    'satchmo.recentlist.context_processors.recent_products',
-    'satchmo.shop.context_processors.settings',
-    'django.core.context_processors.i18n'
+    "django.contrib.auth.context_processors.auth",
+    "django.contrib.messages.context_processors.messages",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "satchmo.recentlist.context_processors.recent_products",
+    "satchmo.recentlist.context_processors.recent_products",
+    "satchmo.shop.context_processors.settings",
+    "satchmo.shop.context_processors.settings",
 )
 
 ROOT_URLCONF = 'satchmo.urls'
@@ -95,7 +99,6 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.comments',
     'django.contrib.sessions',
     'django.contrib.sitemaps',
     'django.contrib.sites',
@@ -103,45 +106,21 @@ INSTALLED_APPS = (
     'satchmo',
     'satchmo.caching',
     'satchmo.configuration',
-    'satchmo.shop',
     'satchmo.contact',
-    'satchmo.product',
-    # ****
-    # * Optional feature, product brands
-    # * Uncomment below, and add the brand url in your satchmo_urls setting
-    # * usually in local_settings.py
-    # ****
-    #'satchmo.product.brand'
-    'satchmo.shipping',
-    'satchmo.payment',
     'satchmo.discount',
+    'satchmo.fulfilment',
     'satchmo.giftcertificate',
-    'satchmo.thumbnail',
     'satchmo.l10n',
-    'satchmo.tax',
+    'satchmo.payment',
+    'satchmo.product',
+    'satchmo.product.brand',
     'satchmo.recentlist',
-    'satchmo.wishlist',
+    'satchmo.shipping',
+    'satchmo.shipping.modules.tieredweightzone',
+    'satchmo.shop',
+    'satchmo.tax',
     'satchmo.upsell',
-    # ****
-    # * Optional Feature, Tiered shipping
-    # * uncomment below to make that shipping module available in your live site
-    # * settings page. enable it there, then configure it in the
-    # * admin/tiered section of the main admin page.
-    # ****
-    #'satchmo.shipping.modules.tiered'
-    # ****
-    # * Optional feature product feeds
-    # * These are usually for googlebase
-    # ****
-    #'satchmo.feeds',
-    # ****
-    # * Highly recommended app - use this to have access to the great
-    # * "Jobs" system.  See http://code.google.com/p/django-command-extensions/
-    # * Make sure to set up your crontab to run the daily, hourly and monthly
-    # * jobs.
-    # ****
-    #'django_extensions',
-
+    'satchmo.wishlist',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -149,7 +128,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-AUTH_PROFILE_MODULE='contact.Contact'
+AUTH_PROFILE_MODULE = 'contact.Contact'
 LOGIN_REDIRECT_URL = '/accounts/'
 
 SATCHMO_SETTINGS = {

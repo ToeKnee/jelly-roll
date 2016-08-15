@@ -9,7 +9,7 @@ except:
 
 class Command(NoArgsCommand):
     help = "Check the system to see if the Satchmo components are installed correctly."
-    
+
     def handle_noargs(self, **options):
         from django.conf import settings
         errors = []
@@ -52,8 +52,8 @@ class Command(NoArgsCommand):
              get_locale_conv()
         except:
             errors.append("""
-            Locale is not set correctly.  Try 
-            Unix: sudo locale-gen en_US  
+            Locale is not set correctly.  Try
+            Unix: sudo locale-gen en_US
             If the above does not work, try
             sudo localedef -i en_US -f ISO-8859-1 en_US
             Windows: set LANGUAGE_CODE in settings.py to LANGUAGE_CODE = 'us'
@@ -63,8 +63,6 @@ class Command(NoArgsCommand):
         except AttributeError:
             errors.append("A CACHE_BACKEND must be configured.")
 
-        if 'satchmo.shop.SSLMiddleware.SSLRedirect' not in settings.MIDDLEWARE_CLASSES:
-            errors.append("You must have satchmo.shop.SSLMiddleware.SSLRedirect in your MIDDLEWARE_CLASSES.")
         if 'satchmo.shop.context_processors.settings' not in settings.TEMPLATE_CONTEXT_PROCESSORS:
             errors.append("You must have satchmo.shop.context_processors.settings in your TEMPLATE_CONTEXT_PROCESSORS.")
         if 'satchmo.accounts.email-auth.EmailBackend' not in settings.AUTHENTICATION_BACKENDS:

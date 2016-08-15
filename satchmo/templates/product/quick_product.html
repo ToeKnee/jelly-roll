@@ -1,11 +1,11 @@
-{% load satchmo_thumbnail satchmo_currency satchmo_util i18n cache %}
+{% load satchmo_currency satchmo_util i18n cache %}
 <div class="hproduct">
     {% cache 86400 quick_product product %}
 
     {% if product.main_image %}
         <a href="{{ product.get_absolute_url }}">
-            {% with product.main_image.picture.url|thumbnail:"height=85" as img %}
-            <img src="{{ img }}" width="{{ img|image_width }}" height="{{ img|image_height }}" alt="{{ product.translated_name }}" title="{{ product.translated_name }} - {{ product.description }}">
+            {% with product.main_image.picture.url as img %}
+            <img src="{{ img }}" width="80" height="80" alt="{{ product.translated_name }}" title="{{ product.translated_name }} - {{ product.description }}">
             {% endwith %}
         </a>
     {% endif %}

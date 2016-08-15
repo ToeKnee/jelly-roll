@@ -64,6 +64,8 @@ class TestOrderFactory(OrderFactory):
 
 
 class PaidOrderFactory(TestOrderFactory):
+    frozen = True
+
     @factory.post_generation
     def add_payment(obj, create, extracted, **kwargs):
         OrderPaymentFactory(order=obj)
@@ -76,3 +78,14 @@ class OrderPaymentFactory(factory.django.DjangoModelFactory):
     order = factory.SubFactory(PaidOrderFactory)
     payment = "PAYMENT_AUTOSUCCESS"
     amount = factory.LazyAttribute(lambda obj: obj.order.total)
+
+
+class ShippedOrderFactory(PaidOrderFactory):
+    """Doesn't really represent a shipped order, but at least it has a
+    Shipped status
+    """
+
+    @factory.post_generation
+    def add_shipped_status(obj, create, extracted, **kwargs):
+        if create:
+            obj.add_status('Shipped', "Test Order Shipped")

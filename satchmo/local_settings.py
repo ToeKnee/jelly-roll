@@ -3,10 +3,10 @@
 # It also store satchmo unique information
 #
 #
-# Modify this file to reflect your settings, then rename it to 
+# Modify this file to reflect your settings, then rename it to
 # local_settings.py
 #
-# This file is helpful if you have an existing Django project.  
+# This file is helpful if you have an existing Django project.
 # These are specific things that Satchmo will need.
 # you MUST make sure these settings are imported from your project settings file!
 
@@ -62,14 +62,14 @@ CACHE_PREFIX = "STORE"
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-gb'
 
 # Languages for your site.  The language name
 # should be the utf-8 encoded local name for the language.
-gettext_noop = lambda s:s
+gettext_noop = lambda s: s
 
 LANGUAGES = (
-    ('en', gettext_noop('English')),
+    ('en', 'English'),
 )
 
 # Locale path settings.  Needs to be set for Translation compilation.
