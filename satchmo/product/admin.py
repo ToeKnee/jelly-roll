@@ -177,12 +177,12 @@ class ProductOptions(admin.ModelAdmin):
             }
         ),
     )
-    readonly_fields = ('total_sold',)
+    readonly_fields = ('total_sold', )
     search_fields = ['slug', 'sku', 'name']
     inlines = [ProductAttribute_Inline, Price_Inline, ProductImage_Inline]
     if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
         inlines.append(ProductTranslation_Inline)
-    filter_horizontal = ('category',)
+    filter_horizontal = ('category', 'related_items', 'also_purchased')
 
 
 class CustomProductOptions(admin.ModelAdmin):
