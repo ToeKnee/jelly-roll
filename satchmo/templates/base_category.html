@@ -1,6 +1,6 @@
 {% extends "base_satchmo.html" %}
 {% load i18n %}
-{% load satchmo_thumbnail satchmo_category %}
+{% load satchmo_category %}
 
 {% block extra-head %}
 {% if category.meta %}
@@ -29,10 +29,10 @@
         {% endfor %}
         <h1 class="breadcrumb"><a href="{{ category.get_absolute_url }}">{{ category.translated_name }}</a></h1>
     </div>
-    {% for product in products %} 
+    {% for product in products %}
         {% if forloop.first %} <ul>  {% endif %}
             <li><a href="{{ product.get_absolute_url }}">
-            <img src="{{ product.main_image.picture.url|thumbnail:"width=85" }}" width="85" /> </a>
+            <img src="{{ product.main_image.picture.url }}" width="85" /> </a>
             <a href="{{ product.get_absolute_url }}">{{ product.translated_name }}</a></li>
         {% if forloop.last %} </ul> {% endif %}
     {% endfor %}
@@ -42,7 +42,7 @@
             {% for product in cat.active_products %}
                 {% if forloop.first %} <ul>  {% endif %}
                 <li><a href="{{ product.get_absolute_url }}">
-                <img src="{{ product.main_image.picture.url|thumbnail:"width=85" }}" width="85" /> </a>
+                <img src="{{ product.main_image.picture.url }}" width="85" /> </a>
                 <a href="{{ product.get_absolute_url }}">{{ product.translated_name }}</a></li>
                 {% if forloop.last %} </ul> {% endif %}
             {% endfor %}

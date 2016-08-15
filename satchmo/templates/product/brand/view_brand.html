@@ -1,5 +1,5 @@
 {% extends "base_satchmo.html" %}
-{% load satchmo_thumbnail i18n %}
+{% load i18n %}
 {% block pagename %}{{ brand.name }}{% endblock %}
 
 {% block extra-head %}
@@ -36,7 +36,7 @@
         </div>
 
         {% if translated.picture %}
-        <img src="{{ translated.picture.url|thumbnail:"width=85" }}" alt="{{ translated.name }}" />
+        <img src="{{ translated.picture.url }}" alt="{{ translated.name }}" />
         {% endif %}
         {% if translated.description %}
         <div class="description">
@@ -54,7 +54,7 @@
         {% for product in products %}
             <div class="productImage{% if forloop.first %} first{% endif %}">
                 <a href="{{ product.get_absolute_url }}">
-                    <img src="{{ product.main_image.picture.url|thumbnail:"width=85" }}" width="85" />
+                    <img src="{{ product.main_image.picture.url }}" width="85" />
                 </a>
                 <br/>
                 <a href="{{ product.get_absolute_url }}">{{ product.translated_name }}</a>
@@ -69,7 +69,7 @@
             {% for cat in brand.active_categories %}{% with cat.translation as translatedcat %}
             <div class="brandImage">
                 <a href="{{ cat.get_absolute_url }}">
-                    <img src="{{ translatedcat.picture.url|thumbnail:"width=85" }}" width="85" />
+                    <img src="{{ translatedcat.picture.url }}" width="85" />
                 </a>
                 <br/>
                 <a href="{{ cat.get_absolute_url }}">{{ translatedcat.name }}</a>

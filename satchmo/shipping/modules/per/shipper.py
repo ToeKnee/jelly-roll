@@ -1,15 +1,14 @@
 """
 Each shipping option uses the data in an Order object to calculate the shipping cost and return the value
 """
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
 
-from django.utils.translation import ugettext, ugettext_lazy
+from decimal import Decimal
+
+from django.utils.translation import ugettext, ugettext_lazy as _
+
 from satchmo.configuration import config_value
-_ = ugettext_lazy
 from satchmo.shipping.modules.base import BaseShipper
+
 
 class Shipper(BaseShipper):
     id = "PerItem"
@@ -56,4 +55,3 @@ class Shipper(BaseShipper):
         or location.
         """
         return True
-

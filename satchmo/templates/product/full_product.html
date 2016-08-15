@@ -1,4 +1,4 @@
-{% load satchmo_thumbnail satchmo_currency satchmo_util satchmo_discounts i18n cache %}
+{% load satchmo_currency satchmo_util satchmo_discounts i18n cache %}
 <div class="hproduct top_product clear">
     {% cache 86400 full_product product %}
     <h1 class="fn">{{ product.translated_name }}</h1>
@@ -17,8 +17,8 @@
     </div>
 
     {% if product.main_image %}
-        {% with product.main_image.picture.url|thumbnail:"width=80" as img %}
-        <img src="{{ img }}" title="{{ product.description }}" width="{{ img|image_width }}" height="{{ img|image_height }}" class="photo">
+        {% with product.main_image.picture.url as img %}
+        <img src="{{ img }}" title="{{ product.description }}" width="" height="80" class="photo">
         {% endwith %}
     {% endif %}
 

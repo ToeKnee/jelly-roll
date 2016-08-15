@@ -1,18 +1,20 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from satchmo.shop.models import Cart
-from satchmo.shop.models import CartItem
-from satchmo.shop.models import CartItemDetails
-from satchmo.shop.models import Config
-from satchmo.shop.models import DownloadLink
-from satchmo.shop.models import Order
-from satchmo.shop.models import OrderItem
-from satchmo.shop.models import OrderItemDetail
-from satchmo.shop.models import OrderPayment
-from satchmo.shop.models import OrderStatus
-from satchmo.shop.models import OrderTaxDetail
-from satchmo.shop.models import OrderVariable
-from satchmo.shop.models import Status
+from satchmo.shop.models import (
+    Cart,
+    CartItem,
+    CartItemDetails,
+    Config,
+    DownloadLink,
+    Order,
+    OrderItem,
+    OrderItemDetail,
+    OrderPayment,
+    OrderStatus,
+    OrderTaxDetail,
+    OrderVariable,
+    Status,
+)
 
 
 class CartItem_Inline(admin.TabularInline):
@@ -89,10 +91,10 @@ class OrderOptions(admin.ModelAdmin):
     fieldsets = (
         (None,
          {'fields': ('contact', 'method', 'discount_code', 'tracking_number', 'tracking_url', 'notes', 'time_stamp', 'frozen', 'fulfilled')}),
-        (_('Shipping Method'),
-         {'fields': ('shipping_method', 'shipping_description')}),
+        (_('Shipping Information'),
+         {'fields': ('shipping_method', 'shipping_description', 'shipping_date', 'estimated_delivery_min_date', 'estimated_delivery_expected_date', 'estimated_delivery_max_date')}),
         (_('Shipping Address'),
-         {'classes': ('collapse',),
+         {'classes': ('',),
           'fields': ('ship_street1', 'ship_street2', 'ship_city', 'ship_state', 'ship_postal_code', 'ship_country')}),
         (_('Billing Address'),
          {'classes': ('collapse',),
@@ -101,8 +103,8 @@ class OrderOptions(admin.ModelAdmin):
          {'fields': ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'refund')}
          )
     )
-    readonly_fields = ('contact', 'time_stamp', 'frozen',)
-    list_display = ('id', 'contact', 'contact_user', 'time_stamp', 'order_total', 'balance_forward', 'status', 'tracking_number', 'invoice', 'frozen')
+    readonly_fields = ('contact', 'time_stamp', 'frozen', 'shipping_date', 'estimated_delivery_min_date', 'estimated_delivery_expected_date', 'estimated_delivery_max_date')
+    list_display = ('id', 'contact', 'contact_user', 'ship_country', 'time_stamp', 'order_total', 'balance_forward', 'status', 'late_date', 'tracking_number', 'invoice', 'frozen')
     list_filter = ['time_stamp', 'status__status', 'frozen']
     search_fields = ['id', 'contact__user__username', 'contact__user__email', 'contact__first_name', 'contact__last_name', 'contact__email']
     date_hierarchy = 'time_stamp'
@@ -125,6 +127,9 @@ class OrderOptions(admin.ModelAdmin):
     def contact_user(self, obj):
         return obj.contact.user
     contact_user.short_description = 'Contact User'
+
+    def late_date(self, obj):
+        return obj.estimated_delivery_max_date().strftime("%d/%m/%Y")
 
 
 class OrderItemOptions(admin.ModelAdmin):

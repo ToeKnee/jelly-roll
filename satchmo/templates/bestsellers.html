@@ -1,11 +1,9 @@
-{% load thumbnail %}
-
 <ul class="bestsell">
 {% for product in bestsellers %}
     <li>
 	<a href="{{ product.get_absolute_url }}" title ="{{product.title}}">
             {% if product.main_image %}
-                <img src="{{product.main_image.picture.url|thumbnail:"width=15"}}" alt="{{product}}" width="15" />
+                <img src="{{ product.main_image.picture.url }}" alt="{{ product }}" width="15" />
             {% endif %}
             {{product}}
         </a>

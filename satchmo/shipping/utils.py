@@ -5,7 +5,7 @@ from satchmo.shipping.models import STANDARD
 
 
 def update_shipping(order, shipping, contact, cart):
-    """Set the shipping for this order"""
+    """ In-place update of shipping details for this order"""
     # Set a default for when no shipping module is used
     order.shipping_cost = Decimal("0.00")
 
@@ -17,19 +17,15 @@ def update_shipping(order, shipping, contact, cart):
     order.shipping_cost = shipper.cost()
     order.shipping_model = shipping
 
-    if shipper.carrier:
-        # If shipping details available, set the details for the order
-        if hasattr(shipper.carrier, "signed_for"):
-            order.shipping_signed_for = shipper.carrier.signed_for
-        else:
-            order.shipping_signed_for = False
+    if hasattr(shipper, "carrier"):
+        shipping_details = shipper.carrier
+    else:
+        shipping_details = shipper
 
-        if hasattr(shipper.carrier, "tracked"):
-            order.shipping_tracked = shipper.carrier.tracked
-        else:
-            order.shipping_tracked = False
-
-        if hasattr(shipper.carrier, "postage_speed"):
-            order.shipping_postage_speed = shipper.carrier.postage_speed
-        else:
-            order.shipping_postage_speed = STANDARD
+    # If shipping details available, set the details for the order
+    order.shipping_signed_for = getattr(shipping_details, "signed_for", False)
+    order.shipping_tracked = getattr(shipping_details, "tracked", False)
+    order.shipping_postage_speed = getattr(shipping_details, "postage_speed", STANDARD)
+    order.estimated_delivery_min_days = getattr(shipping_details, "estimated_delivery_min_days", 1)
+    order.estimated_delivery_expected_days = getattr(shipping_details, "estimated_delivery_expected_days", 7)
+    order.estimated_delivery_max_days = getattr(shipping_details, "estimated_delivery_max_days", 25)
