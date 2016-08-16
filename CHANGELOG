@@ -2,6 +2,11 @@
 Satchmo Change Log
 ==================
 
+Version 0.9.1, 15 August, 2016
+---------------------------
+ * Add CarrierTranslationFactory to CarrierFactory to fix issue with debugging tests
+
+
 Version 0.9, 15 August, 2016
 ---------------------------
  * A sudden and unexpected return to version numbers, changelogs and
