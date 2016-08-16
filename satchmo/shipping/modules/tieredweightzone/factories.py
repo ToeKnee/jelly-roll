@@ -5,6 +5,7 @@ from satchmo.l10n.factories import CountryFactory
 from satchmo.shipping.models import ECONOMY
 from .models import (
     Carrier,
+    CarrierTranslation,
     WeightTier,
     Zone,
 )
@@ -24,6 +25,28 @@ class CarrierFactory(factory.django.DjangoModelFactory):
     estimated_delivery_min_days = 2
     estimated_delivery_expected_days = 4
     estimated_delivery_max_days = 15
+
+    @factory.post_generation
+    def set_location(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        # Set up a country and a continent
+        translation = CarrierTranslationFactory(carrier=self)
+        self.translations.add(translation)
+
+
+class CarrierTranslationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CarrierTranslation
+
+    carrier = factory.SubFactory(CarrierFactory)
+    languagecode = "en-gb"
+    name = "Test Weight Zone Carrier"
+    description = "Test Weight Zone Carrier"
+    method = "Test post"
+    delivery = "unknown"
 
 
 class ZoneFactory(factory.django.DjangoModelFactory):
