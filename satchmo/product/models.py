@@ -944,7 +944,7 @@ class Product(models.Model):
         try:
             brand = self.brands.all()[0]
         except IndexError:
-           return None
+            return None
         days_since_last_stocked = datetime.date.today() - brand.last_restocked
         return days_since_last_stocked
 
@@ -969,6 +969,7 @@ class Product(models.Model):
             else:
                 return None
         return None
+
 
 class ProductTranslation(models.Model):
     """A specific language translation for a `Product`.  This is intended for all descriptions which are not the
