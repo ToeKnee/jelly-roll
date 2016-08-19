@@ -2,6 +2,11 @@
 Satchmo Change Log
 ==================
 
+Version 0.10.0
+--------------
+ * Improve filtering of product list admin
+ * Make stock quantities editable on the product list admin
+
 Version 0.9.1, 15 August, 2016
 ---------------------------
  * Add CarrierTranslationFactory to CarrierFactory to fix issue with debugging tests
