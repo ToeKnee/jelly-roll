@@ -133,7 +133,8 @@ class OptionOptions(admin.ModelAdmin):
 class ProductOptions(admin.ModelAdmin):
     list_display = ('site', 'slug', 'sku', 'name', 'unit_price', 'items_in_stock', 'total_sold', 'get_subtypes')
     list_display_links = ('slug', 'name')
-    list_filter = ('category', 'date_added')
+    list_editable = ('items_in_stock',)
+    list_filter = ('active', 'category', 'brands')
     fieldsets = (
         (
             None, {
@@ -178,7 +179,7 @@ class ProductOptions(admin.ModelAdmin):
         ),
     )
     readonly_fields = ('total_sold', )
-    search_fields = ['slug', 'sku', 'name']
+    search_fields = ['slug', 'sku', 'name', 'brands__slug']
     inlines = [ProductAttribute_Inline, Price_Inline, ProductImage_Inline]
     if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
         inlines.append(ProductTranslation_Inline)
