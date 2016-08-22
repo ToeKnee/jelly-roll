@@ -1,7 +1,10 @@
 import json
 import httmock
+
 from decimal import Decimal
 from requests.exceptions import HTTPError
+
+from django.conf import settings
 from django.test import TestCase
 
 from satchmo.shop.factories import TestOrderFactory, PaidOrderFactory
@@ -11,6 +14,7 @@ from satchmo.fulfilment.modules.six.api import (
     order_payload,
     send_order,
 )
+from satchmo.utils.urlhelper import external_url
 
 
 class FloatPriceTest(TestCase):
@@ -25,14 +29,16 @@ class FloatPriceTest(TestCase):
 
 
 class OrderPayloadTest(TestCase):
+
     def test_order_payload(self):
         self.maxDiff = None
         order = TestOrderFactory()
 
-        callback_url = "https://example.com/shop/fulfilment/six/{id}/{hash}/".format(
+        callback_url = external_url("{root}/fulfilment/six/{id}/{hash}/".format(
+            root=settings.SATCHMO_SETTINGS['SHOP_BASE'],
             id=order.id,
             hash=order.verification_hash
-        )
+        ))
 
         self.assertEqual(json.loads(order_payload(order)), {
             u"api_key": u"",

@@ -7,6 +7,7 @@ Version 0.10.0
  * Improve filtering of product list admin
  * Make stock quantities editable in the product list admin
  * Add missing requirements: requests, httmock
+ * Make "six" fulfilment API test portable
 
 Version 0.9.1, 15 August, 2016
 ---------------------------
