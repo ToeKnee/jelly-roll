@@ -28,7 +28,6 @@ for dirpath, dirnames, filenames in os.walk('satchmo'):
         for f in filenames:
             data_files.append(os.path.join(prefix, f))
 
-# Dynamically calculate the version based on django.VERSION.
 version = __import__('satchmo').__version__
 
 setup(
