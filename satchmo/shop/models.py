@@ -1225,14 +1225,17 @@ class OrderStatus(models.Model):
     order = models.ForeignKey(Order, verbose_name=_("Order"))
     status = models.ForeignKey(Status, verbose_name=_("Status"))
     notes = models.TextField(_("Notes"), blank=True)
-    time_stamp = models.DateTimeField(_("Timestamp"), editable=False, db_index=True)
+    time_stamp = models.DateTimeField(_("Timestamp"), auto_now_add=True, editable=False, db_index=True)
+
+    class Meta:
+        verbose_name = _("Order Status")
+        verbose_name_plural = _("Order Statuses")
+        ordering = ('time_stamp',)
 
     def __unicode__(self):
         return self.status.status
 
     def save(self, *args, **kwargs):
-        if self.pk is None:
-            self.time_stamp = timezone.now()
         super(OrderStatus, self).save(*args, **kwargs)
 
         # Set the most recent status
@@ -1243,11 +1246,6 @@ class OrderStatus(models.Model):
         # Send a notification if appropriate
         if self.status.notify:
             send_order_update_notice(self)
-
-    class Meta:
-        verbose_name = _("Order Status")
-        verbose_name_plural = _("Order Statuses")
-        ordering = ('time_stamp',)
 
 
 class OrderPayment(models.Model):

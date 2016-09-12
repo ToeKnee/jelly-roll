@@ -7,7 +7,14 @@ from factory import lazy_attribute
 
 from satchmo.contact.factories import ContactFactory
 from satchmo.l10n.factories import CountryFactory
-from satchmo.shop.models import Config, Order, OrderItem, OrderPayment
+from satchmo.shop.models import (
+    Config,
+    Order,
+    OrderItem,
+    OrderPayment,
+    OrderStatus,
+    Status,
+)
 from satchmo.product.factories import ProductFactory, TaxableProductFactory
 
 
@@ -89,3 +96,19 @@ class ShippedOrderFactory(PaidOrderFactory):
     def add_shipped_status(obj, create, extracted, **kwargs):
         if create:
             obj.add_status('Shipped', "Test Order Shipped")
+
+
+class StatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Status
+
+    status = "Test"
+
+
+class OrderStatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OrderStatus
+
+    order = factory.SubFactory(OrderFactory)
+    status = factory.SubFactory(StatusFactory)
+    notes = "Test Order Status"
