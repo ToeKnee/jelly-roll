@@ -4,11 +4,11 @@ import httmock
 from decimal import Decimal
 from requests.exceptions import HTTPError
 
-from django.conf import settings
 from django.test import TestCase
 
 from satchmo.shop.factories import TestOrderFactory, PaidOrderFactory
 from satchmo.shop.models import Order, Product
+from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.fulfilment.modules.six.api import (
     float_price,
     order_payload,
@@ -35,7 +35,7 @@ class OrderPayloadTest(TestCase):
         order = TestOrderFactory()
 
         callback_url = external_url("{root}/fulfilment/six/{id}/{hash}/".format(
-            root=settings.SATCHMO_SETTINGS['SHOP_BASE'],
+            root=get_satchmo_setting('SHOP_BASE'),
             id=order.id,
             hash=order.verification_hash
         ))
