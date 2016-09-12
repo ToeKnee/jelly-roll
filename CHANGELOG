@@ -4,7 +4,8 @@ Satchmo Change Log
 
 Version 0.9.3,
 ------------------------------
- * Fix caching of translations
+* Fix caching of translations
+* Fix pycrypto requirement
 
 Version 0.9.2, 22 August, 2016
 ------------------------------
