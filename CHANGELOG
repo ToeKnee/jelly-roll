@@ -2,6 +2,10 @@
 Satchmo Change Log
 ==================
 
+Version 0.9.3,
+------------------------------
+ * Fix caching of translations
+
 Version 0.9.2, 22 August, 2016
 ------------------------------
  * Improve filtering of product list admin
