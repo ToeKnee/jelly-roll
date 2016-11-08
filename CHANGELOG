@@ -2,6 +2,13 @@
 Satchmo Change Log
 ==================
 
+Version 0.9.3, DATE
+-------------------
+ * Add order status emails
+ * Add html emails
+ * Use https://github.com/leemunroe/responsive-html-email-template as a basis for HTML emails
+
+
 Version 0.9.2, 22 August, 2016
 ------------------------------
  * Improve filtering of product list admin

@@ -10,11 +10,13 @@ from satchmo.shop.factories import (
 
 
 class OrderStatusTest(TestCase):
-    def test_unicode(self):
+    @mock.patch("satchmo.shop.models.send_order_update")
+    def test_unicode(self, mock_send_order_update):
         order_status = OrderStatusFactory()
         self.assertEqual(str(order_status), "Test")
 
-    def test_sets_the_order_status(self):
+    @mock.patch("satchmo.shop.models.send_order_update")
+    def test_sets_the_order_status(self, mock_send_order_update):
         # Test that it sets the shortcut to the orders latest status
         # TODO: We should just get the latest status, instead of this
         # weirdness.
@@ -27,8 +29,8 @@ class OrderStatusTest(TestCase):
         order_status.save()
         self.assertEqual(order.status, order_status)
 
-    @mock.patch("satchmo.shop.models.send_order_update_notice")
-    def test_sends_notification(self, mock_send_order_update_notice):
+    @mock.patch("satchmo.shop.models.send_order_update")
+    def test_sends_notification(self, mock_send_order_update):
         order = OrderFactory()
         status = StatusFactory(notify=True)
         order_status = OrderStatusFactory.build(
@@ -36,14 +38,14 @@ class OrderStatusTest(TestCase):
             status=status,
         )
         order_status.save()
-        self.assertEqual(len(mock_send_order_update_notice.call_args_list), 1)
+        self.assertEqual(len(mock_send_order_update.call_args_list), 1)
         self.assertEqual(
-            mock_send_order_update_notice.call_args_list,
+            mock_send_order_update.call_args_list,
             [mock.call(order_status)]
         )
 
-    @mock.patch("satchmo.shop.models.send_order_update_notice")
-    def test_doesnt_send_notification(self, mock_send_order_update_notice):
+    @mock.patch("satchmo.shop.models.send_order_update")
+    def test_doesnt_send_notification(self, mock_send_order_update):
         order = OrderFactory()
         status = StatusFactory(notify=False)
         order_status = OrderStatusFactory.build(
@@ -51,4 +53,4 @@ class OrderStatusTest(TestCase):
             status=status,
         )
         order_status.save()
-        self.assertEqual(len(mock_send_order_update_notice.call_args_list), 0)
+        self.assertEqual(len(mock_send_order_update.call_args_list), 0)

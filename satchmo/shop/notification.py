@@ -2,9 +2,10 @@ from smtplib import SMTPRecipientsRefused
 from socket import error as SocketError
 
 from django.conf import settings
-from django.core.mail import EmailMessage
-from django.template import loader, Context
+from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.template import loader, Context, TemplateDoesNotExist
 from django.utils.translation import ugettext as _
+from django.utils.text import slugify
 
 from satchmo.configuration import config_value
 
@@ -12,74 +13,75 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def order_success_listener(order=None, **kwargs):
-    """Listen for order_success signal, and send confirmations"""
-    if order:
-        send_order_confirmation(order)
-        send_order_notice(order)
-
-
-def send_order_confirmation(new_order, template='email/order_complete.txt'):
-    """Send an order confirmation mail to the customer.
-    """
-    from satchmo.shop.models import Config
-
-    shop_config = Config.objects.get_current()
-    shop_email = shop_config.store_email
-    t = loader.get_template(template)
-    c = Context({'order': new_order, 'shop_config': shop_config})
-    subject = _("Thank you for your order from {shop_name} (Order id: {order_id})").format(
-        shop_name=shop_config.store_name,
-        order_id=new_order.id
-    )
-
-    try:
-        customer_email = new_order.contact.email
-        body = t.render(c)
-        message = EmailMessage(subject, body, shop_email, [customer_email])
-        message.send()
-
-    except (SocketError, SMTPRecipientsRefused) as e:
-        if settings.DEBUG:
-            log.exception(e)
-            log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', customer_email, subject, body)
-        else:
-            log.exception(e)
-            log.fatal('Error sending mail: %s' % e)
-            raise IOError('Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
-
-
-def send_order_update_notice(order_status, template='email/order_status_changed.txt'):
+def send_order_update(order_status):
     """Send an email to the customer when the status changes.
     """
     from satchmo.shop.models import Config
 
+    # If the order_status shouldn't notify, fail early
+    if order_status.status.notify is False:
+        return None
+
     shop_config = Config.objects.get_current()
     shop_email = shop_config.store_email
-    t = loader.get_template(template)
-    c = Context({'order': order_status.order, 'shop_config': shop_config, 'status': order_status, 'notes': order_status.notes})
-    subject = _("Your {shop_name} order has been updated. Status: {status} (Order id: {order_id})").format(
+
+    email_slug = slugify(order_status.status.status.decode("utf-8"))
+
+    text_templates = [
+        u'email/order/status/{slug}.txt'.format(
+            slug=email_slug,
+        ),
+        u'email/order/status/generic.txt'
+    ]
+    text_template = loader.select_template(text_templates)
+
+    html_templates = [
+        u'email/order/status/{slug}.html'.format(
+            slug=email_slug,
+        ),
+        u'email/order/status/generic.html'
+    ]
+    try:
+        html_template = loader.select_template(html_templates)
+    except TemplateDoesNotExist:
+        html_template = None
+
+    context = Context({
+        'order': order_status.order,
+        'shop_config': shop_config,
+        'status': order_status,
+        'notes': order_status.notes
+    })
+
+    subject = _(u"Your {shop_name} order #{order_id} has been updated - {status}").format(
         shop_name=shop_config.store_name,
         status=order_status,
-        order_id=order_status.order.id,
+        order_id=order_status.order_id,
     )
 
-    try:
-        customer_email = order_status.order.contact.email
-        body = t.render(c)
-        message = EmailMessage(subject, body, shop_email, [customer_email])
-        message.send()
+    customer_email = order_status.order.contact.email
+    body = text_template.render(context)
+    message = EmailMultiAlternatives(
+        subject,
+        body,
+        shop_email,
+        [customer_email],
+    )
 
-    except (SocketError, SMTPRecipientsRefused), e:
+    html_body = html_template.render(context)
+    message.attach_alternative(html_body, "text/html")
+
+    try:
+        message.send()
+    except (SocketError, SMTPRecipientsRefused) as e:
         if settings.DEBUG:
-            log.error('Error sending mail: %s' % e)
             log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', customer_email, subject, body)
         else:
             log.fatal('Error sending mail: %s' % e)
             raise IOError('Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
 
 
-def send_order_notice(new_order, template='email/order_placed_notice.txt'):
+def send_owner_order_notice(new_order, template='email/order/placed_notice.txt'):
     """Send an order confirmation mail to the owner.
     """
     from satchmo.shop.models import Config
@@ -113,7 +115,6 @@ def send_order_notice(new_order, template='email/order_placed_notice.txt'):
 
         except (SocketError, SMTPRecipientsRefused), e:
             if settings.DEBUG:
-                log.error('Error sending mail: %s' % e)
                 log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', ",".join(eddresses), subject, body)
             else:
                 log.fatal('Error sending mail: %s' % e)

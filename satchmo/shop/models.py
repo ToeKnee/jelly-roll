@@ -32,7 +32,7 @@ from satchmo.product.models import Product, DownloadableProduct
 from satchmo.shipping.fields import ShippingChoiceCharField
 from satchmo.shipping.models import POSTAGE_SPEED_CHOICES, STANDARD
 from satchmo.shop import signals
-from satchmo.shop.notification import order_success_listener, send_order_update_notice
+from satchmo.shop.notification import send_order_update, send_owner_order_notice
 from satchmo.tax.utils import get_tax_processor
 from satchmo.discount.utils import find_discount_for_code
 
@@ -673,7 +673,7 @@ class Order(models.Model):
         self.time_stamp = timezone.now()
 
     def add_status(self, status=None, notes=None, status_notify_by_default=False):
-        orderstatus = OrderStatus()
+        order_status = OrderStatus()
         if not status:
             if self.orderstatus_set.count() > 0:
                 status_obj = self.status
@@ -687,11 +687,14 @@ class Order(models.Model):
                 status_obj.notify = status_notify_by_default
                 status_obj.save()
 
-        orderstatus.status = status_obj
-        orderstatus.notes = notes
-        orderstatus.time_stamp = timezone.now()
-        orderstatus.order = self
-        orderstatus.save()
+        order_status.status = status_obj
+        order_status.notes = notes
+        order_status.time_stamp = timezone.now()
+        order_status.order = self
+        order_status.save()
+
+        # Send an order update email
+        send_order_update(order_status)
 
     def add_variable(self, key, value):
         """Add an OrderVariable, used for misc stuff that is just too small to get its own field"""
@@ -933,6 +936,9 @@ class Order(models.Model):
                 subtype.order_success(self, orderitem)
         if self.is_downloadable:
             self.add_status('Shipped', _("Order immediately available for download"))
+
+        send_owner_order_notice(self)
+
         signals.order_success.send(self, order=self)
 
     def _paid_in_full(self):
@@ -1243,10 +1249,6 @@ class OrderStatus(models.Model):
             self.order.status = self
             self.order.save()
 
-        # Send a notification if appropriate
-        if self.status.notify:
-            send_order_update_notice(self)
-
 
 class OrderPayment(models.Model):
     order = models.ForeignKey(Order, related_name="payments")
@@ -1340,7 +1342,6 @@ def _create_download_link(product=None, order=None, subtype=None, **kwargs):
 
 signals.satchmo_cart_changed.connect(_remove_order_on_cart_update, sender=None)
 satchmo_contact_location_changed.connect(_recalc_total_on_contact_change, sender=None)
-signals.order_success.connect(order_success_listener, sender=None)
 product_signals.subtype_order_success.connect(_create_download_link, sender=None)
 
 import config

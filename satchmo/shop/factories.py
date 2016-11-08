@@ -102,7 +102,7 @@ class StatusFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Status
 
-    status = "Test"
+    status = u"Test"
 
 
 class OrderStatusFactory(factory.django.DjangoModelFactory):
