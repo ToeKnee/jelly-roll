@@ -8,6 +8,7 @@ from satchmo.shop.factories import (
     OrderFactory,
     PaidOrderFactory,
     ShippedOrderFactory,
+    StatusFactory,
 )
 
 
@@ -155,3 +156,16 @@ class EsitmatedDeliveryMaxDateTest(TestCase):
         now.return_value = timezone.datetime(2016, 7, 31)  # Sunday
         order = ShippedOrderFactory()
         self.assertEqual(order.estimated_delivery_max_date(), datetime.date(2016, 9, 5))
+
+
+class AddStatusTest(TestCase):
+    @mock.patch("satchmo.shop.models.send_order_update")
+    def test_sends_notification(self, mock_send_order_update):
+        order = OrderFactory()
+        status = StatusFactory(notify=True)
+        order_status = order.add_status(status.status, "Test Order Shipped")
+        self.assertEqual(len(mock_send_order_update.call_args_list), 1)
+        self.assertEqual(
+            mock_send_order_update.call_args_list,
+            [mock.call(order_status)]
+        )

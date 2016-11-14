@@ -695,6 +695,7 @@ class Order(models.Model):
 
         # Send an order update email
         send_order_update(order_status)
+        return order_status
 
     def add_variable(self, key, value):
         """Add an OrderVariable, used for misc stuff that is just too small to get its own field"""

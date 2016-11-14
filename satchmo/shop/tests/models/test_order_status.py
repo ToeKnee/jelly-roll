@@ -28,29 +28,3 @@ class OrderStatusTest(TestCase):
         )
         order_status.save()
         self.assertEqual(order.status, order_status)
-
-    @mock.patch("satchmo.shop.models.send_order_update")
-    def test_sends_notification(self, mock_send_order_update):
-        order = OrderFactory()
-        status = StatusFactory(notify=True)
-        order_status = OrderStatusFactory.build(
-            order=order,
-            status=status,
-        )
-        order_status.save()
-        self.assertEqual(len(mock_send_order_update.call_args_list), 1)
-        self.assertEqual(
-            mock_send_order_update.call_args_list,
-            [mock.call(order_status)]
-        )
-
-    @mock.patch("satchmo.shop.models.send_order_update")
-    def test_doesnt_send_notification(self, mock_send_order_update):
-        order = OrderFactory()
-        status = StatusFactory(notify=False)
-        order_status = OrderStatusFactory.build(
-            order=order,
-            status=status,
-        )
-        order_status.save()
-        self.assertEqual(len(mock_send_order_update.call_args_list), 0)
