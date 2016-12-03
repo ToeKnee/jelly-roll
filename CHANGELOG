@@ -1,6 +1,19 @@
 ==================
-Satchmo Change Log
+JellyRoll Change Log
 ==================
+
+Version 0.9.4, 3 Dec, 2016
+-------------------
+ * Add order status emails
+ * Add html emails
+ * Use https://github.com/leemunroe/responsive-html-email-template as a basis for HTML emails
+
+
+Version 0.9.3,
+------------------------------
+* Fix caching of translations
+* Fix pycrypto requirement
+
 
 Version 0.9.2, 22 August, 2016
 ------------------------------
@@ -8,6 +21,7 @@ Version 0.9.2, 22 August, 2016
  * Make stock quantities editable in the product list admin
  * Add missing requirements: requests, httmock
  * Make "six" fulfilment API test portable
+
 
 Version 0.9.1, 15 August, 2016
 ---------------------------
