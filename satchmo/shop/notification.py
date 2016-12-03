@@ -34,18 +34,14 @@ def send_order_update(order_status):
         u'email/order/status/generic.txt'
     ]
     text_template = loader.select_template(text_templates)
-
     html_templates = [
         u'email/order/status/{slug}.html'.format(
             slug=email_slug,
         ),
         u'email/order/status/generic.html'
     ]
-    try:
-        html_template = loader.select_template(html_templates)
-    except TemplateDoesNotExist:
-        html_template = None
 
+    html_template = loader.select_template(html_templates)
     context = Context({
         'order': order_status.order,
         'shop_config': shop_config,
