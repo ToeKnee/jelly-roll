@@ -27,30 +27,29 @@ class TranslatedObjectMixin(object):
             site = Site.objects.get_current()
             trans = caching.cache_get("{}-{}".format(self.__class__.__name__, self.id), site=site, trans=attr, lang=language_code)
         except caching.NotCachedError, nce:
-            log.error(":(" * 80)
             translations = getattr(self, attr)
 
-            c = translations.filter(languagecode__exact = language_code)
+            c = translations.filter(languagecode__exact=language_code)
             ct = c.count()
 
             if not c or ct == 0:
                 pos = language_code.find('-')
-                if pos>-1:
+                if pos > -1:
                     short_code = language_code[:pos]
-                    #log.debug("%s: Trying to find root language content for: [%s]", self, short_code)
-                    c = translations.filter(languagecode__exact = short_code)
+                    # log.debug("%s: Trying to find root language content for: [%s]", self, short_code)
+                    c = translations.filter(languagecode__exact=short_code)
                     ct = c.count()
-                    if ct>0:
-                        #log.debug("%s: Found root language content for: [%s]", self, short_code)
+                    if ct > 0:
+                        # log.debug("%s: Found root language content for: [%s]", self, short_code)
                         pass
 
             if not c or ct == 0:
-                #log.debug("Trying to find default language content for: %s", self)
-                c = translations.filter(languagecode__istartswith = settings.LANGUAGE_CODE)
+                # log.debug("Trying to find default language content for: %s", self)
+                c = translations.filter(languagecode__istartswith=settings.LANGUAGE_CODE)
                 ct = c.count()
 
             if not c or ct == 0:
-                #log.debug("Trying to find *any* language content for: %s", self)
+                # log.debug("Trying to find *any* language content for: %s", self)
                 c = translations.all()
                 ct = c.count()
 
