@@ -65,6 +65,7 @@ class OrderItemDetail_Inline(admin.TabularInline):
 
 class StatusOptions(admin.ModelAdmin):
     model = Status
+    list_display = ("status", "notify", "display")
 
 
 class Status_Inline(admin.TabularInline):

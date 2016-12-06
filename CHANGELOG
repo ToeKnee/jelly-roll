@@ -2,8 +2,13 @@
 JellyRoll Change Log
 ==================
 
+Version 0.9.5,
+--------------------------
+* Status admin, list display notify and display
+* Update email images to be background-images
+
 Version 0.9.4, 3 Dec, 2016
--------------------
+--------------------------
  * Add order status emails
  * Add html emails
  * Use https://github.com/leemunroe/responsive-html-email-template as a basis for HTML emails
