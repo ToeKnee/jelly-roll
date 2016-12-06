@@ -6,6 +6,8 @@ Version 0.9.5,
 --------------------------
 * Status admin, list display notify and display
 * Update email images to be background-images
+* Send order status email on status create
+
 
 Version 0.9.4, 3 Dec, 2016
 --------------------------

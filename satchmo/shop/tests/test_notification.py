@@ -13,7 +13,6 @@ from satchmo.shop.notification import send_order_update
 class SendOrderUpdateTest(TestCase):
     def test_send_generic_status_email(self):
         order_status = OrderStatusFactory()
-        send_order_update(order_status)
 
         # Test that one message has been sent.
         self.assertEqual(len(mail.outbox), 1)
@@ -40,7 +39,6 @@ class SendOrderUpdateTest(TestCase):
 
     def test_send_specific_status_email__processing(self):
         order_status = OrderStatusFactory(status__status="Processing")
-        send_order_update(order_status)
 
         # Test that one message has been sent.
         self.assertEqual(len(mail.outbox), 1)
@@ -99,3 +97,11 @@ class SendOrderUpdateTest(TestCase):
 
         # Test that no messages have been sent.
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_saving_status_doesnt_notify_again(self):
+        order_status = OrderStatusFactory()
+        self.assertEqual(len(mail.outbox), 1)
+
+        order_status.save()
+        # No more emails
+        self.assertEqual(len(mail.outbox), 1)

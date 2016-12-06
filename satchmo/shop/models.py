@@ -693,8 +693,6 @@ class Order(models.Model):
         order_status.order = self
         order_status.save()
 
-        # Send an order update email
-        send_order_update(order_status)
         return order_status
 
     def add_variable(self, key, value):
@@ -1243,6 +1241,10 @@ class OrderStatus(models.Model):
         return self.status.status
 
     def save(self, *args, **kwargs):
+        if self.id is None:
+            # Send an order update email
+            send_order_update(self)
+
         super(OrderStatus, self).save(*args, **kwargs)
 
         # Set the most recent status

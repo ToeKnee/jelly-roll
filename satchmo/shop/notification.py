@@ -3,7 +3,7 @@ from socket import error as SocketError
 
 from django.conf import settings
 from django.core.mail import EmailMessage, EmailMultiAlternatives
-from django.template import loader, Context, TemplateDoesNotExist
+from django.template import loader, Context
 from django.utils.translation import ugettext as _
 from django.utils.text import slugify
 
