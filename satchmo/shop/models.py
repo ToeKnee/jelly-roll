@@ -1241,9 +1241,11 @@ class OrderStatus(models.Model):
         return self.status.status
 
     def save(self, *args, **kwargs):
+        # Should we send a notification. Just record True or False,
+        # actually handle the notification at the end of this function
+        send_order_notification = False
         if self.id is None:
-            # Send an order update email
-            send_order_update(self)
+            send_order_notification = True
 
         super(OrderStatus, self).save(*args, **kwargs)
 
@@ -1251,6 +1253,10 @@ class OrderStatus(models.Model):
         if self.order.status is None or self.order.status.time_stamp < self.time_stamp:
             self.order.status = self
             self.order.save()
+
+        # Actually send the notification
+        if send_order_notification:
+            send_order_update(self)
 
 
 class OrderPayment(models.Model):
