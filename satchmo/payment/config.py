@@ -103,14 +103,14 @@ config_register_list(
 # --- Load default payment modules.  Ignore import errors, user may have deleted them. ---
 _default_modules = (
     'dummy', 'autosuccess', 'cod', 'authorizenet', 'cybersource',
-    'google', 'paypal', 'protx', 'trustcommerce', 'worldpay'
+    'google', 'ingenico', 'paypal', 'protx', 'trustcommerce', 'worldpay'
 )
 
 for module in _default_modules:
     try:
         load_module("satchmo.payment.modules.%s.config" % module)
     except ImportError:
-        log.debug('Could not load default payment module configuration: %s', module)
+        log.warning('Could not load default payment module configuration: %s', module)
 
 # --- Load any extra payment modules. ---
 extra_payment = get_satchmo_setting('CUSTOM_PAYMENT_MODULES')

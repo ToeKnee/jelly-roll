@@ -1,0 +1,5 @@
+{% extends "checkout/base_pay_ship.html" %}
+
+{% block payment_table %}
+{% if not PAYMENT_LIVE %}<h3>Test mode</h3>{% endif %}
+{% endblock %}
