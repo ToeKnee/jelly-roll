@@ -35,11 +35,11 @@ ccInfo = (
     ( 'SWITCH', '6333', 19),
     ( 'SWITCH', '6759', 19),
     ( 'SOLO', '6334', 16),
-    ( 'SOLO', '6767', 16),  
+    ( 'SOLO', '6767', 16),
     ( 'SOLO', '6334', 18),
-    ( 'SOLO', '6767', 18),      
+    ( 'SOLO', '6767', 18),
     ( 'SOLO', '6334', 19),
-    ( 'SOLO', '6767', 19),    
+    ( 'SOLO', '6767', 19),
     ( 'MAESTRO', '5020', 16),
     ( 'MAESTRO', '6', 16),
     ( 'MC', '51', 16),
@@ -103,6 +103,7 @@ class CreditCard(object):
                 return (False, _("Card type does not match card number."))
         else:
             return (False, _("Invalid credit card number."))
+
 
 def bad_or_missing(request, msg):
     """
