@@ -9,6 +9,7 @@ from Crypto.Cipher import Blowfish
 
 from django.conf import settings
 from django.db import models
+from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
 
 from satchmo import caching
@@ -17,6 +18,10 @@ from satchmo.shop.models import OrderPayment
 
 import logging
 log = logging.getLogger(__name__)
+
+
+class HttpResponsePaymentRequired(HttpResponse):
+    status_code = 402
 
 
 class PaymentOption(models.Model):
