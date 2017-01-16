@@ -75,4 +75,10 @@ config_register_list(
                 description=_('Currency Code'),
                 help_text=_('Default Currency code for Ingenico transactions.'),
                 default='GBP'),
+
+    BooleanValue(PAYMENT_GROUP,
+                 'ALIAS',
+                 description=_('Alias (Tokenisation) mode'),
+                 help_text=_('Enable payment tokenisation (Alias Manager). If the alias exists, the cardholder name, masked credit card number (or account information) and expiry date will be initialised in the payment details page for validation.'),
+                 default=False),
 )
