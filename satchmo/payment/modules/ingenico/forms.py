@@ -25,5 +25,9 @@ class IngenicoForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(IngenicoForm, self).__init__(*args, **kwargs)
 
+        # If Alias / Tokenisation is used
+        if payment_module.ALIAS.value:
+            self.fields["ALIAS"] = forms.CharField(required=True, widget=forms.HiddenInput())
+
         # Generate the SHASIGN
         self.data["SHASIGN"] = shasign(self.data)

@@ -4,6 +4,7 @@ Ingenico Payments
 https://payment-services.ingenico.com/int/en/ogone/support/guides/integration%20guides/e-commerce/introduction
 
 """
+import hashlib
 from decimal import Decimal
 
 from .forms import IngenicoForm
@@ -90,6 +91,10 @@ def confirm_info(request):
         "OWNERTOWN": order.bill_city,
         "OWNERCTY": order.bill_state,
     }
+
+    if payment_module.ALIAS.value:
+        data["ALIAS"] = hashlib.sha512(order.contact.user.username).hexdigest()
+
     form = IngenicoForm(data)
     template = lookup_template(payment_module, 'checkout/ingenico/confirm.html')
 
