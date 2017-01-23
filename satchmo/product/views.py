@@ -6,7 +6,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
 from satchmo.configuration import config_value
 from satchmo.discount.utils import find_best_auto_discount
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.product.models import Category, Product, ConfigurableProduct, sorted_tuple
 from satchmo.product.brand.models import Brand
 from satchmo.product.signals import index_prerender

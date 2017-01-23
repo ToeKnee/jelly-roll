@@ -1,5 +1,5 @@
 from satchmo.configuration import config_value
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.product.models import ProductVariation, Option, split_option_unique_id, ProductPriceLookup, OptionGroup
 from satchmo.shop.models import Config
 from satchmo.tax.utils import get_tax_processor

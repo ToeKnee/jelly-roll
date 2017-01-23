@@ -7,7 +7,7 @@ from decimal import Decimal
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.product.models import Product
 import datetime
 import logging

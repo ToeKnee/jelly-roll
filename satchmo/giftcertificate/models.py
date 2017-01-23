@@ -11,7 +11,7 @@ from satchmo.configuration import config_value, config_get_group
 from satchmo.contact.models import Contact
 from satchmo.shop.models import OrderPayment, Order
 from satchmo.giftcertificate.utils import generate_certificate_code
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.payment.utils import record_payment
 from satchmo.product.models import Product
 from django.contrib.sites.models import Site
