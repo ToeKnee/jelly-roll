@@ -26,16 +26,6 @@ default_icon_url = urlparse.urlunsplit(
 
 
 # Shop Group
-
-CURRENCY = config_register(
-    StringValue(
-        SHOP_GROUP,
-        'CURRENCY',
-        description=_("Default currency symbol"),
-        help_text=_("Use a '_' character to force a space."),
-        default="$")
-)
-
 RANDOM_FEATURED = config_register(
     BooleanValue(
         SHOP_GROUP,

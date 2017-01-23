@@ -6,7 +6,7 @@ def money_format(value, grouping=True):
     """Convert Decimal to a money formatted unicode string."""
     if value is None:
         value = Decimal("0.00")
-    currency_symbol = config_value("SHOP", "CURRENCY")
+    currency_symbol = config_value("CURRENCY", "CURRENCY")
     return u"{currency_symbol}{value:.2f}".format(
         currency_symbol=currency_symbol,
         value=value,
