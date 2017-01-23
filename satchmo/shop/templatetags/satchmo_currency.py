@@ -4,7 +4,7 @@ except:
     from django.utils._decimal import Decimal, InvalidOperation
 
 from django import template
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from django.utils.safestring import mark_safe
 
 import logging

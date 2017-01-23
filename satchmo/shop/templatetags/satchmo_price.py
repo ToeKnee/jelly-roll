@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.template import Library, Node
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.product.models import Option
 
 register = Library()

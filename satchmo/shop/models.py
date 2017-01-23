@@ -25,7 +25,7 @@ from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
 from satchmo.l10n.models import Country
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.payment.fields import PaymentChoiceCharField
 from satchmo.product import signals as product_signals
 from satchmo.product.models import Product, DownloadableProduct

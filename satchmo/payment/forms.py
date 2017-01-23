@@ -13,7 +13,7 @@ from satchmo.contact.forms import ContactInfoForm
 from satchmo.contact.models import Contact
 from satchmo.discount.models import Discount
 from satchmo.discount.utils import find_best_auto_discount
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.payment import signals
 from satchmo.payment.config import labelled_payment_choices
 from satchmo.payment.models import CreditCardDetail

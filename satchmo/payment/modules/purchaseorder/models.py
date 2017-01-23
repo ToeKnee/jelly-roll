@@ -6,7 +6,7 @@ except:
 from django.db import models
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext, ugettext_lazy as _
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.shop.models import Order
 
 class PurchaseOrder(models.Model):

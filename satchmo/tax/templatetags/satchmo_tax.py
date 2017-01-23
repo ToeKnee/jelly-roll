@@ -4,7 +4,7 @@ except:
     from django.utils._decimal import Decimal
 
 from django import template
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.shop.templatetags import get_filter_args
 from satchmo.tax.utils import get_tax_processor
 import logging

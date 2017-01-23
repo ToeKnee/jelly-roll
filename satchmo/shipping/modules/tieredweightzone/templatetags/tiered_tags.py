@@ -6,7 +6,7 @@ except ImportError:
 from django import template
 from django.utils.safestring import mark_safe
 from satchmo.shipping.modules.tiered.models import Carrier
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 
 register = template.Library()
 

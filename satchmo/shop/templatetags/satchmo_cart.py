@@ -1,7 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 from satchmo.configuration import config_value
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import money_format
 from satchmo.tax.templatetags.satchmo_tax import CartitemLineTaxedTotalNode, CartTaxedTotalNode
 from satchmo.utils import trunc_decimal
 import logging

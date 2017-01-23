@@ -3,7 +3,8 @@ GiftCertificate processor
 """
 from django.utils.translation import ugettext as _
 from models import GiftCertificate
-from satchmo.l10n.utils import money_formatm
+from satchmo.currency.utils import money_format
+
 
 class PaymentProcessor(object):
 
@@ -23,28 +24,27 @@ class PaymentProcessor(object):
             reason_code = "0"
             response_text = _("No balance to pay")
 
-        else:    
+        else:
             try:
                 gc = GiftCertificate.objects.from_order(self.order)
-            
+
             except GiftCertificate.DoesNotExist:
                 success = False
-                reason_code="1"
+                reason_code = "1"
                 response_text = _("No such Gift Certificate")
-            
+
             if not gc.valid:
                 success = False
-                reason_code="2"
+                reason_code = "2"
                 response_text = _("Bad Gift Certificate")
-        
+
             else:
                 gc.apply_to_order(self.order)
                 reason_code = "0"
                 response_text = _("Success")
                 success = True
-                
+
                 if not self.order.paid_in_full:
                     response_text = _("%s balance remains after gift certificate was applied") % money_format(self.order.balance)
-                
-        return (success, reason_code, response_text)
 
+        return (success, reason_code, response_text)

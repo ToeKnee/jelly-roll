@@ -1,14 +1,9 @@
-import logging
 from decimal import Decimal
 from satchmo.configuration import config_value
 
-log = logging.getLogger(__name__)
-
 
 def money_format(value, grouping=True):
-    """
-    Convert Decimal to a money formatted unicode string.
-    """
+    """Convert Decimal to a money formatted unicode string."""
     if value is None:
         value = Decimal("0.00")
     currency_symbol = config_value("SHOP", "CURRENCY")
@@ -16,4 +11,3 @@ def money_format(value, grouping=True):
         currency_symbol=currency_symbol,
         value=value,
     )
-
