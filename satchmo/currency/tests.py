@@ -158,3 +158,36 @@ class FixerExchangeRateClientTest(TestCase):
             self.assertEqual(exchange_rates[1].currency.iso_4217_code, "USD")
             self.assertEqual(exchange_rates[1].rate, 1.2483)
             self.assertEqual(exchange_rates[1].date, datetime.date(int(year), int(month), int(day)))
+
+
+class UpdateExchangeRages(TestCase):
+    def setUp(self):
+        # Set primary currency + accepted currencies
+        currency = Currency.objects.get(iso_4217_code="GBP")
+        currency.primary = True
+        currency.save()
+        Currency.objects.update(accepted=True)
+
+    def test_sends_emails_when_complete(self):
+        data = {
+            'date': '2017-02-14',
+            'base': 'GBP',
+            'rates': {'USD': 1.2483, 'EUR': 1.1751}
+        }
+
+        with mock.patch("satchmo.currency.modules.fixer.requests") as mock_requests:
+            class mock_request(object):
+                def json(self):
+                    return data
+            mock_requests.get.return_value = mock_request()
+
+            out = StringIO()
+            call_command('update_exchange_rates', stdout=out)
+
+            self.assertIn('Successfully updated "USD 1.2483"', out.getvalue())
+            self.assertIn('Successfully updated "EUR 1.1751"', out.getvalue())
+
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertEqual(mail.outbox[0].subject, '[Django] Updated 2 currencies')
+            self.assertIn('* USD 1.2483\n', mail.outbox[0].body)
+            self.assertIn('* EUR 1.1751\n', mail.outbox[0].body)
