@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
             },
             {
                 "iso_4217_code": "USD",
-                "name": "U.S. dollar",
+                "name": "U.S. Dollar",
                 "symbol": "$",
                 "minor_symbol": "c",
                 "countries": [
