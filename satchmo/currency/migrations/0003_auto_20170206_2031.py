@@ -61,6 +61,7 @@ class Migration(migrations.Migration):
                 currency.countries.add(Country.objects.get(printable_name=country))
 
     dependencies = [
+        ('l10n', '0001_initial'),
         ('currency', '0002_currency'),
     ]
 
