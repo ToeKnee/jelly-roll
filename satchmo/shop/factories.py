@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 from factory import lazy_attribute
 
 from satchmo.contact.factories import ContactFactory
+from satchmo.currency.models import Currency
 from satchmo.l10n.factories import CountryFactory
 from satchmo.shop.models import (
     Config,
@@ -34,6 +35,7 @@ class OrderFactory(factory.django.DjangoModelFactory):
 
     contact = factory.SubFactory(ContactFactory)
     site = factory.LazyAttribute(lambda a: Site.objects.get_current())
+    currency = factory.LazyAttribute(lambda a: Currency.objects.get_primary())
 
 
 class OrderItemFactory(factory.django.DjangoModelFactory):
