@@ -24,6 +24,7 @@ from satchmo import caching
 from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
+from satchmo.currency.models import Currency
 from satchmo.l10n.models import Country
 from satchmo.currency.utils import money_format
 from satchmo.payment.fields import PaymentChoiceCharField
@@ -641,6 +642,8 @@ class Order(models.Model):
     tracking_url = models.URLField(_('Tracking URL'), blank=True, null=True)
     shipping_postage_speed = models.PositiveIntegerField(_('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
 
+    currency = models.ForeignKey(Currency, verbose_name=_('Currency'), related_name="orders", editable=False)
+    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
     sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
     shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=10, blank=True, null=True)
     shipping_discount = models.DecimalField(_("Shipping Discount"), max_digits=18, decimal_places=10, blank=True, null=True)
@@ -671,6 +674,7 @@ class Order(models.Model):
     def freeze(self):
         self.frozen = True
         self.time_stamp = timezone.now()
+        print "# TODO: Ensure the currency is up to date"
 
     def add_status(self, status=None, notes=None, status_notify_by_default=False):
         order_status = OrderStatus()
@@ -921,10 +925,10 @@ class Order(models.Model):
         return mark_safe(u'<a href="%s">%s</a>' % (url, _('View')))
     shippinglabel.allow_tags = True
 
-    def _order_total(self):
-        # Needed for the admin list display
-        return money_format(self.total)
-    order_total = property(_order_total)
+    @property
+    def order_total(self):
+        """ Display the order total in the correct currency """
+        return money_format(self.total, self.currency.iso_4217_code)
 
     def order_success(self):
         """Run each item's order_success method."""
