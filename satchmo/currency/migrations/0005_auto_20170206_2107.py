@@ -17,16 +17,19 @@ class Migration(migrations.Migration):
                 group='CURRENCY',
             )
         except Setting.DoesNotExist:
-            pass
-        else:
+            currency_setting = None
+
+        if currency_setting:
             try:
                 currency = Currency.objects.get(symbol=currency_setting.value)
             except Currency.DoesNotExist:
                 currency = Currency.objects.first()
+        else:
+            currency = Currency.objects.first()
 
-            currency.primary = True
-            currency.accepted = True
-            currency.save()
+        currency.primary = True
+        currency.accepted = True
+        currency.save()
 
     dependencies = [
         ('currency', '0004_auto_20170206_2106'),
