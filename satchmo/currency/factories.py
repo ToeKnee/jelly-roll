@@ -16,6 +16,15 @@ class CurrencyFactory(factory.django.DjangoModelFactory):
     name = "Euro"
     symbol = "€"
     minor_symbol = "c"
+    primary = True
+
+    _countries = [
+        "Austria", "Belgium", "Cyprus", "Estonia",
+        "Finland", "France", "Germany", "Greece",
+        "Ireland", "Italy", "Latvia", "Lithuania",
+        "Luxembourg", "Malta", "Netherlands", "Portugal",
+        "Slovakia", "Slovenia", "Spain"
+    ]
 
     @factory.post_generation
     def countries(self, create, extracted, **kwargs):
@@ -28,13 +37,47 @@ class CurrencyFactory(factory.django.DjangoModelFactory):
                 for country in extracted:
                     self.countries.add(country)
             else:
-                self.countries = Country.objects.filter(printable_name__in=[
-                    "Austria", "Belgium", "Cyprus", "Estonia",
-                    "Finland", "France", "Germany", "Greece",
-                    "Ireland", "Italy", "Latvia", "Lithuania",
-                    "Luxembourg", "Malta", "Netherlands", "Portugal",
-                    "Slovakia", "Slovenia", "Spain"
-                ])
+                self.countries = Country.objects.filter(printable_name__in=self._countries)
+
+
+class EURCurrencyFactory(CurrencyFactory):
+    primary = False
+
+
+class GBPCurrencyFactory(CurrencyFactory):
+    class Meta:
+        model = Currency
+        django_get_or_create = ('iso_4217_code',)
+
+    iso_4217_code = "GBP"
+    name = "Pounds"
+    symbol = "£"
+    minor_symbol = "p"
+    primary = False
+    accepted = True
+
+    _countries = [
+        "United Kingdom", "Guernsey", "Isle of Man", "Jersey"
+    ]
+
+
+class USDCurrencyFactory(CurrencyFactory):
+    class Meta:
+        model = Currency
+        django_get_or_create = ('iso_4217_code',)
+
+    iso_4217_code = "USD"
+    name = "U.S. Dollar"
+    symbol = "$"
+    minor_symbol = "c"
+    primary = False
+
+    _countries = [
+        "United States of America",
+        "Timor-Leste", "Ecuador", "El Salvador", "Marshall Islands",
+        "Micronesia, Federated States of", "Palau",
+        "Panama", "Zimbabwe"
+    ]
 
 
 class ExchangeRateFactory(factory.django.DjangoModelFactory):
