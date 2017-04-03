@@ -1,16 +1,17 @@
 from django.test import TestCase
 
+from satchmo.currency.factories import GBPCurrencyFactory, EURCurrencyFactory
 from satchmo.currency.models import Currency
 
 
 class CurrencyTest(TestCase):
     def test_uncode(self):
-        currency = Currency(iso_4217_code="GBP")
+        currency = GBPCurrencyFactory.build()
 
         self.assertEqual(u"{currency}".format(currency=currency), "GBP")
 
     def test_save__set_primary__sets_accepted(self):
-        currency = Currency.objects.get(iso_4217_code="GBP")
+        currency = GBPCurrencyFactory.build(primary=False, accepted=False)
         currency.primary = True
         currency.save()
 
@@ -19,12 +20,12 @@ class CurrencyTest(TestCase):
         self.assertTrue(currency.accepted)
 
     def test_save__set_primary__turns_off_other_primary(self):
-        currency = Currency.objects.get(iso_4217_code="GBP")
+        currency = GBPCurrencyFactory.build(primary=False, accepted=False)
         currency.primary = True
         currency.save()
 
         # Make Euro primary currency
-        currency = Currency.objects.get(iso_4217_code="EUR")
+        currency = EURCurrencyFactory.build(primary=False, accepted=False)
         currency.primary = True
         currency.save()
 

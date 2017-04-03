@@ -7,6 +7,11 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils.six import StringIO
 
+from satchmo.currency.factories import (
+    EURCurrencyFactory,
+    GBPCurrencyFactory,
+    USDCurrencyFactory,
+)
 from satchmo.currency.models import Currency, ExchangeRate
 from satchmo.currency.modules.fixer import FixerEchangeRateClient
 
@@ -16,7 +21,9 @@ class FixerExchangeRateClientTest(TestCase):
         self.client = FixerEchangeRateClient()
 
         # Set primary currency + accepted currencies
-        currency = Currency.objects.get(iso_4217_code="GBP")
+        EURCurrencyFactory()
+        USDCurrencyFactory()
+        currency = GBPCurrencyFactory()
         currency.primary = True
         currency.save()
         Currency.objects.update(accepted=True)
@@ -134,7 +141,9 @@ class FixerExchangeRateClientTest(TestCase):
 class UpdateExchangeRages(TestCase):
     def setUp(self):
         # Set primary currency + accepted currencies
-        currency = Currency.objects.get(iso_4217_code="GBP")
+        EURCurrencyFactory()
+        USDCurrencyFactory()
+        currency = GBPCurrencyFactory()
         currency.primary = True
         currency.save()
         Currency.objects.update(accepted=True)
