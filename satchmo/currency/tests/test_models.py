@@ -5,13 +5,13 @@ from satchmo.currency.models import Currency
 
 
 class CurrencyTest(TestCase):
-    def test_uncode(self):
+    def test_unicode(self):
         currency = GBPCurrencyFactory.build()
 
         self.assertEqual(u"{currency}".format(currency=currency), "GBP")
 
     def test_save__set_primary__sets_accepted(self):
-        currency = GBPCurrencyFactory.build(primary=False, accepted=False)
+        currency = GBPCurrencyFactory(primary=False, accepted=False)
         currency.primary = True
         currency.save()
 
@@ -20,12 +20,12 @@ class CurrencyTest(TestCase):
         self.assertTrue(currency.accepted)
 
     def test_save__set_primary__turns_off_other_primary(self):
-        currency = GBPCurrencyFactory.build(primary=False, accepted=False)
+        currency = GBPCurrencyFactory(primary=False, accepted=False)
         currency.primary = True
         currency.save()
 
         # Make Euro primary currency
-        currency = EURCurrencyFactory.build(primary=False, accepted=False)
+        currency = EURCurrencyFactory(primary=False, accepted=False)
         currency.primary = True
         currency.save()
 

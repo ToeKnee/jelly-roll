@@ -6,7 +6,11 @@ import mock
 from django.test import TestCase
 from django.utils import timezone
 
-from satchmo.currency.models import Currency
+from satchmo.currency.factories import (
+    EURCurrencyFactory,
+    GBPCurrencyFactory,
+    USDCurrencyFactory,
+)
 from satchmo.shop.factories import (
     OrderFactory,
     PaidOrderFactory,
@@ -177,25 +181,19 @@ class AddStatusTest(TestCase):
 
 class OrderTotalTest(TestCase):
     def test_GBP(self):
-        currency = Currency.objects.get(iso_4217_code="GBP")
-        currency.accepted = True
-        currency.save()
+        currency = GBPCurrencyFactory()
 
         order = TestOrderFactory(currency=currency)
         self.assertEqual(order.order_total, u'£35.00 (GBP)')
 
     def test_EUR(self):
-        currency = Currency.objects.get(iso_4217_code="EUR")
-        currency.accepted = True
-        currency.save()
+        currency = EURCurrencyFactory()
 
         order = TestOrderFactory(currency=currency)
         self.assertEqual(order.order_total, u'€35.00 (EUR)')
 
     def test_USD(self):
-        currency = Currency.objects.get(iso_4217_code="USD")
-        currency.accepted = True
-        currency.save()
+        currency = USDCurrencyFactory()
 
         order = TestOrderFactory(currency=currency)
         self.assertEqual(order.order_total, u'$35.00 (USD)')

@@ -17,6 +17,7 @@ class CurrencyFactory(factory.django.DjangoModelFactory):
     symbol = "€"
     minor_symbol = "c"
     primary = True
+    accepted = True
 
     _countries = [
         "Austria", "Belgium", "Cyprus", "Estonia",
@@ -45,16 +46,11 @@ class EURCurrencyFactory(CurrencyFactory):
 
 
 class GBPCurrencyFactory(CurrencyFactory):
-    class Meta:
-        model = Currency
-        django_get_or_create = ('iso_4217_code',)
-
     iso_4217_code = "GBP"
     name = "Pounds"
     symbol = "£"
     minor_symbol = "p"
     primary = False
-    accepted = True
 
     _countries = [
         "United Kingdom", "Guernsey", "Isle of Man", "Jersey"
@@ -62,10 +58,6 @@ class GBPCurrencyFactory(CurrencyFactory):
 
 
 class USDCurrencyFactory(CurrencyFactory):
-    class Meta:
-        model = Currency
-        django_get_or_create = ('iso_4217_code',)
-
     iso_4217_code = "USD"
     name = "U.S. Dollar"
     symbol = "$"
