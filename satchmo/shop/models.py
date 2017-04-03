@@ -8,6 +8,7 @@ import logging
 import operator
 import random
 import time
+import warnings
 from decimal import Decimal
 from workdays import workday
 
@@ -17,6 +18,7 @@ from django.core import urlresolvers
 from django.db import models
 from django.utils import timezone
 from django.utils.encoding import force_unicode
+from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -749,10 +751,9 @@ class Order(models.Model):
 
     balance = property(fget=_balance)
 
+    @property
     def balance_forward(self):
-        return money_format(self.balance)
-
-    balance_forward = property(fget=balance_forward)
+        return money_format(self.balance, self.currency.iso_4217_code)
 
     def _balance_paid(self):
         payments = [p.amount for p in self.payments.all()]
@@ -907,13 +908,14 @@ class Order(models.Model):
             taxdetl = OrderTaxDetail(order=self, tax=taxamt, description=taxdesc, method=taxProcessor.method)
             taxdetl.save()
 
-        log.debug("Order #%i, recalc: sub_total=%s, shipping=%s, discount=%s, tax=%s",
-                  self.id,
-                  money_format(item_sub_total),
-                  money_format(self.shipping_sub_total),
-                  money_format(self.discount),
-                  money_format(self.tax)
-                  )
+        log.debug(
+            "Order #%i, recalc: sub_total=%s, shipping=%s, discount=%s, tax=%s",
+            self.id,
+            money_format(item_sub_total, self.currency.iso_4217_code),
+            money_format(self.shipping_sub_total, self.currency.iso_4217_code),
+            money_format(self.discount, self.currency.iso_4217_code),
+            money_format(self.tax, self.currency.iso_4217_code)
+        )
 
         self.total = Decimal(item_sub_total + self.shipping_sub_total + self.tax)
 
@@ -928,7 +930,64 @@ class Order(models.Model):
     @property
     def order_total(self):
         """ Display the order total in the correct currency """
+        warnings.warn(
+            "Order.order_total is deprecated, please use order.display_total",
+            DeprecationWarning
+        )
+        return self.display_total
+
+    @property
+    def display_total(self):
+        """ Display the order total in the correct currency """
         return money_format(self.total, self.currency.iso_4217_code)
+
+    @property
+    def display_tax(self):
+        return money_format(self.tax, self.currency.iso_4217_code)
+
+    @property
+    def display_refund(self):
+        return money_format(self.refund, self.currency.iso_4217_code)
+
+    @property
+    def display_sub_total(self):
+        return money_format(self.sub_total, self.currency.iso_4217_code)
+
+    @property
+    def display_sub_total_with_tax(self):
+        return money_format(self.sub_total_with_tax(), self.currency.iso_4217_code)
+
+    @property
+    def display_balance(self):
+        return money_format(self.balance, self.currency.iso_4217_code)
+
+    @property
+    def display_balance_paid(self):
+        return money_format(self.balance_paid, self.currency.iso_4217_code)
+
+    @property
+    def display_shipping_sub_total(self):
+        return money_format(self.shipping_sub_total, self.currency.iso_4217_code)
+
+    @property
+    def display_shipping_with_tax(self):
+        return money_format(self.shipping_with_tax, self.currency.iso_4217_code)
+
+    @property
+    def display_shipping_cost(self):
+        return money_format(self.shipping_cost, self.currency.iso_4217_code)
+
+    @property
+    def display_discount(self):
+        return money_format(self.discount, self.currency.iso_4217_code)
+
+    @property
+    def display_shipping_discount(self):
+        return money_format(self.shipping_discount, self.currency.iso_4217_code)
+
+    @property
+    def display_item_discount(self):
+        return money_format(self.item_discount, self.currency.iso_4217_code)
 
     def order_success(self):
         """Run each item's order_success method."""
@@ -972,13 +1031,13 @@ class Order(models.Model):
         return False
     is_shippable = property(_is_shippable)
 
-    def _shipping_sub_total(self):
+    @property
+    def shipping_sub_total(self):
         if self.shipping_cost is None:
             self.shipping_cost = Decimal('0.00')
         if self.shipping_discount is None:
             self.shipping_discount = Decimal('0.00')
         return self.shipping_cost - self.shipping_discount
-    shipping_sub_total = property(_shipping_sub_total)
 
     def _shipping_tax(self):
         rates = self.taxes.filter(description__iexact='shipping')
@@ -1123,20 +1182,46 @@ class OrderItem(models.Model):
 
     is_shippable = property(fget=_is_shippable)
 
-    def _sub_total(self):
+    @cached_property
+    def currency_code(self):
+        return self.order.currency.iso_4217_code
+
+    @property
+    def display_unit_price(self):
+        return money_format(self.unit_price, self.currency_code)
+
+    @property
+    def display_unit_price_with_tax(self):
+        return money_format(self.unit_price_with_tax, self.currency_code)
+
+    @property
+    def display_discount(self):
+        return money_format(self.discount, self.currency_code)
+
+    @property
+    def display_sub_total(self):
+        return money_format(self.sub_total, self.currency_code)
+
+    @property
+    def display_total_with_tax(self):
+        return money_format(self.total_with_tax, self.currency_code)
+
+    @property
+    def sub_total(self):
         if self.discount:
-            return self.line_item_price - self.discount
+            price = self.line_item_price - self.discount
         else:
-            return self.line_item_price
-    sub_total = property(_sub_total)
+            price = self.line_item_price
 
-    def _total_with_tax(self):
+        return price
+
+    @property
+    def total_with_tax(self):
         return self.sub_total + self.tax
-    total_with_tax = property(_total_with_tax)
 
-    def _unit_price_with_tax(self):
+    @property
+    def unit_price_with_tax(self):
         return self.unit_price + self.unit_tax
-    unit_price_with_tax = property(_unit_price_with_tax)
 
     def _get_description(self):
         return self.product.translated_name()
@@ -1270,18 +1355,9 @@ class OrderPayment(models.Model):
     time_stamp = models.DateTimeField(_("timestamp"), default=timezone.now, editable=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
 
-    def _credit_card(self):
-        """Return the credit card associated with this payment."""
-        try:
-            return self.creditcards.get()
-        except self.creditcards.model.DoesNotExist:
-            return None
-    credit_card = property(_credit_card)
-
-    def _amount_total(self):
-        return money_format(self.amount)
-
-    amount_total = property(fget=_amount_total)
+    class Meta:
+        verbose_name = _("Order Payment")
+        verbose_name_plural = _("Order Payments")
 
     def __unicode__(self):
         if self.id is not None:
@@ -1289,9 +1365,21 @@ class OrderPayment(models.Model):
         else:
             return u"Order payment (unsaved)"
 
-    class Meta:
-        verbose_name = _("Order Payment")
-        verbose_name_plural = _("Order Payments")
+    @property
+    def credit_card(self):
+        """Return the credit card associated with this payment."""
+        try:
+            return self.creditcards.get()
+        except self.creditcards.model.DoesNotExist:
+            return None
+
+    @property
+    def amount_total(self):
+        return self.display_total
+
+    @property
+    def display_total(self):
+        return money_format(self.amount, self.order.currency.iso_4217_code)
 
 
 class OrderVariable(models.Model):
