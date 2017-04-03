@@ -35,6 +35,7 @@ class MoneyFormatTest(TestCase):
 class ConvertToCurrencyTest(TestCase):
     def setUp(self):
         EURCurrencyFactory(primary=True)
+        Currency.objects.update(accepted=True)
 
     def test_no_value(self):
         currency_code = "EUR"
@@ -71,12 +72,9 @@ class ConvertToCurrencyTest(TestCase):
     def test_exchange_rate_exists(self):
         """If the exchange rate doesn't exist, the value shouldn't change
         """
-        GBPCurrencyFactory()
         value = Decimal("1.00")
         currency_code = "GBP"
-        currency = Currency.objects.get(iso_4217_code=currency_code)
-        currency.accepted = True
-        currency.save()
+        currency = GBPCurrencyFactory()
         ExchangeRateFactory(
             rate=Decimal("0.75"),
             currency=currency
