@@ -1,5 +1,4 @@
-{% load i18n %}
-{% load satchmo_currency %}
+{% load i18n satchmo_currency %}
 {% for cert in order.giftcertificates.all %}
 {% if forloop.first %}
 <h4>{% trans "Gift Certificate Codes" %}</h4>
@@ -11,10 +10,8 @@
         <br/>
     {% endwith %}
 {% endif %}
-{% with cert.start_balance|currency as start_balance %}
-    {% blocktrans %}Starting Balance: {{ start_balance }}{% endblocktrans %}
+    {% blocktrans %}Starting Balance: {% currency cert.start_balance %}{% endblocktrans %}
     <br/>
-{% endwith %}
 {% with cert.code as code %}
     {% blocktrans %}Code: {{ code }}{% endblocktrans %}
 {% endwith %}
