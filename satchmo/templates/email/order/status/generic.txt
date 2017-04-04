@@ -14,7 +14,7 @@ Notes: {{ notes }}
 {% trans "Items Ordered" %}
 --------------
 {% for item in order.orderitem_set.all %}
-{{ item }} - {{item.unit_price|currency}} x {{item.quantity}} = {{item.sub_total|currency}}
+{{ item }} - {{ item.display_unit_price }} x {{item.quantity}} = {{ item.display_sub_total }}
 {% endfor %}
 
 {% trans "Contact Information" %}
@@ -48,25 +48,25 @@ Notes: {{ notes }}
 ---------------
 {{ order.shipping_description }}
 {{ order.shipping_method }}
-{{ order.shipping_sub_total|currency }}
+{{ order.display_shipping_sub_total }}
 {% endif %}
 
 {% trans "Total" %}
 -----
 {% if order.discount %}
-{% trans "Discount" %} - {{order.discount|currency}}
+{% trans "Discount" %} - {{ order.display_discount }}
 {% endif %}
-{% if order.is_shippable %} {% trans "Shipping" %} + {{order.shipping_sub_total|currency}} {% endif %}
+{% if order.is_shippable %} {% trans "Shipping" %} + {{ order.display_shipping_sub_total }} {% endif %}
 {% if order.tax %}
-{% trans "Tax" %} + {{order.tax|currency}}
+{% trans "Tax" %} + {{ order.display_tax }}
 {% endif %}
-{% trans "Total" %} = {{order.total|currency}}
+{% trans "Total" %} = {{ order.display_total }}
 
 {% trans "Payment" %}
 -------
 {% with order.credit_card.credit_type as credit_card_type %}
 {% with order.credit_card.display_cc as credit_card_number %}
-{% with order.total|currency as order_total %}
+{% with order.display_total as order_total %}
 {% blocktrans %}Your {{ credit_card_type }} card ending in {{ credit_card_number }} will be charged {{ order_total }}.{% endblocktrans %}
 {% endwith %}
 {% endwith %}
