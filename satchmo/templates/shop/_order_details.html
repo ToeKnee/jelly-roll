@@ -1,7 +1,4 @@
-{% load satchmo_currency %}
-{% load satchmo_checkout %}
-{% load satchmo_util %}
-{% load i18n %}
+{% load i18n satchmo_checkout satchmo_currency satchmo_util %}
 {% if default_view_tax %}{% load satchmo_tax %}{% endif %}
 <ul>
 {% for item in order.orderitem_set.all %}
@@ -9,27 +6,27 @@
         {{ item }} -
         {% if default_view_tax %}
             {% if item.discount %}
-                <span class="unit_price discounted">{{item.unit_price_with_tax|currency}}</span>
-                (- <span class="discount">{{ item.discount|currency }}</span> discount)
+                <span class="unit_price discounted">{{ item.display_unit_price_with_tax }}</span>
+                (- <span class="discount">{{ item.display_discount }}</span> discount)
             {% else %}
-                <span class="unit_price">{{item.unit_price_with_tax|currency}}</span>}
+                <span class="unit_price">{{ item.display_unit_price_with_tax }}</span>}
             {% endif %}
-            
+
             x {{item.quantity}}
-            = {{item.total_with_tax|currency}}
+            = {{ item.display_total_with_tax }}
 
         {% else %}
 
             {% if item.discount %}
-                <span class="unit_price discounted">{{item.unit_price|currency}}</span>
-                (- <span class="discount">{{ item.discount|currency }}</span> discount)
+                <span class="unit_price discounted">{{ item.display_unit_price }}</span>
+                (- <span class="discount">{{ item.display_discount }}</span> discount)
             {% else %}
-                <span class="unit_price">{{item.unit_price|currency}}</span>
+                <span class="unit_price">{{ item.display_unit_price }}</span>
             {% endif %}
 
             x {{item.quantity}}
-            = {{item.sub_total|currency}}
-            
+            = {{ item.display_sub_total }}
+
         {% endif %}
     </li>
 {% endfor %}
@@ -61,35 +58,35 @@
 {{ order.shipping_description }}<br/>
 {{ order.shipping_method }}<br/>
 {% if default_view_tax %}
-{{ order.shipping_with_tax|currency }}
+{{ order.display_shipping_with_tax }}
 {% else %}
-{{ order.shipping_sub_total|currency }}
+{{ order.display_shipping_sub_total }}
 {% endif %}<br/>
 {% endif %}
 
 <h4>{% trans "Total" %}</h4>
 {% trans "Subtotal" %} = {% if default_view_tax %}
-{{ order.sub_total_with_tax|currency }}
+{{ order.display_sub_total_with_tax }}
 {% else %}
-{{ order.sub_total|currency }}
+{{ order.display_sub_total }}
 {% endif %}<br/>
 {% if order.discount %}
-    {% trans "Discount" %} - {{order.item_discount|currency}}<br/>
+    {% trans "Discount" %} - {{ order.|display_item_discount }}<br/>
 {% endif %}
 {% if order.shipping_discount %}
-{% trans "Base Shipping" %} + {{order.shipping_cost|currency}}<br/>
-{% trans "Shipping Discount" %} - {{order.shipping_discount|currency}}<br/>
-{% if order.shipping_tax and default_view_tax %}{% trans "Shipping (incl. Tax)" %}{{ order.shipping_with_tax|currency}}{% endif %}
+{% trans "Base Shipping" %} + {{ order.display_shipping_cost }}<br/>
+{% trans "Shipping Discount" %} - {{ order.display_shipping_discount }}<br/>
+{% if order.shipping_tax and default_view_tax %}{% trans "Shipping (incl. Tax)" %}{{ order.display_shipping_with_tax }}{% endif %}
 {% endif %}
-{% trans "Shipping" %} + {% if default_view_tax %}{{ order.shipping_with_tax|currency }}{% else %}{{order.shipping_sub_total|currency}}
+{% trans "Shipping" %} + {% if default_view_tax %}{{ order.display_shipping_with_tax }}{% else %}{{ order.display_shipping_sub_total }}
 {% endif %}<br/>
 {% if order.tax %}
     {% if default_view_tax %}
-    {% trans "Tax included" %} 
+    {% trans "Tax included" %}
     {% else %}
-    {% trans "Tax" %} + {% endif %}{{order.tax|currency}}<br/>
+    {% trans "Tax" %} + {% endif %}{{ order.display_tax }}<br/>
 {% endif %}
-{% trans "Total" %} = {{order.total|currency}}<br/>
+{% trans "Total" %} = {{ order.display_total }}<br/>
 
 {% order_payment_summary order %}
 
