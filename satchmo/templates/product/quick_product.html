@@ -16,7 +16,7 @@
         </a>
         -
         <span class="price">
-            {% if default_view_tax %}{{ price_with_tax|currency }}{% else %}{{ product.unit_price|currency }}{% endif %}
+            {% if default_view_tax %}{% currency price_with_tax %}{% else %}{% currency product.unit_price %}{% endif %}
         </span>
     </h2>
 
