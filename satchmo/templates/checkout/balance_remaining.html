@@ -1,6 +1,5 @@
 {% extends "base_satchmo.html" %}
-{% load i18n %}
-{% load satchmo_order satchmo_currency %}
+{% load i18n satchmo_currency satchmo_order %}
 
 {% block navbar %}
    <li class="first"><a href="{{ shop_base }}/">{% trans "Home" %}</a></li>
@@ -13,7 +12,7 @@
 
 <form method="post" action="{% url "satchmo_balance_remaining" %}">
 <table>
-	<tr><td colspan="2">{% with order.balance|currency as orderbalance %}
+	<tr><td colspan="2">{% with order.display_balance as orderbalance %}
 		{% blocktrans %}To complete this order, you need to pay the {{ orderbalance }} balance remaining on this order.{% endblocktrans %}
 		{% endwith %}
 	</td></tr>
