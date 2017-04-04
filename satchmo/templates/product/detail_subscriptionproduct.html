@@ -1,21 +1,18 @@
 {% extends "base_product.html" %}
-{% load i18n %}
-{% load satchmo_price %}
-{% load satchmo_currency satchmo_category%}
-{% load satchmo_util %}
+{% load i18n satchmo_category satchmo_currency satchmo_price satchmo_util %}
 
 {% block productdetail %}
 <h4>{% blocktrans with product.translated_name as name %}Subscription product {{ name }}{% endblocktrans %}</h4>
 <p>{% autoescape off %}{{ product.translated_description }}{% endautoescape %}</p>
 <h4>{% trans "Only " %}{{product.subscriptionproduct.recurring_times}} {% trans "easy payments of:" %}</h4>
-<h3 id="price">{{ product.subscriptionproduct.recurring_price|currency }} </h3>
+<h3 id="price">{% currency product.subscriptionproduct.recurring_price %} </h3>
 
 {% for pic in product.productimage_set.all %}
     <img src="{{ pic.picture.url }}" width="280" />
 {% endfor %}
  {% for trial in product.subscriptionproduct.get_trial_terms %}
     {% if forloop.first %} <p> {% blocktrans %}This product has trial subscription pricing {% endblocktrans %}</p><ul> {% endif %}
-    <li>{% if trial.price %}{{trial.price|currency}}{% else %}{% trans 'Free' %} {% endif %}{% blocktrans %}for trial period of {% endblocktrans %}{{trial.expire_length}} {% ifequal product.subscriptionproduct.expire_unit "DAY" %}{% trans "days" %}{% else %}{% trans "months" %}{% endifequal %}</li>
+    <li>{% if trial.price %}{% currency trial.price %}{% else %}{% trans 'Free' %} {% endif %}{% blocktrans %}for trial period of {% endblocktrans %}{{trial.expire_length}} {% ifequal product.subscriptionproduct.expire_unit "DAY" %}{% trans "days" %}{% else %}{% trans "months" %}{% endifequal %}</li>
     {% if forloop.last %} </ul> {% endif %}
  {% endfor %}
 
