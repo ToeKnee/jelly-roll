@@ -927,6 +927,18 @@ class Order(models.Model):
         return mark_safe(u'<a href="%s">%s</a>' % (url, _('View')))
     shippinglabel.allow_tags = True
 
+    def total_in_primary_currency(self):
+        """Returns the total value of the order in the primary
+        currency at the exchange rate of the order
+
+        """
+        if self.currency.primary:
+            total = self.total
+        else:
+            reverse_exchange_rate = Decimal("1.00") / self.exchange_rate
+            total = self.total * reverse_exchange_rate
+        return total
+
     @property
     def order_total(self):
         """ Display the order total in the correct currency """
