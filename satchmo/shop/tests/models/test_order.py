@@ -181,6 +181,31 @@ class AddStatusTest(TestCase):
         )
 
 
+class TotalInPrimaryCurrencyTest(TestCase):
+    def test_in_primary_currency(self):
+        primary_currency = EURCurrencyFactory(primary=True)
+        order = TestOrderFactory(currency=primary_currency)
+        self.assertEqual(order.total_in_primary_currency(), Decimal("35.00"))
+
+    def test_in_alternative_currency__more(self):
+        primary_currency = EURCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = USDCurrencyFactory()
+
+        order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("1.06649"))
+        self.assertEqual(order.total_in_primary_currency().quantize(Decimal('.01')), Decimal("32.82"))
+
+    def test_in_alternative_currency__less(self):
+        primary_currency = USDCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = EURCurrencyFactory()
+
+        order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("0.937658"))
+        self.assertEqual(order.total_in_primary_currency().quantize(Decimal('.01')), Decimal("37.33"))
+
+
 class OrderTotalTest(TestCase):
     def test_GBP(self):
         currency = GBPCurrencyFactory()
