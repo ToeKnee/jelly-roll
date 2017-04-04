@@ -1,5 +1,4 @@
 {% extends "base_satchmo.html" %}
-{% load i18n %}
 {% load i18n satchmo_price satchmo_currency satchmo_util satchmo_discounts %}
 
 {% block navbar %}
@@ -33,10 +32,10 @@
                     {{ product.description|linebreaksbr }}
                 </p>
                 <p>{% trans "Price" %}:
-                        {% if default_view_tax %}{{ price_with_tax|currency }}
+                        {% if default_view_tax %}{% currency product.price_with_tax %}
                         {% else %}
-                                {% if sale %}<span class="struckthrough">{{ product.unit_price|currency }}</span> <span class="salestyle">{{product|discount_price:sale|currency }}</span><br><strong> Save {{ product|discount_saved:sale|currency }} ({{ sale.percentage_text }} off!)</strong><em>{% include "discount/some_eligible.html" %}</em>
-                                {% else %}<strong>{{ product.unit_price|currency }}</strong>
+                                {% if sale %}<span class="struckthrough">{% currency product.unit_price %}</span> <span class="salestyle">{% discount_price product sale %}</span><br><strong> Save {% discount_saved product sale %} ({{ sale.percentage_text }} off!)</strong><em>{% include "discount/some_eligible.html" %}</em>
+                                {% else %}<strong>{% currency product.unit_price %}</strong>
                                 {% endif %}
                         {% endif %}</p>
 
