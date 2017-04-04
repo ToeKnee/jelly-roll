@@ -64,11 +64,11 @@
 		{% url "satchmo_checkout-step1" as checkouturl %}
         {% if checkouturl %}<a href="{{ checkouturl }}">{% trans "Check out" %}</a>{% endif %}
 	    {% endif %}
-    
+
 	    {% if user.is_authenticated and "wishlist"|app_enabled %}
 		{% url "satchmo_wishlist_view" as wishlist_url %}
 	    {% if wishlist_url %}<p class="wishlist"><a href="{{ wishlist_url }}" />{% trans 'Wishlist' %}</a></p>{% endif %}
-	    {% endif %}            
+	    {% endif %}
 
 
             {% satchmo_language_selection_form %}
@@ -86,11 +86,11 @@
                         {% if cart %}
                             <ul class="cart">
                             {% for item in cart %}
-                                <li>{{item.quantity}} x <a href="{{item.product.get_absolute_url}}" title="{{item.description}}">{{item.description}}</a> {{ item.line_total|currency}}</li>
+                                <li>{{item.quantity}} x <a href="{{item.product.get_absolute_url}}" title="{{item.description}}">{{item.description}}</a> {% currency item.line_total %}</li>
                             {% endfor %}
                             </ul>
                             <p>
-                                <span class="carttotal">{% trans "Total" %}: {{cart.total|currency}}</span><br />
+                                <span class="carttotal">{% trans "Total" %}: {% currency cart.total %}</span><br />
                                 + <a href="shipping/" title ="postage/shipping info">{% trans "postage" %}</a>
                             </p>
                         {% else %}
