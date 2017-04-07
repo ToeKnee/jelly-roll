@@ -18,6 +18,13 @@ from satchmo.currency.utils import (
 
 
 class MoneyFormatTest(TestCase):
+    def test_value_is_none(self):
+        EURCurrencyFactory()
+        value = None
+        currency_code = "EUR"
+
+        self.assertEqual(money_format(value, currency_code), u"\u20ac0.00 (EUR)")
+
     def test_currency(self):
         EURCurrencyFactory()
         value = Decimal("1.00")

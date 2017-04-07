@@ -11,6 +11,8 @@ from .models import Currency, ExchangeRate
 def money_format(value, currency_code):
     """Convert Decimal to a money formatted unicode string.
     """
+    if value is None:
+        value = Decimal("0.00")
 
     try:
         currency = Currency.objects.all().get(iso_4217_code=currency_code)
