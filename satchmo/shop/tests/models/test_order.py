@@ -181,6 +181,92 @@ class AddStatusTest(TestCase):
         )
 
 
+class SubTotalInPrimaryCurrencyTest(TestCase):
+    def test_in_primary_currency(self):
+        primary_currency = EURCurrencyFactory(primary=True)
+        order = TestOrderFactory(currency=primary_currency)
+        self.assertEqual(order.sub_total_in_primary_currency(), Decimal("25.00"))
+
+    def test_in_alternative_currency__more(self):
+        primary_currency = EURCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = USDCurrencyFactory()
+
+        order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("1.06649"))
+        self.assertEqual(order.sub_total_in_primary_currency().quantize(Decimal('.01')), Decimal("23.44"))
+
+    def test_in_alternative_currency__less(self):
+        primary_currency = USDCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = EURCurrencyFactory()
+
+        order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("0.937658"))
+        self.assertEqual(order.sub_total_in_primary_currency().quantize(Decimal('.01')), Decimal("26.66"))
+
+
+class ShippingCostInPrimaryCurrencyTest(TestCase):
+    def test_in_primary_currency(self):
+        primary_currency = EURCurrencyFactory(primary=True)
+        order = TestOrderFactory(currency=primary_currency)
+        self.assertEqual(order.shipping_cost_in_primary_currency(), Decimal("10.00"))
+
+    def test_in_alternative_currency__more(self):
+        primary_currency = EURCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = USDCurrencyFactory()
+
+        order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("1.06649"))
+        self.assertEqual(order.shipping_cost_in_primary_currency().quantize(Decimal('.01')), Decimal("9.38"))
+
+    def test_in_alternative_currency__less(self):
+        primary_currency = USDCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = EURCurrencyFactory()
+
+        order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("0.937658"))
+        self.assertEqual(order.shipping_cost_in_primary_currency().quantize(Decimal('.01')), Decimal("10.66"))
+
+
+class RefundInPrimaryCurrencyTest(TestCase):
+    def test_in_primary_currency(self):
+        primary_currency = EURCurrencyFactory(primary=True)
+        order = TestOrderFactory(
+            refund=Decimal("5.00"),
+            currency=primary_currency
+        )
+        self.assertEqual(order.refund_in_primary_currency(), Decimal("5.00"))
+
+    def test_in_alternative_currency__more(self):
+        primary_currency = EURCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = USDCurrencyFactory()
+
+        order = TestOrderFactory(
+            refund=Decimal("5.00"),
+            currency=alternative_currency,
+            exchange_rate=Decimal("1.06649")
+        )
+        self.assertEqual(order.refund_in_primary_currency().quantize(Decimal('.01')), Decimal("4.69"))
+
+    def test_in_alternative_currency__less(self):
+        primary_currency = USDCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = EURCurrencyFactory()
+
+        order = TestOrderFactory(
+            refund=Decimal("5.00"),
+            currency=alternative_currency,
+            exchange_rate=Decimal("0.937658")
+        )
+        self.assertEqual(order.refund_in_primary_currency().quantize(Decimal('.01')), Decimal("5.33"))
+
+
 class TotalInPrimaryCurrencyTest(TestCase):
     def test_in_primary_currency(self):
         primary_currency = EURCurrencyFactory(primary=True)
