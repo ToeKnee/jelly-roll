@@ -3,7 +3,6 @@ GiftCertificate processor
 """
 from django.utils.translation import ugettext as _
 from models import GiftCertificate
-from satchmo.currency.utils import money_format
 
 
 class PaymentProcessor(object):
@@ -45,6 +44,6 @@ class PaymentProcessor(object):
                 success = True
 
                 if not self.order.paid_in_full:
-                    response_text = _("%s balance remains after gift certificate was applied") % money_format(self.order.balance)
+                    response_text = _("%s balance remains after gift certificate was applied") % self.order.display_balance
 
         return (success, reason_code, response_text)

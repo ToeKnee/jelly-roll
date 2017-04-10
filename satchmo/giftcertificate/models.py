@@ -1,24 +1,23 @@
 from datetime import datetime
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
+from decimal import Decimal
 
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import config_value, config_get_group
+
+from satchmo.configuration import config_get_group
 from satchmo.contact.models import Contact
-from satchmo.shop.models import OrderPayment, Order
-from satchmo.giftcertificate.utils import generate_certificate_code
 from satchmo.currency.utils import money_format
+from satchmo.giftcertificate.utils import generate_certificate_code
 from satchmo.payment.utils import record_payment
 from satchmo.product.models import Product
-from django.contrib.sites.models import Site
+from satchmo.shop.models import OrderPayment, Order
+
 import logging
+log = logging.getLogger(__name__)
 
 GIFTCODE_KEY = 'GIFTCODE'
-log = logging.getLogger(__name__)
+
 
 class GiftCertificateManager(models.Manager):
 
@@ -30,20 +29,30 @@ class GiftCertificateManager(models.Manager):
             return GiftCertificate.objects.get(code__exact=code.value, valid__exact=True, site=site)
         raise GiftCertificate.DoesNotExist()
 
+
 class GiftCertificate(models.Model):
     """A Gift Cert which holds value."""
     site = models.ForeignKey(Site, null=True, blank=True, verbose_name=_('Site'))
-    order = models.ForeignKey(Order, null=True, blank=True, related_name="giftcertificates", verbose_name=_('Order'))
-    code = models.CharField(_('Certificate Code'), max_length=100,
-        blank=True, null=True)
-    purchased_by =  models.ForeignKey(Contact, verbose_name=_('Purchased by'),
-        blank=True, null=True, related_name='giftcertificates_purchased')
+    order = models.ForeignKey(
+        Order, null=True, blank=True,
+        related_name="giftcertificates", verbose_name=_('Order')
+    )
+    code = models.CharField(
+        _('Certificate Code'), max_length=100,
+        blank=True, null=True
+    )
+    purchased_by = models.ForeignKey(
+        Contact, verbose_name=_('Purchased by'),
+        blank=True, null=True, related_name='giftcertificates_purchased'
+    )
     date_added = models.DateField(_("Date added"), null=True, blank=True)
     valid = models.BooleanField(_('Valid'), default=True)
     message = models.TextField(_('Message'), blank=True)
     recipient_email = models.EmailField(_("Email"), blank=True)
-    start_balance = models.DecimalField(_("Starting Balance"), decimal_places=2,
-        max_digits=8)
+    start_balance = models.DecimalField(
+        _("Starting Balance"), decimal_places=2,
+        max_digits=8
+    )
 
     objects = GiftCertificateManager()
 
@@ -63,20 +72,23 @@ class GiftCertificate(models.Model):
         Returns new balance.
         """
         amount = min(order.balance, self.balance)
-        log.info('applying %s from giftcert #%i [%s] to order #%i [%s]', 
-            money_format(amount), 
-            self.id, 
-            money_format(self.balance), 
-            order.id, 
-            money_format(order.balance))
+        log.info('applying %s from giftcert #%i [%s] to order #%i [%s]',
+                 money_format(amount, order.currency.iso_4217_code),
+                 self.id,
+                 money_format(self.balance, order.currency.iso_4217_code),
+                 order.id,
+                 money_format(order.balance, order.currency.iso_4217_code)
+        )
         config = config_get_group('PAYMENT_GIFTCERTIFICATE')
         orderpayment = record_payment(order, config, amount)
         return self.use(amount, orderpayment=orderpayment)
 
     def use(self, amount, notes="", orderpayment=None):
         """Use some amount of the gift cert, returning the current balance."""
-        u = GiftCertificateUsage(notes=notes, balance_used = amount,
-            orderpayment=orderpayment, giftcertificate=self)
+        u = GiftCertificateUsage(
+            notes=notes, balance_used=amount,
+            orderpayment=orderpayment, giftcertificate=self
+        )
         u.save()
         return self.balance
 
@@ -90,23 +102,28 @@ class GiftCertificate(models.Model):
         super(GiftCertificate, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        sb = money_format(self.start_balance)
-        b = money_format(self.balance)
+        sb = money_format(self.start_balance, self.order.iso_4217_code)
+        b = money_format(self.balance, self.order.iso_4217_code)
         return u"Gift Cert: %s/%s" % (sb, b)
 
     class Meta:
         verbose_name = _("Gift Certificate")
         verbose_name_plural = _("Gift Certificates")
 
+
 class GiftCertificateUsage(models.Model):
     """Any usage of a Gift Cert is logged with one of these objects."""
     usage_date = models.DateField(_("Date of usage"), null=True, blank=True)
     notes = models.TextField(_('Notes'), blank=True)
-    balance_used = models.DecimalField(_("Amount Used"), decimal_places=2,
-        max_digits=8, )
+    balance_used = models.DecimalField(
+        _("Amount Used"), decimal_places=2,
+        max_digits=8,
+    )
     orderpayment = models.ForeignKey(OrderPayment, null=True, verbose_name=_('Order Payment'))
-    used_by = models.ForeignKey(Contact, verbose_name=_('Used by'),
-        blank=True, null=True, related_name='giftcertificates_used')
+    used_by = models.ForeignKey(
+        Contact, verbose_name=_('Used by'),
+        blank=True, null=True, related_name='giftcertificates_used'
+    )
     giftcertificate = models.ForeignKey(GiftCertificate, related_name='usages')
 
     def __unicode__(self):
@@ -128,9 +145,9 @@ class GiftCertificateProduct(models.Model):
 
     def __unicode__(self):
         return u"GiftCertificateProduct: %s" % self.product.name
-        
+
     def _get_subtype(self):
-        return 'GiftCertificateProduct'        
+        return 'GiftCertificateProduct'
 
     def order_success(self, order, order_item):
         log.debug("Order success called, creating gift certs on order: %s", order)
@@ -142,16 +159,16 @@ class GiftCertificateProduct(models.Model):
             elif detl.name == "message":
                 message = detl.value
 
-        price=order_item.line_item_price
+        price = order_item.line_item_price
         log.debug("Creating gc for %s", price)
         gc = GiftCertificate(
-            order = order,
-            start_balance= price,
-            purchased_by = order.contact,
+            order=order,
+            start_balance=price,
+            purchased_by=order.contact,
             valid=True,
             message=message,
             recipient_email=email
-            )
+        )
         gc.save()
 
     class Meta:
