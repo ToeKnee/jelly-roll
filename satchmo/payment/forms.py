@@ -150,6 +150,7 @@ class SimplePayShipForm(forms.Form):
 
         self.order = None
         self.orderpayment = None
+        self.request = request
 
         try:
             self.tempCart = Cart.objects.from_request(request)
@@ -192,7 +193,7 @@ class SimplePayShipForm(forms.Form):
                 discount = Discount.objects.get(code=data, active=True)
             except Discount.DoesNotExist:
                 raise forms.ValidationError(_('Invalid discount.'))
-            valid, msg = discount.isValid(self.tempCart)
+            valid, msg = discount.isValid(self.tempCart, self.request)
             if not valid:
                 raise forms.ValidationError(msg)
             # TODO: validate that it can work with these products
