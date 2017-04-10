@@ -28,7 +28,10 @@ urlpatterns += patterns(
     (r'^download/send/(?P<download_key>\w+)/$', 'download.send_file', {}, 'satchmo_download_send'),
 
     (r'^wishlist/', include('satchmo.wishlist.urls')),
-    url(r'^fulfilment/', include('satchmo.fulfilment.urls'))
+    url(r'^fulfilment/', include('satchmo.fulfilment.urls')),
+
+    # API
+    url(r'^api/currency/', include('satchmo.currency.api.urls')),
 )
 
 if app_enabled('l10n'):

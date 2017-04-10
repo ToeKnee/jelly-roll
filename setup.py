@@ -57,5 +57,6 @@ setup(
         "workdays>=1.4,<2.0",
         "requests>=2.13.0,<3.0.0",
         "httmock>=1.2.3,<2.0.0",
+        "djangorestframework>=3.3.0,<3.4.0",
     ],
 )
