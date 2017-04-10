@@ -1306,7 +1306,7 @@ class ConfigurableProduct(models.Model):
         selected_options = self._unique_ids_from_options(selected_options)
         context['options'] = serialize_options(self, selected_options)
         context['details'] = productvariation_details(self.product, include_tax,
-                                                      request.user)
+                                                      request.user, request)
 
         return context
 
