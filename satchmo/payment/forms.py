@@ -13,7 +13,7 @@ from satchmo.contact.forms import ContactInfoForm
 from satchmo.contact.models import Contact
 from satchmo.discount.models import Discount
 from satchmo.discount.utils import find_best_auto_discount
-from satchmo.currency.utils import money_format
+from satchmo.currency.utils import currency_for_request, money_format
 from satchmo.payment import signals
 from satchmo.payment.config import labelled_payment_choices
 from satchmo.payment.models import CreditCardDetail
@@ -60,7 +60,9 @@ def _get_shipping_choices(request, paymentmodule, cart, contact, default_view_ta
             shipping_tax = config_value('TAX', 'TAX_CLASS')
             taxer = _get_taxprocessor(request)
             total = shipcost + taxer.by_price(shipping_tax, shipcost)
-            taxed_shipping_price = money_format(total)
+
+            currency_code = currency_for_request(request)
+            taxed_shipping_price = money_format(total, currency_code)
 
         data = {
             'amount': shipcost,
