@@ -1,3 +1,5 @@
+from django.utils.translation import ugettext_lazy as _
+
 from rest_framework import serializers
 
 from satchmo.currency.models import (
@@ -27,3 +29,17 @@ class CurrencySerializer(serializers.ModelSerializer):
             return None
         else:
             return exr.rate
+
+
+class CurrencySessionSerializer(serializers.Serializer):
+    iso_4217_code = serializers.CharField(max_length=3)
+
+    def validate_iso_4217_code(self, value):
+        """
+        Check that the currency is accepted
+        """
+        if Currency.objects.all_accepted().filter(iso_4217_code=value).exists() is False:
+            raise serializers.ValidationError(
+                _("{value} is not an accepted currency".format(value=value))
+            )
+        return value
