@@ -93,7 +93,7 @@ def confirm_info(request):
     }
 
     if payment_module.ALIAS.value:
-        data["ALIAS"] = hashlib.sha512(order.contact.user.username).hexdigest()
+        data["ALIAS"] = hashlib.sha512(order.contact.user.username).hexdigest()[:50]
 
     form = IngenicoForm(data)
     template = lookup_template(payment_module, 'checkout/ingenico/confirm.html')
