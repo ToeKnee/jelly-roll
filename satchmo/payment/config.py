@@ -1,12 +1,21 @@
-from django.utils.translation import ugettext_lazy, ugettext
-from satchmo.configuration import *
+from django.utils.translation import ugettext_lazy as _, ugettext
+from satchmo.configuration import (
+    BooleanValue,
+    ConfigurationGroup,
+    DecimalValue,
+    MultipleStringValue,
+    SettingNotSet,
+    StringValue,
+    config_choice_values,
+    config_register,
+    config_register_list,
+    config_value,
+)
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.utils import load_module
+from . import signals
+
 import logging
-import signals
-
-_ = ugettext_lazy
-
 log = logging.getLogger(__name__)
 
 PAYMENT_GROUP = ConfigurationGroup('PAYMENT', _('Payment Settings'))
@@ -92,15 +101,16 @@ config_register_list(
 )
 
 # --- Load default payment modules.  Ignore import errors, user may have deleted them. ---
-_default_modules = ('dummy', 'autosuccess', 'cod', 'authorizenet', 'cybersource',
-                    'google', 'paypal', 'protx', 'trustcommerce', 'worldpay'
-                    )
+_default_modules = (
+    'dummy', 'autosuccess', 'cod', 'authorizenet', 'cybersource',
+    'google', 'ingenico', 'paypal', 'protx', 'trustcommerce', 'worldpay'
+)
 
 for module in _default_modules:
     try:
         load_module("satchmo.payment.modules.%s.config" % module)
     except ImportError:
-        log.debug('Could not load default payment module configuration: %s', module)
+        log.warning('Could not load default payment module configuration: %s', module)
 
 # --- Load any extra payment modules. ---
 extra_payment = get_satchmo_setting('CUSTOM_PAYMENT_MODULES')
@@ -120,7 +130,7 @@ def credit_choices(settings=None, include_module_if_no_choices=False):
         vals = config_choice_values(module, 'CREDITCHOICES')
         for val in vals:
             key, label = val
-            if not key in keys:
+            if key not in keys:
                 keys.append(key)
                 pair = (key, ugettext(label))
                 choices.append(pair)
@@ -148,8 +158,6 @@ def payment_live(settings):
     try:
         if config_value('PAYMENT', 'LIVE'):
             return settings['LIVE'].value
-
     except SettingNotSet:
         pass
-
     return False
