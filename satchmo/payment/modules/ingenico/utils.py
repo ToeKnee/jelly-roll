@@ -28,16 +28,15 @@ def shasign(data):
             value=value
         )
         for key, value
-        in sorted(data.items())
-        if key != "SHASIGN"
+        in sorted(data.items(), key=lambda i: i[0].upper())
+        if value and key != "SHASIGN"
     )) + secret
 
     digest = sha512(phrase).hexdigest()
-
     return digest
 
 
 def verify_shasign(sign, data):
     # This is a naive implementation. It does not run in fixed time
     # and is therefor vulnerable to timing attacks.
-    return sign == shasign(data)
+    return sign.lower() == shasign(data)
