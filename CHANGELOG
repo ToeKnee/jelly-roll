@@ -2,6 +2,12 @@
 JellyRoll Change Log
 ==================
 
+Version 0.9.7.3, 26 April, 2017
+-------------------------------
+* Ingenico SHASIGN - handle lower case keys properly
+* Ingenico SHASIGN - handle empty values properly
+
+
 Version 0.9.7.2, 26 April, 2017
 -------------------------------
 * Add Alias Usage
