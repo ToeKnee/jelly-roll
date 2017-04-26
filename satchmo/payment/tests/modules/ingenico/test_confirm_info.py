@@ -80,6 +80,6 @@ class ConfirmInfoTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("ALIAS", response.content)
         self.assertIn(
-            hashlib.sha512(order.contact.user.username).hexdigest(),
+            hashlib.sha512(order.contact.user.username).hexdigest()[:50],
             response.content
         )
