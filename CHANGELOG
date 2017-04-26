@@ -2,13 +2,23 @@
 JellyRoll Change Log
 ==================
 
+Version 0.9.7.2, 26 April, 2017
+-------------------------------
+* Add Alias Usage
+
+
+Version 0.9.7.1, 26 April, 2017
+-------------------------------
+* Fix Alias length
+
+
 Version 0.9.7, 26 April, 2017
---------------------------
+-----------------------------
 * Add Ingenico payment module
 
 
 Version 0.9.6, 26 Dec, 2016
---------------------------
+---------------------------
 * Fix early notification issue
 
 
