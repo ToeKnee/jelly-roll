@@ -8,6 +8,8 @@ from factory import lazy_attribute
 from satchmo.contact.factories import ContactFactory
 from satchmo.l10n.factories import CountryFactory
 from satchmo.shop.models import (
+    Cart,
+    CartItem,
     Config,
     Order,
     OrderItem,
@@ -28,6 +30,27 @@ class ShopConfigFactory(factory.django.DjangoModelFactory):
     country = factory.LazyAttribute(lambda a: CountryFactory())
 
 
+class CartFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Cart
+
+    site = factory.LazyAttribute(lambda a: Site.objects.get_current())
+    customer = factory.SubFactory(ContactFactory)
+
+    @factory.post_generation
+    def add_cart_item(obj, create, extracted, **kwargs):
+        CartItemFactory(cart=obj)
+
+
+class CartItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CartItem
+
+    cart = factory.SubFactory(CartFactory)
+    product = factory.SubFactory(ProductFactory)
+    quantity = 5
+
+
 class OrderFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Order
@@ -43,6 +66,11 @@ class OrderItemFactory(factory.django.DjangoModelFactory):
     order = factory.SubFactory(OrderFactory)
     product = factory.SubFactory(ProductFactory)
     quantity = 5
+
+    @factory.post_generation
+    def update_quantity(obj, create, extracted, **kwargs):
+        obj.product.items_in_stock += obj.quantity
+        obj.product.save()
 
     @lazy_attribute
     def unit_price(oi):
