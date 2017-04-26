@@ -81,4 +81,10 @@ config_register_list(
                  description=_('Alias (Tokenisation) mode'),
                  help_text=_('Enable payment tokenisation (Alias Manager). If the alias exists, the cardholder name, masked credit card number (or account information) and expiry date will be initialised in the payment details page for validation.'),
                  default=False),
+
+    StringValue(PAYMENT_GROUP,
+                'ALIASUSAGE',
+                description=_('Alias Usage'),
+                help_text=_('A text explaining the reason for the Alias registration.'),
+                default=_("Would you like to securely store your card details for next time? This makes checking out quicker for your next order since you won't need to re-enter your card details.")),
 )

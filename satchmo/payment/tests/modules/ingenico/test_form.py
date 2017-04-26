@@ -39,6 +39,7 @@ class IngenicoFormTest(TestCase):
         form = IngenicoForm()
 
         self.assertNotIn("ALIAS", form.fields)
+        self.assertNotIn("ALIASUSAGE", form.fields)
 
     def test_shasign(self):
         order = TestOrderFactory()
