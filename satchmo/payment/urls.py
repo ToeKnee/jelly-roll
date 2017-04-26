@@ -27,4 +27,5 @@ def make_urlpatterns():
         patterns.append(url(config_value(key, 'URL_BASE'), [urlmodule, modulename, '']))
     return tuple(patterns)
 
+
 urlpatterns += make_urlpatterns()

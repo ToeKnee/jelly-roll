@@ -22,6 +22,20 @@ def success(request, template='checkout/success.html'):
     except Order.DoesNotExist:
         return bad_or_missing(request, _('Your order has already been processed.'))
 
+    complete_order(order)
+
+    if 'cart' in request.session:
+        del request.session['cart']
+
+    del request.session['orderID']
+
+    log.info("Successully processed %s" % (order))
+    context = RequestContext(request, {'order': order})
+    return render_to_response(template, context)
+
+
+@transaction.atomic
+def complete_order(order):
     # Track total sold for each product
     for item in order.orderitem_set.all():
         if item.stock_updated is False:
@@ -36,11 +50,18 @@ def success(request, template='checkout/success.html'):
 
     order.freeze()
     order.save()
-    if 'cart' in request.session:
-        del request.session['cart']
 
-    del request.session['orderID']
 
-    log.info("Successully processed " % (order))
-    context = RequestContext(request, {'order': order})
-    return render_to_response(template, context)
+@transaction.atomic
+def restock_order(order):
+    # Restock the order
+    for item in order.orderitem_set.all():
+        if item.stock_updated:
+            product = item.product
+            product.total_sold -= item.quantity
+            product.items_in_stock += item.quantity
+            product.save()
+
+            item.stock_updated = False
+            item.save()
+            log.debug("Set quantities for %s to %s" % (product, product.items_in_stock))

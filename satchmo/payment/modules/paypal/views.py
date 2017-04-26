@@ -18,6 +18,7 @@ from satchmo.configuration import config_value
 from satchmo.shop.models import Order, OrderPayment
 from satchmo.payment.utils import record_payment, create_pending_payment
 from satchmo.payment.views import payship
+from satchmo.payment.views.checkout import complete_order
 from satchmo.payment.config import payment_live
 from satchmo.shop.models import Cart
 from satchmo.utils.dynamic import lookup_url, lookup_template
@@ -180,23 +181,10 @@ def ipn(request):
         if not OrderPayment.objects.filter(transaction_id=txn_id).count():
             # If the payment hasn't already been processed:
             order = Order.objects.get(pk=invoice)
-            order.freeze()
             order.add_status(status='Processing', notes=_("Paid through PayPal."))
             payment_module = config_get_group('PAYMENT_PAYPAL')
             record_payment(order, payment_module, amount=gross, transaction_id=txn_id)
-
-            # Track total sold for each product
-            log.debug("PayPal IPN: Set quantities for %s" % txn_id)
-            for item in order.orderitem_set.all():
-                if item.stock_updated is False:
-                    product = item.product
-                    product.total_sold += item.quantity
-                    product.items_in_stock -= item.quantity
-                    product.save()
-
-                    item.stock_updated = True
-                    item.save()
-                    log.debug("PayPal IPN: Set quantities for %s to %s" % (product, product.items_in_stock))
+            complete_order(order)
 
             if 'memo' in data:
                 if order.notes:
