@@ -1,9 +1,9 @@
-from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 
 from satchmo.payment.modules.ingenico.views import accepted
 from satchmo.shop.factories import TestOrderFactory
-from satchmo.shop.models import Order
+from satchmo.shop.models import Order, NullCart
 
 
 class AcceptedTest(TestCase):
@@ -16,7 +16,30 @@ class AcceptedTest(TestCase):
 
         response = accepted(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response._headers['location'], ('Location', '{}/'.format(getattr(settings, "SHOP_BASE", "/store"))))
+        self.assertEqual(response._headers['location'], ('Location', reverse("satchmo_shop_home")))
+
+    def test_order_unavailable__deletes_cart_from_session(self):
+        request = self.factory.get('/shop/checkout/ingenico/accepted/')
+        request.session = {
+            "cart": NullCart()
+        }
+
+        response = accepted(request)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response._headers['location'], ('Location', reverse("satchmo_shop_home")))
+        self.assertNotIn("cart", request.session)
+
+    def test_order_unavailable__deletes_frozen_order_from_session(self):
+        order = TestOrderFactory(frozen=True)
+        request = self.factory.get('/shop/checkout/ingenico/accepted/')
+        request.session = {
+            "orderID": order.id,
+        }
+        request.user = order.contact.user
+
+        response = accepted(request)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response._headers['location'], ('Location', reverse("satchmo_order_tracking", kwargs={"order_id": order.id})))
 
     def test_order_available(self):
         order = TestOrderFactory()
