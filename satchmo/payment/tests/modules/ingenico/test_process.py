@@ -28,14 +28,14 @@ class ProcessTest(TestCase):
 
         data = {
             "ACCEPTANCE": "trans-1",
-            "AMOUNT": str(order.total),
+            "amount": str(order.total),
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
             "CURRENCY": payment_module.CURRENCY_CODE.value,
             "ED": "02/2019",
             "NCERROR": "",
-            "ORDERID": str(order.id),
+            "orderID": str(order.id),
             "PAYID": "ingenico-1",
             "PM": "CC",
             "SHASIGN": "invalid-shasign",
@@ -54,14 +54,14 @@ class ProcessTest(TestCase):
 
         data = {
             "ACCEPTANCE": "trans-1",
-            "AMOUNT": str(order.total),
+            "amount": str(order.total),
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
             "CURRENCY": payment_module.CURRENCY_CODE.value,
             "ED": "02/2019",
             "NCERROR": "",
-            "ORDERID": "1234567890",  # Made up order number
+            "orderID": "1234567890",  # Made up order number
             "PAYID": "ingenico-1",
             "PM": "CC",
             "STATUS": "9",
@@ -79,14 +79,14 @@ class ProcessTest(TestCase):
 
         data = {
             "ACCEPTANCE": "trans-1",
-            "AMOUNT": order.total,
+            "amount": order.total,
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
             "CURRENCY": payment_module.CURRENCY_CODE.value,
             "ED": "02/2019",
             "NCERROR": "",
-            "ORDERID": order.id,
+            "orderID": order.id,
             "PAYID": "ingenico-1",
             "PM": "CC",
             # No Status - "STATUS": "9",
@@ -107,14 +107,14 @@ class ProcessTest(TestCase):
 
         data = {
             "ACCEPTANCE": "trans-1",
-            "AMOUNT": str(order.total),
+            "amount": str(order.total),
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
             "CURRENCY": payment_module.CURRENCY_CODE.value,
             "ED": "02/2019",
             "NCERROR": "",
-            "ORDERID": str(order.id),
+            "orderID": str(order.id),
             "PAYID": "ingenico-1",
             "PM": "CC",
             "STATUS": "9",
@@ -146,14 +146,14 @@ class ProcessTest(TestCase):
 
         data = {
             "ACCEPTANCE": "trans-1",
-            "AMOUNT": str(order.total),
+            "amount": str(order.total),
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
             "CURRENCY": payment_module.CURRENCY_CODE.value,
             "ED": "02/2019",
             "NCERROR": "",
-            "ORDERID": str(order.id),
+            "orderID": str(order.id),
             "PAYID": "ingenico-1",
             "PM": "CC",
             "STATUS": "1",
@@ -185,14 +185,14 @@ class ProcessTest(TestCase):
 
         data = {
             "ACCEPTANCE": "trans-1",
-            "AMOUNT": str(order.total),
+            "amount": str(order.total),
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
             "CURRENCY": payment_module.CURRENCY_CODE.value,
             "ED": "02/2019",
             "NCERROR": "",
-            "ORDERID": str(order.id),
+            "orderID": str(order.id),
             "PAYID": "ingenico-1",
             "PM": "CC",
             "STATUS": "2",
@@ -223,14 +223,14 @@ class ProcessTest(TestCase):
 
         data = {
             "ACCEPTANCE": "trans-1",
-            "AMOUNT": str(order.total),
+            "amount": str(order.total),
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
             "CURRENCY": payment_module.CURRENCY_CODE.value,
             "ED": "02/2019",
             "NCERROR": "",
-            "ORDERID": str(order.id),
+            "orderID": str(order.id),
             "PAYID": "ingenico-1",
             "PM": "CC",
             "STATUS": "8",
