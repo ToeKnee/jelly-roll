@@ -2,6 +2,11 @@
 JellyRoll Change Log
 ==================
 
+Version 0.9.7.5, 27 April, 2017
+-------------------------------
+* Ingenico improve handling visiting accepted page after processing order
+
+
 Version 0.9.7.4, 27 April, 2017
 -------------------------------
 * Ingenico handle random case sensitivity of return values
