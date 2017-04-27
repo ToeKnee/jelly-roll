@@ -126,14 +126,22 @@ def accepted(request):
 
     """
     # Accept the payment (but don't mark it as "Processing" yet)
+    order_id = request.session.get('orderID')
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_shop_home"))
+        if 'cart' in request.session:
+            del request.session['cart']
 
-    order.add_status(status='Accepted', notes=_("Paid through Ingenico."))
-
-    return generic_success(request)
+        if order_id:
+            return HttpResponseRedirect(
+                urlresolvers.reverse("satchmo_order_tracking", kwargs={"order_id": order_id})
+            )
+        else:
+            return HttpResponseRedirect(urlresolvers.reverse("satchmo_shop_home"))
+    else:
+        order.add_status(status='Accepted', notes=_("Paid through Ingenico."))
+        return generic_success(request)
 
 
 def declined(request):
