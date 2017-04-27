@@ -2,6 +2,11 @@
 JellyRoll Change Log
 ==================
 
+Version 0.9.7.4, 27 April, 2017
+-------------------------------
+* Ingenico handle random case sensitivity of return values
+
+
 Version 0.9.7.3, 26 April, 2017
 -------------------------------
 * Ingenico SHASIGN - handle lower case keys properly
