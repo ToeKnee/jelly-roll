@@ -59,6 +59,7 @@ class ConfirmInfoTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("SHASIGN", response.content)
         self.assertNotIn("ALIAS", response.content)
+        self.assertNotIn("ALIASUSAGE", response.content)
 
     def test_form_includes_alias__if_enabled(self):
         # Enable Aliasing
@@ -80,6 +81,7 @@ class ConfirmInfoTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("ALIAS", response.content)
         self.assertIn(
-            hashlib.sha512(order.contact.user.username).hexdigest(),
+            hashlib.sha512(order.contact.user.username).hexdigest()[:50],
             response.content
         )
+        self.assertIn("ALIASUSAGE", response.content)

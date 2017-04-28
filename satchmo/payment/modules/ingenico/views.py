@@ -34,6 +34,7 @@ from satchmo.payment.views.checkout import (
 from satchmo.payment.utils import record_payment
 from satchmo.shop.models import Cart, Order
 from satchmo.shop.utils import HttpResponseMethodNotAllowed
+from satchmo.utils.case_insensitive_dict import CaseInsensitiveReadOnlyDict
 from satchmo.utils.dynamic import lookup_template
 
 import logging
@@ -93,7 +94,8 @@ def confirm_info(request):
     }
 
     if payment_module.ALIAS.value:
-        data["ALIAS"] = hashlib.sha512(order.contact.user.username).hexdigest()
+        data["ALIAS"] = hashlib.sha512(order.contact.user.username).hexdigest()[:50]
+        data["ALIASUSAGE"] = payment_module.ALIASUSAGE.value
 
     form = IngenicoForm(data)
     template = lookup_template(payment_module, 'checkout/ingenico/confirm.html')
@@ -124,14 +126,22 @@ def accepted(request):
 
     """
     # Accept the payment (but don't mark it as "Processing" yet)
+    order_id = request.session.get('orderID')
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_shop_home"))
+        if 'cart' in request.session:
+            del request.session['cart']
 
-    order.add_status(status='Accepted', notes=_("Paid through Ingenico."))
-
-    return generic_success(request)
+        if order_id:
+            return HttpResponseRedirect(
+                urlresolvers.reverse("satchmo_order_tracking", kwargs={"order_id": order_id})
+            )
+        else:
+            return HttpResponseRedirect(urlresolvers.reverse("satchmo_shop_home"))
+    else:
+        order.add_status(status='Accepted', notes=_("Paid through Ingenico."))
+        return generic_success(request)
 
 
 def declined(request):
@@ -168,7 +178,7 @@ def process(request):
     CURRENCY Order currency
     ED Expiry date
     NCERROR Error code
-    ORDERID Your order reference
+    orderID Your order reference
     PAYID Payment reference in our system
     PM Payment method
     SHASIGN SHA signature calculated by our system (if SHA-OUT configured)
@@ -176,18 +186,18 @@ def process(request):
     TRXDATE Transaction date
     """
     logger.debug("Process: %s", request.POST)
+    post_data = CaseInsensitiveReadOnlyDict(request.POST)
     if request.method == "POST":
-        shasign = request.POST.get("SHASIGN")
+        shasign = post_data.get("SHASIGN")
         # Verify the Shasign
-
-        if verify_shasign(shasign, request.POST):
+        if verify_shasign(shasign, post_data):
             try:
-                order = Order.objects.get(id=request.POST.get("ORDERID"))
+                order = Order.objects.get(id=post_data.get("orderID"))
             except Order.DoesNotExist:
                 raise Http404()
 
-            amount = Decimal(request.POST.get("AMOUNT"))
-            transaction_id = request.POST.get("ACCEPTANCE")
+            amount = Decimal(post_data.get("AMOUNT"))
+            transaction_id = post_data.get("ACCEPTANCE")
 
             if order.notes is None:
                 order.notes = ""
@@ -195,8 +205,8 @@ def process(request):
                 now=timezone.now()
             )
 
-            if "STATUS" in request.POST:
-                status = TRANSACTION_STATUS[int(request.POST["STATUS"])]["NAME"]
+            if "STATUS" in post_data:
+                status = TRANSACTION_STATUS[int(post_data["STATUS"])]["NAME"]
             else:
                 status = "Unknown"
 
@@ -216,25 +226,25 @@ Brand: {brand}
 Expiry date: {ed}
             """.format(
                 status=status,
-                transaction_date=request.POST.get("TRXDATE"),
+                transaction_date=post_data.get("TRXDATE"),
                 acceptance=transaction_id,
-                ingenico_id=request.POST.get("PAYID"),
-                amount=request.POST.get("AMOUNT"),
-                currency=request.POST.get("CURRENCY"),
-                nc_error=request.POST.get("NCERROR"),
-                pm=request.POST.get("PM"),
-                cn=request.POST.get("CN"),
-                cardno=request.POST.get("CARDNO"),
-                brand=request.POST.get("BRAND"),
-                ed=request.POST.get("ED"),
+                ingenico_id=post_data.get("PAYID"),
+                amount=post_data.get("amount"),
+                currency=post_data.get("CURRENCY"),
+                nc_error=post_data.get("NCERROR"),
+                pm=post_data.get("PM"),
+                cn=post_data.get("CN"),
+                cardno=post_data.get("CARDNO"),
+                brand=post_data.get("BRAND"),
+                ed=post_data.get("ED"),
             )
             order.notes += notes
             order.save()
 
             # Ensure the status is ok before recording payment
             # https://payment-services.ingenico.com/int/en/ogone/support/guides/user%20guides/statuses-and-errors
-            if "STATUS" in request.POST:
-                status = int(request.POST["STATUS"])
+            if "STATUS" in post_data:
+                status = int(post_data["STATUS"])
                 if status == 9:  # Payment requested, ok to send package
                     record_payment(order, payment_module, amount=amount, transaction_id=transaction_id)
                     complete_order(order)
@@ -245,7 +255,7 @@ Expiry date: {ed}
                     restock_order(order)
                     order.save()
                     order.add_status(status='Cancelled', notes=_(""))
-                elif status == 8:  # Refund
+                elif status == 7 or status == 8:  # Payment Deleted or Refunded
                     order.refund = amount
                     if order.frozen is False:
                         order.freeze()
@@ -262,7 +272,7 @@ Expiry date: {ed}
                     )
             return HttpResponse()
         else:
-            logger.warning("Verification failed: %s", request.POST)
+            logger.warning("Verification failed: %s", post_data)
             return HttpResponsePaymentRequired()
     else:
         return HttpResponseMethodNotAllowed()

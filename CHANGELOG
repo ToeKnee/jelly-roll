@@ -2,8 +2,44 @@
 JellyRoll Change Log
 ==================
 
+Version 0.9.7.6, 28 April, 2017
+-------------------------------
+* Ingenico handle payment deleted like a refund
+
+
+Version 0.9.7.5, 27 April, 2017
+-------------------------------
+* Ingenico improve handling visiting accepted page after processing order
+
+
+Version 0.9.7.4, 27 April, 2017
+-------------------------------
+* Ingenico handle random case sensitivity of return values
+
+
+Version 0.9.7.3, 26 April, 2017
+-------------------------------
+* Ingenico SHASIGN - handle lower case keys properly
+* Ingenico SHASIGN - handle empty values properly
+
+
+Version 0.9.7.2, 26 April, 2017
+-------------------------------
+* Add Alias Usage
+
+
+Version 0.9.7.1, 26 April, 2017
+-------------------------------
+* Fix Alias length
+
+
+Version 0.9.7, 26 April, 2017
+-----------------------------
+* Add Ingenico payment module
+
+
 Version 0.9.6, 26 Dec, 2016
---------------------------
+---------------------------
 * Fix early notification issue
 
 
