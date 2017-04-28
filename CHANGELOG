@@ -2,6 +2,11 @@
 JellyRoll Change Log
 ==================
 
+Version 0.9.7.6, 28 April, 2017
+-------------------------------
+* Ingenico handle payment deleted like a refund
+
+
 Version 0.9.7.5, 27 April, 2017
 -------------------------------
 * Ingenico improve handling visiting accepted page after processing order

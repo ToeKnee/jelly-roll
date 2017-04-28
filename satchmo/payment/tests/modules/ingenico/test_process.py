@@ -256,3 +256,42 @@ class ProcessTest(TestCase):
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
         self.assertIn("Status: Refund", order.notes)
+
+    def test_status__refund__payment_deleted(self):
+        order = TestOrderFactory()
+
+        data = {
+            "ACCEPTANCE": "trans-1",
+            "amount": str(order.total),
+            "BRAND": "Visa",
+            "CARDNO": "xxxx xxxx xxxx 4679",
+            "CN": order.bill_addressee,
+            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "ED": "02/2019",
+            "NCERROR": "",
+            "orderID": str(order.id),
+            "PAYID": "ingenico-1",
+            "PM": "CC",
+            "STATUS": "7",
+            "TRXDATE": date.today().isoformat(),
+        }
+        data["SHASIGN"] = shasign(data)
+
+        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+
+        response = process(request)
+        self.assertEqual(response.status_code, 200)
+
+        order = Order.objects.get(id=order.id)
+        self.assertTrue(order.frozen)
+        self.assertEqual(order.refund, order.total)
+        self.assertEqual(order.status.status.status, "Refunded")
+        self.assertFalse(order.payments.filter(
+            amount=order.total,
+            payment="INGENICO",
+            transaction_id=data["ACCEPTANCE"],
+        ).exists())
+        for item in order.orderitem_set.all():
+            self.assertEqual(item.product.items_in_stock, item.quantity)
+            self.assertEqual(item.product.total_sold, 0)
+        self.assertIn("Status: Payment deleted", order.notes)
