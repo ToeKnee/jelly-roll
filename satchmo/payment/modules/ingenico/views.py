@@ -255,7 +255,7 @@ Expiry date: {ed}
                     restock_order(order)
                     order.save()
                     order.add_status(status='Cancelled', notes=_(""))
-                elif status == 8:  # Refund
+                elif status == 7 or status == 8:  # Payment Deleted or Refunded
                     order.refund = amount
                     if order.frozen is False:
                         order.freeze()
