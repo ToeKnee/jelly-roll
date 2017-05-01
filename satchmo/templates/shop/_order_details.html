@@ -71,7 +71,7 @@
 {{ order.display_sub_total }}
 {% endif %}<br/>
 {% if order.discount %}
-    {% trans "Discount" %} - {{ order.|display_item_discount }}<br/>
+    {% trans "Discount" %} - {{ order.display_item_discount }}<br/>
 {% endif %}
 {% if order.shipping_discount %}
 {% trans "Base Shipping" %} + {{ order.display_shipping_cost }}<br/>
