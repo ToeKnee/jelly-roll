@@ -676,7 +676,6 @@ class Order(models.Model):
     def freeze(self):
         self.frozen = True
         self.time_stamp = timezone.now()
-        print "# TODO: Ensure the currency is up to date"
 
     def add_status(self, status=None, notes=None, status_notify_by_default=False):
         order_status = OrderStatus()
