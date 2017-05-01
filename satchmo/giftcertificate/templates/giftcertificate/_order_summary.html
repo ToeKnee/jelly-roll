@@ -10,7 +10,7 @@
         <br/>
     {% endwith %}
 {% endif %}
-    {% blocktrans %}Starting Balance: {% currency cert.start_balance %}{% endblocktrans %}
+    {% blocktrans %}Starting Balance:{% endblocktrans %} {% currency cert.start_balance %}
     <br/>
 {% with cert.code as code %}
     {% blocktrans %}Code: {{ code }}{% endblocktrans %}
