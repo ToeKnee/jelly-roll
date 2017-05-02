@@ -78,7 +78,7 @@ def currency_for_request(request):
         # If not, try the profile
         if currency_code is None:
             try:
-                currency_code = request.user.profile.currency_code
+                currency_code = request.user.profile.currency.iso_4217_code
             except AttributeError:
                 pass
 
