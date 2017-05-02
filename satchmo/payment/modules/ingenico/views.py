@@ -84,13 +84,16 @@ def confirm_info(request):
         "CURRENCY": config_value('SHOP', 'CURRENCY_CODE', 'GBP'),
         "CN": order.bill_addressee,
         "EMAIL": order.contact.user.email,
-        "OWNERADDRESS": "{street_1} {street_2}".format(
-            street_1=order.bill_street1,
-            street_2=order.bill_street2,
-        ),
+        "OWNERADDRESS": ", ".join([
+            order.bill_street1,
+            order.bill_street2,
+        ]),
         "OWNERZIP": order.bill_postal_code,
-        "OWNERTOWN": order.bill_city,
-        "OWNERCTY": order.bill_state,
+        "OWNERTOWN": ", ".join([
+            order.bill_city,
+            order.bill_state,
+        ]),
+        "OWNERCTY": order.bill_country.iso2_code,
     }
 
     if payment_module.ALIAS.value:
