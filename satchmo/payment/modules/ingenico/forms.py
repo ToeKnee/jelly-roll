@@ -16,7 +16,7 @@ class IngenicoForm(forms.Form):
     OWNERADDRESS = forms.CharField(required=False, widget=forms.HiddenInput())
     OWNERZIP = forms.CharField(required=False, widget=forms.HiddenInput())
     OWNERTOWN = forms.CharField(required=False, widget=forms.HiddenInput())
-    OWNERCTY = forms.CharField(required=False, widget=forms.HiddenInput())
+    OWNERCTY = forms.CharField(required=False, widget=forms.HiddenInput())  # Country
     OWNERTELNO = forms.CharField(required=False, widget=forms.HiddenInput())
 
     # Generate this field
