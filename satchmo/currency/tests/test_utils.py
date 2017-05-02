@@ -1,6 +1,11 @@
+import mock
 from decimal import Decimal
 
-from django.test import TestCase, RequestFactory
+from django.test import (
+    RequestFactory,
+    TestCase,
+    override_settings,
+)
 from django.utils.encoding import force_str
 
 from satchmo.configuration.models import Setting
@@ -235,6 +240,75 @@ class CurrencyForRequest(TestCase):
         request.session = {
             "currency_code": "GBP",
         }
+
+        self.assertEqual(currency_for_request(request), "GBP")
+
+    @override_settings(GEOIP=None)
+    def test_geoip__not_set_up(self):
+        request = self.request_factory.get("/")
+        request.session = {}
+
+        self.assertEqual(currency_for_request(request), "EUR")
+
+    @override_settings(GEOIP_PATH="/tmp")
+    @mock.patch("satchmo.currency.utils.get_real_ip")
+    def test_geoip__no_ip(self, mock_get_real_ip):
+        mock_get_real_ip.return_value = None
+
+        request = self.request_factory.get("/")
+        request.session = {}
+
+        self.assertEqual(currency_for_request(request), "EUR")
+
+
+    @override_settings(GEOIP_PATH="/tmp")
+    @mock.patch("satchmo.currency.utils.GeoIP")
+    @mock.patch("satchmo.currency.utils.get_real_ip")
+    def test_geoip__no_country(self, mock_get_real_ip, mock_geoip):
+        mock_get_real_ip.return_value = "127.0.0.1"
+
+        class MockGeoIP(object):
+            def country(self, ip):
+                return {'country_name': None, 'country_code': None}
+        mock_geoip.return_value = MockGeoIP()
+
+        request = self.request_factory.get("/")
+        request.session = {}
+
+        self.assertEqual(currency_for_request(request), "EUR")
+
+    @override_settings(GEOIP_PATH="/tmp")
+    @mock.patch("satchmo.currency.utils.GeoIP")
+    @mock.patch("satchmo.currency.utils.get_real_ip")
+    def test_geoip__country_doesnt_match_accepted_country(self, mock_get_real_ip, mock_geoip):
+        mock_get_real_ip.return_value = "163.44.191.38"
+
+        class MockGeoIP(object):
+            def country(self, ip):
+                return {'country_name': 'Japan', 'country_code': 'JP'}
+        mock_geoip.return_value = MockGeoIP()
+
+        request = self.request_factory.get("/")
+        request.session = {}
+
+        self.assertEqual(currency_for_request(request), "EUR")
+
+    @override_settings(GEOIP_PATH="/tmp")
+    @mock.patch("satchmo.currency.utils.GeoIP")
+    @mock.patch("satchmo.currency.utils.get_real_ip")
+    def test_geoip__country_matches_accepted_country(self, mock_get_real_ip, mock_geoip):
+        mock_get_real_ip.return_value = "88.97.34.8"
+        gbp = GBPCurrencyFactory()
+        gbp.accepted = True
+        gbp.save()
+
+        class MockGeoIP(object):
+            def country(self, ip):
+                return {'country_name': 'United Kingdom', 'country_code': 'GB'}
+        mock_geoip.return_value = MockGeoIP()
+
+        request = self.request_factory.get("/")
+        request.session = {}
 
         self.assertEqual(currency_for_request(request), "GBP")
 

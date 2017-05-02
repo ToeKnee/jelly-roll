@@ -1,7 +1,10 @@
 import math
 
 from decimal import Decimal
+from ipware.ip import get_real_ip
 
+from django.conf import settings
+from django.contrib.gis.geoip import GeoIP
 from django.utils.translation import ugettext_lazy as _
 
 from satchmo.configuration import config_value
@@ -78,6 +81,23 @@ def currency_for_request(request):
                 currency_code = request.user.profile.currency_code
             except AttributeError:
                 pass
+
+        # If not, try the IP address
+        if currency_code is None or True:
+            if hasattr(settings, "GEOIP_PATH"):
+                ip = get_real_ip(request)
+                if ip:
+                    geoip = GeoIP()
+                    country = geoip.country(ip)
+
+                    try:
+                        currency = Currency.objects.all_accepted().get(
+                            countries__iso2_code=country["country_code"]
+                        )
+                    except Currency.DoesNotExist:
+                        pass
+                    else:
+                        currency_code = currency.iso_4217_code
 
     # If not, fall back to primary currency
     if currency_code is None:
