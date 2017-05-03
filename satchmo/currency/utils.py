@@ -1,6 +1,6 @@
 import math
 
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_EVEN
 from ipware.ip import get_real_ip
 
 from django.conf import settings
@@ -53,7 +53,10 @@ def convert_to_currency(value, currency_code):
         # Multiply by the exchange rate
         value = value * exchange_rate
 
-        # Round up to the nearest whole unit of currency
+        # Quantize value using bankers rounding
+        value = value.quantize(Decimal('.01'), rounding=ROUND_HALF_EVEN)
+
+        # Round up to the nearest half unit of currency
         if config_value('CURRENCY', 'ROUND_UP'):
             if value % 1 > Decimal("0.5"):
                 value = Decimal(math.ceil(value))

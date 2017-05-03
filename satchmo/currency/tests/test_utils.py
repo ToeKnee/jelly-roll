@@ -113,6 +113,23 @@ class ConvertToCurrencyTest(TestCase):
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("1.10"))
 
+    def test_values_are_quantized(self):
+        value = Decimal("1.00")
+        currency_code = "GBP"
+        currency = GBPCurrencyFactory()
+        ExchangeRateFactory(
+            rate=Decimal("0.750123"),
+            currency=currency
+        )
+        Setting.objects.create(
+            group='CURRENCY',
+            key='BUFFER',
+            value=Decimal("0.00"),
+        )
+
+        test_value = convert_to_currency(value, currency_code)
+        self.assertEqual(test_value, Decimal("0.75"))
+
     def test_round_up_is_honoured__whole_number(self):
         value = Decimal("0.50")
         currency_code = "GBP"
@@ -161,7 +178,7 @@ class ConvertToCurrencyTest(TestCase):
             value=False,
         )
         test_value = convert_to_currency(value, currency_code)
-        self.assertEqual(test_value, Decimal("0.3663"))
+        self.assertEqual(test_value, Decimal("0.37"))
 
     def test_psychological_pricing__whole_currency(self):
         value = Decimal("1.00")
