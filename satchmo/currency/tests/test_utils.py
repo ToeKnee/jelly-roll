@@ -113,6 +113,19 @@ class ConvertToCurrencyTest(TestCase):
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("1.10"))
 
+    def test_buffer_is_not_added_when_value_is_zero(self):
+        value = Decimal("0.00")
+        currency_code = "GBP"
+
+        Setting.objects.create(
+            group='CURRENCY',
+            key='BUFFER',
+            value=Decimal("0.10"),
+        )
+
+        test_value = convert_to_currency(value, currency_code)
+        self.assertEqual(test_value, Decimal("0.00"))
+
     def test_values_are_quantized(self):
         value = Decimal("1.00")
         currency_code = "GBP"

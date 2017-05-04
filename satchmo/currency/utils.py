@@ -47,8 +47,9 @@ def convert_to_currency(value, currency_code):
             exchange_rate = Decimal("1.00")
 
         # Add a small buffer
-        buffer = config_value('CURRENCY', 'BUFFER')
-        value = value + buffer
+        if value:
+            buffer = config_value('CURRENCY', 'BUFFER')
+            value = value + buffer
 
         # Multiply by the exchange rate
         value = value * exchange_rate
