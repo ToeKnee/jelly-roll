@@ -101,10 +101,10 @@ class OrderOptions(admin.ModelAdmin):
          {'classes': ('collapse',),
           'fields': ('bill_street1', 'bill_street2', 'bill_city', 'bill_state', 'bill_postal_code', 'bill_country')}),
         (_('Totals'),
-         {'fields': ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'refund')}
+         {'fields': ('currency', 'sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'refund')}
          )
     )
-    readonly_fields = ('contact', 'time_stamp', 'frozen', 'shipping_date', 'estimated_delivery_min_date', 'estimated_delivery_expected_date', 'estimated_delivery_max_date')
+    readonly_fields = ('contact', 'time_stamp', 'frozen', 'shipping_date', 'estimated_delivery_min_date', 'estimated_delivery_expected_date', 'estimated_delivery_max_date', 'currency')
     list_display = ('id', 'contact', 'contact_user', 'ship_country', 'time_stamp', 'order_total', 'balance_forward', 'status', 'late_date', 'tracking_number', 'invoice', 'frozen')
     list_filter = ['time_stamp', 'status__status', 'frozen']
     search_fields = ['id', 'contact__user__username', 'contact__user__email', 'contact__first_name', 'contact__last_name', 'contact__email']
