@@ -287,11 +287,12 @@ class CartManager(models.Manager):
                 raise Cart.DoesNotExist()
 
         # Set the currency in the cart
-        currency_code = currency_for_request(request)
-        currency = Currency.objects.all_accepted().get(iso_4217_code=currency_code)
-        if cart.currency != currency:
-            cart.currency = currency
-            cart.save()
+        if isinstance(cart, Cart):
+            currency_code = currency_for_request(request)
+            currency = Currency.objects.all_accepted().get(iso_4217_code=currency_code)
+            if cart.currency != currency:
+                cart.currency = currency
+                cart.save()
 
         log.debug("Cart: %s", cart)
         return cart
@@ -332,6 +333,10 @@ class Cart(models.Model):
             self.site
         except Site.DoesNotExist:
             self.site = Site.objects.get_current()
+
+        if self.currency is None:
+            self.currency = Currency.objects.get_primary()
+
         super(Cart, self).save(*args, **kwargs)
 
     def add_item(self, chosen_item, number_added, details=None):
