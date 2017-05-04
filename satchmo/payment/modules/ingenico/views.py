@@ -81,7 +81,7 @@ def confirm_info(request):
         # Amount * 100
         # https://payment-services.ingenico.com/int/en/ogone/support/guides/integration%20guides/e-commerce#formparameters
         "AMOUNT": int(order.balance * 100),
-        "CURRENCY": config_value('SHOP', 'CURRENCY_CODE', 'GBP'),
+        "CURRENCY": order.currency.iso_4217_code,
         "CN": order.bill_addressee,
         "EMAIL": order.contact.user.email,
         "OWNERADDRESS": ", ".join([
