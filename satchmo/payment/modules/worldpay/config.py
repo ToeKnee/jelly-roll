@@ -1,9 +1,16 @@
-from satchmo.configuration import *
+from satchmo.configuration import (
+    BooleanValue,
+    ConfigurationGroup,
+    ModuleValue,
+    MultipleStringValue,
+    StringValue,
+    config_get,
+    config_register_list,
+)
+
 from django.utils.translation import ugettext_lazy as _
 
-# this is so that the translation utility will pick up the string
-gettext = lambda s: s
-_strings = (gettext('CreditCard'), gettext('Credit Card'))
+_strings = (_('CreditCard'), _('Credit Card'))
 
 PAYMENT_MODULES = config_get('PAYMENT', 'MODULES')
 PAYMENT_MODULES.add_choice(('PAYMENT_WORLDPAY', _('Worldpay')))
