@@ -29,14 +29,6 @@ config_register_list(
 
     StringValue(
         PAYMENT_GROUP,
-        'CURRENCY_CODE',
-        description=_('Currency Code'),
-        help_text=_('Currency code for Google Checkout transactions.'),
-        default='USD'
-    ),
-
-    StringValue(
-        PAYMENT_GROUP,
         'CHECKOUT_BUTTON_URL',
         description=_('Checkout Button URL'),
         default="http://checkout.google.com/buttons/checkout.gif"

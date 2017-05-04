@@ -35,7 +35,7 @@ class GoogleCart(object):
             "order": order,
             "continue_shopping_url": shopping_url,
             "edit_cart_url": edit_url,
-            "currency": self.settings.CURRENCY_CODE.value,
+            "currency": order.currency.iso_4217_code,
         })
         return template.render(ctx)
 
