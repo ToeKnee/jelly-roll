@@ -27,8 +27,13 @@ from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
 from satchmo.currency.models import Currency
+from satchmo.currency.utils import (
+    convert_to_currency,
+    currency_for_request,
+    money_format,
+)
+from satchmo.discount.utils import find_discount_for_code
 from satchmo.l10n.models import Country
-from satchmo.currency.utils import money_format
 from satchmo.payment.fields import PaymentChoiceCharField
 from satchmo.product import signals as product_signals
 from satchmo.product.models import Product, DownloadableProduct
@@ -37,7 +42,6 @@ from satchmo.shipping.models import POSTAGE_SPEED_CHOICES, STANDARD
 from satchmo.shop import signals
 from satchmo.shop.notification import send_order_update, send_owner_order_notice
 from satchmo.tax.utils import get_tax_processor
-from satchmo.discount.utils import find_discount_for_code
 
 log = logging.getLogger(__name__)
 
@@ -282,6 +286,13 @@ class CartManager(models.Manager):
             else:
                 raise Cart.DoesNotExist()
 
+        # Set the currency in the cart
+        currency_code = currency_for_request(request)
+        currency = Currency.objects.all_accepted().get(iso_4217_code=currency_code)
+        if cart.currency != currency:
+            cart.currency = currency
+            cart.save()
+
         log.debug("Cart: %s", cart)
         return cart
 
@@ -296,22 +307,16 @@ class Cart(models.Model):
     desc = models.CharField(_("Description"), blank=True, null=True, max_length=10)
     date_time_created = models.DateTimeField(_("Creation Date"))
     customer = models.ForeignKey(Contact, blank=True, null=True, verbose_name=_('Customer'))
+    currency = models.ForeignKey(Currency, verbose_name=_('Currency'), related_name="carts", editable=False, null=True, blank=True)
 
     objects = CartManager()
 
-    def _get_count(self):
-        itemCount = 0
-        for item in self.cartitem_set.all():
-            itemCount += item.quantity
-        return (itemCount)
-    numItems = property(_get_count)
+    class Meta:
+        verbose_name = _("Shopping Cart")
+        verbose_name_plural = _("Shopping Carts")
 
-    def _get_total(self):
-        total = Decimal("0")
-        for item in self.cartitem_set.all():
-            total += item.line_total
-        return(total)
-    total = property(_get_total)
+    def __unicode__(self):
+        return u"Shopping Cart (%s)" % self.date_time_created
 
     def __iter__(self):
         return iter(self.cartitem_set.all())
@@ -319,8 +324,15 @@ class Cart(models.Model):
     def __len__(self):
         return self.cartitem_set.count()
 
-    def __unicode__(self):
-        return u"Shopping Cart (%s)" % self.date_time_created
+    def save(self, *args, **kwargs):
+        """Ensure we have a date_time_created before saving the first time."""
+        if not self.pk:
+            self.date_time_created = timezone.now()
+        try:
+            self.site
+        except Site.DoesNotExist:
+            self.site = Site.objects.get_current()
+        super(Cart, self).save(*args, **kwargs)
 
     def add_item(self, chosen_item, number_added, details=None):
         if details is None:
@@ -372,24 +384,6 @@ class Cart(models.Model):
             item.delete()
         self.save()
 
-    def save(self, *args, **kwargs):
-        """Ensure we have a date_time_created before saving the first time."""
-        if not self.pk:
-            self.date_time_created = timezone.now()
-        try:
-            self.site
-        except Site.DoesNotExist:
-            self.site = Site.objects.get_current()
-        super(Cart, self).save(*args, **kwargs)
-
-    def _get_shippable(self):
-        """Return whether the cart contains shippable items."""
-        for cartitem in self.cartitem_set.all():
-            if cartitem.is_shippable:
-                return True
-        return False
-    is_shippable = property(_get_shippable)
-
     def get_shipment_list(self):
         """Return a list of shippable products, where each item is split into
         multiple elements, one for each quantity."""
@@ -413,9 +407,31 @@ class Cart(models.Model):
                     not_enough_stock.append(cart_item)
         return not_enough_stock
 
-    class Meta:
-        verbose_name = _("Shopping Cart")
-        verbose_name_plural = _("Shopping Carts")
+    @property
+    def is_shippable(self):
+        """Return whether the cart contains shippable items."""
+        for cartitem in self.cartitem_set.all():
+            if cartitem.is_shippable:
+                return True
+        return False
+
+    @property
+    def numItems(self):
+        itemCount = 0
+        for item in self.cartitem_set.all():
+            itemCount += item.quantity
+        return itemCount
+
+    @property
+    def total(self):
+        total = Decimal("0")
+        for item in self.cartitem_set.all():
+            total += item.line_total
+        return total
+
+    @property
+    def display_total(self):
+        return money_format(self.total, self.currency.iso_4217_code)
 
 
 class NullCartItem(object):
@@ -433,21 +449,31 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, verbose_name=_('Product'))
     quantity = models.IntegerField(_("Quantity"))
 
-    def _get_line_unitprice(self):
+    @property
+    def unit_price(self):
         # Get the qty discount price as the unit price for the line.
         self.qty_price = self.get_qty_price(self.quantity)
         self.detail_price = self.get_detail_price()
-        #send signal to possibly adjust the unitprice
-        signals.satchmo_cartitem_price_query.send(self, cartitem=self)
-        price = self.qty_price + self.detail_price
 
-        #clean up temp vars
+        # send signal to possibly adjust the unitprice
+        signals.satchmo_cartitem_price_query.send(self, cartitem=self)
+
+        price = self.qty_price + self.detail_price
+        price = convert_to_currency(price, self.cart.currency.iso_4217_code)
+
+        # Clean up temp vars
         del self.qty_price
         del self.detail_price
 
         return price
 
-    unit_price = property(_get_line_unitprice)
+    @property
+    def line_total(self):
+        return self.unit_price * self.quantity
+
+    @property
+    def display_line_total(self):
+        return money_format(self.line_total, self.cart.currency.iso_4217_code)
 
     def get_detail_price(self):
         """Get the delta price based on detail modifications"""
@@ -461,10 +487,6 @@ class CartItem(models.Model):
     def get_qty_price(self, qty):
         """Get the price for for each unit before any detail modifications"""
         return self.product.get_qty_price(qty)
-
-    def _get_line_total(self):
-        return self.unit_price * self.quantity
-    line_total = property(_get_line_total)
 
     def _get_description(self):
         return self.product.translated_name()
@@ -860,7 +882,7 @@ class Order(models.Model):
         discount.calc(self)
 
         # Save the total discount in this Order's discount attribute
-        self.discount = discount.total
+        self.discount = convert_to_currency(discount.total, self.currency.iso_4217_code)
 
         itemprices = []
         fullprices = []
@@ -869,7 +891,10 @@ class Order(models.Model):
         for lineitem in self.orderitem_set.all():
             lid = lineitem.id
             if lid in discount.item_discounts:
-                lineitem.discount = discount.item_discounts[lid]
+                lineitem.discount = convert_to_currency(
+                    discount.item_discounts[lid],
+                    self.currency.iso_4217_code
+                )
             else:
                 lineitem.discount = zero
             if save:
@@ -879,7 +904,10 @@ class Order(models.Model):
             fullprices.append(lineitem.line_item_price)
 
         if 'Shipping' in discount.item_discounts:
-            self.shipping_discount = discount.item_discounts['Shipping']
+            self.shipping_discount = convert_to_currency(
+                discount.item_discounts['Shipping'],
+                self.currency.iso_4217_code
+            )
         else:
             self.shipping_discount = zero
 
@@ -1476,6 +1504,7 @@ def _create_download_link(product=None, order=None, subtype=None, **kwargs):
         new_link.save()
     else:
         log.debug("ignoring subtype_order_success signal, looking for download product, got %s", subtype)
+
 
 signals.satchmo_cart_changed.connect(_remove_order_on_cart_update, sender=None)
 satchmo_contact_location_changed.connect(_recalc_total_on_contact_change, sender=None)
