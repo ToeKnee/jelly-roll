@@ -102,8 +102,8 @@ config_register_list(
 
 # --- Load default payment modules.  Ignore import errors, user may have deleted them. ---
 _default_modules = (
-    'dummy', 'autosuccess', 'cod', 'authorizenet', 'cybersource',
-    'google', 'ingenico', 'paypal', 'trustcommerce', 'worldpay'
+    'dummy', 'autosuccess', 'cod', 'authorizenet', 'google',
+    'ingenico', 'paypal', 'trustcommerce', 'worldpay'
 )
 
 for module in _default_modules:
