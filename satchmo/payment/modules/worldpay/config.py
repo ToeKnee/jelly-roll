@@ -45,12 +45,6 @@ config_register_list(
                 help_text=_('Ensure that you set the SignatureFields to amount:currency:cartId'),
                 default=""),
 
-    StringValue(PAYMENT_GROUP,
-                'CURRENCY_CODE',
-                description=_('Currency Code'),
-                help_text=_('Default Currency code for Worldpay transactions.'),
-                default='GBP'),
-
     BooleanValue(PAYMENT_GROUP,
                  'SSL',
                  description=_("Use SSL for the checkout pages?"),

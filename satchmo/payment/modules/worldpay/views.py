@@ -50,7 +50,7 @@ def confirm_info(request):
     template = lookup_template(payment_module, 'checkout/worldpay/confirm.html')
 
     live = payment_module.LIVE.value
-    currency = payment_module.CURRENCY_CODE.value
+    currency = order.currency.iso_4217_code
     inst_id = payment_module.INSTID.value
     default_view_tax = config_value('TAX', 'DEFAULT_VIEW_TAX')
 
