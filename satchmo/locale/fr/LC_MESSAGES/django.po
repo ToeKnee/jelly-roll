@@ -4743,7 +4743,7 @@ msgstr "Articles commandés"
 
 #: .\templates\checkout\base_confirm.html.py:40
 #: .\templates\checkout\paypal\confirm.html.py:67
-msgid "Purchase Items"
+msgid "Place Order"
 msgstr "Articles achetés"
 
 #: .\templates\checkout\base_pay_ship.html.py:18

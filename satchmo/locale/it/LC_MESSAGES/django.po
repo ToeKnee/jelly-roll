@@ -4655,7 +4655,7 @@ msgstr "Prodotti Ordinati"
 
 #: templates/checkout/base_confirm.html:40
 #: templates/checkout/paypal/confirm.html:67
-msgid "Purchase Items"
+msgid "Place Order"
 msgstr "Acquista Prodotti"
 
 # translated = "Acquisto di articoli"
