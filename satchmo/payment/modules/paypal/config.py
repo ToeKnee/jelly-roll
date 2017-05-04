@@ -21,14 +21,6 @@ PAYMENT_GROUP = ConfigurationGroup(
 config_register_list(
     StringValue(
         PAYMENT_GROUP,
-        'CURRENCY_CODE',
-        description=_('Currency Code'),
-        help_text=_('Currency code for Paypal transactions.'),
-        default='USD'
-    ),
-
-    StringValue(
-        PAYMENT_GROUP,
         'POST_URL',
         description=_('Post URL'),
         help_text=_('The Paypal URL for real transaction posting.'),
