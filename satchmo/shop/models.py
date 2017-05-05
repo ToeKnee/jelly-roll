@@ -1421,6 +1421,9 @@ class OrderPayment(models.Model):
     order = models.ForeignKey(Order, related_name="payments")
     payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
     amount = models.DecimalField(_("amount"), max_digits=18, decimal_places=10, blank=True, null=True)
+    currency = models.ForeignKey(Currency, verbose_name=_('Currency'), related_name="order_payments", editable=False)
+    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+
     time_stamp = models.DateTimeField(_("timestamp"), default=timezone.now, editable=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
 

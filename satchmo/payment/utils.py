@@ -37,6 +37,8 @@ def create_pending_payment(order, config, amount=NOTSET):
     orderpayment = OrderPayment(
         order=order,
         amount=amount,
+        currency=order.currency,
+        exchange_rate=order.currency.exchange_rates.latest().rate,
         payment=key,
         transaction_id="PENDING"
     )
@@ -70,6 +72,7 @@ def get_or_create_order(request, working_cart, contact, data):
         newOrder = Order(
             contact=contact,
             currency=currency,
+            exchange_rate=currency.exchange_rates.latest().rate,
         )
         pay_ship_save(
             newOrder,
