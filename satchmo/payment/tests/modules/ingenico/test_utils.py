@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.test import TestCase
 
 from satchmo.caching import cache_delete
@@ -18,6 +20,17 @@ class ShaSignTest(TestCase):
         self.assertEqual(
             shasign(data),
             "a03bed660c957ee6fcf9039476e76cfde54f1fcc7f8c5897d34f70fc06029f8fa6585f6020f5fc4ef90f473756b4d43b04328ed1f3cbc0b221756ddff89de2f3"
+        )
+
+    def test_handles_unicode(self):
+        data = {
+            "key_1": u"⊙﹏⊙",
+            "key_2": u"(◕‿◕)",
+        }
+
+        self.assertEqual(
+            shasign(data),
+            "2c371045435356083beb5801d4d9c27031066b568fa9253eab5153138e4853f34483e05242055161f1bddec5ab8f43697ca449ef83128e200b56bef9cd8c032d"
         )
 
     def test_different_secrets_produce_different_keys(self):
