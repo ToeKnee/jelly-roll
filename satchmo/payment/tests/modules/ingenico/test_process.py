@@ -7,7 +7,7 @@ from satchmo.configuration import config_get_group
 from satchmo.payment.modules.ingenico.utils import shasign
 from satchmo.payment.modules.ingenico.views import process
 from satchmo.shop.factories import TestOrderFactory
-from satchmo.shop.models import Order
+from satchmo.shop.models import Order, OrderRefund
 
 payment_module = config_get_group('PAYMENT_INGENICO')
 
@@ -256,6 +256,11 @@ class ProcessTest(TestCase):
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
         self.assertIn("Status: Refund", order.notes)
+        self.assertTrue(OrderRefund.objects.filter(
+            order=order,
+            amount=order.refund,
+            transaction_id="trans-1",
+        ).exists())
 
     def test_status__refund__payment_deleted(self):
         order = TestOrderFactory()
@@ -295,3 +300,8 @@ class ProcessTest(TestCase):
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
         self.assertIn("Status: Payment deleted", order.notes)
+        self.assertTrue(OrderRefund.objects.filter(
+            order=order,
+            amount=order.refund,
+            transaction_id="trans-1",
+        ).exists())

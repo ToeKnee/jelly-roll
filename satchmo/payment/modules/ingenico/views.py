@@ -20,10 +20,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 
-from satchmo.configuration import (
-    config_get_group,
-    config_value,
-)
+from satchmo.configuration import config_get_group
 from satchmo.payment.models import HttpResponsePaymentRequired
 from satchmo.payment.views import payship
 from satchmo.payment.views.checkout import (
@@ -32,7 +29,7 @@ from satchmo.payment.views.checkout import (
     success as generic_success,
 )
 from satchmo.payment.utils import record_payment
-from satchmo.shop.models import Cart, Order
+from satchmo.shop.models import Cart, Order, OrderRefund
 from satchmo.shop.utils import HttpResponseMethodNotAllowed
 from satchmo.utils.case_insensitive_dict import CaseInsensitiveReadOnlyDict
 from satchmo.utils.dynamic import lookup_template
@@ -259,11 +256,15 @@ Expiry date: {ed}
                     order.save()
                     order.add_status(status='Cancelled', notes=_(""))
                 elif status == 7 or status == 8:  # Payment Deleted or Refunded
-                    order.refund = amount
                     if order.frozen is False:
                         order.freeze()
                     order.save()
                     order.add_status(status='Refunded', notes=_(""))
+                    OrderRefund.objects.create(
+                        order=order,
+                        amount=amount,
+                        transaction_id=transaction_id,
+                    )
                 elif status == 2:  # Authorisation refused
                     if order.frozen is False:
                         order.freeze()

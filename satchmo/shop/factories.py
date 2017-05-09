@@ -15,6 +15,7 @@ from satchmo.shop.models import (
     Order,
     OrderItem,
     OrderPayment,
+    OrderRefund,
     OrderStatus,
     Status,
 )
@@ -115,6 +116,14 @@ class OrderPaymentFactory(factory.django.DjangoModelFactory):
     order = factory.SubFactory(PaidOrderFactory)
     payment = "PAYMENT_AUTOSUCCESS"
     amount = factory.LazyAttribute(lambda obj: obj.order.total)
+
+
+class OrderRefundFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OrderRefund
+
+    order = factory.SubFactory(PaidOrderFactory)
+    amount = factory.LazyAttribute(lambda obj: obj.order.total / 2)
 
 
 class ShippedOrderFactory(PaidOrderFactory):

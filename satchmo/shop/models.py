@@ -9,7 +9,7 @@ import operator
 import random
 import time
 import warnings
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_EVEN
 from workdays import workday
 
 from django.conf import settings
@@ -26,7 +26,7 @@ from satchmo import caching
 from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
-from satchmo.currency.models import Currency
+from satchmo.currency.models import Currency, ExchangeRate
 from satchmo.currency.utils import (
     convert_to_currency,
     currency_for_request,
@@ -673,13 +673,17 @@ class Order(models.Model):
 
     currency = models.ForeignKey(Currency, verbose_name=_('Currency'), related_name="orders", editable=False)
     exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
-    sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
-    shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=10, blank=True, null=True)
-    shipping_discount = models.DecimalField(_("Shipping Discount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=10, blank=True, null=True)
-    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    total = models.DecimalField(_("Total"), max_digits=18, decimal_places=10, blank=True, null=True)
-    refund = models.DecimalField(_("Refund"), max_digits=18, decimal_places=10, blank=True, null=True, help_text=_("When refunding an order (either whole or in part), please note the amount here"))
+    sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=2, blank=True, null=True)
+    shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=2, blank=True, null=True)
+    shipping_discount = models.DecimalField(_("Shipping Discount"), max_digits=18, decimal_places=2, blank=True, null=True)
+    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=2, blank=True, null=True)
+    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=2, blank=True, null=True)
+    total = models.DecimalField(_("Total"), max_digits=18, decimal_places=2, blank=True, null=True)
+    refund = models.DecimalField(
+        _("Refund"), max_digits=18, decimal_places=2,
+        default=Decimal("0.00"),
+        help_text=_("The amount refunded in the currency of the order")
+    )
 
     objects = OrderManager()
 
@@ -987,7 +991,11 @@ class Order(models.Model):
         currency at the exchange rate of the order
 
         """
-        return self._convert_to_primary(self.refund)
+        refund_total = Decimal("0.00")
+        for refund in self.refunds.all():
+            refund_total += refund.amount_in_primary_currency()
+
+        return refund_total
 
     def total_in_primary_currency(self):
         """Returns the total value of the order in the primary
@@ -1210,17 +1218,17 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(_("Quantity"), )
     unit_price = models.DecimalField(_("Unit price"),
                                      max_digits=18,
-                                     decimal_places=10)
+                                     decimal_places=2)
     unit_tax = models.DecimalField(_("Unit tax"),
                                    max_digits=18,
-                                   decimal_places=10,
+                                   decimal_places=2,
                                    null=True)
     line_item_price = models.DecimalField(_("Line item price"),
                                           max_digits=18,
-                                          decimal_places=10)
+                                          decimal_places=2)
     tax = models.DecimalField(_("Line item tax"),
                               max_digits=18,
-                              decimal_places=10,
+                              decimal_places=2,
                               null=True)
     expire_date = models.DateField(_("Subscription End"),
                                    help_text=_("Subscription expiration date."),
@@ -1230,7 +1238,7 @@ class OrderItem(models.Model):
     stock_updated = models.BooleanField(_("Stock Updated"), default=False)
     discount = models.DecimalField(_("Line item discount"),
                                    max_digits=18,
-                                   decimal_places=10,
+                                   decimal_places=2,
                                    blank=True,
                                    null=True)
 
@@ -1318,7 +1326,7 @@ class OrderItemDetail(models.Model):
     item = models.ForeignKey(OrderItem, verbose_name=_("Order Item"), )
     name = models.CharField(_('Name'), max_length=100)
     value = models.CharField(_('Value'), max_length=255)
-    price_change = models.DecimalField(_("Price Change"), max_digits=18, decimal_places=10, blank=True, null=True)
+    price_change = models.DecimalField(_("Price Change"), max_digits=18, decimal_places=2, blank=True, null=True)
     sort_order = models.IntegerField(_("Sort Order"),
                                      help_text=_("The display order for this group."))
 
@@ -1420,9 +1428,9 @@ class OrderStatus(models.Model):
 class OrderPayment(models.Model):
     order = models.ForeignKey(Order, related_name="payments")
     payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
-    amount = models.DecimalField(_("amount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    currency = models.ForeignKey(Currency, verbose_name=_('Currency'), related_name="order_payments", editable=False)
-    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+    amount = models.DecimalField(_("amount"), max_digits=18, decimal_places=2, blank=True, null=True)
+
+    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency at time of payment"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
 
     time_stamp = models.DateTimeField(_("timestamp"), default=timezone.now, editable=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
@@ -1450,8 +1458,75 @@ class OrderPayment(models.Model):
         return self.display_total
 
     @property
+    def currency(self):
+        return self.order.currency
+
+    @property
     def display_total(self):
-        return money_format(self.amount, self.order.currency.iso_4217_code)
+        return money_format(self.amount, self.currency.iso_4217_code)
+
+
+class OrderRefund(models.Model):
+    order = models.ForeignKey(Order, related_name="refunds")
+    payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
+    amount = models.DecimalField(_("Amount"), max_digits=18, decimal_places=2)
+    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency  at time of refund"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+
+    timestamp = models.DateTimeField(_("Timestamp"), default=timezone.now, editable=True)
+    transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Order Refund")
+        verbose_name_plural = _("Order Refunds")
+
+    def __unicode__(self):
+        if self.id is not None:
+            return u"Order refund #{id} - {amount}".format(
+                id=self.id,
+                amount=self.display_amount,
+            )
+        else:
+            return u"Order refund (unsaved)"
+
+    def save(self, *args, **kwargs):
+        if self.id is None:
+            # If this is the first time saving this payment, check if
+            # the exchange rate is default (1.00), if it is, try to
+            # get the latest exchange rate
+            if self.exchange_rate == Decimal("1.00"):
+                try:
+                    self.exchange_rate = self.currency.exchange_rates.latest().rate
+                except ExchangeRate.DoesNotExist:
+                    self.exchange_rate = Decimal("1.00")
+
+            # If this is the first time saving this payment, add it to
+            # the orders refund attribute
+            if self.order.refund:
+                self.order.refund += self.amount
+            else:
+                self.order.refund = self.amount
+            self.order.save()
+        return super(OrderRefund, self).save(*args, **kwargs)
+
+    @property
+    def currency(self):
+        return self.order.currency
+
+    @property
+    def display_amount(self):
+        return money_format(self.amount, self.currency.iso_4217_code)
+
+    def amount_in_primary_currency(self):
+        if self.amount is None:
+            amount = Decimal("0.00")
+        else:
+            amount = self.amount
+
+        if self.currency.primary is False:
+            reverse_exchange_rate = Decimal("1.00") / self.exchange_rate
+            amount = (amount * reverse_exchange_rate).quantize(Decimal('.01'), ROUND_HALF_EVEN)
+
+        return amount
 
 
 class OrderVariable(models.Model):
@@ -1477,7 +1552,7 @@ class OrderTaxDetail(models.Model):
     order = models.ForeignKey(Order, related_name="taxes")
     method = models.CharField(_("Model"), max_length=50)
     description = models.CharField(_("Description"), max_length=50, blank=True)
-    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=10, blank=True, null=True)
+    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=2, blank=True, null=True)
 
     def __unicode__(self):
         if self.description:

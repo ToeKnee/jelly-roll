@@ -20,6 +20,7 @@ from satchmo.shop.factories import (
     StatusFactory,
     TestOrderFactory
 )
+from satchmo.shop.models import OrderRefund
 
 
 class OrderShippedTest(TestCase):
@@ -235,9 +236,13 @@ class RefundInPrimaryCurrencyTest(TestCase):
     def test_in_primary_currency(self):
         primary_currency = EURCurrencyFactory(primary=True)
         order = TestOrderFactory(
-            refund=Decimal("5.00"),
             currency=primary_currency
         )
+        OrderRefund.objects.create(
+            order=order,
+            amount=Decimal("5.00"),
+        )
+
         self.assertEqual(order.refund_in_primary_currency(), Decimal("5.00"))
 
     def test_in_alternative_currency__more(self):
@@ -247,9 +252,12 @@ class RefundInPrimaryCurrencyTest(TestCase):
         alternative_currency = USDCurrencyFactory()
 
         order = TestOrderFactory(
-            refund=Decimal("5.00"),
             currency=alternative_currency,
-            exchange_rate=Decimal("1.06649")
+        )
+        OrderRefund.objects.create(
+            order=order,
+            amount=Decimal("5.00"),
+            exchange_rate=Decimal("1.06649"),
         )
         self.assertEqual(order.refund_in_primary_currency().quantize(Decimal('.01')), Decimal("4.69"))
 
@@ -260,11 +268,51 @@ class RefundInPrimaryCurrencyTest(TestCase):
         alternative_currency = EURCurrencyFactory()
 
         order = TestOrderFactory(
-            refund=Decimal("5.00"),
             currency=alternative_currency,
+        )
+        OrderRefund.objects.create(
+            order=order,
+            amount=Decimal("5.00"),
             exchange_rate=Decimal("0.937658")
         )
         self.assertEqual(order.refund_in_primary_currency().quantize(Decimal('.01')), Decimal("5.33"))
+
+    def test_multiple_refunds(self):
+        primary_currency = EURCurrencyFactory(primary=True)
+        order = TestOrderFactory(
+            currency=primary_currency
+        )
+        OrderRefund.objects.create(
+            order=order,
+            amount=Decimal("1.00"),
+        )
+        OrderRefund.objects.create(
+            order=order,
+            amount=Decimal("1.00"),
+        )
+
+        self.assertEqual(order.refund_in_primary_currency(), Decimal("2.00"))
+
+    def test_multiple_refunds_different_exhange_rates(self):
+        primary_currency = USDCurrencyFactory()
+        primary_currency.primary = True
+        primary_currency.save()
+        alternative_currency = EURCurrencyFactory()
+        order = TestOrderFactory(
+            currency=alternative_currency
+        )
+        OrderRefund.objects.create(
+            order=order,
+            amount=Decimal("1.00"),
+            exchange_rate=Decimal("1.5555"),
+        )
+        OrderRefund.objects.create(
+            order=order,
+            amount=Decimal("1.00"),
+            exchange_rate=Decimal("0.95")
+        )
+
+        self.assertEqual(order.refund_in_primary_currency(), Decimal("1.69"))
 
 
 class TotalInPrimaryCurrencyTest(TestCase):
