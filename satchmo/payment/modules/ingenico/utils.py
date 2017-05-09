@@ -32,7 +32,7 @@ def shasign(data):
         if value and key != "SHASIGN"
     )) + secret
 
-    digest = sha512(phrase).hexdigest()
+    digest = sha512(phrase.encode("utf-8")).hexdigest()
     return digest
 
 
