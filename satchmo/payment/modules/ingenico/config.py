@@ -80,5 +80,5 @@ config_register_list(
                 'ALIASUSAGE',
                 description=_('Alias Usage'),
                 help_text=_('A text explaining the reason for the Alias registration.'),
-                default=_("Would you like to securely store your card details for next time? This makes checking out quicker for your next order since you won't need to re-enter your card details.")),
+                default=_("Securely store your card details for faster checkout next time?")),
 )
