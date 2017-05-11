@@ -1,3 +1,6 @@
+# -*- encoding: utf-8 -*-
+from __future__ import unicode_literals
+
 from datetime import date
 
 from django.http import Http404
@@ -112,6 +115,45 @@ class ProcessTest(TestCase):
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
             "CURRENCY": order.currency.iso_4217_code,
+            "ED": "02/2019",
+            "NCERROR": "",
+            "orderID": str(order.id),
+            "PAYID": "ingenico-1",
+            "PM": "CC",
+            "STATUS": "9",
+            "TRXDATE": date.today().isoformat(),
+        }
+        data["SHASIGN"] = shasign(data)
+
+        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+
+        response = process(request)
+        self.assertEqual(response.status_code, 200)
+
+        order = Order.objects.get(id=order.id)
+        self.assertTrue(order.frozen)
+        self.assertEqual(order.status.status.status, "Processing")
+        self.assertTrue(order.payments.filter(
+            amount=order.total,
+            payment="INGENICO",
+            transaction_id=data["ACCEPTANCE"],
+        ).exists())
+        for item in order.orderitem_set.all():
+            self.assertEqual(item.product.items_in_stock, 0)
+            self.assertEqual(item.product.total_sold, item.quantity)
+
+        self.assertIn("Status: Payment requested", order.notes)
+
+    def test_status__accepted__unicode(self):
+        order = TestOrderFactory()
+
+        data = {
+            "ACCEPTANCE": "trans-1",
+            "amount": str(order.total),
+            "BRAND": "Visa",
+            "CARDNO": "xxxx xxxx xxxx 4679",
+            "CN": "次 大",
+            "CURRENCY": payment_module.CURRENCY_CODE.value,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),
