@@ -1,7 +1,5 @@
 from __future__ import unicode_literals
 
-import hashlib
-
 from django.test import TestCase
 
 from satchmo.currency.api.serializers import CurrencySerializer, CurrencySessionSerializer
@@ -10,10 +8,9 @@ from satchmo.currency.factories import EURCurrencyFactory, ExchangeRateFactory
 
 class CurrencySerializerTest(TestCase):
     def test_read_fields(self):
-        currency = EURCurrencyFactory()
+        currency = EURCurrencyFactory(primary=True)
         serializer = CurrencySerializer(currency)
-
-        self.assertEqual(serializer.data["iso_4217_code"], currency.iso_4217_code)
+        self.assertEqual(serializer.data["iso_4217_code"].encode("utf-8"), currency.iso_4217_code.encode("utf-8"))
         self.assertEqual(serializer.data["name"], currency.name)
         self.assertEqual(serializer.data["symbol"], currency.symbol)
         self.assertTrue(serializer.data["primary"])

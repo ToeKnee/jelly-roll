@@ -290,7 +290,6 @@ class CurrencyForRequest(TestCase):
 
         self.assertEqual(currency_for_request(request), "EUR")
 
-
     @override_settings(GEOIP_PATH="/tmp")
     @mock.patch("satchmo.currency.utils.GeoIP")
     @mock.patch("satchmo.currency.utils.get_real_ip")
