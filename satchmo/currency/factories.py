@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import factory
 
 from decimal import Decimal
 
+from satchmo.l10n.factories import UKFactory, USFactory
 from satchmo.l10n.models import Country
 from .models import Currency, ExchangeRate
 
@@ -19,13 +22,9 @@ class CurrencyFactory(factory.django.DjangoModelFactory):
     primary = True
     accepted = True
 
-    _countries = [
-        "Austria", "Belgium", "Cyprus", "Estonia",
-        "Finland", "France", "Germany", "Greece",
-        "Ireland", "Italy", "Latvia", "Lithuania",
-        "Luxembourg", "Malta", "Netherlands", "Portugal",
-        "Slovakia", "Slovenia", "Spain"
-    ]
+
+class EURCurrencyFactory(CurrencyFactory):
+    primary = False
 
     @factory.post_generation
     def countries(self, create, extracted, **kwargs):
@@ -33,16 +32,20 @@ class CurrencyFactory(factory.django.DjangoModelFactory):
             # Simple build, do nothing.
             return
 
-            if extracted:
-                # A list of countries were passed in, use them
-                for country in extracted:
-                    self.countries.add(country)
-            else:
-                self.countries = Country.objects.filter(printable_name__in=self._countries)
+        if extracted:
+            # A list of countries were passed in, use them
+            for country in extracted:
+                self.countries.add(country)
+        else:
+            countries = [
+                "Austria", "Belgium", "Cyprus", "Estonia",
+                "Finland", "France", "Germany", "Greece",
+                "Ireland", "Italy", "Latvia", "Lithuania",
+                "Luxembourg", "Malta", "Netherlands", "Portugal",
+                "Slovakia", "Slovenia", "Spain"
+            ]
 
-
-class EURCurrencyFactory(CurrencyFactory):
-    primary = False
+            self.countries = Country.objects.filter(printable_name__in=countries)
 
 
 class GBPCurrencyFactory(CurrencyFactory):
@@ -52,9 +55,25 @@ class GBPCurrencyFactory(CurrencyFactory):
     minor_symbol = "p"
     primary = False
 
-    _countries = [
-        "United Kingdom", "Guernsey", "Isle of Man", "Jersey"
-    ]
+    @factory.post_generation
+    def countries(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            # A list of countries were passed in, use them
+            for country in extracted:
+                self.countries.add(country)
+        else:
+            countries = [
+                "United Kingdom", "Guernsey", "Isle of Man", "Jersey"
+            ]
+
+            self.countries = Country.objects.filter(printable_name__in=countries)
+
+            if len(self.countries.all()) == 0:
+                self.countries.add(UKFactory())
 
 
 class USDCurrencyFactory(CurrencyFactory):
@@ -64,12 +83,27 @@ class USDCurrencyFactory(CurrencyFactory):
     minor_symbol = "c"
     primary = False
 
-    _countries = [
-        "United States of America",
-        "Timor-Leste", "Ecuador", "El Salvador", "Marshall Islands",
-        "Micronesia, Federated States of", "Palau",
-        "Panama", "Zimbabwe"
-    ]
+    @factory.post_generation
+    def countries(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            # A list of countries were passed in, use them
+            for country in extracted:
+                self.countries.add(country)
+        else:
+            countries = [
+                "United States of America",
+                "Timor-Leste", "Ecuador", "El Salvador", "Marshall Islands",
+                "Micronesia, Federated States of", "Palau",
+                "Panama", "Zimbabwe"
+            ]
+
+            self.countries = Country.objects.filter(printable_name__in=countries)
+            if len(self.countries.all()) == 0:
+                self.countries.add(USFactory())
 
 
 class ExchangeRateFactory(factory.django.DjangoModelFactory):
