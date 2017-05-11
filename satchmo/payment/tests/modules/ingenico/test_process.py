@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
 from datetime import date
@@ -153,7 +153,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": "次 大",
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),

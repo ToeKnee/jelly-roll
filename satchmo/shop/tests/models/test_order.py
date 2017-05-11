@@ -265,7 +265,9 @@ class RefundInPrimaryCurrencyTest(TestCase):
         primary_currency = USDCurrencyFactory()
         primary_currency.primary = True
         primary_currency.save()
-        alternative_currency = EURCurrencyFactory()
+        alternative_currency = EURCurrencyFactory(primary=False)
+        alternative_currency.accepted = True
+        alternative_currency.save()
 
         order = TestOrderFactory(
             currency=alternative_currency,
@@ -363,6 +365,9 @@ class OrderTotalTest(TestCase):
 class DisplayMethodsTest(TestCase):
     def setUp(self):
         self.currency = USDCurrencyFactory()
+        self.currency.primary = True
+        self.currency.accepted = True
+        self.currency.save()
         self.order = TestOrderFactory(currency=self.currency)
 
     def test_total(self):

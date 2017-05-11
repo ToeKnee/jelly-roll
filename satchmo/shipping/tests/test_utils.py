@@ -2,7 +2,7 @@ import mock
 
 from decimal import Decimal
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 
 from satchmo.configuration.models import Setting
 from satchmo.currency.factories import (
@@ -18,13 +18,11 @@ from satchmo.shop.factories import TestOrderFactory
 from satchmo.shop.models import Cart, CartItem
 
 
-class UpdateShippingTest(TestCase):
+class UpdateShippingTest(TransactionTestCase):
 
     @mock.patch("satchmo.shipping.utils.shipping_method_by_key")
     def test_updates_from_shipper(self, mock_shipping_method_by_key):
-        currency = EURCurrencyFactory()
-        currency.primary = True
-        currency.save()
+        currency = EURCurrencyFactory(primary=True)
         order = TestOrderFactory(currency=currency)
         cart = Cart.objects.create(currency=currency)
         for item in order.orderitem_set.all():
@@ -75,9 +73,11 @@ class UpdateShippingTest(TestCase):
             key='BUFFER',
             value=Decimal("0.00"),
         )
+        EURCurrencyFactory(primary=True)
         currency = GBPCurrencyFactory()
         currency.accepted = True
         currency.save()
+
         order = TestOrderFactory(currency=currency)
         cart = Cart.objects.create(currency=currency)
         for item in order.orderitem_set.all():

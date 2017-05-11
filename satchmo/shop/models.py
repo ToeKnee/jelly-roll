@@ -201,6 +201,10 @@ class NullCart(object):
     def __len__(self):
         return 0
 
+    @property
+    def currency(self):
+        return Currency.objects.get_primary()
+
 
 class OrderCart(NullCart):
     """Allows us to fake a cart if we are reloading an order."""

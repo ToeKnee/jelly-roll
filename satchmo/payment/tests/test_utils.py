@@ -1,7 +1,7 @@
 from django.test import TestCase, RequestFactory
 
 from satchmo.contact.factories import ContactFactory
-from satchmo.currency.factories import USDCurrencyFactory
+from satchmo.currency.factories import EURCurrencyFactory, USDCurrencyFactory
 from satchmo.shop.factories import CartFactory, TestOrderFactory
 from satchmo.shop.models import Order
 from satchmo.payment.utils import get_or_create_order
@@ -10,6 +10,7 @@ from satchmo.payment.utils import get_or_create_order
 class GetOrCreateOrderTest(TestCase):
     def setUp(self):
         self.request_factory = RequestFactory()
+        EURCurrencyFactory(primary=True)
 
     def test_creates_order(self):
         usd = USDCurrencyFactory()
