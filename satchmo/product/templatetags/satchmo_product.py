@@ -97,11 +97,12 @@ def show_bestsellers(limit=5):
     return {"bestsellers": products}
 
 
-@register.inclusion_tag('featured.html')
-def show_featured(limit=1, random=True):
+@register.inclusion_tag('featured.html', takes_context=True)
+def show_featured(context, limit=1, random=True):
     ''' Renders best sellers list '''
     products = display_featured(limit, random)
-    return {"featured": products}
+    context["featured"] = products
+    return context
 
 
 @register.inclusion_tag('product/quick_product.html', takes_context=True)
