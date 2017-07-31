@@ -32,6 +32,7 @@ urlpatterns += patterns(
 
     # API
     url(r'^api/currency/', include('satchmo.currency.api.urls')),
+    url(r'^api/l10n/', include('satchmo.l10n.api.urls')),
 )
 
 if app_enabled('l10n'):
