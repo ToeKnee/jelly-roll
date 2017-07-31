@@ -87,7 +87,7 @@ def currency_for_request(request):
                 pass
 
         # If not, try the IP address
-        if currency_code is None or True:
+        if currency_code is None:
             if hasattr(settings, "GEOIP_PATH"):
                 ip = get_real_ip(request)
                 if ip:

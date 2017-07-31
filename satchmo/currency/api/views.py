@@ -38,7 +38,6 @@ class CurrencySessionAPIView(APIView):
         Set the currency in the session.
         """
         serializer = CurrencySessionSerializer(data=request.data)
-
         if serializer.is_valid():
             # Save to session
             request.session["currency_code"] = serializer.data["iso_4217_code"]
