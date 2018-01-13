@@ -17,9 +17,11 @@ from satchmo.l10n.utils import country_for_request
 class CountryListAPIView(ListAPIView):
     permission_classes = (DjangoModelPermissionsOrAnonReadOnly, )
     serializer_class = CountrySerializer
+    pagination_class = None
 
     def get_queryset(self):
-        queryset = Country.objects.filter(active=True).order_by("printable_name")
+        queryset = Country.objects.filter(
+            active=True).order_by("printable_name")
         return queryset
 
 

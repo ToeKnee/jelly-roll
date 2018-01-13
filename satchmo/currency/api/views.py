@@ -17,6 +17,7 @@ from satchmo.currency.utils import currency_for_request
 class CurrencyListAPIView(ListAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly, )
     serializer_class = CurrencySerializer
+    pagination_class = None
 
     def get_queryset(self):
         queryset = Currency.objects.all_accepted().order_by("-primary", "name")
@@ -44,6 +45,7 @@ class CurrencySessionAPIView(APIView):
         else:
             return Response(serializer.errors, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
-        currency = Currency.objects.all_accepted().get(iso_4217_code=serializer.data["iso_4217_code"])
+        currency = Currency.objects.all_accepted().get(
+            iso_4217_code=serializer.data["iso_4217_code"])
         serializer = CurrencySerializer(currency)
         return Response(serializer.data)
