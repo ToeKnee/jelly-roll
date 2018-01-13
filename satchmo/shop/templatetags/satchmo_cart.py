@@ -31,7 +31,8 @@ class CartitemTotalNode(template.Node):
             show_tax = self.raw_tax
 
         if show_tax:
-            tag = CartitemLineTaxedTotalNode(self.raw_cartitem, self.raw_currency)
+            tag = CartitemLineTaxedTotalNode(
+                self.raw_cartitem, self.raw_currency)
             return tag.render(context)
 
         try:
@@ -58,8 +59,8 @@ def cartitem_custom_details(context, cartitem):
     is_custom = "CustomProduct" in cartitem.product.get_subtypes()
 
     return {
-        'cartitem' : cartitem,
-        'is_custom' : is_custom
+        'cartitem': cartitem,
+        'is_custom': is_custom
     }
 
 
@@ -67,12 +68,11 @@ def cartitem_custom_details(context, cartitem):
 def cartitem_subscription_details(context, cartitem):
     log.debug('sub details')
     return {
-        'cartitem' : cartitem,
-        'is_subscription' : cartitem.product.is_subscription
+        'cartitem': cartitem,
+        'is_subscription': cartitem.product.is_subscription
     }
 
 
-@register.tag(takes_context=True)
 def cartitem_total(parser, token):
     """Returns the line total for the cartitem, possibly with tax added.  If currency evaluates true,
     then return the total formatted through money_format.
@@ -84,7 +84,8 @@ def cartitem_total(parser, token):
 
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise template.TemplateSyntaxError, "'%s' tag requires a cartitem argument" % tokens[0]
+        raise template.TemplateSyntaxError, "'%s' tag requires a cartitem argument" % tokens[
+            0]
 
     cartitem = tokens[1]
 
