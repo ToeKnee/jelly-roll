@@ -79,10 +79,10 @@ class CurrencyListTest(APITestCase):
         request = self.factory.post('/api/currency/', data)
 
         response = CurrencyListAPIView.as_view()(request, data)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 405)
         self.assertEqual(
             response.data,
-            {'detail': 'Authentication credentials were not provided.'}
+            {'detail': 'Method "POST" not allowed.'}
         )
 
     def test_authenticated__cant_post_currency(self):
