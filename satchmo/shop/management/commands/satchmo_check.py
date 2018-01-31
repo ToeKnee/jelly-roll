@@ -17,20 +17,15 @@ class Command(NoArgsCommand):
         try:
             import satchmo
         except ImportError:
-            errors.append("Satchmo is not installed correctly. Please verify satchmo is on your sys path.")
+            errors.append(
+                "Satchmo is not installed correctly. Please verify satchmo is on your sys path."
+            )
         print "Using Django version %s" % django.get_version()
         print "Using Satchmo version %s" % satchmo.get_version()
         try:
             import Crypto.Cipher
         except ImportError:
             errors.append("The Python Cryptography Toolkit is not installed.")
-        try:
-            import Image
-        except ImportError:
-            try:
-                import PIL as Image
-            except ImportError:
-                errors.append("The Python Imaging Library is not installed.")
         try:
             import reportlab
         except ImportError:
@@ -48,8 +43,8 @@ class Command(NoArgsCommand):
         except ImportError:
             errors.append("YAML is not installed.")
         try:
-             from satchmo.l10n.utils import get_locale_conv
-             get_locale_conv()
+            from satchmo.l10n.utils import get_locale_conv
+            get_locale_conv()
         except:
             errors.append("""
             Locale is not set correctly.  Try
@@ -64,12 +59,21 @@ class Command(NoArgsCommand):
             errors.append("A CACHE_BACKEND must be configured.")
 
         if 'satchmo.shop.context_processors.settings' not in settings.TEMPLATE_CONTEXT_PROCESSORS:
-            errors.append("You must have satchmo.shop.context_processors.settings in your TEMPLATE_CONTEXT_PROCESSORS.")
+            errors.append(
+                "You must have satchmo.shop.context_processors.settings in your TEMPLATE_CONTEXT_PROCESSORS."
+            )
         if 'satchmo.accounts.email-auth.EmailBackend' not in settings.AUTHENTICATION_BACKENDS:
-            errors.append("You must have satchmo.accounts.email-auth.EmailBackend in your AUTHENTICATION_BACKENDS")
+            errors.append(
+                "You must have satchmo.accounts.email-auth.EmailBackend in your AUTHENTICATION_BACKENDS"
+            )
         if len(settings.SECRET_KEY) == 0:
-            errors.append("You must have SECRET_KEY set to a valid string in your settings.py file")
-        python_ver = Decimal("%s.%s" % (sys.version_info[0], sys.version_info[1]))
+            errors.append(
+                "You must have SECRET_KEY set to a valid string in your settings.py file"
+            )
+            python_ver = Decimal(
+                "%s.%s" %
+                (sys.version_info[0], sys.version_info[1])
+            )
         if python_ver < Decimal("2.4"):
             errors.append("Python version must be at least 2.4.")
         if python_ver < Decimal("2.5"):
