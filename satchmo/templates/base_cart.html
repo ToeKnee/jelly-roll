@@ -65,8 +65,32 @@
 		{% cartitem_custom_details cartitem %}
 		{% cartitem_subscription_details cartitem %}
     {% endfor %}
-    <tr><td colspan="3" align="right">{% trans "Cart Total" %}:</td>
-        <td>{% cart_total cart default_view_tax %}</td></tr>
+      <tr>
+        <td colspan="3" align="right">{% trans "Cart Total" %}:</td>
+        <td>
+          {% if default_view_tax %}{% cart_taxed_total cart 1 %}{% else %}{{ cart.display_total }}{% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" align="right">
+          Shipping:
+          <br>
+          (cheapest method)
+        </td>
+        <td align="center">
+          {{ cheapest_shipping }}
+        </td>
+      </tr>
+      <tr>
+        <td colspan="3" align="right">
+          <strong>{% trans "Total" %}:</strong>
+        </td>
+        <td align="center">
+          <b>
+            {{ display_total }}
+          </b>
+        </td>
+      </tr>
     </table>
     {% if sale %}
 	{% include "discount/some_eligible.html" %}
