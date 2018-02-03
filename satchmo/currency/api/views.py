@@ -48,7 +48,6 @@ class CurrencySessionAPIView(APIView):
 
             # Update current cart
             cart = Cart.objects.from_request(request)
-            print cart
             if isinstance(cart, Cart):
                 cart.currency = currency
                 cart.save()
