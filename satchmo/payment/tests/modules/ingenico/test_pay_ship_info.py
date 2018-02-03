@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.test import TestCase, RequestFactory
 
+from satchmo.currency.factories import EURCurrencyFactory
 from satchmo.payment.modules.ingenico.views import pay_ship_info
 from satchmo.shop.factories import CartFactory
 
@@ -8,6 +9,7 @@ from satchmo.shop.factories import CartFactory
 class PayShipInfoTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
+        EURCurrencyFactory(primary=True)
 
     def test_has_enough_stock(self):
         cart = CartFactory()

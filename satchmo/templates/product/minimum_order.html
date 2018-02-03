@@ -10,7 +10,5 @@
 
 {% block content %}
 <h4>Notice</h4>
-{% with minimum_order|currency as value %}
-<p>{% blocktrans %}This store requires a minimum order of {{ value }} before you can check out.{% endblocktrans %}</p>
-{% endwith %}
+<p>{% blocktrans %}This store requires a minimum order of {% currency minimum_order %} before you can check out.{% endblocktrans %}</p>
 {% endblock %}

@@ -6,6 +6,7 @@ from django.test import TestCase, RequestFactory
 
 from satchmo.caching import cache_delete
 from satchmo.configuration.models import Setting
+from satchmo.currency.factories import EURCurrencyFactory
 from satchmo.payment.modules.ingenico.views import confirm_info
 from satchmo.shop.factories import CartFactory, TestOrderFactory
 
@@ -13,6 +14,7 @@ from satchmo.shop.factories import CartFactory, TestOrderFactory
 class ConfirmInfoTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
+        EURCurrencyFactory(primary=True)
 
     def tearDown(self):
         cache_delete()

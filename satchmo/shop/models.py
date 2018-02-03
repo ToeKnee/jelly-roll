@@ -8,7 +8,8 @@ import logging
 import operator
 import random
 import time
-from decimal import Decimal
+import warnings
+from decimal import Decimal, ROUND_HALF_EVEN
 from workdays import workday
 
 from django.conf import settings
@@ -17,6 +18,7 @@ from django.core import urlresolvers
 from django.db import models
 from django.utils import timezone
 from django.utils.encoding import force_unicode
+from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -24,8 +26,14 @@ from satchmo import caching
 from satchmo.configuration import ConfigurationSettings, config_value
 from satchmo.contact.models import Contact
 from satchmo.contact.signals import satchmo_contact_location_changed
+from satchmo.currency.models import Currency, ExchangeRate
+from satchmo.currency.utils import (
+    convert_to_currency,
+    currency_for_request,
+    money_format,
+)
+from satchmo.discount.utils import find_discount_for_code
 from satchmo.l10n.models import Country
-from satchmo.l10n.utils import money_format
 from satchmo.payment.fields import PaymentChoiceCharField
 from satchmo.product import signals as product_signals
 from satchmo.product.models import Product, DownloadableProduct
@@ -34,7 +42,6 @@ from satchmo.shipping.models import POSTAGE_SPEED_CHOICES, STANDARD
 from satchmo.shop import signals
 from satchmo.shop.notification import send_order_update, send_owner_order_notice
 from satchmo.tax.utils import get_tax_processor
-from satchmo.discount.utils import find_discount_for_code
 
 log = logging.getLogger(__name__)
 
@@ -194,6 +201,10 @@ class NullCart(object):
     def __len__(self):
         return 0
 
+    @property
+    def currency(self):
+        return Currency.objects.get_primary()
+
 
 class OrderCart(NullCart):
     """Allows us to fake a cart if we are reloading an order."""
@@ -279,6 +290,14 @@ class CartManager(models.Manager):
             else:
                 raise Cart.DoesNotExist()
 
+        # Set the currency in the cart
+        if isinstance(cart, Cart):
+            currency_code = currency_for_request(request)
+            currency = Currency.objects.all_accepted().get(iso_4217_code=currency_code)
+            if cart.currency != currency:
+                cart.currency = currency
+                cart.save()
+
         log.debug("Cart: %s", cart)
         return cart
 
@@ -293,22 +312,16 @@ class Cart(models.Model):
     desc = models.CharField(_("Description"), blank=True, null=True, max_length=10)
     date_time_created = models.DateTimeField(_("Creation Date"))
     customer = models.ForeignKey(Contact, blank=True, null=True, verbose_name=_('Customer'))
+    currency = models.ForeignKey(Currency, verbose_name=_('Currency'), related_name="carts", editable=False, null=True, blank=True)
 
     objects = CartManager()
 
-    def _get_count(self):
-        itemCount = 0
-        for item in self.cartitem_set.all():
-            itemCount += item.quantity
-        return (itemCount)
-    numItems = property(_get_count)
+    class Meta:
+        verbose_name = _("Shopping Cart")
+        verbose_name_plural = _("Shopping Carts")
 
-    def _get_total(self):
-        total = Decimal("0")
-        for item in self.cartitem_set.all():
-            total += item.line_total
-        return(total)
-    total = property(_get_total)
+    def __unicode__(self):
+        return u"Shopping Cart (%s)" % self.date_time_created
 
     def __iter__(self):
         return iter(self.cartitem_set.all())
@@ -316,8 +329,19 @@ class Cart(models.Model):
     def __len__(self):
         return self.cartitem_set.count()
 
-    def __unicode__(self):
-        return u"Shopping Cart (%s)" % self.date_time_created
+    def save(self, *args, **kwargs):
+        """Ensure we have a date_time_created before saving the first time."""
+        if not self.pk:
+            self.date_time_created = timezone.now()
+        try:
+            self.site
+        except Site.DoesNotExist:
+            self.site = Site.objects.get_current()
+
+        if self.currency is None:
+            self.currency = Currency.objects.get_primary()
+
+        super(Cart, self).save(*args, **kwargs)
 
     def add_item(self, chosen_item, number_added, details=None):
         if details is None:
@@ -369,24 +393,6 @@ class Cart(models.Model):
             item.delete()
         self.save()
 
-    def save(self, *args, **kwargs):
-        """Ensure we have a date_time_created before saving the first time."""
-        if not self.pk:
-            self.date_time_created = timezone.now()
-        try:
-            self.site
-        except Site.DoesNotExist:
-            self.site = Site.objects.get_current()
-        super(Cart, self).save(*args, **kwargs)
-
-    def _get_shippable(self):
-        """Return whether the cart contains shippable items."""
-        for cartitem in self.cartitem_set.all():
-            if cartitem.is_shippable:
-                return True
-        return False
-    is_shippable = property(_get_shippable)
-
     def get_shipment_list(self):
         """Return a list of shippable products, where each item is split into
         multiple elements, one for each quantity."""
@@ -410,9 +416,31 @@ class Cart(models.Model):
                     not_enough_stock.append(cart_item)
         return not_enough_stock
 
-    class Meta:
-        verbose_name = _("Shopping Cart")
-        verbose_name_plural = _("Shopping Carts")
+    @property
+    def is_shippable(self):
+        """Return whether the cart contains shippable items."""
+        for cartitem in self.cartitem_set.all():
+            if cartitem.is_shippable:
+                return True
+        return False
+
+    @property
+    def numItems(self):
+        itemCount = 0
+        for item in self.cartitem_set.all():
+            itemCount += item.quantity
+        return itemCount
+
+    @property
+    def total(self):
+        total = Decimal("0")
+        for item in self.cartitem_set.all():
+            total += item.line_total
+        return total
+
+    @property
+    def display_total(self):
+        return money_format(self.total, self.currency.iso_4217_code)
 
 
 class NullCartItem(object):
@@ -430,21 +458,31 @@ class CartItem(models.Model):
     product = models.ForeignKey(Product, verbose_name=_('Product'))
     quantity = models.IntegerField(_("Quantity"))
 
-    def _get_line_unitprice(self):
+    @property
+    def unit_price(self):
         # Get the qty discount price as the unit price for the line.
         self.qty_price = self.get_qty_price(self.quantity)
         self.detail_price = self.get_detail_price()
-        #send signal to possibly adjust the unitprice
-        signals.satchmo_cartitem_price_query.send(self, cartitem=self)
-        price = self.qty_price + self.detail_price
 
-        #clean up temp vars
+        # send signal to possibly adjust the unitprice
+        signals.satchmo_cartitem_price_query.send(self, cartitem=self)
+
+        price = self.qty_price + self.detail_price
+        price = convert_to_currency(price, self.cart.currency.iso_4217_code)
+
+        # Clean up temp vars
         del self.qty_price
         del self.detail_price
 
         return price
 
-    unit_price = property(_get_line_unitprice)
+    @property
+    def line_total(self):
+        return self.unit_price * self.quantity
+
+    @property
+    def display_line_total(self):
+        return money_format(self.line_total, self.cart.currency.iso_4217_code)
 
     def get_detail_price(self):
         """Get the delta price based on detail modifications"""
@@ -458,10 +496,6 @@ class CartItem(models.Model):
     def get_qty_price(self, qty):
         """Get the price for for each unit before any detail modifications"""
         return self.product.get_qty_price(qty)
-
-    def _get_line_total(self):
-        return self.unit_price * self.quantity
-    line_total = property(_get_line_total)
 
     def _get_description(self):
         return self.product.translated_name()
@@ -496,7 +530,7 @@ class CartItem(models.Model):
             return False
 
     def __unicode__(self):
-        currency = config_value('SHOP', 'CURRENCY')
+        currency = config_value('CURRENCY', 'CURRENCY')
         currency = currency.replace("_", " ")
         return u'%s - %s %s%s' % (self.quantity, self.product.name,
                                   force_unicode(currency), self.line_total)
@@ -641,13 +675,19 @@ class Order(models.Model):
     tracking_url = models.URLField(_('Tracking URL'), blank=True, null=True)
     shipping_postage_speed = models.PositiveIntegerField(_('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
 
-    sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=10, blank=True, null=True)
-    shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=10, blank=True, null=True)
-    shipping_discount = models.DecimalField(_("Shipping Discount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=10, blank=True, null=True)
-    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=10, blank=True, null=True)
-    total = models.DecimalField(_("Total"), max_digits=18, decimal_places=10, blank=True, null=True)
-    refund = models.DecimalField(_("Refund"), max_digits=18, decimal_places=10, blank=True, null=True, help_text=_("When refunding an order (either whole or in part), please note the amount here"))
+    currency = models.ForeignKey(Currency, verbose_name=_('Currency'), related_name="orders", editable=False)
+    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+    sub_total = models.DecimalField(_("Subtotal"), max_digits=18, decimal_places=2, blank=True, null=True)
+    shipping_cost = models.DecimalField(_("Shipping Cost"), max_digits=18, decimal_places=2, blank=True, null=True)
+    shipping_discount = models.DecimalField(_("Shipping Discount"), max_digits=18, decimal_places=2, blank=True, null=True)
+    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=2, blank=True, null=True)
+    discount = models.DecimalField(_("Discount amount"), max_digits=18, decimal_places=2, blank=True, null=True)
+    total = models.DecimalField(_("Total"), max_digits=18, decimal_places=2, blank=True, null=True)
+    refund = models.DecimalField(
+        _("Refund"), max_digits=18, decimal_places=2,
+        default=Decimal("0.00"),
+        help_text=_("The amount refunded in the currency of the order")
+    )
 
     objects = OrderManager()
 
@@ -745,10 +785,9 @@ class Order(models.Model):
 
     balance = property(fget=_balance)
 
+    @property
     def balance_forward(self):
-        return money_format(self.balance)
-
-    balance_forward = property(fget=balance_forward)
+        return money_format(self.balance, self.currency.iso_4217_code)
 
     def _balance_paid(self):
         payments = [p.amount for p in self.payments.all()]
@@ -856,7 +895,7 @@ class Order(models.Model):
         discount.calc(self)
 
         # Save the total discount in this Order's discount attribute
-        self.discount = discount.total
+        self.discount = convert_to_currency(discount.total, self.currency.iso_4217_code)
 
         itemprices = []
         fullprices = []
@@ -865,7 +904,10 @@ class Order(models.Model):
         for lineitem in self.orderitem_set.all():
             lid = lineitem.id
             if lid in discount.item_discounts:
-                lineitem.discount = discount.item_discounts[lid]
+                lineitem.discount = convert_to_currency(
+                    discount.item_discounts[lid],
+                    self.currency.iso_4217_code
+                )
             else:
                 lineitem.discount = zero
             if save:
@@ -875,7 +917,10 @@ class Order(models.Model):
             fullprices.append(lineitem.line_item_price)
 
         if 'Shipping' in discount.item_discounts:
-            self.shipping_discount = discount.item_discounts['Shipping']
+            self.shipping_discount = convert_to_currency(
+                discount.item_discounts['Shipping'],
+                self.currency.iso_4217_code
+            )
         else:
             self.shipping_discount = zero
 
@@ -903,13 +948,14 @@ class Order(models.Model):
             taxdetl = OrderTaxDetail(order=self, tax=taxamt, description=taxdesc, method=taxProcessor.method)
             taxdetl.save()
 
-        log.debug("Order #%i, recalc: sub_total=%s, shipping=%s, discount=%s, tax=%s",
-                  self.id,
-                  money_format(item_sub_total),
-                  money_format(self.shipping_sub_total),
-                  money_format(self.discount),
-                  money_format(self.tax)
-                  )
+        log.debug(
+            "Order #%i, recalc: sub_total=%s, shipping=%s, discount=%s, tax=%s",
+            self.id,
+            money_format(item_sub_total, self.currency.iso_4217_code),
+            money_format(self.shipping_sub_total, self.currency.iso_4217_code),
+            money_format(self.discount, self.currency.iso_4217_code),
+            money_format(self.tax, self.currency.iso_4217_code)
+        )
 
         self.total = Decimal(item_sub_total + self.shipping_sub_total + self.tax)
 
@@ -921,10 +967,108 @@ class Order(models.Model):
         return mark_safe(u'<a href="%s">%s</a>' % (url, _('View')))
     shippinglabel.allow_tags = True
 
-    def _order_total(self):
-        # Needed for the admin list display
-        return money_format(self.total)
-    order_total = property(_order_total)
+    def _convert_to_primary(self, value):
+        if value is None:
+            value = Decimal("0.00")
+
+        if self.currency.primary is False:
+            reverse_exchange_rate = Decimal("1.00") / self.exchange_rate
+            value = value * reverse_exchange_rate
+        return value
+
+    def sub_total_in_primary_currency(self):
+        """Returns the sub total value of the order in the primary
+        currency at the exchange rate of the order
+
+        """
+        return self._convert_to_primary(self.sub_total)
+
+    def shipping_cost_in_primary_currency(self):
+        """Returns the shipping cost of the order in the primary
+        currency at the exchange rate of the order
+
+        """
+        return self._convert_to_primary(self.shipping_cost)
+
+    def refund_in_primary_currency(self):
+        """Returns the refund value of the order in the primary
+        currency at the exchange rate of the order
+
+        """
+        refund_total = Decimal("0.00")
+        for refund in self.refunds.all():
+            refund_total += refund.amount_in_primary_currency()
+
+        return refund_total
+
+    def total_in_primary_currency(self):
+        """Returns the total value of the order in the primary
+        currency at the exchange rate of the order
+
+        """
+        return self._convert_to_primary(self.total)
+
+    @property
+    def order_total(self):
+        """ Display the order total in the correct currency """
+        warnings.warn(
+            "Order.order_total is deprecated, please use order.display_total",
+            DeprecationWarning
+        )
+        return self.display_total
+
+    @property
+    def display_total(self):
+        """ Display the order total in the correct currency """
+        return money_format(self.total, self.currency.iso_4217_code)
+
+    @property
+    def display_tax(self):
+        return money_format(self.tax, self.currency.iso_4217_code)
+
+    @property
+    def display_refund(self):
+        return money_format(self.refund, self.currency.iso_4217_code)
+
+    @property
+    def display_sub_total(self):
+        return money_format(self.sub_total, self.currency.iso_4217_code)
+
+    @property
+    def display_sub_total_with_tax(self):
+        return money_format(self.sub_total_with_tax(), self.currency.iso_4217_code)
+
+    @property
+    def display_balance(self):
+        return money_format(self.balance, self.currency.iso_4217_code)
+
+    @property
+    def display_balance_paid(self):
+        return money_format(self.balance_paid, self.currency.iso_4217_code)
+
+    @property
+    def display_shipping_sub_total(self):
+        return money_format(self.shipping_sub_total, self.currency.iso_4217_code)
+
+    @property
+    def display_shipping_with_tax(self):
+        return money_format(self.shipping_with_tax, self.currency.iso_4217_code)
+
+    @property
+    def display_shipping_cost(self):
+        return money_format(self.shipping_cost, self.currency.iso_4217_code)
+
+    @property
+    def display_discount(self):
+        return money_format(self.discount, self.currency.iso_4217_code)
+
+    @property
+    def display_shipping_discount(self):
+        return money_format(self.shipping_discount, self.currency.iso_4217_code)
+
+    @property
+    def display_item_discount(self):
+        return money_format(self.item_discount, self.currency.iso_4217_code)
 
     def order_success(self):
         """Run each item's order_success method."""
@@ -968,13 +1112,13 @@ class Order(models.Model):
         return False
     is_shippable = property(_is_shippable)
 
-    def _shipping_sub_total(self):
+    @property
+    def shipping_sub_total(self):
         if self.shipping_cost is None:
             self.shipping_cost = Decimal('0.00')
         if self.shipping_discount is None:
             self.shipping_discount = Decimal('0.00')
         return self.shipping_cost - self.shipping_discount
-    shipping_sub_total = property(_shipping_sub_total)
 
     def _shipping_tax(self):
         rates = self.taxes.filter(description__iexact='shipping')
@@ -1078,17 +1222,17 @@ class OrderItem(models.Model):
     quantity = models.IntegerField(_("Quantity"), )
     unit_price = models.DecimalField(_("Unit price"),
                                      max_digits=18,
-                                     decimal_places=10)
+                                     decimal_places=2)
     unit_tax = models.DecimalField(_("Unit tax"),
                                    max_digits=18,
-                                   decimal_places=10,
+                                   decimal_places=2,
                                    null=True)
     line_item_price = models.DecimalField(_("Line item price"),
                                           max_digits=18,
-                                          decimal_places=10)
+                                          decimal_places=2)
     tax = models.DecimalField(_("Line item tax"),
                               max_digits=18,
-                              decimal_places=10,
+                              decimal_places=2,
                               null=True)
     expire_date = models.DateField(_("Subscription End"),
                                    help_text=_("Subscription expiration date."),
@@ -1098,7 +1242,7 @@ class OrderItem(models.Model):
     stock_updated = models.BooleanField(_("Stock Updated"), default=False)
     discount = models.DecimalField(_("Line item discount"),
                                    max_digits=18,
-                                   decimal_places=10,
+                                   decimal_places=2,
                                    blank=True,
                                    null=True)
 
@@ -1119,20 +1263,46 @@ class OrderItem(models.Model):
 
     is_shippable = property(fget=_is_shippable)
 
-    def _sub_total(self):
+    @cached_property
+    def currency_code(self):
+        return self.order.currency.iso_4217_code
+
+    @property
+    def display_unit_price(self):
+        return money_format(self.unit_price, self.currency_code)
+
+    @property
+    def display_unit_price_with_tax(self):
+        return money_format(self.unit_price_with_tax, self.currency_code)
+
+    @property
+    def display_discount(self):
+        return money_format(self.discount, self.currency_code)
+
+    @property
+    def display_sub_total(self):
+        return money_format(self.sub_total, self.currency_code)
+
+    @property
+    def display_total_with_tax(self):
+        return money_format(self.total_with_tax, self.currency_code)
+
+    @property
+    def sub_total(self):
         if self.discount:
-            return self.line_item_price - self.discount
+            price = self.line_item_price - self.discount
         else:
-            return self.line_item_price
-    sub_total = property(_sub_total)
+            price = self.line_item_price
 
-    def _total_with_tax(self):
+        return price
+
+    @property
+    def total_with_tax(self):
         return self.sub_total + self.tax
-    total_with_tax = property(_total_with_tax)
 
-    def _unit_price_with_tax(self):
+    @property
+    def unit_price_with_tax(self):
         return self.unit_price + self.unit_tax
-    unit_price_with_tax = property(_unit_price_with_tax)
 
     def _get_description(self):
         return self.product.translated_name()
@@ -1160,7 +1330,7 @@ class OrderItemDetail(models.Model):
     item = models.ForeignKey(OrderItem, verbose_name=_("Order Item"), )
     name = models.CharField(_('Name'), max_length=100)
     value = models.CharField(_('Value'), max_length=255)
-    price_change = models.DecimalField(_("Price Change"), max_digits=18, decimal_places=10, blank=True, null=True)
+    price_change = models.DecimalField(_("Price Change"), max_digits=18, decimal_places=2, blank=True, null=True)
     sort_order = models.IntegerField(_("Sort Order"),
                                      help_text=_("The display order for this group."))
 
@@ -1262,22 +1432,16 @@ class OrderStatus(models.Model):
 class OrderPayment(models.Model):
     order = models.ForeignKey(Order, related_name="payments")
     payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
-    amount = models.DecimalField(_("amount"), max_digits=18, decimal_places=10, blank=True, null=True)
+    amount = models.DecimalField(_("amount"), max_digits=18, decimal_places=2, blank=True, null=True)
+
+    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency at time of payment"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+
     time_stamp = models.DateTimeField(_("timestamp"), default=timezone.now, editable=True)
     transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
 
-    def _credit_card(self):
-        """Return the credit card associated with this payment."""
-        try:
-            return self.creditcards.get()
-        except self.creditcards.model.DoesNotExist:
-            return None
-    credit_card = property(_credit_card)
-
-    def _amount_total(self):
-        return money_format(self.amount)
-
-    amount_total = property(fget=_amount_total)
+    class Meta:
+        verbose_name = _("Order Payment")
+        verbose_name_plural = _("Order Payments")
 
     def __unicode__(self):
         if self.id is not None:
@@ -1285,9 +1449,88 @@ class OrderPayment(models.Model):
         else:
             return u"Order payment (unsaved)"
 
+    @property
+    def credit_card(self):
+        """Return the credit card associated with this payment."""
+        try:
+            return self.creditcards.get()
+        except self.creditcards.model.DoesNotExist:
+            return None
+
+    @property
+    def amount_total(self):
+        return self.display_total
+
+    @property
+    def currency(self):
+        return self.order.currency
+
+    @property
+    def display_total(self):
+        return money_format(self.amount, self.currency.iso_4217_code)
+
+
+class OrderRefund(models.Model):
+    order = models.ForeignKey(Order, related_name="refunds")
+    payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
+    amount = models.DecimalField(_("Amount"), max_digits=18, decimal_places=2)
+    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_("Rate from primary currency  at time of refund"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+
+    timestamp = models.DateTimeField(_("Timestamp"), default=timezone.now, editable=True)
+    transaction_id = models.CharField(_("Transaction ID"), max_length=25, blank=True, null=True)
+
     class Meta:
-        verbose_name = _("Order Payment")
-        verbose_name_plural = _("Order Payments")
+        verbose_name = _("Order Refund")
+        verbose_name_plural = _("Order Refunds")
+
+    def __unicode__(self):
+        if self.id is not None:
+            return u"Order refund #{id} - {amount}".format(
+                id=self.id,
+                amount=self.display_amount,
+            )
+        else:
+            return u"Order refund (unsaved)"
+
+    def save(self, *args, **kwargs):
+        if self.id is None:
+            # If this is the first time saving this payment, check if
+            # the exchange rate is default (1.00), if it is, try to
+            # get the latest exchange rate
+            if self.exchange_rate == Decimal("1.00"):
+                try:
+                    self.exchange_rate = self.currency.exchange_rates.latest().rate
+                except ExchangeRate.DoesNotExist:
+                    self.exchange_rate = Decimal("1.00")
+
+            # If this is the first time saving this payment, add it to
+            # the orders refund attribute
+            if self.order.refund:
+                self.order.refund += self.amount
+            else:
+                self.order.refund = self.amount
+            self.order.save()
+        return super(OrderRefund, self).save(*args, **kwargs)
+
+    @property
+    def currency(self):
+        return self.order.currency
+
+    @property
+    def display_amount(self):
+        return money_format(self.amount, self.currency.iso_4217_code)
+
+    def amount_in_primary_currency(self):
+        if self.amount is None:
+            amount = Decimal("0.00")
+        else:
+            amount = self.amount
+
+        if self.currency.primary is False:
+            reverse_exchange_rate = Decimal("1.00") / self.exchange_rate
+            amount = (amount * reverse_exchange_rate).quantize(Decimal('.01'), ROUND_HALF_EVEN)
+
+        return amount
 
 
 class OrderVariable(models.Model):
@@ -1313,7 +1556,7 @@ class OrderTaxDetail(models.Model):
     order = models.ForeignKey(Order, related_name="taxes")
     method = models.CharField(_("Model"), max_length=50)
     description = models.CharField(_("Description"), max_length=50, blank=True)
-    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=10, blank=True, null=True)
+    tax = models.DecimalField(_("Tax"), max_digits=18, decimal_places=2, blank=True, null=True)
 
     def __unicode__(self):
         if self.description:
@@ -1348,6 +1591,7 @@ def _create_download_link(product=None, order=None, subtype=None, **kwargs):
         new_link.save()
     else:
         log.debug("ignoring subtype_order_success signal, looking for download product, got %s", subtype)
+
 
 signals.satchmo_cart_changed.connect(_remove_order_on_cart_update, sender=None)
 satchmo_contact_location_changed.connect(_recalc_total_on_contact_change, sender=None)

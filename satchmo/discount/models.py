@@ -1,17 +1,17 @@
 """
 Sets up a discount that can be applied to a product
 """
+import datetime
+import logging
+import operator
 
 from decimal import Decimal
 
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
-from satchmo.l10n.utils import money_format
+from satchmo.currency.utils import currency_for_request, money_format
 from satchmo.product.models import Product
-import datetime
-import logging
-import operator
 
 log = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class Discount(models.Model):
     def __unicode__(self):
         return self.description
 
-    def isValid(self, cart=None):
+    def isValid(self, cart=None, request=None):
         """
         Make sure this discount still has available uses and is in the current date range.
         If a cart has been populated, validate that it does apply to the products we have selected.
@@ -87,7 +87,8 @@ class Discount(models.Model):
 
         minOrder = self.minOrder or 0
         if cart.total < minOrder:
-            return (False, ugettext('This discount only applies to orders of at least %s.' % money_format(minOrder)))
+            currency_code = currency_for_request(request)
+            return (False, ugettext('This discount only applies to orders of at least %s.' % money_format(minOrder, currency_code)))
 
         validItems = False
         validproducts = self._get_valid_product_dict()

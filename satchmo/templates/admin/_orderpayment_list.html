@@ -17,7 +17,7 @@
                 <a href="/admin/shop/orderpayment/{{ payment.id}}">{{ payment.id }}</a>
             </td>
             <td>
-                {{ payment.amount|currency }}
+                {{ payment.display_total }}
             </td>
             <td>
                 {{ payment.payment }}
@@ -39,7 +39,7 @@
     {% if order.paid_in_full %}
     <i>{% trans 'Paid in full' %}</i>
     {% else %}
-    <b>{% trans 'Balance on order:' %} </b>{{ order.balance|currency }}
+    <b>{% trans 'Balance on order:' %} </b>{{ order.display_balance }}
     {% endif %}
     </div>
 </fieldset>

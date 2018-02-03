@@ -1,5 +1,8 @@
+from django import forms
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
+
+from satchmo.payment.config import labelled_payment_choices
 from satchmo.shop.models import (
     Cart,
     CartItem,
@@ -10,6 +13,7 @@ from satchmo.shop.models import (
     OrderItem,
     OrderItemDetail,
     OrderPayment,
+    OrderRefund,
     OrderStatus,
     OrderTaxDetail,
     OrderVariable,
@@ -72,9 +76,21 @@ class Status_Inline(admin.TabularInline):
     model = Status
 
 
-class OrderStatus_Inline(admin.StackedInline):
+class OrderStatus_Inline(admin.TabularInline):
     model = OrderStatus
     readonly_fields = ('time_stamp',)
+    extra = 1
+
+
+class OrderPayment_Inline(admin.TabularInline):
+    model = OrderPayment
+    readonly_fields = ('payment', 'amount', 'currency', 'exchange_rate', 'time_stamp', 'transaction_id')
+    extra = 0
+
+
+class OrderRefund_Inline(admin.TabularInline):
+    model = OrderRefund
+    readonly_fields = ('currency', 'exchange_rate', 'timestamp',)
     extra = 1
 
 
@@ -101,15 +117,15 @@ class OrderOptions(admin.ModelAdmin):
          {'classes': ('collapse',),
           'fields': ('bill_street1', 'bill_street2', 'bill_city', 'bill_state', 'bill_postal_code', 'bill_country')}),
         (_('Totals'),
-         {'fields': ('sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'refund')}
+         {'fields': ('currency', 'exchange_rate', 'sub_total', 'shipping_cost', 'shipping_discount', 'tax', 'discount', 'total', 'refund')}
          )
     )
-    readonly_fields = ('contact', 'time_stamp', 'frozen', 'shipping_date', 'estimated_delivery_min_date', 'estimated_delivery_expected_date', 'estimated_delivery_max_date')
+    readonly_fields = ('contact', 'time_stamp', 'frozen', 'shipping_date', 'estimated_delivery_min_date', 'estimated_delivery_expected_date', 'estimated_delivery_max_date', 'currency', 'exchange_rate', 'refund')
     list_display = ('id', 'contact', 'contact_user', 'ship_country', 'time_stamp', 'order_total', 'balance_forward', 'status', 'late_date', 'tracking_number', 'invoice', 'frozen')
     list_filter = ['time_stamp', 'status__status', 'frozen']
     search_fields = ['id', 'contact__user__username', 'contact__user__email', 'contact__first_name', 'contact__last_name', 'contact__email']
     date_hierarchy = 'time_stamp'
-    inlines = [OrderItem_Inline, OrderStatus_Inline, OrderVariable_Inline, OrderTaxDetail_Inline]
+    inlines = [OrderItem_Inline, OrderStatus_Inline, OrderPayment_Inline, OrderRefund_Inline, OrderVariable_Inline, OrderTaxDetail_Inline]
     actions = ['shipped']
 
     def shipped(self, request, queryset):
@@ -141,10 +157,11 @@ class OrderPaymentOptions(admin.ModelAdmin):
     list_filter = ['payment']
     list_display = ['id', 'order', 'payment', 'amount_total', 'time_stamp']
     date_hierarchy = 'time_stamp'
-    readonly_fields = ('order', )
+    readonly_fields = ('order', 'exchange_rate', )
     fieldsets = (
-        (None, {'fields': ('order', 'payment', 'amount', 'transaction_id', 'time_stamp')}), )
+        (None, {'fields': ('order', 'payment', 'amount', 'order__currency', 'exchange_rate', 'transaction_id', 'time_stamp')}), )
     search_fields = ['id', 'amount', 'order__id', 'order__contact__user__email', 'order__contact__first_name', 'order__contact__last_name', 'order__contact__email']
+
 
 admin.site.register(Cart, CartOptions)
 admin.site.register(CartItem, CartItemOptions)

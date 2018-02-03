@@ -4,26 +4,34 @@ from django.template import RequestContext
 from django.template.loader import select_template
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
+from django.views.generic.list import ListView
+
 from satchmo.configuration import config_value
+from satchmo.currency.utils import (
+    currency_for_request,
+    money_format,
+)
 from satchmo.discount.utils import find_best_auto_discount
-from satchmo.l10n.utils import money_format
-from satchmo.product.models import Category, Product, ConfigurableProduct, sorted_tuple
 from satchmo.product.brand.models import Brand
+from satchmo.product.models import (
+    Category,
+    ConfigurableProduct,
+    IngredientsList,
+    Product,
+    sorted_tuple,
+)
 from satchmo.product.signals import index_prerender
 from satchmo.product.utils import get_tax
 from satchmo.shop.views.utils import bad_or_missing
 from satchmo.utils.json import json_encode
-from satchmo.product.models import IngredientsList
-from django.views.generic.list import ListView
 
 import logging
 log = logging.getLogger(__name__)
 
 NOTSET = object()
 
+
 # ---- Helpers ----
-
-
 def find_product_template(product, producttypes=None):
     """Searches for the correct override template given a product."""
     if producttypes is None:
@@ -193,6 +201,7 @@ def get_price(request, product_slug):
     if request.method == "POST" and 'quantity' in request.POST:
         quantity = int(request.POST['quantity'])
 
+    currency_code = currency_for_request(request)
     if 'ConfigurableProduct' in product.get_subtypes():
         cp = product.configurableproduct
         chosen_options = optionids_from_post(cp, request.POST)
@@ -201,20 +210,17 @@ def get_price(request, product_slug):
         if not pvp:
             return http.HttpResponse(json_encode(('', _("not available"))), mimetype="text/javascript")
         prod_slug = pvp.slug
-        price = money_format(pvp.get_qty_price(quantity))
+
+        price = money_format(pvp.get_qty_price(quantity), currency_code)
     else:
-        price = money_format(product.get_qty_price(quantity))
+        price = money_format(product.get_qty_price(quantity), currency_code)
 
     if not price:
         return http.HttpResponse(json_encode(('', _("not available"))), mimetype="text/javascript")
 
     return http.HttpResponse(json_encode((prod_slug, price)), mimetype="text/javascript")
 
-class ArticlesByCategoryView(ListView):
-    template_name = "article/category_list.html"
 
-    def get_queryset(self):
-        return Article.objects.live().filter(category__slug=self.kwargs["category_slug"])
 def get_price_detail(request, product_slug):
     """Get all price details for a product, returning the response encoded as JSON."""
     results = {
@@ -247,12 +253,13 @@ def get_price_detail(request, product_slug):
             base_tax = get_tax(request.user, product, quantity)
             price_with_tax = price + base_tax
 
+            currency_code = currency_for_request(request)
             results['slug'] = product.slug
-            results['currency_price'] = money_format(price)
+            results['currency_price'] = money_format(price, currency_code)
             results['price'] = float(price)
             results['tax'] = float(base_tax)
-            results['currency_tax'] = money_format(base_tax)
-            results['currency_price_with_tax'] = money_format(price_with_tax)
+            results['currency_tax'] = money_format(base_tax, currency_code)
+            results['currency_price_with_tax'] = money_format(price_with_tax, currency_code)
             results['price_with_tax'] = float(price_with_tax)
             results['success'] = True
             results['message'] = ""
@@ -272,4 +279,3 @@ class IngredientsListView(ListView):
 
     def get_queryset(self):
         return IngredientsList.objects.all().order_by("description")
-

@@ -3313,7 +3313,7 @@ msgstr "주문한 품목"
 
 #: templates/checkout/base_confirm.html:40
 #: templates/checkout/paypal/confirm.html:35
-msgid "Purchase Items"
+msgid "Place Order"
 msgstr "구매한 품목"
 
 #: templates/checkout/base_pay_ship.html:18 templates/checkout/form.html:18

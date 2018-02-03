@@ -97,23 +97,25 @@ def show_bestsellers(limit=5):
     return {"bestsellers": products}
 
 
-@register.inclusion_tag('featured.html')
-def show_featured(limit=1, random=True):
+@register.inclusion_tag('featured.html', takes_context=True)
+def show_featured(context, limit=1, random=True):
     ''' Renders best sellers list '''
     products = display_featured(limit, random)
-    return {"featured": products}
+    context["featured"] = products
+    return context
 
 
-@register.inclusion_tag('product/quick_product.html')
-def quick_product(product, show_wishlist=True):
+@register.inclusion_tag('product/quick_product.html', takes_context=True)
+def quick_product(context, product, show_wishlist=True):
     ''' Renders a product in a way that is usefull for a list '''
     if show_wishlist == "False":
         show_wishlist = False
 
-    return {
+    context.update({
         "product": product,
         "show_wishlist": show_wishlist
-    }
+    })
+    return context
 
 
 @register.inclusion_tag('product/full_product.html', takes_context=True)

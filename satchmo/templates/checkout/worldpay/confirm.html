@@ -35,9 +35,9 @@
 	<input type="hidden" name="fixContact"/>
 {% if MD5 %}
 	<input type="hidden" name="signature" value="{{ MD5 }}" />
-{% endif %}	
+{% endif %}
 	<input type="hidden" name="M_session" value="{{ session }}" />
-	<input type="submit" class="button" value ="{% trans "Purchase Items &raquo;" %}" />
-</form> 
+	<input type="submit" class="button" value ="{% trans "Place Order &raquo;" %}" />
+</form>
 {% endlocalize %}
 {% endblock %}

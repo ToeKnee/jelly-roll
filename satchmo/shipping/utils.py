@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from satchmo.currency.utils import convert_to_currency
 from satchmo.shipping.config import shipping_method_by_key
 from satchmo.shipping.models import STANDARD
 
@@ -14,7 +15,7 @@ def update_shipping(order, shipping, contact, cart):
     shipper.calculate(cart, contact)
     order.shipping_description = shipper.description().encode("utf-8")
     order.shipping_method = shipper.method()
-    order.shipping_cost = shipper.cost()
+    order.shipping_cost = convert_to_currency(shipper.cost(), order.currency.iso_4217_code)
     order.shipping_model = shipping
 
     if hasattr(shipper, "carrier"):
