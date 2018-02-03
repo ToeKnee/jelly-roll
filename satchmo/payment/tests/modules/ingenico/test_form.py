@@ -50,7 +50,7 @@ class IngenicoFormTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": None,
             "ORDERID": str(order.id),

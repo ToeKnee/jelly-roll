@@ -1,5 +1,10 @@
 from django.conf.urls import patterns, url
-from satchmo.configuration import config_get_group, config_get, config_value
+from satchmo.configuration import (
+    config_get_group,
+    config_get,
+    config_value,
+    SettingNotSet,
+)
 
 import logging
 log = logging.getLogger(__name__)
@@ -21,7 +26,11 @@ urlpatterns = patterns('satchmo.payment.views',
 def make_urlpatterns():
     patterns = []
     for key in config_value('PAYMENT', 'MODULES'):
-        cfg = config_get(key, 'MODULE')
+        try:
+            cfg = config_get(key, 'MODULE')
+        except SettingNotSet:
+            log.warning("Could not find module %s, skipping", key)
+            continue
         modulename = cfg.editor_value
         urlmodule = "%s.urls" % modulename
         patterns.append(url(config_value(key, 'URL_BASE'), [urlmodule, modulename, '']))

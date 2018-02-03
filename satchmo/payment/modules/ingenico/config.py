@@ -70,12 +70,6 @@ config_register_list(
                 description=_('The url base used for constructing urlpatterns which will use this module'),
                 default=r'^ingenico/'),
 
-    StringValue(PAYMENT_GROUP,
-                'CURRENCY_CODE',
-                description=_('Currency Code'),
-                help_text=_('Default Currency code for Ingenico transactions.'),
-                default='GBP'),
-
     BooleanValue(PAYMENT_GROUP,
                  'ALIAS',
                  description=_('Alias (Tokenisation) mode'),
@@ -86,5 +80,5 @@ config_register_list(
                 'ALIASUSAGE',
                 description=_('Alias Usage'),
                 help_text=_('A text explaining the reason for the Alias registration.'),
-                default=_("Would you like to securely store your card details for next time? This makes checking out quicker for your next order since you won't need to re-enter your card details.")),
+                default=_("Securely store your card details for faster checkout next time?")),
 )

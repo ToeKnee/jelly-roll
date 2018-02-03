@@ -1,11 +1,19 @@
-from satchmo.configuration import config_value
-from satchmo.l10n.utils import money_format
-from satchmo.product.models import ProductVariation, Option, split_option_unique_id, ProductPriceLookup, OptionGroup
+from satchmo.currency.utils import (
+    currency_for_request,
+    money_format,
+)
+from satchmo.product.models import (
+    Option,
+    OptionGroup,
+    ProductPriceLookup,
+    split_option_unique_id,
+)
 from satchmo.shop.models import Config
 from satchmo.tax.utils import get_tax_processor
-import logging
 
+import logging
 log = logging.getLogger(__name__)
+
 
 def get_taxprocessor(user):
     if user.is_authenticated():
@@ -15,11 +23,13 @@ def get_taxprocessor(user):
 
     return get_tax_processor(user=user)
 
+
 def get_tax(user, product, quantity):
     taxer = get_taxprocessor(user)
     return taxer.by_product(product, quantity)
 
-def productvariation_details(product, include_tax, user, create=False):
+
+def productvariation_details(product, include_tax, user, request, create=False):
     """Build the product variation details, for conversion to javascript.
 
     Returns variation detail dictionary built like so:
@@ -42,7 +52,7 @@ def productvariation_details(product, include_tax, user, create=False):
         tax_class = product.taxClass
 
     details = {}
-    
+
     variations = ProductPriceLookup.objects.filter(parentid=product.id)
     if variations.count() == 0:
         if create:
@@ -53,7 +63,7 @@ def productvariation_details(product, include_tax, user, create=False):
             log.warning('You must run satchmo_rebuild_pricing and add it to a cron-job to run every day, or else the product details will not work for product detail pages.')
     for detl in variations:
         key = detl.key
-        if details.has_key(key):
+        if key in details:
             detail = details[key]
         else:
             detail = {}
@@ -71,18 +81,20 @@ def productvariation_details(product, include_tax, user, create=False):
             detail['PRICE'] = {}
             if include_tax:
                 detail['TAXED'] = {}
-                
+
             details[key] = detail
-        
+
         price = detl.dynamic_price
-        
-        detail['PRICE'][detl.quantity] = money_format(price)
-        
+        currency_code = currency_for_request(request)
+
+        detail['PRICE'][detl.quantity] = money_format(price, currency_code)
+
         if include_tax:
             tax_price = taxer.by_price(tax_class, price) + price
-            detail['TAXED'][detl.quantity] = money_format(tax_price)
-                
+            detail['TAXED'][detl.quantity] = money_format(tax_price, currency_code)
+
     return details
+
 
 def serialize_options(product, selected_options=()):
     """
@@ -109,27 +121,27 @@ def serialize_options(product, selected_options=()):
     color and size, and you have a yellow/large, a yellow/small, and a
     white/small, but you have no white/large - the customer will still see
     the options white and large.
-    """    
+    """
     all_options = product.get_valid_options()
     group_sortmap = OptionGroup.objects.get_sortmap()
 
-    # first get all objects
-    # right now we only have a list of option.unique_ids, and there are
-    # probably a lot of dupes, so first list them uniquely
+    # First get all objects.
+    # Right now we only have a list of option.unique_ids, and there are
+    # probably a lot of dupes, so first list them uniquely.
     vals = {}
     groups = {}
     opts = {}
     for options in all_options:
         for option in options:
-            if not opts.has_key(option):
+            if option not in opts:
                 k, v = split_option_unique_id(option)
                 vals[v] = False
                 groups[k] = False
                 opts[option] = None
-        
-    for option in Option.objects.filter(option_group__id__in = groups.keys(), value__in = vals.keys()):
+
+    for option in Option.objects.filter(option_group__id__in=groups.keys(), value__in=vals.keys()):
         uid = option.unique_id
-        if opts.has_key(uid):
+        if uid in opts:
             opts[uid] = option
 
     # now we have all the objects in our "opts" dictionary, so build the serialization dict
@@ -137,13 +149,13 @@ def serialize_options(product, selected_options=()):
     serialized = {}
 
     for option in opts.values():
-        if not serialized.has_key(option.option_group_id):
+        if option.option_group_id not in serialized:
             serialized[option.option_group.id] = {
                 'name': option.option_group.translated_name(),
                 'id': option.option_group.id,
                 'items': [],
             }
-        if not option in serialized[option.option_group_id]['items']:
+        if option not in serialized[option.option_group_id]['items']:
             serialized[option.option_group_id]['items'] += [option]
             option.selected = option.unique_id in selected_options
 
@@ -151,13 +163,13 @@ def serialize_options(product, selected_options=()):
     values = []
     for k, v in serialized.items():
         values.append((group_sortmap[k], v))
-        
+
     values.sort()
     values = zip(*values)[1]
-    
+
     log.debug('serialized: %s', values)
-    
-    #now go back and make sure option items are sorted properly.
+
+    # Now go back and make sure option items are sorted properly.
     for v in values:
         v['items'] = _sort_options(v['items'])
 
@@ -166,7 +178,6 @@ def serialize_options(product, selected_options=()):
 
 
 def _sort_options(lst):
-    work = [(opt.sort_order, opt) for opt in lst] 
+    work = [(opt.sort_order, opt) for opt in lst]
     work.sort()
     return zip(*work)[1]
-    

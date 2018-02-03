@@ -4187,7 +4187,7 @@ msgstr "פריטים שהוזמנו"
 
 #: templates/checkout/base_confirm.html:40
 #: templates/checkout/paypal/confirm.html:65
-msgid "Purchase Items"
+msgid "Place Order"
 msgstr "פריטי רכש"
 
 #: templates/checkout/base_pay_ship.html:18 templates/checkout/form.html:59

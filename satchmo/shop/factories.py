@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 from factory import lazy_attribute
 
 from satchmo.contact.factories import ContactFactory
+from satchmo.currency.factories import CurrencyFactory
 from satchmo.l10n.factories import CountryFactory
 from satchmo.shop.models import (
     Cart,
@@ -14,6 +15,7 @@ from satchmo.shop.models import (
     Order,
     OrderItem,
     OrderPayment,
+    OrderRefund,
     OrderStatus,
     Status,
 )
@@ -57,6 +59,7 @@ class OrderFactory(factory.django.DjangoModelFactory):
 
     contact = factory.SubFactory(ContactFactory)
     site = factory.LazyAttribute(lambda a: Site.objects.get_current())
+    currency = factory.SubFactory(CurrencyFactory)
 
 
 class OrderItemFactory(factory.django.DjangoModelFactory):
@@ -113,6 +116,14 @@ class OrderPaymentFactory(factory.django.DjangoModelFactory):
     order = factory.SubFactory(PaidOrderFactory)
     payment = "PAYMENT_AUTOSUCCESS"
     amount = factory.LazyAttribute(lambda obj: obj.order.total)
+
+
+class OrderRefundFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = OrderRefund
+
+    order = factory.SubFactory(PaidOrderFactory)
+    amount = factory.LazyAttribute(lambda obj: obj.order.total / 2)
 
 
 class ShippedOrderFactory(PaidOrderFactory):

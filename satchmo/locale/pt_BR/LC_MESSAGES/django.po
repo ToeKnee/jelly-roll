@@ -4565,7 +4565,7 @@ msgstr "Itens pedidos"
 
 #: templates/checkout/base_confirm.html:40
 #: templates/checkout/paypal/confirm.html:67
-msgid "Purchase Items"
+msgid "Place Order"
 msgstr "Itens comprados"
 
 #: templates/checkout/base_pay_ship.html:18

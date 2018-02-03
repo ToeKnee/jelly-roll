@@ -107,6 +107,7 @@ INSTALLED_APPS = (
     'satchmo.caching',
     'satchmo.configuration',
     'satchmo.contact',
+    'satchmo.currency',
     'satchmo.discount',
     'satchmo.fulfilment',
     'satchmo.giftcertificate',

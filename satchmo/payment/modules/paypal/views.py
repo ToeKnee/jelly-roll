@@ -124,7 +124,7 @@ def confirm_info(request):
         'post_url': url,
         'default_view_tax': default_view_tax,
         'business': account,
-        'currency_code': payment_module.CURRENCY_CODE.value,
+        'currency_code': order.currency.iso_4217_code,
         'return_address': address,
         'invoice': order.id,
         'subscription': recurring,
