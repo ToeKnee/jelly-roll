@@ -1,6 +1,8 @@
+from datetime import datetime
 from decimal import Decimal
 
-from datetime import datetime
+from satchmo.currency.models import Currency, ExchangeRate
+from satchmo.currency.utils import currency_for_request
 from satchmo.shipping.utils import update_shipping
 from satchmo.shop.models import Order, OrderItem, OrderItemDetail, OrderPayment
 from satchmo.shop.signals import satchmo_post_copy_item_to_order
@@ -32,9 +34,15 @@ def create_pending_payment(order, config, amount=NOTSET):
 
     log.debug("Creating pending %s payment for %s", key, order)
 
+    try:
+        exchange_rate = order.currency.exchange_rates.latest().rate
+    except ExchangeRate.DoesNotExist:
+        exchange_rate = Decimal("1.00")
+
     orderpayment = OrderPayment(
         order=order,
         amount=amount,
+        exchange_rate=exchange_rate,
         payment=key,
         transaction_id="PENDING"
     )
@@ -61,8 +69,20 @@ def get_or_create_order(request, working_cart, contact, data):
         )
 
     except Order.DoesNotExist:
+        # Get currency from request
+        iso_4217_code = currency_for_request(request)
+        currency = Currency.objects.all_accepted().get(iso_4217_code=iso_4217_code)
+        try:
+            exchange_rate = currency.exchange_rates.latest().rate
+        except ExchangeRate.DoesNotExist:
+            exchange_rate = Decimal("1.00")
+
         # Create a new order.
-        newOrder = Order(contact=contact)
+        newOrder = Order(
+            contact=contact,
+            currency=currency,
+            exchange_rate=exchange_rate,
+        )
         pay_ship_save(
             newOrder,
             working_cart,
@@ -110,9 +130,16 @@ def record_payment(order, config, amount=NOTSET, transaction_id=""):
     ct = payments.count()
     if ct == 0:
         log.debug("No pending %s payments for %s", key, order)
+
+        try:
+            exchange_rate = order.currency.exchange_rates.latest().rate
+        except ExchangeRate.DoesNotExist:
+            exchange_rate = Decimal("1.00")
+
         orderpayment = OrderPayment(
             order=order,
             amount=amount,
+            exchange_rate=exchange_rate,
             payment=key,
             transaction_id=transaction_id
         )

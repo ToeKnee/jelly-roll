@@ -70,12 +70,6 @@ config_register_list(
                 description=_('The url base used for constructing urlpatterns which will use this module'),
                 default=r'^ingenico/'),
 
-    StringValue(PAYMENT_GROUP,
-                'CURRENCY_CODE',
-                description=_('Currency Code'),
-                help_text=_('Default Currency code for Ingenico transactions.'),
-                default='GBP'),
-
     BooleanValue(PAYMENT_GROUP,
                  'ALIAS',
                  description=_('Alias (Tokenisation) mode'),

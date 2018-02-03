@@ -27,16 +27,16 @@
     <p>
         {% trans "Price" %}:
 	{% if default_view_tax %}
-            <span class="price">{{ price_with_tax|currency }}</span>
+            <span class="price">{% currency price_with_tax %}</span>
 	{% else %}
 		{% if sale %}
-                    <span class="struckthrough">{{ product.unit_price|currency }}</span>
-                    <span class="salestyle price">{{product|discount_price:sale|currency }}</span>
+                    <span class="struckthrough">{% currency product.unit_price %}</span>
+                    <span class="salestyle price">{% discount_price product sale %}</span>
                     <br>
-                    <strong> Save {{ product|discount_saved:sale|currency }} ({{ sale.percentage_text }} off!)</strong>
+                    <strong> Save {% discount_saved product sale %} ({{ sale.percentage_text }} off!)</strong>
                     <em>{% include "discount/some_eligible.html" %}</em>
 		{% else %}
-                    <strong class="price">{{ product.unit_price|currency }}</strong>
+                    <strong class="price">{% currency product.unit_price %}</strong>
 		{% endif %}
 	{% endif %}
     </p>

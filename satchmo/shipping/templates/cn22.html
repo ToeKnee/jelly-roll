@@ -75,7 +75,7 @@
            {{ item.quantity }} × {{ item.name }}
         </td>
         <td>{{ item.weight }}</td>
-        <td>{{ item.value|currency }}</td>
+        <td>{% currency item.value %}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -98,7 +98,7 @@
       <tr>
         <td></td>
         <td>{{ total_weight }}</td>
-        <td>{{ total_value|currency }}</td>
+        <td>{% currency total_value %}</td>
       </tr>
     </tfoot>
   </table>

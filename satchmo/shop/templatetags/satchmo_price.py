@@ -1,11 +1,14 @@
-from django.conf import settings
-from django.template import Library, Node
-from satchmo.l10n.utils import money_format
-from satchmo.product.models import Option
+from django.template import Library
+from satchmo.currency.utils import (
+    money_format,
+    currency_for_request
+)
 
 register = Library()
 
-def option_price(option_item):
+
+@register.simple_tag(takes_context=True)
+def option_price(context, option_item):
     """
     Returns the price as (+$1.00)
     or (-$1.00) depending on the sign of the price change
@@ -13,16 +16,19 @@ def option_price(option_item):
     """
     output = ""
     if option_item.price_change != 0:
-        amount = money_format(abs(option_item.price_change))
+        request = context.get("request")
+        currency_code = currency_for_request(request)
+        amount = money_format(abs(option_item.price_change), currency_code)
+
     if option_item.price_change < 0:
         output = "(- %s)" % amount
-    if option_item.price_change > 0:
+    elif option_item.price_change > 0:
         output = "(+ %s)" % amount
     return output
 
-register.simple_tag(option_price)
 
-def option_total_price(product, option_item):
+@register.simple_tag(takes_context=True)
+def option_total_price(context, product, option_item):
     """
     Returns the price as (+$1.00)
     or (-$1.00) depending on the sign of the price change
@@ -32,6 +38,8 @@ def option_total_price(product, option_item):
         val = product.unit_price + option_item.price_change
     else:
         val = product.unit_price
-    return money_format(val)
 
-register.simple_tag(option_total_price)
+    request = context.get("request")
+    currency_code = currency_for_request(request)
+
+    return money_format(val, currency_code)

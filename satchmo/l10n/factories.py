@@ -33,7 +33,7 @@ class CountryFactory(factory.django.DjangoModelFactory):
         model = Country
         django_get_or_create = ('iso2_code',)
 
-    iso2_code = "gb"
+    iso2_code = "GB"
     name = "United Kingdom of Great Britain & Northern Ireland"
     printable_name = "United Kingdom"
     iso3_code = "gbr"
@@ -52,7 +52,7 @@ class UKFactory(CountryFactory):
 
 
 class USFactory(CountryFactory):
-    iso2_code = "us"
+    iso2_code = "US"
     name = "United States"
     printable_name = "United States of America"
     iso3_code = "USA"

@@ -1,13 +1,10 @@
 {% extends "base_product.html" %}
-{% load i18n %}
-{% load satchmo_price %}
-{% load satchmo_currency satchmo_category%}
-{% load satchmo_util %}
+{% load i18n satchmo_category satchmo_currency satchmo_price satchmo_util %}
 
 {% block productdetail %}
 <h4>{% blocktrans with product.translated_name as name %}Custom order for {{ name }}{% endblocktrans %}</h4>
 <p>{% autoescape off %}{{ product.translated_description }}{% endautoescape %}</p>
-{% trans "Price" %}: <h3 id="price">{{ product.unit_price|currency }}</h3>
+{% trans "Price" %}: <h3 id="price">{% currency product.unit_price %}</h3>
 {% for pic in product.productimage_set.all %}
     <img src="{{ pic.picture.url }}" width="280" />
 {% endfor %}
@@ -30,7 +27,7 @@
 
 {% for custom in product.customproduct.custom_text_fields.all %}
 <div>
-{{ custom.translated_name }} {% if custom.price_change %} ({{ custom.price_change|currency }} {% trans "more" %}){%endif%}<br/>
+{{ custom.translated_name }} {% if custom.price_change %} ({% currency custom.price_change %} {% trans "more" %}){%endif%}<br/>
 <textarea name="custom_{{ custom.slug }}" rows="3" cols="40"></textarea>
 </div>
 {% endfor %}

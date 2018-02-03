@@ -87,9 +87,9 @@ class ShopTest(TestCase):
 #        self.assertRedirects(response, url('DUMMY_satchmo_checkout-step3'),
 #            status_code=302, target_status_code=200)
 #        response = self.client.get(url('DUMMY_satchmo_checkout-step3'))
-#        self.assertContains(response, smart_str("Shipping + %s4.00" % config_value('SHOP', 'CURRENCY')), count=1, status_code=200)
-#        self.assertContains(response, smart_str("Tax + %s4.60" % config_value('SHOP', 'CURRENCY')), count=1, status_code=200)
-#        self.assertContains(response, smart_str("Total = %s54.60" % config_value('SHOP', 'CURRENCY')), count=1, status_code=200)
+#        self.assertContains(response, smart_str("Shipping + %s4.00" % config_value('CURRENCY', 'CURRENCY')), count=1, status_code=200)
+#        self.assertContains(response, smart_str("Tax + %s4.60" % config_value('CURRENCY', 'CURRENCY')), count=1, status_code=200)
+#        self.assertContains(response, smart_str("Total = %s54.60" % config_value('CURRENCY', 'CURRENCY')), count=1, status_code=200)
 #        response = self.client.post(url('DUMMY_satchmo_checkout-step3'), {'process' : 'True'})
 #        self.assertRedirects(response, url('DUMMY_satchmo_checkout-success'),
 #            status_code=302, target_status_code=200)
@@ -116,7 +116,7 @@ class ShopTest(TestCase):
         # that variation already selected
         response = self.client.get(prefix + '/product/neat-book-soft/')
         self.assertContains(response, 'option value="soft" selected="selected"')
-        self.assertContains(response, smart_str("%s5.00" % config_value('SHOP', 'CURRENCY')))
+        self.assertContains(response, smart_str("%s5.00" % config_value('CURRENCY', 'CURRENCY')))
 
     def test_orphaned_product(self):
         """
@@ -248,10 +248,10 @@ class ShopTest(TestCase):
                              status_code=302, target_status_code=200)
         response = self.client.get(prefix + '/cart/')
         self.assertContains(response, '/satchmo-computer/">satchmo computer', status_code=200)
-        self.assertContains(response, smart_str("%s168.00" % config_value('SHOP', 'CURRENCY')), count=4)
-        self.assertContains(response, smart_str("Monogram: CBM  %s10.00" % config_value('SHOP', 'CURRENCY')), count=1)
-        self.assertContains(response, smart_str("Case - External Case: Mid  %s10.00" % config_value('SHOP', 'CURRENCY')), count=1)
-        self.assertContains(response, smart_str("Memory - Internal RAM: 1.5 GB  %s25.00" % config_value('SHOP', 'CURRENCY')), count=1)
+        self.assertContains(response, smart_str("%s168.00" % config_value('CURRENCY', 'CURRENCY')), count=4)
+        self.assertContains(response, smart_str("Monogram: CBM  %s10.00" % config_value('CURRENCY', 'CURRENCY')), count=1)
+        self.assertContains(response, smart_str("Case - External Case: Mid  %s10.00" % config_value('CURRENCY', 'CURRENCY')), count=1)
+        self.assertContains(response, smart_str("Memory - Internal RAM: 1.5 GB  %s25.00" % config_value('CURRENCY', 'CURRENCY')), count=1)
         response = self.client.post(url('satchmo_checkout-step1'), get_step1_post_data(self.US))
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-step2'),
                              status_code=302, target_status_code=200)
@@ -266,7 +266,7 @@ class ShopTest(TestCase):
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-step3'),
                              status_code=302, target_status_code=200)
         response = self.client.get(url('DUMMY_satchmo_checkout-step3'))
-        self.assertContains(response, smart_str("satchmo computer - %s168.00" % config_value('SHOP', 'CURRENCY')), count=1, status_code=200)
+        self.assertContains(response, smart_str("satchmo computer - %s168.00" % config_value('CURRENCY', 'CURRENCY')), count=1, status_code=200)
         response = self.client.post(url('DUMMY_satchmo_checkout-step3'), {'process': 'True'})
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-success'),
                              status_code=302, target_status_code=200)

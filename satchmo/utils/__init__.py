@@ -1,4 +1,4 @@
-from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
+from decimal import Decimal, ROUND_HALF_EVEN, InvalidOperation
 
 import datetime
 import os
@@ -174,7 +174,7 @@ def trunc_decimal(val, places):
         except InvalidOperation:
             log.warn("invalid operation trying to convert '%s' to decimal, returning raw", val)
             return val
-    return val.quantize(Decimal(roundfmt), ROUND_HALF_UP)
+    return val.quantize(Decimal(roundfmt), ROUND_HALF_EVEN)
 
 
 def url_join(*args):

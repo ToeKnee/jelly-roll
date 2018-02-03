@@ -1,13 +1,11 @@
-{% load i18n  %}
-{% load satchmo_currency %}
-{% load satchmo_checkout %}
+{% load i18n satchmo_checkout satchmo_currency %}
 {% for payment in order.payments_completed %}
 {% if forloop.first %}
 <h4>{% trans 'Paid' %}</h4>
 {% endif %}
-{{ payment.time_stamp|date:"y-M-d H:i" }} {{ payment.payment|payment_label }} - {{ payment.amount|currency }}<br/>
+{{ payment.time_stamp|date:"y-M-d H:i" }} {{ payment.payment|payment_label }} - {{ payment.display_total }}<br/>
 {% if forloop.last %}
-{% with order.balance|currency as balance %}
+{% with order.display_balance as balance %}
 {% blocktrans %}Balance = {{ balance }} {% endblocktrans %}
 {% endwith %}
 {% endif %}

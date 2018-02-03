@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
 from datetime import date
@@ -10,7 +10,7 @@ from satchmo.configuration import config_get_group
 from satchmo.payment.modules.ingenico.utils import shasign
 from satchmo.payment.modules.ingenico.views import process
 from satchmo.shop.factories import TestOrderFactory
-from satchmo.shop.models import Order
+from satchmo.shop.models import Order, OrderRefund
 
 payment_module = config_get_group('PAYMENT_INGENICO')
 
@@ -35,7 +35,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),
@@ -61,7 +61,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": "1234567890",  # Made up order number
@@ -86,7 +86,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": order.id,
@@ -114,7 +114,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),
@@ -153,7 +153,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": "次 大",
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),
@@ -192,7 +192,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),
@@ -231,7 +231,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),
@@ -269,7 +269,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),
@@ -298,6 +298,11 @@ class ProcessTest(TestCase):
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
         self.assertIn("Status: Refund", order.notes)
+        self.assertTrue(OrderRefund.objects.filter(
+            order=order,
+            amount=order.refund,
+            transaction_id="trans-1",
+        ).exists())
 
     def test_status__refund__payment_deleted(self):
         order = TestOrderFactory()
@@ -308,7 +313,7 @@ class ProcessTest(TestCase):
             "BRAND": "Visa",
             "CARDNO": "xxxx xxxx xxxx 4679",
             "CN": order.bill_addressee,
-            "CURRENCY": payment_module.CURRENCY_CODE.value,
+            "CURRENCY": order.currency.iso_4217_code,
             "ED": "02/2019",
             "NCERROR": "",
             "orderID": str(order.id),
@@ -337,3 +342,8 @@ class ProcessTest(TestCase):
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
         self.assertIn("Status: Payment deleted", order.notes)
+        self.assertTrue(OrderRefund.objects.filter(
+            order=order,
+            amount=order.refund,
+            transaction_id="trans-1",
+        ).exists())
