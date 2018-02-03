@@ -28,20 +28,39 @@ class MoneyFormatTest(TestCase):
         value = None
         currency_code = "EUR"
 
-        self.assertEqual(money_format(value, currency_code), u"\u20ac0.00 (EUR)")
+        self.assertEqual(
+            money_format(value, currency_code),
+            u"\u20ac0.00 (EUR)"
+        )
+
+    def test_value_is_zero(self):
+        EURCurrencyFactory()
+        value = Decimal("0.00")
+        currency_code = "EUR"
+
+        self.assertEqual(
+            money_format(value, currency_code),
+            u"\u20ac0.00 (EUR)"
+        )
 
     def test_currency(self):
         EURCurrencyFactory()
         value = Decimal("1.00")
         currency_code = "EUR"
 
-        self.assertEqual(money_format(value, currency_code), u"\u20ac1.00 (EUR)")
+        self.assertEqual(
+            money_format(value, currency_code),
+            u"\u20ac1.00 (EUR)"
+        )
 
     def test_currency__does_not_exist(self):
         value = Decimal("1.00")
         currency_code = "BTC"
 
-        self.assertEqual(force_str(money_format(value, currency_code)), "BTC is not accepted")
+        self.assertEqual(
+            force_str(money_format(value, currency_code)),
+            "BTC is not accepted"
+        )
 
 
 class ConvertToCurrencyTest(TestCase):
@@ -52,6 +71,11 @@ class ConvertToCurrencyTest(TestCase):
     def test_no_value(self):
         currency_code = "EUR"
         test_value = convert_to_currency(None, currency_code)
+        self.assertEqual(test_value, Decimal("0.00"))
+
+    def test_zero_value(self):
+        currency_code = "EUR"
+        test_value = convert_to_currency(Decimal("0.00"), currency_code)
         self.assertEqual(test_value, Decimal("0.00"))
 
     def test_currency_is_primary(self):
