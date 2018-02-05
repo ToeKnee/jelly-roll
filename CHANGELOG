@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.10.1.1, 5 Feb, 2018
+-------------------------------
+* Add missing code for cheapest shipping to base cart
+
 Version 0.10.1.0, 3 Feb, 2018
 -------------------------------
 * Add cheapest shipping to base cart
