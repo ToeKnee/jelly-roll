@@ -7,7 +7,9 @@ from django.views.decorators.cache import never_cache
 from django.views.generic.list import ListView
 
 from satchmo.configuration import config_value
+from satchmo.currency.models import Currency
 from satchmo.currency.utils import (
+    convert_to_currency,
     currency_for_request,
     money_format,
 )
@@ -48,7 +50,9 @@ def optionids_from_post(configurableproduct, POST):
     chosen_options = []
     for opt_grp in configurableproduct.option_group.all():
         if str(opt_grp.id) in POST:
-            chosen_options.append('%s-%s' % (opt_grp.id, POST[str(opt_grp.id)]))
+            chosen_options.append(
+                '%s-%s' % (opt_grp.id, POST[str(opt_grp.id)])
+            )
     return sorted_tuple(chosen_options)
 
 
@@ -89,7 +93,9 @@ def category_view(request, slug, parent_slugs='', template='base_category.html')
         'sale': sale,
         'products': products,
     }
-    index_prerender.send(Product, request=request, context=ctx, category=category, object_list=products)
+    index_prerender.send(
+        Product, request=request, context=ctx, category=category, object_list=products
+    )
     return render_to_response(template, RequestContext(request, ctx))
 
 
@@ -181,6 +187,18 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
         tax_amt = get_tax(request.user, product, 1)
         extra_context['product_tax'] = tax_amt
         extra_context['price_with_tax'] = product.unit_price + tax_amt
+        price = extra_context['price_with_tax']
+    else:
+        price = product.unit_price
+
+    extra_context['all_prices'] = [
+        {
+            "currency": currency.iso_4217_code,
+            "price": convert_to_currency(price, currency.iso_4217_code)
+        }
+        for currency
+        in Currency.objects.filter(accepted=True)
+    ]
 
     template = find_product_template(product, producttypes=subtype_names)
     context = RequestContext(request, extra_context)
@@ -259,7 +277,9 @@ def get_price_detail(request, product_slug):
             results['price'] = float(price)
             results['tax'] = float(base_tax)
             results['currency_tax'] = money_format(base_tax, currency_code)
-            results['currency_price_with_tax'] = money_format(price_with_tax, currency_code)
+            results['currency_price_with_tax'] = money_format(
+                price_with_tax, currency_code
+            )
             results['price_with_tax'] = float(price_with_tax)
             results['success'] = True
             results['message'] = ""
