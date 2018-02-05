@@ -1,7 +1,8 @@
 import json
 from decimal import Decimal
 
-
+from django.conf import settings
+from django.contrib.gis.geoip import GeoIP
 from django.core import urlresolvers
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
@@ -10,15 +11,22 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
+from ipware.ip import get_real_ip
+
 from satchmo.configuration import config_value
+from satchmo.contact.models import AddressBook, Contact
+from satchmo.currency.models import Currency
+from satchmo.currency.utils import convert_to_currency, money_format
 from satchmo.discount.utils import find_best_auto_discount
-from satchmo.product.models import Product, OptionManager
+from satchmo.l10n.models import Country
+from satchmo.payment.forms import _get_shipping_choices
+from satchmo.product.models import OptionManager, Product
 from satchmo.product.views import find_product_template, optionids_from_post
 from satchmo.shop.exceptions import CartAddProhibited
-from satchmo.shop.models import Cart, CartItem, NullCart, NullCartItem
-from satchmo.shop.signals import satchmo_cart_changed, satchmo_cart_add_complete, satchmo_cart_details_query
-from satchmo.utils import trunc_decimal
+from satchmo.shop.models import Cart, CartItem, Config, NullCart, NullCartItem
+from satchmo.shop.signals import satchmo_cart_add_complete, satchmo_cart_changed, satchmo_cart_details_query
 from satchmo.shop.views.utils import bad_or_missing
+from satchmo.utils import trunc_decimal
 
 import logging
 log = logging.getLogger(__name__)
@@ -58,7 +66,6 @@ def _set_quantity(request, force_delete=False):
         cartitem.delete()
         cartitem = NullCartItem(itemid)
     else:
-        from satchmo.shop.models import Config
         config = Config.objects.get_current()
         if config.no_stock_checkout is False:
             stock = cartitem.product.items_in_stock
@@ -87,11 +94,95 @@ def display(request, cart=None, error_message='', default_view_tax=NOTSET):
     else:
         sale = None
 
+    # Try to get the user's country from the session
+    country_iso2_code = request.GET.get(
+        "side-cart-country", request.session.get('shipping_country', None)
+    )
+    try:
+        country = Country.objects.get(iso2_code=country_iso2_code)
+    except Country.DoesNotExist:
+        country = None
+
+    # Try to get the user's country from their contact (if they have one)
+    try:
+        contact = Contact.objects.from_request(request)
+        if country is None:
+            country = contact.shipping_address.country
+        else:
+            # We have a country set from the form, so this is a cheap
+            # and nasty way to get a dummy contact instead...
+            raise Contact.DoesNotExist
+    except (AttributeError, IndexError, Contact.DoesNotExist):
+        pass
+
+    # Try to look up the user's country from their IP address
+    if country is None and hasattr(settings, "GEOIP_PATH"):
+        ip = get_real_ip(request)
+        if ip:
+            geoip = GeoIP()
+            ip_country = geoip.country(ip)
+            try:
+                country = Country.objects.get(
+                    active=True,
+                    iso2_code=ip_country["country_code"]
+                )
+            except Country.DoesNotExist:
+                country = None
+
+    # If the user doesn't have a contact, make a dummy contact so
+    # we can work out the shipping
+    if country is None:
+        config = Config.objects.get_current()
+        try:
+            country = config.country
+        except Country.DoesNotExist:
+            country = None
+
+    class DummyContact():
+        if country:
+            shipping_address = AddressBook(country_id=country.id)
+    contact = DummyContact()
+    if country:
+        request.session['shipping_country'] = country.iso2_code
+
+    # Calculate the shipping cost
+    try:
+        __, shipping_dict = _get_shipping_choices(
+            request, {}, cart, contact
+        )
+        cheapest_shipping = min(shipping_dict.values())
+    except (AttributeError, ValueError):
+        cheapest_shipping = Decimal("0.00")
+
+    try:
+        cheapest_shipping = convert_to_currency(
+            cheapest_shipping, cart.currency.iso_4217_code
+        )
+    except Currency.DoesNotExist:
+        pass
+
+    try:
+        display_shipping = money_format(
+            cheapest_shipping, cart.currency.iso_4217_code
+        )
+    except Currency.DoesNotExist:
+        display_shipping = cheapest_shipping
+
+    try:
+        display_total = money_format(
+            cart.total + cheapest_shipping, cart.currency.iso_4217_code
+        )
+    except Currency.DoesNotExist:
+        display_total = cart.total + cheapest_shipping
+
     context = RequestContext(request, {
         'cart': cart,
         'error_message': error_message,
         'default_view_tax': default_view_tax,
-        'sale': sale
+        'sale': sale,
+        'cheapest_shipping': display_shipping,
+        'display_total': display_total,
+        'country': country,
     })
     return render_to_response('base_cart.html', context)
 
@@ -135,13 +226,15 @@ def add(request, id=0, redirect_to='satchmo_cart'):
         form=formdata
     )
     try:
-        added_item = cart.add_item(product, number_added=quantity, details=details)
+        added_item = cart.add_item(
+            product, number_added=quantity, details=details)
 
     except CartAddProhibited, cap:
         return _product_error(request, product, cap.message)
 
     # got to here with no error, now send a signal so that listeners can also operate on this form.
-    satchmo_cart_add_complete.send(cart, cart=cart, cartitem=added_item, product=product, request=request, form=formdata)
+    satchmo_cart_add_complete.send(
+        cart, cart=cart, cartitem=added_item, product=product, request=request, form=formdata)
     satchmo_cart_changed.send(cart, cart=cart, request=request)
 
     url = urlresolvers.reverse(redirect_to)
@@ -165,11 +258,13 @@ def add_ajax(request, id=0, template="json.html"):
             product = None
 
         if not product:
-            data['errors'].append(('product', _('The product you have requested does not exist.')))
+            data['errors'].append(
+                ('product', _('The product you have requested does not exist.')))
 
         else:
             if not product.active:
-                data['errors'].append(('product', _('That product is not available at the moment.')))
+                data['errors'].append(
+                    ('product', _('That product is not available at the moment.')))
 
             else:
                 data['id'] = product.id
@@ -183,10 +278,12 @@ def add_ajax(request, id=0, template="json.html"):
                 try:
                     quantity = int(quantity)
                     if quantity < 0:
-                        data['errors'].append(('quantity', _('Choose a quantity.')))
+                        data['errors'].append(
+                            ('quantity', _('Choose a quantity.')))
 
                 except (TypeError, ValueError):
-                    data['errors'].append(('quantity', _('Choose a whole number.')))
+                    data['errors'].append(
+                        ('quantity', _('Choose a whole number.')))
 
     tempCart = Cart.objects.from_request(request, create=True)
 
@@ -259,7 +356,8 @@ def remove_ajax(request, template="json.html"):
         data['errors'] = _('Internal error: please submit as a POST')
 
     else:
-        success, cart, cartitem, errors = _set_quantity(request, force_delete=True)
+        success, cart, cartitem, errors = _set_quantity(
+            request, force_delete=True)
 
         data['results'] = success
         data['errors'] = errors
