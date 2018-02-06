@@ -55,19 +55,27 @@ class Country(models.Model):
     """
     iso2_code = models.CharField(_('ISO alpha-2'), max_length=2, unique=True)
     name = models.CharField(_('Official name (CAPS)'), max_length=128)
-    printable_name = models.CharField(_('Country name'), max_length=128)
+    printable_name = models.CharField(
+        _('Country name'), max_length=128, db_index=True
+    )
     iso3_code = models.CharField(_('ISO alpha-3'), max_length=3, unique=True)
-    numcode = models.PositiveSmallIntegerField(_('ISO numeric'), null=True, blank=True)
+    numcode = models.PositiveSmallIntegerField(
+        _('ISO numeric'), null=True, blank=True
+    )
     active = models.BooleanField(_('Country is active'), default=True)
     continent = models.ForeignKey(Continent, to_field='code')
-    admin_area = models.CharField(_('Administrative Area'), choices=AREAS, max_length=2, null=True, blank=True)
-    eu = models.BooleanField(_('Country is a member of the European Union'), default=False)
+    admin_area = models.CharField(
+        _('Administrative Area'), choices=AREAS, max_length=2, null=True, blank=True
+    )
+    eu = models.BooleanField(
+        _('Country is a member of the European Union'), default=False
+    )
 
     class Meta:
         db_table = "l10n_country"
         verbose_name = _('Country')
         verbose_name_plural = _('Countries')
-        ordering = ('name',)
+        ordering = ('printable_name',)
 
     def __unicode__(self):
         return self.printable_name
@@ -78,8 +86,10 @@ class AdminArea(models.Model):
     Administrative Area level 1 for a country.  For the US, this would be the states
     """
     country = models.ForeignKey(Country)
-    name = models.CharField(_('Admin Area name'), max_length=60, )
-    abbrev = models.CharField(_('Postal Abbreviation'), max_length=3, null=True, blank=True)
+    name = models.CharField(_('Admin Area name'), max_length=60, db_index=True)
+    abbrev = models.CharField(
+        _('Postal Abbreviation'), max_length=3, null=True, blank=True
+    )
     active = models.BooleanField(_('Area is active'), default=True)
 
     class Meta:
