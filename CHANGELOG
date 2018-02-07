@@ -2,6 +2,14 @@
 JellyRoll Change Log
 ==================
 
+Version 0.10.2.2, 7 Feb, 2018
+-------------------------------
+* Default payment method
+
+Version 0.10.2.1, 6 Feb, 2018
+-------------------------------
+* Add appropriate indexes to l10n models
+
 Version 0.10.2.0, 5 Feb, 2018
 -------------------------------
 * Add all prices to product page context
