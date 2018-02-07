@@ -87,8 +87,13 @@ def _get_shipping_choices(request, paymentmodule, cart, contact, default_view_ta
 class CustomChargeForm(forms.Form):
     orderitem = forms.IntegerField(required=True, widget=forms.HiddenInput())
     amount = forms.DecimalField(label=_('New price'), required=False)
-    shipping = forms.DecimalField(label=_('Shipping adjustment'), required=False)
-    notes = forms.CharField(label=_("Notes"), required=False, initial="Your custom item is ready.")
+    shipping = forms.DecimalField(
+        label=_('Shipping adjustment'), required=False
+    )
+    notes = forms.CharField(
+        label=_("Notes"), required=False,
+        initial="Your custom item is ready."
+    )
 
 
 class PaymentMethodForm(forms.Form):
@@ -122,23 +127,28 @@ class PaymentMethodForm(forms.Form):
             order=order
         )
         if len(payment_choices) == 1:
-            self.fields['paymentmethod'].widget = forms.HiddenInput(attrs={'value': payment_choices[0][0]})
+            self.fields['paymentmethod'].widget = forms.HiddenInput(
+                attrs={'value': payment_choices[0][0]}
+            )
         else:
-            self.fields['paymentmethod'].widget = forms.RadioSelect(attrs={'value': payment_choices[0][0]})
+            print payment_choices
+            self.fields['paymentmethod'].widget = forms.RadioSelect(
+                attrs={'value': payment_choices[0][0]}
+            )
         self.fields['paymentmethod'].choices = payment_choices
+        self.fields['paymentmethod'].initial = payment_choices[0][0]
 
 
 class PaymentContactInfoForm(ContactInfoForm, PaymentMethodForm):
 
-        def __init__(self, *args, **kwargs):
-            super(PaymentContactInfoForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(PaymentContactInfoForm, self).__init__(*args, **kwargs)
+        signals.payment_form_init.send(PaymentContactInfoForm, form=self)
 
-            signals.payment_form_init.send(PaymentContactInfoForm, form=self)
-
-        def save(self, *args, **kwargs):
-            contactid = super(PaymentContactInfoForm, self).save(*args, **kwargs)
-            signals.form_save.send(PaymentContactInfoForm, form=self)
-            return contactid
+    def save(self, *args, **kwargs):
+        contactid = super(PaymentContactInfoForm, self).save(*args, **kwargs)
+        signals.form_save.send(PaymentContactInfoForm, form=self)
+        return contactid
 
 
 class SimplePayShipForm(forms.Form):
@@ -155,7 +165,11 @@ class SimplePayShipForm(forms.Form):
         try:
             self.tempCart = Cart.objects.from_request(request)
             if self.tempCart.numItems > 0:
-                products = [item.product for item in self.tempCart.cartitem_set.all()]
+                products = [
+                    item.product
+                    for item
+                    in self.tempCart.cartitem_set.all()
+                ]
                 sale = find_best_auto_discount(products)
                 if sale:
                     self.fields['discount'].initial = sale.code
@@ -173,7 +187,8 @@ class SimplePayShipForm(forms.Form):
         else:
             default_view_tax = config_value('TAX', 'TAX_SHIPPING')
 
-        shipping_choices, shipping_dict = _get_shipping_choices(request, paymentmodule, self.tempCart, self.tempContact, default_view_tax=default_view_tax)
+        shipping_choices, shipping_dict = _get_shipping_choices(
+            request, paymentmodule, self.tempCart, self.tempContact, default_view_tax=default_view_tax)
         self.fields['shipping'].choices = shipping_choices
         self.shipping_dict = shipping_dict
 
@@ -200,7 +215,9 @@ class SimplePayShipForm(forms.Form):
         return data
 
     def save(self, request, cart, contact, payment_module):
-        self.order = get_or_create_order(request, cart, contact, self.cleaned_data)
+        self.order = get_or_create_order(
+            request, cart, contact, self.cleaned_data
+        )
         self.orderpayment = create_pending_payment(self.order, payment_module)
         signals.form_save.send(SimplePayShipForm, form=self)
 
@@ -214,14 +231,20 @@ class CreditPayShipForm(SimplePayShipForm):
 
     def __init__(self, request, paymentmodule, *args, **kwargs):
         creditchoices = paymentmodule.CREDITCHOICES.choice_values
-        super(CreditPayShipForm, self).__init__(request, paymentmodule, *args, **kwargs)
+        super(CreditPayShipForm, self).__init__(
+            request, paymentmodule, *args, **kwargs
+        )
 
         self.cc = None
 
         self.fields['credit_type'].choices = creditchoices
 
         year_now = datetime.date.today().year
-        self.fields['year_expires'].choices = [(year, year) for year in range(year_now, year_now + 6)]
+        self.fields['year_expires'].choices = [
+            (year, year)
+            for year
+            in range(year_now, year_now + 6)
+        ]
 
         self.tempCart = Cart.objects.from_request(request)
 
@@ -261,7 +284,9 @@ class CreditPayShipForm(SimplePayShipForm):
 
     def save(self, request, cart, contact, payment_module):
         """Save the order and the credit card information for this orderpayment"""
-        super(CreditPayShipForm, self).save(request, cart, contact, payment_module)
+        super(CreditPayShipForm, self).save(
+            request, cart, contact, payment_module
+        )
         data = self.cleaned_data
         cc = CreditCardDetail(
             orderpayment=self.orderpayment,
