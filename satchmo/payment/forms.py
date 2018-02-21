@@ -131,7 +131,6 @@ class PaymentMethodForm(forms.Form):
                 attrs={'value': payment_choices[0][0]}
             )
         else:
-            print payment_choices
             self.fields['paymentmethod'].widget = forms.RadioSelect(
                 attrs={'value': payment_choices[0][0]}
             )

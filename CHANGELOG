@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.10.2.3, 21 Feb, 2018
+-------------------------------
+* Fix OrderPayment admin currency
+
 Version 0.10.2.2, 7 Feb, 2018
 -------------------------------
 * Default payment method
