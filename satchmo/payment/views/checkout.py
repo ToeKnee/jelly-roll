@@ -34,7 +34,7 @@ def success(request, template='checkout/success.html'):
     return render_to_response(template, context)
 
 
-@transaction.atomic
+#@transaction.atomic
 def complete_order(order):
     # Track total sold for each product
     for item in order.orderitem_set.all():
@@ -46,7 +46,8 @@ def complete_order(order):
 
             item.stock_updated = True
             item.save()
-            log.debug("Set quantities for %s to %s" % (product, product.items_in_stock))
+            log.debug("Set quantities for %s to %s" %
+                      (product, product.items_in_stock))
 
     order.freeze()
     order.save()
@@ -64,4 +65,5 @@ def restock_order(order):
 
             item.stock_updated = False
             item.save()
-            log.debug("Set quantities for %s to %s" % (product, product.items_in_stock))
+            log.debug("Set quantities for %s to %s" %
+                      (product, product.items_in_stock))
