@@ -17,8 +17,8 @@ urlpatterns = patterns(
     '',
     (r"^settings/", include('satchmo.configuration.urls')),
     (shopregex, include('satchmo.shop.urls')),
-    (r'sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps}, 'satchmo_sitemap_xml'),
+    (r'sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap',
+     {'sitemaps': sitemaps}, 'satchmo_sitemap_xml'),
     (r'cache/', include('satchmo.caching.urls')),
     (r'product-feed\.xml$', "satchmo.utils.google.product_feed"),
-    (r'^accounts/', include('satchmo.accounts.urls')),
 )

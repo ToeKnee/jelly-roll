@@ -125,12 +125,10 @@ INSTALLED_APPS = (
 )
 
 AUTHENTICATION_BACKENDS = (
-    'satchmo.accounts.email-auth.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
 AUTH_PROFILE_MODULE = 'contact.Contact'
-LOGIN_REDIRECT_URL = '/accounts/'
 
 SATCHMO_SETTINGS = {
     # this will override any urls set in the store url modules
@@ -146,22 +144,22 @@ SATCHMO_SETTINGS = {
     # This is the base url for the shop.  Only include a leading slash
     # examples: '/shop' or '/mystore'
     # If you want the shop at the root directory, set SHOP_BASE to ''
-    'SHOP_BASE' : '/store',
+    'SHOP_BASE': '/store',
 
     # This will turn on/off product translations in the admin for products
-    'ALLOW_PRODUCT_TRANSLATIONS' : True,
+    'ALLOW_PRODUCT_TRANSLATIONS': True,
 
     # register custom external payment modules by listing their modules here
     # ex: 'CUSTOM_PAYMENT_MODULES' : ['client.payment.wondercharge',]
-    'CUSTOM_PAYMENT_MODULES' : [],
+    'CUSTOM_PAYMENT_MODULES': [],
 
     # register custom external shipping modules by listing their modules here
     # ex: 'CUSTOM_SHIPPING_MODULES' : ['client.shipping.fancyshipping',]
-    'CUSTOM_SHIPPING_MODULES' : [],
+    'CUSTOM_SHIPPING_MODULES': [],
 
     # register custom external product modules by listing their modules here
     # ex: 'CUSTOM_PRODUCT_MODULES' : ['client.product.myproducttype',]
-    'CUSTOM_PRODUCT_MODULES' : [],
+    'CUSTOM_PRODUCT_MODULES': [],
 }
 
 # Load the local settings
