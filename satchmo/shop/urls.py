@@ -20,14 +20,18 @@ urlpatterns += patterns(
     (r'^cart/remove/ajax$', 'cart.remove_ajax', {}, 'satchmo_cart_remove_ajax'),
     (r'^checkout/', include('satchmo.payment.urls')),
     (r'^history/$', 'orders.order_history', {}, 'satchmo_order_history'),
-    (r'^tracking/(?P<order_id>\d+)/$', 'orders.order_tracking', {}, 'satchmo_order_tracking'),
+    (r'^tracking/(?P<order_id>\d+)/$',
+     'orders.order_tracking', {}, 'satchmo_order_tracking'),
     (r'^search/$', 'search.search_view', {}, 'satchmo_search'),
 
     # Used for downloadable products.
-    (r'^download/process/(?P<download_key>\w+)/$', 'download.process', {}, 'satchmo_download_process'),
-    (r'^download/send/(?P<download_key>\w+)/$', 'download.send_file', {}, 'satchmo_download_send'),
+    (r'^download/process/(?P<download_key>\w+)/$',
+     'download.process', {}, 'satchmo_download_process'),
+    (r'^download/send/(?P<download_key>\w+)/$',
+     'download.send_file', {}, 'satchmo_download_send'),
 
-    (r'^wishlist/', include('satchmo.wishlist.urls')),
+    url(r'^contact/', include('satchmo.contact.urls')),
+    url(r'^wishlist/', include('satchmo.wishlist.urls')),
     url(r'^fulfilment/', include('satchmo.fulfilment.urls')),
 
     # API
