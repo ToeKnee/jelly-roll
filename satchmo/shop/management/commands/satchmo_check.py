@@ -1,10 +1,8 @@
-from django.core.management.base import NoArgsCommand
 import sys
+from decimal import Decimal
+
 import django
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
+from django.core.management.base import NoArgsCommand
 
 
 class Command(NoArgsCommand):
@@ -61,10 +59,6 @@ class Command(NoArgsCommand):
         if 'satchmo.shop.context_processors.settings' not in settings.TEMPLATE_CONTEXT_PROCESSORS:
             errors.append(
                 "You must have satchmo.shop.context_processors.settings in your TEMPLATE_CONTEXT_PROCESSORS."
-            )
-        if 'satchmo.accounts.email-auth.EmailBackend' not in settings.AUTHENTICATION_BACKENDS:
-            errors.append(
-                "You must have satchmo.accounts.email-auth.EmailBackend in your AUTHENTICATION_BACKENDS"
             )
         if len(settings.SECRET_KEY) == 0:
             errors.append(
