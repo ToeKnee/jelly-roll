@@ -4,6 +4,8 @@ from satchmo.product.models import Product
 from satchmo.shop.templatetags import get_filter_args
 from satchmo.product.queries import bestsellers
 from satchmo.product.views import display_featured
+from satchmo.currency.models import Currency
+from satchmo.currency.utils import convert_to_currency, currency_for_request
 
 register = template.Library()
 
@@ -14,6 +16,7 @@ def is_producttype(product, ptype):
         return True
     else:
         return False
+
 
 register.filter('is_producttype', is_producttype)
 
@@ -32,10 +35,14 @@ def product_count(category, args=''):
         if not category:
             ct = Product.objects.active_by_site(variations=variations).count()
         else:
-            ct = category.active_products(include_children=True, variations=variations).count()
+            ct = category.active_products(
+                include_children=True,
+                variations=variations
+            ).count()
 
         caching.cache_set('product_count', category, args, value=ct)
     return ct
+
 
 register.filter('product_count', product_count)
 
@@ -61,6 +68,7 @@ def product_images(product, args=""):
 
     return q
 
+
 register.filter('product_images', product_images)
 
 
@@ -69,6 +77,7 @@ def smart_attr(product, key):
     Run the smart_attr function on the spec'd product
     """
     return product.smart_attr(key)
+
 
 register.filter('smart_attr', smart_attr)
 
@@ -86,6 +95,7 @@ def product_sort_by_price(products):
         fast = [(product.unit_price, product) for product in products]
         fast.sort()
         return zip(*fast)[1]
+
 
 register.filter('product_sort_by_price', product_sort_by_price)
 
@@ -122,4 +132,19 @@ def quick_product(context, product, show_wishlist=True):
 def full_product(context, product):
     ''' Renders a product in a way that is useful for the product detail page '''
     context["product"] = product
+    current_currency = currency_for_request(context.get('request'))
+    context['other_prices'] = [
+        {
+            "currency": currency.iso_4217_code,
+            "price": convert_to_currency(product.unit_price, currency.iso_4217_code)
+        }
+        for currency
+        in Currency.objects.filter(
+            accepted=True
+        ).exclude(
+            iso_4217_code=current_currency
+        ).order_by(
+            'iso_4217_code'
+        )
+    ]
     return context

@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.10.3.0, 5 April, 2018
+-------------------------------
+* Add other currency prices to full product page
+
 Version 0.10.2.3, 21 Feb, 2018
 -------------------------------
 * Fix OrderPayment admin currency
