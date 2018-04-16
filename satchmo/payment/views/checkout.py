@@ -34,10 +34,10 @@ def success(request, template='checkout/success.html'):
     return render_to_response(template, context)
 
 
-#@transaction.atomic
+@transaction.atomic
 def complete_order(order):
     # Track total sold for each product
-    for item in order.orderitem_set.all():
+    for item in order.orderitem_set.select_for_update():
         if item.stock_updated is False:
             product = item.product
             product.total_sold += item.quantity
