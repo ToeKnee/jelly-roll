@@ -12,7 +12,7 @@ from decimal import Decimal
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.text import force_text
+from django.utils.encoding import force_text
 from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext, ugettext_lazy as _
 from satchmo.configuration.models import find_setting, LongSetting, Setting, SettingNotSet
@@ -49,6 +49,7 @@ class SortedDotDict(SortedDict):
 
 class ConfigurationGroup(SortedDotDict):
     """A simple wrapper for a group of configuration values"""
+
     def __init__(self, key, name, *args, **kwargs):
         """Create a new ConfigurationGroup.
 
@@ -89,6 +90,7 @@ class ConfigurationGroup(SortedDotDict):
     def values(self):
         vals = list(super(ConfigurationGroup, self).values())
         return [v for v in vals if v.enabled()]
+
 
 SHOP_GROUP = ConfigurationGroup('SHOP', _('Base Settings'), ordering=0)
 
@@ -270,18 +272,22 @@ class Value(object):
             log.error(e)
             if str(e).find("configuration_setting") > -1:
                 if 'configuration_setting' not in _WARN:
-                    log.warn('Error loading setting %s.%s from table, OK if you are in syncdb', self.group.key, self.key)
+                    log.warn(
+                        'Error loading setting %s.%s from table, OK if you are in syncdb', self.group.key, self.key)
                     _WARN['configuration_setting'] = True
 
                 if self.use_default:
                     val = self.default
                 else:
-                    raise ImproperlyConfigured("All settings used in startup must have defaults, %s.%s does not", self.group.key, self.key)
+                    raise ImproperlyConfigured(
+                        "All settings used in startup must have defaults, %s.%s does not", self.group.key, self.key)
             else:
                 import traceback
                 traceback.print_exc()
-                log.warn("Problem finding settings %s.%s, %s", self.group.key, self.key, e)
-                raise SettingNotSet("Startup error, couldn't load %s.%s" % (self.group.key, self.key))
+                log.warn("Problem finding settings %s.%s, %s",
+                         self.group.key, self.key, e)
+                raise SettingNotSet(
+                    "Startup error, couldn't load %s.%s" % (self.group.key, self.key))
         return val
 
     def update(self, value):
@@ -302,10 +308,12 @@ class Value(object):
                     log.info("Deleted setting %s.%s", self.group.key, self.key)
                     s.delete()
             else:
-                log.info("Updated setting %s.%s = %s", self.group.key, self.key, value)
+                log.info("Updated setting %s.%s = %s",
+                         self.group.key, self.key, value)
                 s.save()
 
-            signals.configuration_value_changed.send(self, old_value=current_value, new_value=new_value, setting=self)
+            signals.configuration_value_changed.send(
+                self, old_value=current_value, new_value=new_value, setting=self)
 
             return True
         return False
@@ -381,7 +389,8 @@ class DecimalValue(Value):
         try:
             return Decimal(value)
         except TypeError as te:
-            log.warning("Can't convert %s to Decimal for settings %s.%s", value, self.group.key, self.key)
+            log.warning("Can't convert %s to Decimal for settings %s.%s",
+                        value, self.group.key, self.key)
             raise TypeError(te)
 
     def to_editor(self, value):
@@ -400,9 +409,11 @@ class DurationValue(Value):
             try:
                 return datetime.timedelta(seconds=float(value))
             except (ValueError, TypeError):
-                raise forms.ValidationError('This value must be a real number.')
+                raise forms.ValidationError(
+                    'This value must be a real number.')
             except OverflowError:
-                raise forms.ValidationError('The maximum allowed value is %s' % datetime.timedelta.max)
+                raise forms.ValidationError(
+                    'The maximum allowed value is %s' % datetime.timedelta.max)
 
     def to_python(self, value):
         if value == NOTSET:
@@ -414,7 +425,8 @@ class DurationValue(Value):
         except (ValueError, TypeError):
             raise forms.ValidationError('This value must be a real number.')
         except OverflowError:
-            raise forms.ValidationError('The maximum allowed value is %s' % datetime.timedelta.max)
+            raise forms.ValidationError(
+                'The maximum allowed value is %s' % datetime.timedelta.max)
 
     def get_db_prep_save(self, value):
         if value == NOTSET:
@@ -544,7 +556,8 @@ class MultipleStringValue(Value):
     def choice_field(self, **kwargs):
         kwargs['required'] = False
         if len(self.choices) > 7:
-            field = forms.MultipleChoiceField(choices=self.choices, widget=FilteredSelectMultiple("", False), **kwargs)
+            field = forms.MultipleChoiceField(
+                choices=self.choices, widget=FilteredSelectMultiple("", False), **kwargs)
         else:
             field = forms.MultipleChoiceField(choices=self.choices, **kwargs)
         return field
@@ -566,7 +579,8 @@ class MultipleStringValue(Value):
                 if is_string_like(value):
                     return [value]
                 else:
-                    log.warning('Could not decode returning empty list: %s', value)
+                    log.warning(
+                        'Could not decode returning empty list: %s', value)
                     return []
 
     to_editor = to_python

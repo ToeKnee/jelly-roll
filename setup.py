@@ -49,7 +49,7 @@ setup(
         'Topic :: Office/Business',
     ],
     install_requires=[
-        "Django>=1.7,<1.8",
+        "Django>=2.0.0,<2.1.0",
         "django-ipware>=1.1.6,<2.0.0",
         "djangorestframework>=3.3.0,<3.4.0",
         "factory-boy>=2.7.0,<3.0.0",
