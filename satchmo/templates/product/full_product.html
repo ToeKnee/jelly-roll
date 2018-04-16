@@ -43,7 +43,7 @@
         <ul class="other_prices">
            {% for price in other_prices %}
              <li>
-               {% currency price.price price.currency %}
+               {{ price }}
              </li>
            {% endfor %}
          </ul>
