@@ -25,7 +25,7 @@ _default_modules = ('percent','area')
 for module in _default_modules:
     try:
         load_module("satchmo.tax.modules.%s.config" % module)
-    except ImportError, ie:
+    except ImportError as ie:
         log.debug('Could not load default tax module configuration: %s\n%s', module, ie)
 
     

@@ -49,7 +49,7 @@ class TaxRate(models.Model):
     display_percentage = property(_display_percentage)    
 
     def __unicode__(self):
-        return u"%s - %s = %s" % (self.taxClass,
+        return "%s - %s = %s" % (self.taxClass,
                              self.taxZone and self.taxZone or self.taxCountry,
                              self.display_percentage)
 
@@ -57,4 +57,4 @@ class TaxRate(models.Model):
         verbose_name = _("Tax Rate")
         verbose_name_plural = _("Tax Rates")
 
-import config
+from . import config

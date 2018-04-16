@@ -27,12 +27,12 @@ def group_settings(request, group, template='configuration/group_settings.html')
         form = forms.SettingsEditor(data, settings=settings)
         if form.is_valid():
             form.full_clean()
-            for name, value in form.cleaned_data.items():
+            for name, value in list(form.cleaned_data.items()):
                 group, key = name.split('__')
                 cfg = mgr.get_config(group, key)
                 if cfg.update(value):
                     # Give user feedback as to which settings were changed
-                    messages.add_message(request, messages.SUCCESS, u'Updated %s on %s' % (cfg.key, cfg.group.key))
+                    messages.add_message(request, messages.SUCCESS, 'Updated %s on %s' % (cfg.key, cfg.group.key))
 
             return HttpResponseRedirect(request.path)
     else:

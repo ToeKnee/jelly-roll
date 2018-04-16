@@ -26,7 +26,7 @@ config_register_list(
         'API_KEY',
         description=_("API Key"),
         help_text=_("Client's API key, provided by fulfiller."),
-        default=u""
+        default=""
     ),
 
     BooleanValue(
@@ -42,7 +42,7 @@ config_register_list(
         'URL',
         description=_("API URL"),
         help_text=_("URL of fulfillers API."),
-        default=u"https://[client].sixworks.co.uk/api/1/"
+        default="https://[client].sixworks.co.uk/api/1/"
     ),
 
     BooleanValue(

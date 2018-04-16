@@ -14,7 +14,7 @@ from satchmo.product.models import *
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.models import *
 from satchmo.utils.dynamic import lookup_template, lookup_url
-from urls import make_urlpatterns
+from .urls import make_urlpatterns
 
 try:
     from decimal import Decimal
@@ -88,7 +88,7 @@ class TestRecurringBilling(TestCase):
         self.response = self.c.get(prefix+'/checkout/cron/', data={'key': config_value('PAYMENT','CRON_KEY')})
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(self.response.content, '')
-        self.assert_(order_count < OrderItem.objects.count())
+        self.assertTrue(order_count < OrderItem.objects.count())
         self.assertEqual(order_count, OrderItem.objects.count()/2.0)
         for order in OrderItem.objects.filter(expire_date__gt=datetime.datetime.now()):
             price, expire_length = self.getTerms(order.product, ignore_trial=True)
@@ -118,7 +118,7 @@ class TestModulesSettings(TestCase):
         caching.cache_delete()
 
     def testGetDummy(self):
-        self.assert_(self.dummy != None)
+        self.assertTrue(self.dummy != None)
         self.assertEqual(self.dummy.LABEL, 'Payment test module')
 
     def testLookupTemplateSet(self):

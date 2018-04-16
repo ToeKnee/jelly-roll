@@ -106,7 +106,7 @@ class Carrier(models.Model):
         db_table = "tieredweightzone_carrier"
 
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.description)
+        return "%s (%s)" % (self.name, self.description)
 
     def _find_translation(self, language_code=None):
         if not language_code:
@@ -239,7 +239,7 @@ class Zone(models.Model):
         db_table = "tieredweightzone_zone"
 
     def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.description)
+        return "%s (%s)" % (self.name, self.description)
 
     def _find_translation(self, language_code=None):
         if not language_code:
@@ -323,7 +323,7 @@ class WeightTier(models.Model):
         ordering = ('zone', 'carrier', 'price')
 
     def __unicode__(self):
-        return u"%s @ %s" % (self.price, self.min_weight)
+        return "%s @ %s" % (self.price, self.min_weight)
 
 
 class ShippingDiscount(models.Model):

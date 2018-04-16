@@ -73,6 +73,6 @@ def cron_rebill(request=None):
                             item.order.add_status(status='Pending', notes = "Subscription Renewal Order successfully submitted")
                             new_order_item.completed = True
                             new_order_item.save()
-                            orderpayment = OrderPayment(order=item.order, amount=item.order.balance, payment=unicode(payment_module.KEY.value))
+                            orderpayment = OrderPayment(order=item.order, amount=item.order.balance, payment=str(payment_module.KEY.value))
                             orderpayment.save()
     return HttpResponse()

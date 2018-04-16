@@ -1,4 +1,4 @@
-import config
+from . import config
 from decimal import Decimal
 
 from django.db import models
@@ -31,7 +31,7 @@ class PurchaseOrder(models.Model):
         return money_format(b, self.order.currency.iso_4217_code)
 
     def order_link(self):
-        return mark_safe(u'<a href="/admin/shop/order/%i/">%s #%i (%s)</a>' % (
+        return mark_safe('<a href="/admin/shop/order/%i/">%s #%i (%s)</a>' % (
             self.order.id,
             ugettext('Order'),
             self.order.id,

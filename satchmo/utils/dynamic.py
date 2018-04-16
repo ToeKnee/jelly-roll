@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 def lookup_template(settings, template):
     """Return a template name, which may have been overridden in the settings."""
 
-    if settings.has_key('TEMPLATE_OVERRIDES'):
+    if 'TEMPLATE_OVERRIDES' in settings:
         val = settings['TEMPLATE_OVERRIDES']
         template = val.get(template, template)
 

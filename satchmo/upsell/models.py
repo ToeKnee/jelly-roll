@@ -54,7 +54,7 @@ class Upsell(models.Model, CachedObjectMixin):
         try:
             trans = self.cache_get(trans=language_code)
 
-        except caching.NotCachedError, e:
+        except caching.NotCachedError as e:
             trans = self._find_translation(language_code)
 
         if trans:
@@ -111,7 +111,7 @@ class Upsell(models.Model, CachedObjectMixin):
         return self.style.endswith('TRUE')
         
     def __unicode__(self):
-        return u"Upsell for %s" % self.goal
+        return "Upsell for %s" % self.goal
         
     def save(self, *args, **kwargs):
         self.create_date = datetime.date.today()

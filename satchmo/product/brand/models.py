@@ -53,7 +53,7 @@ class Brand(models.Model, TranslatedObjectMixin):
         verbose_name_plural = _('Brands')
 
     def __unicode__(self):
-        return u"%s" % self.slug
+        return "%s" % self.slug
 
     def get_absolute_url(self):
         url = reverse('satchmo_brand_view',

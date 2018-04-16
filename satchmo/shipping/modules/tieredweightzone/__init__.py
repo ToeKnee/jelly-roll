@@ -1,4 +1,4 @@
-import config
+from . import config
 from .models import Carrier, Shipper
 from satchmo.utils import load_once
 

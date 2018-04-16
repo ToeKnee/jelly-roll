@@ -140,8 +140,8 @@ class ShopTest(TestCase):
                                                                            "quantity": 1
                                                                            })
         content = response.content.split(',')
-        self.assertEquals(content[0], '["dj-rocks-s-b"')
-        self.assert_(content[1].endswith('20.00"]'))
+        self.assertEqual(content[0], '["dj-rocks-s-b"')
+        self.assertTrue(content[1].endswith('20.00"]'))
 
         # This tests the option price_change feature, and again the productname
         response = self.client.post(prefix + '/product/dj-rocks/prices/', {"1": "L",
@@ -149,7 +149,7 @@ class ShopTest(TestCase):
                                                                            "quantity": 2})
         content = response.content.split(',')
         self.assertEqual(content[0], '["dj-rocks-l-bl"')
-        self.assert_(content[1].endswith('23.00"]'))
+        self.assertTrue(content[1].endswith('23.00"]'))
 
     def test_contact_form(self):
         """
@@ -202,11 +202,11 @@ class ShopTest(TestCase):
         self.assertContains(response, "the user you've logged in as doesn't have any contact information.", status_code=200)
         CartTest().test_cart_adding()
         self.client.post(prefix + '/checkout/', get_step1_post_data(self.US))
-        self.assert_(self.client.session.get(CUSTOMER_ID) is not None)
+        self.assertTrue(self.client.session.get(CUSTOMER_ID) is not None)
         response = self.client.get('/accounts/logout/')
         #self.assertRedirects(response, prefix + '/',
         #    status_code=302, target_status_code=200)
-        self.assert_(self.client.session.get(CUSTOMER_ID) is None)
+        self.assertTrue(self.client.session.get(CUSTOMER_ID) is None)
         response = self.client.get('/accounts/')  # test logged in status
         self.assertRedirects(response, '/accounts/login/?next=/accounts/',
                              status_code=302, target_status_code=200)

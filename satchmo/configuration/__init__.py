@@ -11,6 +11,6 @@ Inappropriate: The caching timeout for the store.
 
 """
 
-from functions import *
-from models import *
-from values import *
+from .functions import *
+from .models import *
+from .values import *

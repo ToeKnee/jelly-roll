@@ -23,12 +23,12 @@ def shasign(data):
     #
     # See https://payment-services.ingenico.com/int/en/ogone/support/guides/integration%20guides/e-commerce#shainsignature
     phrase = secret.join((
-        u"{key}={value}".format(
+        "{key}={value}".format(
             key=key.upper(),
             value=value
         )
         for key, value
-        in sorted(data.items(), key=lambda i: i[0].upper())
+        in sorted(list(data.items()), key=lambda i: i[0].upper())
         if value and key != "SHASIGN"
     )) + secret
 

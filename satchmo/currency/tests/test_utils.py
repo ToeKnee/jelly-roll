@@ -30,7 +30,7 @@ class MoneyFormatTest(TestCase):
 
         self.assertEqual(
             money_format(value, currency_code),
-            u"\u20ac0.00 (EUR)"
+            "€0.00 (EUR)"
         )
 
     def test_value_is_zero(self):
@@ -40,7 +40,7 @@ class MoneyFormatTest(TestCase):
 
         self.assertEqual(
             money_format(value, currency_code),
-            u"\u20ac0.00 (EUR)"
+            "€0.00 (EUR)"
         )
 
     def test_currency(self):
@@ -50,7 +50,7 @@ class MoneyFormatTest(TestCase):
 
         self.assertEqual(
             money_format(value, currency_code),
-            u"\u20ac1.00 (EUR)"
+            "€1.00 (EUR)"
         )
 
     def test_currency__does_not_exist(self):

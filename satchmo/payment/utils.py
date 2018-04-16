@@ -16,7 +16,7 @@ NOTSET = object()
 def create_pending_payment(order, config, amount=NOTSET):
     """Create a placeholder payment entry for the order.
     This is done by step 2 of the payment process."""
-    key = unicode(config.KEY.value)
+    key = str(config.KEY.value)
     if amount == NOTSET:
         amount = Decimal("0.00")
 
@@ -118,7 +118,7 @@ def pay_ship_save(new_order, cart, contact, shipping, discount, update=False):
 
 def record_payment(order, config, amount=NOTSET, transaction_id=""):
     """Convert a pending payment into a real payment."""
-    key = unicode(config.KEY.value)
+    key = str(config.KEY.value)
     if amount == NOTSET:
         amount = order.balance
 

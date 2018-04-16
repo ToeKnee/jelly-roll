@@ -13,7 +13,7 @@ def search_view(request, template="search.html"):
     keywords = data.get('keywords', '').split(' ')
     category = data.get('category', None)
 
-    keywords = filter(None, keywords)
+    keywords = [_f for _f in keywords if _f]
 
     results = {}
     

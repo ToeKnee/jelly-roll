@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 try:
@@ -446,11 +446,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='producttranslation',
-            unique_together=set([('product', 'languagecode', 'version')]),
+            unique_together={('product', 'languagecode', 'version')},
         ),
         migrations.AlterUniqueTogether(
             name='productimagetranslation',
-            unique_together=set([('productimage', 'languagecode', 'version')]),
+            unique_together={('productimage', 'languagecode', 'version')},
         ),
         migrations.AddField(
             model_name='productimage',
@@ -514,7 +514,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='product',
-            unique_together=set([('site', 'slug'), ('site', 'sku')]),
+            unique_together={('site', 'slug'), ('site', 'sku')},
         ),
         migrations.AddField(
             model_name='price',
@@ -524,15 +524,15 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='price',
-            unique_together=set([('product', 'quantity', 'expires')]),
+            unique_together={('product', 'quantity', 'expires')},
         ),
         migrations.AlterUniqueTogether(
             name='optiontranslation',
-            unique_together=set([('option', 'languagecode', 'version')]),
+            unique_together={('option', 'languagecode', 'version')},
         ),
         migrations.AlterUniqueTogether(
             name='optiongrouptranslation',
-            unique_together=set([('optiongroup', 'languagecode', 'version')]),
+            unique_together={('optiongroup', 'languagecode', 'version')},
         ),
         migrations.AddField(
             model_name='option',
@@ -542,11 +542,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='option',
-            unique_together=set([('option_group', 'value')]),
+            unique_together={('option_group', 'value')},
         ),
         migrations.AlterUniqueTogether(
             name='customtextfieldtranslation',
-            unique_together=set([('customtextfield', 'languagecode', 'version')]),
+            unique_together={('customtextfield', 'languagecode', 'version')},
         ),
         migrations.AddField(
             model_name='customtextfield',
@@ -556,14 +556,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='categorytranslation',
-            unique_together=set([('category', 'languagecode', 'version')]),
+            unique_together={('category', 'languagecode', 'version')},
         ),
         migrations.AlterUniqueTogether(
             name='categoryimagetranslation',
-            unique_together=set([('categoryimage', 'languagecode', 'version')]),
+            unique_together={('categoryimage', 'languagecode', 'version')},
         ),
         migrations.AlterUniqueTogether(
             name='categoryimage',
-            unique_together=set([('category', 'sort')]),
+            unique_together={('category', 'sort')},
         ),
     ]

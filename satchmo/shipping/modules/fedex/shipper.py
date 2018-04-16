@@ -16,7 +16,7 @@ from django.core.cache import cache
 from satchmo.shipping.modules.base import BaseShipper
 from satchmo.configuration import config_get_group
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from xml.dom import minidom
 import logging
 
@@ -40,7 +40,7 @@ class Shipper(BaseShipper):
             self.service_type_text = 'Uninitialized'
 # Had to edit this so the shipping name did not error out for being more than 30 characters. Old code is commented out.
         #self.id = u'FedEx-%s-%s' % (self.service_type_code, self.service_type_text)
-        self.id = u'%s' % (self.service_type_text)
+        self.id = '%s' % (self.service_type_text)
 
         #if cart or contact:
         #  self.calculate(cart, contact)
@@ -90,7 +90,7 @@ class Shipper(BaseShipper):
           returning an actual date
         '''
 
-        if self.delivery_days <> '1':
+        if self.delivery_days != '1':
             return _('%s business days' % self.delivery_days)
         else:
             return _('%s business day' % self.delivery_days)
@@ -127,8 +127,8 @@ class Shipper(BaseShipper):
           Post the data and return the XML response
         '''
 
-        conn = urllib2.Request(url=connection, data=request)
-        f = urllib2.urlopen(conn)
+        conn = urllib.request.Request(url=connection, data=request)
+        f = urllib.request.urlopen(conn)
         all_results = f.read()
         self.raw_response = all_results
         return(minidom.parseString(all_results))
@@ -241,7 +241,7 @@ class Shipper(BaseShipper):
 
                     total_cost = this_charge + this_discount
                     self.charges += total_cost
-            except urllib2.URLError:
+            except urllib.error.URLError:
                 log.warn("Error opening url: %s", connection)
                 error = True
                 

@@ -137,7 +137,7 @@ class OrderOptions(admin.ModelAdmin):
         for obj in queryset:
             shipped_status = Status.objects.get(status="Shipped")
             obj.add_status(status=shipped_status,
-                           notes=u"Thanks for your order")
+                           notes="Thanks for your order")
             rows_updated += 1
         if rows_updated == 1:
             message_bit = "1 order was"

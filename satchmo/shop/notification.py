@@ -28,17 +28,17 @@ def send_order_update(order_status):
     email_slug = slugify(order_status.status.status.decode("utf-8"))
 
     text_templates = [
-        u'email/order/status/{slug}.txt'.format(
+        'email/order/status/{slug}.txt'.format(
             slug=email_slug,
         ),
-        u'email/order/status/generic.txt'
+        'email/order/status/generic.txt'
     ]
     text_template = loader.select_template(text_templates)
     html_templates = [
-        u'email/order/status/{slug}.html'.format(
+        'email/order/status/{slug}.html'.format(
             slug=email_slug,
         ),
-        u'email/order/status/generic.html'
+        'email/order/status/generic.html'
     ]
 
     html_template = loader.select_template(html_templates)
@@ -49,7 +49,7 @@ def send_order_update(order_status):
         'notes': order_status.notes
     })
 
-    subject = _(u"Your {shop_name} order #{order_id} has been updated - {status}").format(
+    subject = _("Your {shop_name} order #{order_id} has been updated - {status}").format(
         shop_name=shop_config.store_name,
         status=order_status,
         order_id=order_status.order_id,
@@ -109,7 +109,7 @@ def send_owner_order_notice(new_order, template='email/order/placed_notice.txt')
             message = EmailMessage(subject, body, shop_email, eddresses)
             message.send()
 
-        except (SocketError, SMTPRecipientsRefused), e:
+        except (SocketError, SMTPRecipientsRefused) as e:
             if settings.DEBUG:
                 log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', ",".join(eddresses), subject, body)
             else:

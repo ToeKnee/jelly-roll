@@ -138,13 +138,13 @@ class Contact(models.Model):
     def full_name(self):
         """Return the person's full name."""
         if self.title:
-            name = u"{title} {first} {last}".format(
+            name = "{title} {first} {last}".format(
                 title=self.title,
                 first=self.first_name,
                 last=self.last_name,
             )
         else:
-            name = u"{first} {last}".format(
+            name = "{first} {last}".format(
                 first=self.first_name,
                 last=self.last_name,
             )
@@ -216,7 +216,7 @@ class Interaction(models.Model):
     description = models.TextField(_("Description"), max_length=200)
 
     def __unicode__(self):
-        return u'%s - %s' % (self.contact.full_name, self.type)
+        return '%s - %s' % (self.contact.full_name, self.type)
 
     class Meta:
         verbose_name = _("Interaction")
@@ -234,7 +234,7 @@ class PhoneNumber(models.Model):
     primary = models.BooleanField(_("Primary"), default=False)
 
     def __unicode__(self):
-        return u'%s - %s' % (self.type, self.phone)
+        return '%s - %s' % (self.type, self.phone)
 
     def save(self, *args, **kwargs):
         """
@@ -281,7 +281,7 @@ class AddressBook(models.Model):
         verbose_name_plural = _("Address Books")
 
     def __unicode__(self):
-        return u'%s - %s' % (self.contact.full_name, self.city)
+        return '%s - %s' % (self.contact.full_name, self.city)
 
     def save(self, *args, **kwargs):
         """
@@ -307,4 +307,4 @@ class AddressBook(models.Model):
 
         super(AddressBook, self).save(*args, **kwargs)
 
-import config
+from . import config

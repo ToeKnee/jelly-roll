@@ -23,7 +23,7 @@ from satchmo.shipping.modules.base import BaseShipper
 from django.template import Context, loader
 from satchmo.l10n.models import Country
 from satchmo.configuration import config_get_group, config_value
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from django.core.cache import cache
 import logging
 try:
@@ -114,7 +114,7 @@ class Shipper(BaseShipper):
         else:
             self.service_type_code = "99"
             self.service_type_text = "Uninitialized"
-        self.id = u"USPS-%s-%s" % (self.service_type_code, self.service_type_text)
+        self.id = "USPS-%s-%s" % (self.service_type_code, self.service_type_text)
         self.raw = "NO DATA"
         self.exact_date = False
         #if cart or contact:
@@ -182,8 +182,8 @@ class Shipper(BaseShipper):
 
         data = 'API=%s&XML=%s' % (api, request.encode('utf-8'))
 
-        conn = urllib2.Request(url=connection, data=data)
-        f = urllib2.urlopen(conn)
+        conn = urllib.request.Request(url=connection, data=data)
+        f = urllib.request.urlopen(conn)
         all_results = f.read()
 
         log.error(all_results)

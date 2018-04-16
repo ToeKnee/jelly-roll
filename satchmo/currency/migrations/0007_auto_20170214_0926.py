@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 import datetime
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='exchangerate',
-            unique_together=set([('currency', 'date')]),
+            unique_together={('currency', 'date')},
         ),
         migrations.AlterOrderWithRespectTo(
             name='exchangerate',

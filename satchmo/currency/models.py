@@ -60,7 +60,7 @@ class ExchangeRate(models.Model):
         order_with_respect_to = 'currency'
 
     def __unicode__(self):
-        return u"{currency} {rate}".format(
+        return "{currency} {rate}".format(
             currency=self.currency,
             rate=self.rate
         )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import urlparse
+import urllib.parse
 
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
@@ -16,7 +16,7 @@ from satchmo.configuration import (
     config_register,
 )
 
-default_icon_url = urlparse.urlunsplit(
+default_icon_url = urllib.parse.urlunsplit(
     ('file',
      '',
      os.path.join(settings.MEDIA_ROOT, 'images/sample-logo.bmp'),

@@ -5,7 +5,7 @@ Ingenico Payments
 https://payment-services.ingenico.com/int/en/ogone/support/guides/integration%20guides/e-commerce/introduction
 
 """
-from __future__ import unicode_literals
+
 
 import hashlib
 from decimal import Decimal
@@ -204,7 +204,7 @@ def process(request):
 
             if order.notes is None:
                 order.notes = ""
-            order.notes += u"\n------------------ {now} ------------------\n\n".format(
+            order.notes += "\n------------------ {now} ------------------\n\n".format(
                 now=timezone.now()
             )
 

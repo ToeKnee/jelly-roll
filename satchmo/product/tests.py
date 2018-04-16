@@ -33,7 +33,7 @@ r"""
 # Check the values that were saved to the database
 >>> option_white = Option.objects.get(id=option_white.id)
 >>> ((option_white.value, option_white.price_change, option_white.sort_order)
-... == (u'white', 5, 2))
+... == ('white', 5, 2))
 True
 
 # Create a configurable product
@@ -66,9 +66,9 @@ True
 # Specifically, we're checking that a unicode 'format' is converted to ascii
 # in the 'export' method of 'ProductExportForm'.
 >>> import zipfile
->>> from StringIO import StringIO
+>>> from io import StringIO
 >>> from satchmo.product.forms import ProductExportForm
->>> form = ProductExportForm({'format': u'yaml', 'include_images': True})
+>>> form = ProductExportForm({'format': 'yaml', 'include_images': True})
 >>> form.export(None)
 <django.http.HttpResponse object at ...>
 """
@@ -387,7 +387,7 @@ class OptionUtilsTest(TestCase):
     def test_base_sort_order(self):
         p = Product.objects.get(slug='dj-rocks')
         serialized = serialize_options(p.configurableproduct)
-        self.assert_(len(serialized), 2)
+        self.assertTrue(len(serialized), 2)
         self.assertEqual(serialized[0]['id'], 1)
         got_vals = [opt.value for opt in serialized[0]['items']]
         self.assertEqual(got_vals, ['S', 'M', 'L'])
@@ -410,7 +410,7 @@ class OptionUtilsTest(TestCase):
             opt.save()
 
         serialized = serialize_options(p.configurableproduct)
-        self.assert_(len(serialized), 2)
+        self.assertTrue(len(serialized), 2)
         self.assertEqual(serialized[1]['id'], 1)
         got_vals = [opt.value for opt in serialized[1]['items']]
         self.assertEqual(got_vals, ['L', 'M', 'S'])
@@ -424,3 +424,4 @@ class OptionUtilsTest(TestCase):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+

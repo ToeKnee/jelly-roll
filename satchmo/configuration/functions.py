@@ -73,7 +73,7 @@ class ConfigurationSettings(object):
 
         def groups(self):
             """Return ordered list"""
-            return self.settings.values()
+            return list(self.settings.values())
 
         def has_config(self, group, key):
             if isinstance(group, values.ConfigurationGroup):
@@ -136,7 +136,7 @@ class ConfigurationSettings(object):
         return setattr(self.__instance, attr, value)
 
     def __unicode__(self):
-        return u"ConfigurationSettings: " + unicode(self.groups())
+        return "ConfigurationSettings: " + str(self.groups())
 
 
 def config_exists(group, key):

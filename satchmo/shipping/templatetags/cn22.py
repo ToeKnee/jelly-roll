@@ -18,9 +18,9 @@ def cn22(order, group_by_category=True):
     total_value = Decimal("0.00")
     for item in items:
         if group_by_category:
-            name = unicode(item.category)
+            name = str(item.category)
         else:
-            name = unicode(item)
+            name = str(item)
 
         if name not in items_dict:
             items_dict[name] = {
@@ -40,7 +40,7 @@ def cn22(order, group_by_category=True):
 
     return {
         "order": order,
-        "items": items_dict.values(),
+        "items": list(items_dict.values()),
         "total_weight": total_weight,
         "total_value": total_value
     }

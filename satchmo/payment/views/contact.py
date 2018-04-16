@@ -75,13 +75,13 @@ def contact_info(request, **kwargs):
     else:
         if contact:
             #If a person has their contact info, make sure we populate it in the form
-            for item in contact.__dict__.keys():
+            for item in list(contact.__dict__.keys()):
                 init_data[item] = getattr(contact,item)
             if contact.shipping_address:
-                for item in contact.shipping_address.__dict__.keys():
+                for item in list(contact.shipping_address.__dict__.keys()):
                     init_data["ship_"+item] = getattr(contact.shipping_address,item)
             if contact.billing_address:
-                for item in contact.billing_address.__dict__.keys():
+                for item in list(contact.billing_address.__dict__.keys()):
                     init_data[item] = getattr(contact.billing_address,item)
             if contact.primary_phone:
                 init_data['phone'] = contact.primary_phone.phone

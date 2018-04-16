@@ -17,11 +17,11 @@ from satchmo.shop.models import OrderRefund
 class UnicodeTest(TestCase):
     def test_unsaved(self):
         refund = OrderRefund()
-        self.assertEqual(unicode(refund), u"Order refund (unsaved)")
+        self.assertEqual(str(refund), "Order refund (unsaved)")
 
     def test_saved(self):
         refund = OrderRefundFactory()
-        self.assertEqual(unicode(refund), u"Order refund #{id} - {amount}".format(
+        self.assertEqual(str(refund), "Order refund #{id} - {amount}".format(
             id=refund.id,
             amount=refund.display_amount,
         ))
@@ -73,7 +73,7 @@ class CurrenctTest(TestCase):
 class DisplayAmountTest(TestCase):
     def test_returns_amount_formatted_correctly(self):
         refund = OrderRefundFactory()
-        self.assertEqual(refund.display_amount, u"\u20ac17.50 (EUR)")
+        self.assertEqual(refund.display_amount, "€17.50 (EUR)")
 
 
 class AmountInPrimaryCurrencyTest(TestCase):

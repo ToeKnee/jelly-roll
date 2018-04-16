@@ -27,7 +27,7 @@ class CartTest(TestCase):
         Validate we can add some items to the cart
         """
         product = ProductFactory()
-        print product.get_absolute_url()
+        print((product.get_absolute_url()))
         if not retest:
             response = self.client.get(product.get_absolute_url())
             self.assertContains(response, str(product), count=2, status_code=200)
@@ -87,7 +87,7 @@ class CartTest(TestCase):
         """
         Validate we can remove an item
         """
-        print "Works with Mysql, and sqlite3 but not Postgres!"
+        print("Works with Mysql, and sqlite3 but not Postgres!")
         shop_config = Config.objects.get_current()
         shop_config.no_stock_checkout = True
         shop_config.save()

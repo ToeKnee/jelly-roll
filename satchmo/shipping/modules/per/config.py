@@ -23,7 +23,7 @@ config_register_list(
         help_text=_("Shipping service used with per item shipping"),
         requires=SHIP_MODULES,
         requiresvalue='satchmo.shipping.modules.per',
-        default=u"U.S. Mail"),
+        default="U.S. Mail"),
 
     StringValue(SHIPPING_GROUP,
         'PER_DAYS',

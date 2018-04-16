@@ -5,7 +5,7 @@ except:
     from django.utils._decimal import Decimal
 
 from django.test import TestCase
-from models import *
+from .models import *
 from satchmo.caching import cache_delete
 from satchmo.configuration import config_get_group, config_value
 from satchmo.contact.models import AddressBook, Contact
@@ -13,7 +13,7 @@ from satchmo.l10n.models import Country
 from satchmo.product.models import Product
 from satchmo.shop.models import Order, OrderItem, OrderItemDetail
 from django.contrib.sites.models import Site
-from utils import generate_certificate_code, generate_code
+from .utils import generate_certificate_code, generate_code
 import datetime, logging
 
 log = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class TestGenerateCode(TestCase):
         self.assertEqual(len(c), 4)
         
         for ch in c:
-            self.assert_(ch in alphabet)
+            self.assertTrue(ch in alphabet)
             
     def testGetCode2(self):
         c = generate_code(alphabet, '^^^^-^^^^')
@@ -67,7 +67,7 @@ class TestGenerateCode(TestCase):
     def testFormat(self):
         c = generate_code(alphabet, '^-^-^-^')
         for i in (0,2,4,6):
-            self.assert_(c[i] in alphabet)
+            self.assertTrue(c[i] in alphabet)
         for i in (1,3,5):
             self.assertEqual(c[i], '-')
 
@@ -83,7 +83,7 @@ class TestGenerateCertificateCode(TestCase):
         chars = [x for x in self.format if not x=='^']
         chars.extend(self.charset)
         for ch in c:
-            self.assert_(ch in chars)
+            self.assertTrue(ch in chars)
     
 class TestCertCreate(TestCase):
     fixtures = ['l10n_data.xml','test_shop']
@@ -98,7 +98,7 @@ class TestCertCreate(TestCase):
         gc = GiftCertificate(start_balance = '100.00', site=self.site)
         gc.save()
         
-        self.assert_(gc.code)
+        self.assertTrue(gc.code)
         self.assertEqual(gc.balance, Decimal('100.00'))
 
     def testUse(self):

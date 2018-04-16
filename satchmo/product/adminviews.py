@@ -63,7 +63,7 @@ def picking_list(request):
     # Sort the dict into a list of tuples
     # so we can order alphabetically
     for brand in products:
-        products[brand] = products[brand].items()
+        products[brand] = list(products[brand].items())
         products[brand].sort()
 
     context = RequestContext(request, {
@@ -109,7 +109,7 @@ def import_products(request, maxsize=10000000):
             results, errors = form.import_from(infile, maxsize=maxsize)
 
         else:
-            errors.append('File: %s' % request.FILES.keys())
+            errors.append('File: %s' % list(request.FILES.keys()))
             errors.append(_('No upload file found'))
 
         context = RequestContext(request, {

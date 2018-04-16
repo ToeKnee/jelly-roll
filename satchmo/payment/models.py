@@ -2,7 +2,7 @@
 Stores details about the available payment options.
 Also stores credit card info in an encrypted format.
 """
-import config
+from . import config
 import base64
 
 from Crypto.Cipher import Blowfish

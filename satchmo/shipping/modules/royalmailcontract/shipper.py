@@ -90,7 +90,7 @@ class Shipper(BaseShipper):
         the United Kingdom as this shipping module doesn't support GB.
         """
         excluded_countries = config_value('satchmo.shipping.modules.royalmailcontract', 'EXCLUDE_COUNTRY')
-        excluded_countries.append(u'GB')
+        excluded_countries.append('GB')
         return self.contact.shipping_address.country.iso2_code not in excluded_countries
 
     def shipping_to_eu(self):

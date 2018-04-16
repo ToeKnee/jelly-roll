@@ -7,7 +7,7 @@ from satchmo.l10n.models import Country
 from satchmo.shop.models import Config
 import datetime
 import logging
-import signals
+from . import signals
 
 log = logging.getLogger(__name__)
 
@@ -141,7 +141,7 @@ class ContactInfoForm(forms.Form):
 
     def clean_addressee(self):
         if not self.cleaned_data.get('addressee'):
-            first_and_last = u' '.join((self.cleaned_data.get('first_name', ''),
+            first_and_last = ' '.join((self.cleaned_data.get('first_name', ''),
                                        self.cleaned_data.get('last_name', '')))
             return first_and_last
         else:
@@ -150,7 +150,7 @@ class ContactInfoForm(forms.Form):
     def clean_ship_addressee(self):
         if not self.cleaned_data.get('ship_addressee') and \
                 not self.cleaned_data.get('copy_address'):
-            first_and_last = u' '.join((self.cleaned_data.get('first_name', ''),
+            first_and_last = ' '.join((self.cleaned_data.get('first_name', ''),
                                        self.cleaned_data.get('last_name', '')))
             return first_and_last
         else:
@@ -270,7 +270,7 @@ class ContactInfoForm(forms.Form):
             org = Organization.objects.by_name(companyname, create=True)
             customer.organization = org
 
-        for field in customer.__dict__.keys():
+        for field in list(customer.__dict__.keys()):
             try:
                 setattr(customer, field, data[field])
             except KeyError:
@@ -291,7 +291,7 @@ class ContactInfoForm(forms.Form):
             bill_address = AddressBook(contact=customer)
 
         changed_location = False
-        address_keys = bill_address.__dict__.keys()
+        address_keys = list(bill_address.__dict__.keys())
         for field in address_keys:
             if (not changed_location) and field in ('state', 'country', 'city'):
                 if getattr(bill_address, field) != data[field]:

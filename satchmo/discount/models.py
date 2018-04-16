@@ -12,6 +12,7 @@ from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
 from satchmo.currency.utils import currency_for_request, money_format
 from satchmo.product.models import Product
+from functools import reduce
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +140,7 @@ class Discount(models.Model):
         else:
             # no discount, probably shipping-only
             zero = Decimal("0.00")
-            for key in discounted.keys():
+            for key in list(discounted.keys()):
                 discounted[key] = zero
 
         if self.freeShipping:
@@ -151,7 +152,7 @@ class Discount(models.Model):
 
     def _total(self):
         assert(self._calculated)
-        return reduce(operator.add, self.item_discounts.values())
+        return reduce(operator.add, list(self.item_discounts.values()))
     total = property(_total)
 
     def _item_discounts(self):
@@ -195,7 +196,7 @@ def apply_even_split(discounted, amount):
         delta = Decimal("0.00")
         applied = Decimal("0.00")
         work = {}
-        for lid, price in discounted.items():
+        for lid, price in list(discounted.items()):
             if price > split_discount:
                 work[lid] = split_discount
                 applied += split_discount
@@ -226,7 +227,7 @@ def apply_percentage(discounted, percentage):
         log.warn("Correcting discount percentage, should be less than 1, is %s", percentage)
         percentage = percentage / 100
 
-    for lid, price in discounted.items():
+    for lid, price in list(discounted.items()):
         work[lid] = price * percentage
     round_cents(work)
     return work

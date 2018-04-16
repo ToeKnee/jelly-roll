@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from django.test import TestCase
 
@@ -32,7 +32,7 @@ class CountrySessionSerializerTest(TestCase):
         serializer = CountrySessionSerializer(country)
 
         self.assertEqual(serializer.data["iso2_code"], country.iso2_code)
-        self.assertEqual(len(serializer.data.keys()), 1)
+        self.assertEqual(len(list(serializer.data.keys())), 1)
 
     def test_validate__correct(self):
         country = UKFactory()

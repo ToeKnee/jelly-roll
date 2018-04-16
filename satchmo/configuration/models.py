@@ -84,7 +84,7 @@ class Setting(models.Model, CachedObjectMixin):
         unique_together = ('site', 'group', 'key')
 
     def __unicode__(self):
-        return u"{group}:{key} {value}".format(
+        return "{group}:{key} {value}".format(
             group=self.group,
             key=self.key,
             value=self.value
@@ -100,7 +100,7 @@ class Setting(models.Model, CachedObjectMixin):
 
         self.cache_set()
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.id is not None
 
     def cache_key(self, *args, **kwargs):
@@ -131,7 +131,7 @@ class LongSetting(models.Model, CachedObjectMixin):
         db_table = "configuration_longsetting"
         unique_together = ('site', 'group', 'key')
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.id is not None
 
     def save(self, *args, **kwargs):

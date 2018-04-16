@@ -104,7 +104,7 @@ class GiftCertificate(models.Model):
     def __unicode__(self):
         sb = money_format(self.start_balance, self.order.iso_4217_code)
         b = money_format(self.balance, self.order.iso_4217_code)
-        return u"Gift Cert: %s/%s" % (sb, b)
+        return "Gift Cert: %s/%s" % (sb, b)
 
     class Meta:
         verbose_name = _("Gift Certificate")
@@ -127,7 +127,7 @@ class GiftCertificateUsage(models.Model):
     giftcertificate = models.ForeignKey(GiftCertificate, related_name='usages')
 
     def __unicode__(self):
-        return u"GiftCertificateUsage: %s" % self.balance_used
+        return "GiftCertificateUsage: %s" % self.balance_used
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -144,7 +144,7 @@ class GiftCertificateProduct(models.Model):
     discountable = False
 
     def __unicode__(self):
-        return u"GiftCertificateProduct: %s" % self.product.name
+        return "GiftCertificateProduct: %s" % self.product.name
 
     def _get_subtype(self):
         return 'GiftCertificateProduct'
@@ -175,4 +175,4 @@ class GiftCertificateProduct(models.Model):
         verbose_name = _("Gift certificate product")
         verbose_name_plural = _("Gift certificate products")
 
-import config
+from . import config

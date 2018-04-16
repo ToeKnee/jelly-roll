@@ -30,7 +30,7 @@ def product_feed(request, category=None, template="feeds/googlebase_atom.xml", m
         cat = None
         products = Product.objects.active_by_site()
 
-    products = filter(lambda product: "ConfigurableProduct" not in product.get_subtypes(), products)
+    products = [product for product in products if "ConfigurableProduct" not in product.get_subtypes()]
 
     params = {}
     view = 'satchmo_atom_feed'

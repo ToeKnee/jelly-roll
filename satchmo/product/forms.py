@@ -1,9 +1,9 @@
-import config
+from . import config
 import os
 import time
 import zipfile
 
-from cStringIO import StringIO
+from io import StringIO
 from django import forms
 from django.db import connection, transaction
 from django.conf import settings
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 def export_choices():
     fmts = serializers.get_serializer_formats()
-    return zip(fmts, fmts)
+    return list(zip(fmts, fmts))
 
 
 class ProductExportForm(forms.Form):
@@ -66,7 +66,7 @@ class ProductExportForm(forms.Form):
         include_images = False
         include_categories = False
 
-        for name, value in self.cleaned_data.items():
+        for name, value in list(self.cleaned_data.items()):
             if name == 'format':
                 format = value
                 continue
@@ -111,7 +111,7 @@ class ProductExportForm(forms.Form):
         # Export all categories, translations.  Export images,translations if
         # desired.
         if include_categories:
-            for category in categories.keys():
+            for category in list(categories.keys()):
                 objects.append(category)
                 objects.extend(list(category.translations.all()))
                 if include_images:
@@ -121,7 +121,7 @@ class ProductExportForm(forms.Form):
 
         try:
             raw = serializers.serialize(format, objects, indent=False)
-        except Exception, e:
+        except Exception as e:
             raise CommandError("Unable to serialize database: %s" % e)
 
         if include_images:
@@ -134,7 +134,7 @@ class ProductExportForm(forms.Form):
 
             zinfo = zf.getinfo(str(export_file))
             # Caution, highly magic number, chmods the file to 644
-            zinfo.external_attr = 2175008768L
+            zinfo.external_attr = 2175008768
 
             image_dir = config_value('PRODUCT', 'IMAGE_DIR')
             config = "PRODUCT.IMAGE_DIR=%s\nEXPORT_FILE=%s" % (image_dir, export_file)
@@ -142,7 +142,7 @@ class ProductExportForm(forms.Form):
 
             zinfo = zf.getinfo('VARS')
             # Caution, highly magic number, chmods the file to 644
-            zinfo.external_attr = 2175008768L
+            zinfo.external_attr = 2175008768
 
             for image in images:
                 f = os.path.join(filedir, image)
@@ -258,7 +258,7 @@ class ProductImportForm(forms.Form):
 
                     results.append(_('Added %(count)i objects from %(filename)s') % {'count': ct, 'filename': filename})
 
-                except Exception, e:
+                except Exception as e:
                     errors.append(_("Problem installing fixture '%(filename)s': %(error_msg)s\n") % {'filename': filename, 'error_msg': str(e)})
                     errors.append("Raw: %s" % raw)
         return results, errors
@@ -318,7 +318,7 @@ class InventoryForm(forms.Form):
 
     def save(self, request):
         self.full_clean()
-        for name, value in self.cleaned_data.items():
+        for name, value in list(self.cleaned_data.items()):
             opt, key = name.split('__')
 
             prod = Product.objects.get(slug__exact=key)
@@ -426,8 +426,8 @@ class VariationManagerForm(forms.Form):
                     self.existing[key] = True
                     self.edit_urls[key] = "/admin/product/product/%i/" % variation.id
                 else:
-                    basename = u'%s (%s)' % (self.product.name, u'/'.join(optnames))
-                    slug = u'%s_%s' % (self.product.slug, u'_'.join(optnames))
+                    basename = '%s (%s)' % (self.product.name, '/'.join(optnames))
+                    slug = '%s_%s' % (self.product.slug, '_'.join(optnames))
                     sku = ""
 
                 pv = forms.BooleanField(**kw)

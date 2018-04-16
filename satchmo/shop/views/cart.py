@@ -229,7 +229,7 @@ def add(request, id=0, redirect_to='satchmo_cart'):
         added_item = cart.add_item(
             product, number_added=quantity, details=details)
 
-    except CartAddProhibited, cap:
+    except CartAddProhibited as cap:
         return _product_error(request, product, cap.message)
 
     # got to here with no error, now send a signal so that listeners can also operate on this form.
@@ -311,7 +311,7 @@ def add_ajax(request, id=0, template="json.html"):
                     form=formdata
                 )
 
-        except CartAddProhibited, cap:
+        except CartAddProhibited as cap:
             data['results'] = _('Error')
             data['errors'].append(('product', cap.message))
 
@@ -469,8 +469,8 @@ def product_from_post(productslug, formdata):
             else:
                 price_change = zero
             data = {
-                'name': unicode(result.option_group),
-                'value': unicode(result.translated_name()),
+                'name': str(result.option_group),
+                'value': str(result.translated_name()),
                 'sort_order': result.sort_order,
                 'price_change': price_change
             }

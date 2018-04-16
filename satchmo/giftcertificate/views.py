@@ -3,8 +3,8 @@ from django.contrib.sites.models import Site
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
-from forms import GiftCertCodeForm, GiftCertPayShipForm
-from models import GiftCertificate, GIFTCODE_KEY
+from .forms import GiftCertCodeForm, GiftCertPayShipForm
+from .models import GiftCertificate, GIFTCODE_KEY
 from satchmo.configuration import config_get_group
 from satchmo.shop.models import Order
 from satchmo.payment.utils import pay_ship_save, get_or_create_order

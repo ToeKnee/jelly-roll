@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 import satchmo.caching.models
@@ -42,10 +42,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='setting',
-            unique_together=set([('site', 'group', 'key')]),
+            unique_together={('site', 'group', 'key')},
         ),
         migrations.AlterUniqueTogether(
             name='longsetting',
-            unique_together=set([('site', 'group', 'key')]),
+            unique_together={('site', 'group', 'key')},
         ),
     ]

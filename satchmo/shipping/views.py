@@ -1,6 +1,6 @@
 import os
 import trml2pdf
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse, HttpResponseRedirect

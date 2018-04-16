@@ -17,7 +17,7 @@ def despatch(request, order_id, verification_hash):
 
     # Orders duplicated by Six has -a (or whatever letter) append to
     # the order_id.  Drop the -a.
-    if isinstance(order_id, basestring) and "-" in order_id:
+    if isinstance(order_id, str) and "-" in order_id:
         logging.info("Trimming order id: %s", order_id)
         order_id = order_id.split("-")[0]
 
@@ -33,27 +33,27 @@ def despatch(request, order_id, verification_hash):
             else:
                 # Ensure that notes is a string, even when empty.
                 if order.notes is None:
-                    order.notes = u""
+                    order.notes = ""
                 else:
-                    order.notes += u"\n\n"
+                    order.notes += "\n\n"
 
-                order.notes += u"------------------ {now} ------------------\n\n".format(
+                order.notes += "------------------ {now} ------------------\n\n".format(
                     now=payload.get("date_despatched")
                 )
 
-                order.notes += u"Client area: {url}\n".format(
+                order.notes += "Client area: {url}\n".format(
                     url=payload.get("client_area_link"),
                 )
-                order.notes += u"Postage Method: {method}\n".format(
+                order.notes += "Postage Method: {method}\n".format(
                     method=payload.get("postage_method"),
                 )
-                order.notes += u"Postage Cost: £{cost}\n".format(
+                order.notes += "Postage Cost: £{cost}\n".format(
                     cost=payload.get("postage_cost"),
                 )
-                order.notes += u"Boxed Weight: {weight}g\n".format(
+                order.notes += "Boxed Weight: {weight}g\n".format(
                     weight=payload.get("boxed_weight"),
                 )
-                order.notes += u"\nItems: {items}\n".format(
+                order.notes += "\nItems: {items}\n".format(
                     items=payload.get("items"),
                 )
 
@@ -63,9 +63,9 @@ def despatch(request, order_id, verification_hash):
 
                 order.save()
 
-                status_notes = u"Thanks for your order!\n"
+                status_notes = "Thanks for your order!\n"
                 if order.tracking_url:
-                    status_notes += u"You can track your order at {tracking_url}\n".format(
+                    status_notes += "You can track your order at {tracking_url}\n".format(
                         tracking_url=order.tracking_url,
                     )
 

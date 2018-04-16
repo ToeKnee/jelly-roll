@@ -5,7 +5,7 @@ except:
     from django.utils._decimal import Decimal
 
 from django.test import TestCase
-from models import *
+from .models import *
 from satchmo.caching import cache_delete
 from satchmo.configuration import config_get
 from satchmo.contact.models import AddressBook, Contact
@@ -29,8 +29,8 @@ class DiscountTest(TestCase):
     def testValid(self):
 
         v = self.discount.isValid()
-        self.assert_(v[0])
-        self.assertEqual(v[1], u'Valid.')
+        self.assertTrue(v[0])
+        self.assertEqual(v[1], 'Valid.')
 
     def testFutureDate(self):
         """Test a future date for discount start"""
@@ -40,7 +40,7 @@ class DiscountTest(TestCase):
         self.discount.isValid()
         v = self.discount.isValid()
         self.assertFalse(v[0])
-        self.assertEqual(v[1], u'This coupon is not active yet.')
+        self.assertEqual(v[1], 'This coupon is not active yet.')
 
     def testPastDate(self):
         """Test an expired discount"""
@@ -52,7 +52,7 @@ class DiscountTest(TestCase):
         self.discount.save()
         v = self.discount.isValid()
         self.assertFalse(v[0])
-        self.assertEqual(v[1], u'This coupon has expired.')
+        self.assertEqual(v[1], 'This coupon has expired.')
 
     def testNotActive(self):
         """Not active should always be invalid."""
@@ -62,7 +62,7 @@ class DiscountTest(TestCase):
         self.discount.save()
         v = self.discount.isValid()
         self.assertFalse(v[0], False)
-        self.assertEqual(v[1], u'This coupon is disabled.')
+        self.assertEqual(v[1], 'This coupon is disabled.')
                 
 
 class CalcFunctionTest(TestCase):

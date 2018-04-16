@@ -1,4 +1,4 @@
-import shipper
+from . import shipper
 from satchmo.configuration import config_choice_values
 
 def get_methods():

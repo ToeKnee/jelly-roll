@@ -67,7 +67,7 @@ class DespatchTest(TestCase):
         self.assertIsNone(order.tracking_number)
         self.assertIsNone(order.tracking_url)
 
-        self.assertEqual(order.status.notes, u"Thanks for your order!\n")
+        self.assertEqual(order.status.notes, "Thanks for your order!\n")
 
     def test_despatch__with_tracking(self):
         order = TestOrderFactory()
@@ -104,7 +104,7 @@ class DespatchTest(TestCase):
         self.assertEqual(order.tracking_number, data["tracking_number"])
         self.assertEqual(order.tracking_url, data["tracking_link"])
 
-        order_status = u"""Thanks for your order!\nYou can track your order at {tracking_url}\n"""
+        order_status = """Thanks for your order!\nYou can track your order at {tracking_url}\n"""
         self.assertEqual(order.status.notes, order_status.format(
             tracking_number=order.tracking_number,
             tracking_url=order.tracking_url,
@@ -149,7 +149,7 @@ class DespatchTest(TestCase):
         self.assertEqual(order.tracking_number, data["tracking_number"])
         self.assertEqual(order.tracking_url, data["tracking_link"])
 
-        order_status = u"""Thanks for your order!\nYou can track your order at {tracking_url}\n"""
+        order_status = """Thanks for your order!\nYou can track your order at {tracking_url}\n"""
         self.assertEqual(order.status.notes, order_status.format(
             tracking_number=order.tracking_number,
             tracking_url=order.tracking_url,
@@ -194,4 +194,4 @@ class DespatchTest(TestCase):
         self.assertIsNone(order.tracking_number)
         self.assertIsNone(order.tracking_url)
 
-        self.assertEqual(order.status.notes, u"Thanks for your order!\n")
+        self.assertEqual(order.status.notes, "Thanks for your order!\n")

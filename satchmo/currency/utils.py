@@ -22,7 +22,7 @@ def money_format(value, currency_code):
     except Currency.DoesNotExist:
         return _("{currency} is not accepted".format(currency=currency_code))
 
-    return u"{currency_symbol}{value:.2f} ({code})".format(
+    return "{currency_symbol}{value:.2f} ({code})".format(
         currency_symbol=currency.symbol,
         value=value,
         code=currency.iso_4217_code,

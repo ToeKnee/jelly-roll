@@ -2,7 +2,7 @@ from django.db import models
 from satchmo.configuration import SettingNotSet
 from satchmo.configuration import config_choice_values
 
-import config
+from . import config
 
 
 def shipping_choices():

@@ -20,7 +20,7 @@ config_register_list(
         help_text=_("Shipping service used with Flat rate shipping"),
         requires=SHIP_MODULES,
         requiresvalue='satchmo.shipping.modules.flat',
-        default=u"U.S. Mail"),
+        default="U.S. Mail"),
     
     StringValue(SHIPPING_GROUP,
         'FLAT_DAYS',

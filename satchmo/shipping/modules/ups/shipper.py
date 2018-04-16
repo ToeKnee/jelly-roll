@@ -22,7 +22,7 @@ from django.utils.translation import ugettext as _
 from satchmo.shipping.modules.base import BaseShipper
 from django.template import Context, loader
 from satchmo.configuration import config_get_group, config_value
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from django.core.cache import cache
 import logging
 try:
@@ -43,7 +43,7 @@ class Shipper(BaseShipper):
         else:
             self.service_type_code = "99"
             self.service_type_text = "Uninitialized"
-        self.id = u"UPS-%s-%s" % (self.service_type_code, self.service_type_text)
+        self.id = "UPS-%s-%s" % (self.service_type_code, self.service_type_text)
         self.raw = "NO DATA"
         #if cart or contact:
         #    self.calculate(cart, contact)
@@ -77,7 +77,7 @@ class Shipper(BaseShipper):
         """
         Can be a plain string or complex calcuation returning an actual date
         """
-        if self.delivery_days <> "1":
+        if self.delivery_days != "1":
             return _("%s business days" % self.delivery_days)
         else:
             return _("%s business day" % self.delivery_days)
@@ -94,8 +94,8 @@ class Shipper(BaseShipper):
         """
         Post the data and return the XML response
         """
-        conn = urllib2.Request(url=connection, data=request.encode("utf-8"))
-        f = urllib2.urlopen(conn)
+        conn = urllib.request.Request(url=connection, data=request.encode("utf-8"))
+        f = urllib.request.urlopen(conn)
         all_results = f.read()
         self.raw = all_results
         return(fromstring(all_results))

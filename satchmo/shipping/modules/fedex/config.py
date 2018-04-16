@@ -19,13 +19,13 @@ config_register_list(
         'METER_NUMBER',
         description=_('FedEx Meter Number'),
         help_text=_('Meter Number provided by FedEx.'),
-        default=u''),
+        default=''),
     
     StringValue(SHIPPING_GROUP,
         'ACCOUNT',
         description=_('FedEx Account Number'),
         help_text=_('FedEx Account Number.'),
-        default=u''),
+        default=''),
     
     MultipleStringValue(SHIPPING_GROUP,
         'SHIPPING_CHOICES',
@@ -63,7 +63,7 @@ config_register_list(
                     (('FEDEX25KGBOX','FEDEX25KGBOX')),
                     (('YOURPACKAGING','YOURPACKAGING')),
         ),
-        default = u'FEDEXENVELOPE'),
+        default = 'FEDEXENVELOPE'),
 
     BooleanValue(SHIPPING_GROUP,
         'LIVE',

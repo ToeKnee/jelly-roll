@@ -40,9 +40,9 @@ class ShippingBaseTest(TestCase):
         # Product.is_shippable should be True unless the Product has a subtype
         # where is_shippable == False
         subtype1 = ConfigurableProduct.objects.create(product=self.product1)
-        self.assert_(getattr(subtype1, 'is_shippable', True))
-        self.assert_(self.cartitem1.is_shippable)
-        self.assert_(self.product1.is_shippable)
-        self.assert_(self.cart1.is_shippable)
+        self.assertTrue(getattr(subtype1, 'is_shippable', True))
+        self.assertTrue(self.cartitem1.is_shippable)
+        self.assertTrue(self.product1.is_shippable)
+        self.assertTrue(self.cart1.is_shippable)
         self.assertEqual(flat(self.cart1, None).cost(), Decimal("4.00"))
         self.assertEqual(per(self.cart1, None).cost(), Decimal("12.00"))

@@ -10,6 +10,7 @@ from django.apps import apps
 from django.conf import settings
 
 import logging
+from functools import reduce
 log = logging.getLogger(__name__)
 
 
@@ -101,7 +102,7 @@ def get_flat_list(sequence):
 
 
 def is_list_or_tuple(maybe):
-    return isinstance(maybe, (types.TupleType, types.ListType))
+    return isinstance(maybe, (tuple, list))
 
 
 def is_string_like(maybe):
@@ -145,7 +146,7 @@ _LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 def random_string(length, variable=False, charset=_LETTERS):
     if variable:
         length = random.randrange(1, length + 1)
-    return ''.join([random.choice(charset) for x in xrange(length)])
+    return ''.join([random.choice(charset) for x in range(length)])
 
 
 def request_is_secure(request):
@@ -168,7 +169,7 @@ def trunc_decimal(val, places):
         roundfmt += "1"
     if val is None:
         val = Decimal('0.00000000')
-    if type(val) != Decimal:
+    if not isinstance(val, Decimal):
         try:
             val = Decimal(val)
         except InvalidOperation:

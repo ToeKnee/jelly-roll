@@ -25,7 +25,7 @@ register.filter('debug_mode', debug_mode)
 
 def template_range(value):
     """Return a range 1..value"""
-    return range(1, value + 1)
+    return list(range(1, value + 1))
 
 register.filter('template_range', template_range)
 

@@ -22,7 +22,7 @@ def product_feed(request):
     payment_types = []
     payment_notes = []
     for type, module in payment_modules:
-        payment_type = unicode(config_get(type, "LABEL"))
+        payment_type = str(config_get(type, "LABEL"))
         g_payment_type = get_google_card_type(payment_type)
         if g_payment_type:
             payment_types.append(g_payment_type)

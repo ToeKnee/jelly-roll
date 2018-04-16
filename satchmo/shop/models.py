@@ -42,6 +42,7 @@ from satchmo.shipping.models import POSTAGE_SPEED_CHOICES, STANDARD
 from satchmo.shop import signals
 from satchmo.shop.notification import send_order_update, send_owner_order_notice
 from satchmo.tax.utils import get_tax_processor
+from functools import reduce
 
 log = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class ConfigManager(models.Manager):
 
         try:
             shop_config = caching.cache_get("Config", site)
-        except caching.NotCachedError, nce:
+        except caching.NotCachedError as nce:
             try:
                 shop_config = self.get(site__id__exact=site)
                 caching.cache_set(nce.key, value=shop_config)
@@ -321,7 +322,7 @@ class Cart(models.Model):
         verbose_name_plural = _("Shopping Carts")
 
     def __unicode__(self):
-        return u"Shopping Cart (%s)" % self.date_time_created
+        return "Shopping Cart (%s)" % self.date_time_created
 
     def __iter__(self):
         return iter(self.cartitem_set.all())
@@ -532,7 +533,7 @@ class CartItem(models.Model):
     def __unicode__(self):
         currency = config_value('CURRENCY', 'CURRENCY')
         currency = currency.replace("_", " ")
-        return u'%s - %s %s%s' % (self.quantity, self.product.name,
+        return '%s - %s %s%s' % (self.quantity, self.product.name,
                                   force_unicode(currency), self.line_total)
 
     class Meta:
@@ -865,7 +866,7 @@ class Order(models.Model):
 
     def invoice(self):
         url = urlresolvers.reverse('satchmo_print_shipping', None, None, {'doc': 'invoice', 'id': self.id})
-        return mark_safe(u'<a href="%s">%s</a>' % (url, _('View')))
+        return mark_safe('<a href="%s">%s</a>' % (url, _('View')))
     invoice.allow_tags = True
 
     def _item_discount(self):
@@ -875,7 +876,7 @@ class Order(models.Model):
 
     def packingslip(self):
         url = urlresolvers.reverse('satchmo_print_shipping', None, None, {'doc': 'packingslip', 'id': self.id})
-        return mark_safe(u'<a href="%s">%s</a>' % (url, _('View')))
+        return mark_safe('<a href="%s">%s</a>' % (url, _('View')))
     packingslip.allow_tags = True
 
     def recalculate_total(self, save=True):
@@ -944,7 +945,7 @@ class Order(models.Model):
         for taxdetl in self.taxes.all():
             taxdetl.delete()
 
-        for taxdesc, taxamt in taxrates.items():
+        for taxdesc, taxamt in list(taxrates.items()):
             taxdetl = OrderTaxDetail(order=self, tax=taxamt, description=taxdesc, method=taxProcessor.method)
             taxdetl.save()
 
@@ -964,7 +965,7 @@ class Order(models.Model):
 
     def shippinglabel(self):
         url = urlresolvers.reverse('satchmo_print_shipping', None, None, {'doc': 'shippinglabel', 'id': self.id})
-        return mark_safe(u'<a href="%s">%s</a>' % (url, _('View')))
+        return mark_safe('<a href="%s">%s</a>' % (url, _('View')))
     shippinglabel.allow_tags = True
 
     def _convert_to_primary(self, value):
@@ -1335,7 +1336,7 @@ class OrderItemDetail(models.Model):
                                      help_text=_("The display order for this group."))
 
     def __unicode__(self):
-        return u"%s - %s,%s" % (self.item, self.name, self.value)
+        return "%s - %s,%s" % (self.item, self.name, self.value)
 
     class Meta:
         verbose_name = _("Order Item Detail")
@@ -1381,10 +1382,10 @@ class DownloadLink(models.Model):
         super(DownloadLink, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return u"%s - %s" % (self.downloadable_product.product.slug, self.time_stamp)
+        return "%s - %s" % (self.downloadable_product.product.slug, self.time_stamp)
 
     def _product_name(self):
-        return u"%s" % (self.downloadable_product.product.translated_name())
+        return "%s" % (self.downloadable_product.product.translated_name())
     product_name = property(_product_name)
 
     class Meta:
@@ -1445,9 +1446,9 @@ class OrderPayment(models.Model):
 
     def __unicode__(self):
         if self.id is not None:
-            return u"Order payment #%i" % self.id
+            return "Order payment #%i" % self.id
         else:
-            return u"Order payment (unsaved)"
+            return "Order payment (unsaved)"
 
     @property
     def credit_card(self):
@@ -1485,12 +1486,12 @@ class OrderRefund(models.Model):
 
     def __unicode__(self):
         if self.id is not None:
-            return u"Order refund #{id} - {amount}".format(
+            return "Order refund #{id} - {amount}".format(
                 id=self.id,
                 amount=self.display_amount,
             )
         else:
-            return u"Order refund (unsaved)"
+            return "Order refund (unsaved)"
 
     def save(self, *args, **kwargs):
         if self.id is None:
@@ -1548,7 +1549,7 @@ class OrderVariable(models.Model):
             v = self.value[:10] + '...'
         else:
             v = self.value
-        return u"OrderVariable: %s=%s" % (self.key, v)
+        return "OrderVariable: %s=%s" % (self.key, v)
 
 
 class OrderTaxDetail(models.Model):
@@ -1560,9 +1561,9 @@ class OrderTaxDetail(models.Model):
 
     def __unicode__(self):
         if self.description:
-            return u"Tax: %s %s" % (self.description, self.tax)
+            return "Tax: %s %s" % (self.description, self.tax)
         else:
-            return u"Tax: %s" % self.tax
+            return "Tax: %s" % self.tax
 
     class Meta:
         verbose_name = _('Order tax detail')
@@ -1597,4 +1598,4 @@ signals.satchmo_cart_changed.connect(_remove_order_on_cart_update, sender=None)
 satchmo_contact_location_changed.connect(_recalc_total_on_contact_change, sender=None)
 product_signals.subtype_order_success.connect(_create_download_link, sender=None)
 
-import config
+from . import config

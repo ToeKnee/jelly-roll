@@ -1,7 +1,7 @@
 """Simple wrapper for standard checkout as implemented in satchmo.payment.views"""
 
 from django import http
-from forms import PurchaseorderPayShipForm
+from .forms import PurchaseorderPayShipForm
 from satchmo.configuration import config_get_group
 from satchmo.payment.views import confirm, payship
 from satchmo.utils.dynamic import lookup_url

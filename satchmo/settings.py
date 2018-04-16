@@ -163,4 +163,4 @@ SATCHMO_SETTINGS = {
 }
 
 # Load the local settings
-from local_settings import *
+from .local_settings import *

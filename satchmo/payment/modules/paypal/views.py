@@ -1,5 +1,5 @@
 import logging
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from django.core import urlresolvers
 from django.db import transaction
@@ -201,7 +201,7 @@ def ipn(request):
                     notes = ""
 
                 order.notes = notes + \
-                    _('---Comment via Paypal IPN---') + u'\n' + data['memo']
+                    _('---Comment via Paypal IPN---') + '\n' + data['memo']
                 log.debug("PayPal IPN: Saved order notes from Paypal")
 
             for item in order.orderitem_set.select_for_update().filter(
@@ -224,15 +224,15 @@ def confirm_ipn_data(data, PP_URL):
     # data is the form data that was submitted to the IPN URL.
 
     newparams = {}
-    for key in data.keys():
+    for key in list(data.keys()):
         newparams[key] = data[key]
 
     newparams['cmd'] = "_notify-validate"
     params = urlencode(newparams)
 
-    req = urllib2.Request(PP_URL)
+    req = urllib.request.Request(PP_URL)
     req.add_header("Content-type", "application/x-www-form-urlencoded")
-    fo = urllib2.urlopen(req, params)
+    fo = urllib.request.urlopen(req, params)
 
     ret = fo.read()
     if ret == "VERIFIED":

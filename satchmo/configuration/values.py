@@ -6,7 +6,7 @@ http://code.google.com/p/django-values/
 import datetime
 import json
 import logging
-import signals
+from . import signals
 from decimal import Decimal
 
 from django import forms
@@ -38,13 +38,12 @@ class SortedDotDict(SortedDict):
             raise AttributeError(key)
 
     def __iter__(self):
-        vals = self.values()
+        vals = list(self.values())
         for k in vals:
             yield k
 
     def values(self):
-        vals = super(SortedDotDict, self).values()
-        vals.sort()
+        vals = sorted(list(super(SortedDotDict, self).values()))
         return vals
 
 
@@ -80,7 +79,7 @@ class ConfigurationGroup(SortedDotDict):
         return cmp((self.ordering, self.name), (other.ordering, other.name))
 
     def __eq__(self, other):
-        return (type(self) == type(other)
+        return (isinstance(self, type(other))
                 and self.ordering == other.ordering
                 and self.name == other.name)
 
@@ -88,7 +87,7 @@ class ConfigurationGroup(SortedDotDict):
         return not self == other
 
     def values(self):
-        vals = super(ConfigurationGroup, self).values()
+        vals = list(super(ConfigurationGroup, self).values())
         return [v for v in vals if v.enabled()]
 
 SHOP_GROUP = ConfigurationGroup('SHOP', _('Base Settings'), ordering=0)
@@ -149,7 +148,7 @@ class Value(object):
         return cmp((self.ordering, self.description, self.creation_counter), (other.ordering, other.description, other.creation_counter))
 
     def __eq__(self, other):
-        if type(self) == type(other):
+        if isinstance(self, type(other)):
             return self.value == other.value
         else:
             return self.value == other
@@ -158,7 +157,7 @@ class Value(object):
         return iter(self.value)
 
     def __unicode__(self):
-        return unicode(self.value)
+        return str(self.value)
 
     def __str__(self):
         return str(self.value)
@@ -204,7 +203,7 @@ class Value(object):
                 for x in self.choices:
                     if x[0] in self.default:
                         work.append(force_text(x[1]))
-                note = ugettext('Default value: ') + u", ".join(work)
+                note = ugettext('Default value: ') + ", ".join(work)
 
             else:
                 note = _("Default value: %s") % force_text(self.default)
@@ -261,12 +260,12 @@ class Value(object):
             else:
                 val = NOTSET
 
-        except AttributeError, ae:
+        except AttributeError as ae:
             log.error("Attribute error: %s", ae)
             log.error("%s: Could not get _value of %s", self.key, self.setting)
             raise(ae)
 
-        except Exception, e:
+        except Exception as e:
             global _WARN
             log.error(e)
             if str(e).find("configuration_setting") > -1:
@@ -335,13 +334,13 @@ class Value(object):
         "Returns a value suitable for storage into a CharField"
         if value == NOTSET:
             value = ""
-        return unicode(value)
+        return str(value)
 
     def to_editor(self, value):
         "Returns a value suitable for display in a form widget"
         if value == NOTSET:
             return NOTSET
-        return unicode(value)
+        return str(value)
 
 ###############
 # VALUE TYPES #
@@ -381,7 +380,7 @@ class DecimalValue(Value):
 
         try:
             return Decimal(value)
-        except TypeError, te:
+        except TypeError as te:
             log.warning("Can't convert %s to Decimal for settings %s.%s", value, self.group.key, self.key)
             raise TypeError(te)
 
@@ -389,7 +388,7 @@ class DecimalValue(Value):
         if value == NOTSET:
             return "0"
         else:
-            return unicode(value)
+            return str(value)
 
 
 # DurationValue has a lot of duplication and ugliness because of issue #2443
@@ -421,7 +420,7 @@ class DurationValue(Value):
         if value == NOTSET:
             return NOTSET
         else:
-            return unicode(value.days * 24 * 3600 + value.seconds + float(value.microseconds) / 1000000)
+            return str(value.days * 24 * 3600 + value.seconds + float(value.microseconds) / 1000000)
 
 
 class FloatValue(Value):
@@ -441,7 +440,7 @@ class FloatValue(Value):
         if value == NOTSET:
             return "0"
         else:
-            return unicode(value)
+            return str(value)
 
 
 class IntegerValue(Value):
@@ -460,7 +459,7 @@ class IntegerValue(Value):
         if value == NOTSET:
             return "0"
         else:
-            return unicode(value)
+            return str(value)
 
 
 class PercentValue(Value):
@@ -487,7 +486,7 @@ class PercentValue(Value):
         if value == NOTSET:
             return "0"
         else:
-            return unicode(value)
+            return str(value)
 
 
 class PositiveIntegerValue(IntegerValue):
@@ -509,7 +508,7 @@ class StringValue(Value):
     def to_python(self, value):
         if value == NOTSET:
             value = ""
-        return unicode(value)
+        return str(value)
 
     to_editor = to_python
 
@@ -529,7 +528,7 @@ class LongStringValue(Value):
     def to_python(self, value):
         if value == NOTSET:
             value = ""
-        return unicode(value)
+        return str(value)
 
     to_editor = to_python
 
