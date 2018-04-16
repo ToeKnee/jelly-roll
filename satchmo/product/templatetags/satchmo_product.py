@@ -5,7 +5,7 @@ from satchmo.shop.templatetags import get_filter_args
 from satchmo.product.queries import bestsellers
 from satchmo.product.views import display_featured
 from satchmo.currency.models import Currency
-from satchmo.currency.utils import convert_to_currency, currency_for_request
+from satchmo.currency.utils import convert_to_currency, currency_for_request, money_format
 
 register = template.Library()
 
@@ -134,10 +134,12 @@ def full_product(context, product):
     context["product"] = product
     current_currency = currency_for_request(context.get('request'))
     context['other_prices'] = [
-        {
-            "currency": currency.iso_4217_code,
-            "price": convert_to_currency(product.unit_price, currency.iso_4217_code)
-        }
+        money_format(
+            convert_to_currency(
+                product.unit_price, currency.iso_4217_code
+            ),
+            currency.iso_4217_code
+        )
         for currency
         in Currency.objects.filter(
             accepted=True
