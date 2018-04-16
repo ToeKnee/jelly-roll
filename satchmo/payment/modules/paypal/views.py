@@ -105,7 +105,9 @@ def confirm_info(request):
                 'product': item.product,
                 'price': item.product.price_set.all()[0].price
             }
-            trial0 = recurring['product'].subscriptionproduct.get_trial_terms(0)
+            trial0 = recurring['product'].subscriptionproduct.get_trial_terms(
+                0
+            )
             if len(order_items) > 1 or trial0 is not None or recurring['price'] < order.balance:
                 recurring['trial1'] = {'price': order.balance}
                 if trial0 is not None:
@@ -113,7 +115,9 @@ def confirm_info(request):
                     recurring['trial1']['expire_unit'] = trial0.expire_unit[0]
                 # else:
                 #     recurring['trial1']['expire_length'] = recurring['product'].subscriptionproduct.get_trial_terms(0).expire_length
-                trial1 = recurring['product'].subscriptionproduct.get_trial_terms(1)
+                trial1 = recurring['product'].subscriptionproduct.get_trial_terms(
+                    1
+                )
                 if trial1 is not None:
                     recurring['trial2']['expire_length'] = trial1.expire_length
                     recurring['trial2']['expire_unit'] = trial1.expire_unit[0]
@@ -181,9 +185,13 @@ def ipn(request):
         if not OrderPayment.objects.filter(transaction_id=txn_id).count():
             # If the payment hasn't already been processed:
             order = Order.objects.get(pk=invoice)
-            order.add_status(status='Processing', notes=_("Paid through PayPal."))
+            order.add_status(
+                status='Processing',
+                notes=_("Paid through PayPal.")
+            )
             payment_module = config_get_group('PAYMENT_PAYPAL')
-            record_payment(order, payment_module, amount=gross, transaction_id=txn_id)
+            record_payment(order, payment_module,
+                           amount=gross, transaction_id=txn_id)
             complete_order(order)
 
             if 'memo' in data:
@@ -192,13 +200,17 @@ def ipn(request):
                 else:
                     notes = ""
 
-                order.notes = notes + _('---Comment via Paypal IPN---') + u'\n' + data['memo']
+                order.notes = notes + \
+                    _('---Comment via Paypal IPN---') + u'\n' + data['memo']
                 log.debug("PayPal IPN: Saved order notes from Paypal")
 
-            for item in order.orderitem_set.filter(product__subscriptionproduct__recurring=True, completed=False):
+            for item in order.orderitem_set.select_for_update().filter(
+                    product__subscriptionproduct__recurring=True,
+                    completed=False
+            ):
                 item.completed = True
                 item.save()
-            for cart in Cart.objects.filter(customer=order.contact):
+            for cart in Cart.objects.select_for_update().filter(customer=order.contact):
                 cart.empty()
 
             order.save()
