@@ -2,6 +2,12 @@
 JellyRoll Change Log
 ==================
 
+Version 0.10.3.4, 31 May, 2018
+------------------------------
+* Improved MPN in product feed
+* Added availability to product feed
+* Added additional images to product feed
+
 Version 0.10.3.3, 31 May, 2018
 ------------------------------
 * Add MPN to product feed
