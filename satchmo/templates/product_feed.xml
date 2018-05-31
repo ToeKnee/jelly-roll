@@ -9,14 +9,17 @@ xmlns:g="http://base.google.com/ns/1.0">
 {% with product.brands.all|first as brand %}
 <item>
     <g:id>{{ product.slug }}</g:id>
-    <title>{{ brand.translation.name|force_escape }} "{{ product.translated_name|force_escape }}" {{ product.category.all|first|force_escape }}</title>
+    <title>{{ product.translated_name|force_escape }} {{ product.category.all|first|force_escape }}</title>
     <link>http://{{ shop_domain }}{{ product.get_absolute_url }}</link>
     <description>{{ product.description }}</description>
     <g:product_type>{{ product.category.all|first }}</g:product_type>
     {% if brand %}<g:brand>{{ brand.translation.name }}</g:brand>{% endif %}
+    <g:mpn>{{ product.mpn }}</g:mpn>
     <g:image_link>{{ product.main_image.picture.url }}</g:image_link>
     <g:quantity>{{ product.items_in_stock }}</g:quantity>
-    <g:price>{{ product.unit_price }}</g:price>
+    {% for price in product.all_prices %}
+        <g:price>{{ price.price|floatformat:2 }} {{ price.iso_4217_code }}</g:price>
+    {% endfor %}
     <g:condition>new</g:condition>
     {% if product.weight %}<g:weight>{{ product.weight }} {{ product.weight_units }}</g:weight>{% endif %}
     {% if product.height %}<g:height>{{ product.height }} {{ product.height_units }}</g:height>{% endif %}

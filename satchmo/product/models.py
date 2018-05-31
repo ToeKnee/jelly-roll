@@ -32,6 +32,8 @@ from satchmo.configuration import (
     config_value,
     config_value_safe
 )
+from satchmo.currency.models import Currency
+from satchmo.currency.utils import convert_to_currency
 from satchmo.shipping.config import shipping_methods
 from satchmo.shop.signals import satchmo_search
 from satchmo.tax.models import TaxClass
@@ -662,6 +664,10 @@ class Product(models.Model):
             brand = None
         return brand
 
+    @property
+    def mpn(self):
+       return self.productattribute_set.filter(name="mpn").first().value
+
     def _get_mainImage(self):
         key = "Product_get_mainImage %s" % (self.id)
         key = key.replace(" ", "-")
@@ -713,6 +719,24 @@ class Product(models.Model):
 
     def translated_short_description(self, language_code=None):
         return lookup_translation(self, 'short_description', language_code)
+
+    def all_prices(self):
+        prices = [
+            {
+                "price": convert_to_currency(
+                    self.unit_price, currency.iso_4217_code
+                ),
+                "iso_4217_code": currency.iso_4217_code,
+                "symbol": currency.symbol
+            }
+            for currency
+            in Currency.objects.filter(
+                accepted=True
+            ).order_by(
+                'iso_4217_code'
+            )
+        ]
+        return prices
 
     def _get_fullPrice(self):
         """
@@ -1826,7 +1850,7 @@ class ProductAttribute(models.Model):
     """
     Allows arbitrary name/value pairs (as strings) to be attached to a product.
     This is a very quick and dirty way to add extra info to a product.
-    If you want more structure then this, create your own subtype to add
+    If you want more structure than this, create your own subtype to add
     whatever you want to your Products.
     """
     product = models.ForeignKey(Product)
