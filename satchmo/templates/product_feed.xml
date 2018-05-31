@@ -1,9 +1,9 @@
-<?xml version="1.0"?> {% load satchmo_currency %}
+<?xml version="1.0"?> {% load satchmo_currency media_url satchmo_product %}
 <rss version="2.0"
 xmlns:g="http://base.google.com/ns/1.0">
 <channel>
 <title>{{ shop_name }}</title>
-<link>http://{{ shop_domain }}</link>
+<link>https://{{ shop_domain }}</link>
 <description>{{ shop_description }}</description>
 {% for product in products %}
 {% with product.brands.all|first as brand %}
@@ -14,8 +14,17 @@ xmlns:g="http://base.google.com/ns/1.0">
     <description>{{ product.description }}</description>
     <g:product_type>{{ product.category.all|first }}</g:product_type>
     {% if brand %}<g:brand>{{ brand.translation.name }}</g:brand>{% endif %}
-    <g:mpn>{{ product.mpn }}</g:mpn>
-    <g:image_link>{{ product.main_image.picture.url }}</g:image_link>
+    {% if product.mpn %}<g:mpn>{{ product.mpn }}</g:mpn>{% else %}<g:identifier_exists>no</g:identifier_exists>{% endif %}
+        {% with product|product_images as images %}
+          {% for picture in images %}
+            {% with picture.picture.url as img %}
+                {% if forloop.first %}<g:image_link>{{ product.main_image.picture.url }}</g:image_link>
+                {% else %}<g:additional_image_link>{% media_url img %}</g:additional_image_link>
+                {% endif %}
+            {% endwith %}
+          {% endfor %}
+        {% endwith %}
+    <g:availability>{% if product.in_stock %}in stock{% else %}out of stock{% endif %}</g:availability>
     <g:quantity>{{ product.items_in_stock }}</g:quantity>
     {% for price in product.all_prices %}
         <g:price>{{ price.price|floatformat:2 }} {{ price.iso_4217_code }}</g:price>
