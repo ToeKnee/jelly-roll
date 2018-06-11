@@ -130,6 +130,10 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_PROFILE_MODULE = 'contact.Contact'
 
+# Access Key for fixer.io
+# Used for updating multi-currency exchange rates
+FIXERIO_KEY = ''
+
 SATCHMO_SETTINGS = {
     # this will override any urls set in the store url modules
     #'SHOP_URLS' : patterns('satchmo.shop.views',
