@@ -5,6 +5,7 @@ JellyRoll Change Log
 Version 0.10.3.5, 11 Jun, 2018
 ------------------------------
 * Update fixer.io API
+* Add ECB (European Central Bank) exchange rate provider
 
 Version 0.10.3.4, 31 May, 2018
 ------------------------------

@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FixerEchangeRateClient(object):
+class FixerExchangeRateClient(object):
     """Get the exchange rates from http://fixer.io"""
 
     API_URL = "https://data.fixer.io/api/latest?base={primary}&symbols={accepted}&access_key={access_key}"

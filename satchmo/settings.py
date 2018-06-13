@@ -130,8 +130,8 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_PROFILE_MODULE = 'contact.Contact'
 
-# Access Key for fixer.io
-# Used for updating multi-currency exchange rates
+# Exchange Rate settings
+EXCHANGE_RATE_MODULE = 'ecb'
 FIXERIO_KEY = ''
 
 SATCHMO_SETTINGS = {
