@@ -49,6 +49,7 @@ setup(
         'Topic :: Office/Business',
     ],
     install_requires=[
+        "currencyconverter>=0.13.3,<1.0.0",
         "Django>=1.7,<1.8",
         "django-ipware>=1.1.6,<2.0.0",
         "djangorestframework>=3.3.0,<3.4.0",
