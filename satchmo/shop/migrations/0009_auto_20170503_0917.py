@@ -17,19 +17,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='cart',
             name='currency',
-            field=models.ForeignKey(related_name='carts', blank=True, editable=False, to='currency.Currency', null=True, verbose_name='Currency'),
+            field=models.ForeignKey(related_name='carts', blank=True, editable=False,
+                                    to='currency.Currency', null=True, verbose_name='Currency', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='order',
             name='shipping_model',
-            field=satchmo.shipping.fields.ShippingChoiceCharField(max_length=30, null=True, blank=True),
+            field=satchmo.shipping.fields.ShippingChoiceCharField(
+                max_length=30, null=True, blank=True),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='orderpayment',
             name='payment',
-            field=satchmo.payment.fields.PaymentChoiceCharField(max_length=25, blank=True),
+            field=satchmo.payment.fields.PaymentChoiceCharField(
+                max_length=25, blank=True),
             preserve_default=True,
         ),
     ]

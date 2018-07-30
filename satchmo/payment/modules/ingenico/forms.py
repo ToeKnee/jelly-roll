@@ -1,7 +1,7 @@
 from .utils import shasign
 
 from django import forms
-from satchmo.configuration import config_get_group
+from satchmo.configuration.functions import config_get_group
 
 payment_module = config_get_group('PAYMENT_INGENICO')
 

@@ -15,11 +15,16 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ProductWish',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('_details', models.TextField(null=True, verbose_name='Details', blank=True)),
-                ('create_date', models.DateTimeField(verbose_name='Creation Date')),
-                ('contact', models.ForeignKey(related_name='contacts', verbose_name='Contact', to='contact.Contact')),
-                ('product', models.ForeignKey(related_name='products', verbose_name='Product', to='product.Product')),
+                ('id', models.AutoField(verbose_name='ID',
+                                        serialize=False, auto_created=True, primary_key=True)),
+                ('_details', models.TextField(
+                    null=True, verbose_name='Details', blank=True)),
+                ('create_date', models.DateTimeField(
+                    verbose_name='Creation Date')),
+                ('contact', models.ForeignKey(related_name='contacts',
+                                              verbose_name='Contact', to='contact.Contact', on_delete=models.CASCADE)),
+                ('product', models.ForeignKey(related_name='products',
+                                              verbose_name='Product', to='product.Product', on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'Product Wish',

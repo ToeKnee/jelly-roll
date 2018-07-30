@@ -14,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='product',
             name='enhanced_description',
-            field=models.TextField(default=b'', help_text='Additional information about the product to appear below the fold.', verbose_name='Enhanced of product', blank=True),
+            field=models.TextField(default='', help_text='Additional information about the product to appear below the fold.',
+                                   verbose_name='Enhanced of product', blank=True),
             preserve_default=True,
         ),
     ]

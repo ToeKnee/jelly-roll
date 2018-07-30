@@ -1,9 +1,11 @@
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import (
-    ConfigurationGroup,
-    MultipleStringValue,
+from satchmo.configuration.functions import (
     config_register,
     config_value,
+)
+from satchmo.configuration.values import (
+    ConfigurationGroup,
+    MultipleStringValue,
 )
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.utils import load_module
@@ -19,7 +21,8 @@ SHIPPING_ACTIVE = config_register(
         SHIPPING_GROUP,
         'MODULES',
         description=_("Active shipping modules"),
-        help_text=_("Select the active shipping modules, save and reload to set any module-specific shipping settings."),
+        help_text=_(
+            "Select the active shipping modules, save and reload to set any module-specific shipping settings."),
         default=["satchmo.shipping.modules.per"],
         choices=[('satchmo.shipping.modules.per', _('Per piece'))]
     )
@@ -31,13 +34,15 @@ SHIPPING_ACTIVE = config_register(
 # 'Tiered' is special, since it needs to be added as a module.  To enable it,
 # just add satchmo.shipping.modules.tiered to your INSTALLED_APPS, you don't
 # need to add it to CUSTOM_SHIPPING_MODULES either.
-_default_modules = ('dummy', 'fedex', 'flat', 'per', 'ups', 'usps', 'royalmailcontract')
+_default_modules = ('dummy', 'fedex', 'flat', 'per',
+                    'ups', 'usps', 'royalmailcontract')
 
 for module in _default_modules:
     try:
         load_module("satchmo.shipping.modules.%s.config" % module)
     except ImportError:
-        logger.debug('Could not load default shipping module configuration: %s', module)
+        logger.debug(
+            'Could not load default shipping module configuration: %s', module)
 
 # --- Load any extra shipping modules. ---
 extra_shipping = get_satchmo_setting('CUSTOM_SHIPPING_MODULES')

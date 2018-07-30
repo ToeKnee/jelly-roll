@@ -3,11 +3,11 @@ from socket import error as SocketError
 
 from django.conf import settings
 from django.core.mail import EmailMessage, EmailMultiAlternatives
-from django.template import loader, Context
+from django.template import loader
 from django.utils.translation import ugettext as _
 from django.utils.text import slugify
 
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 
 import logging
 log = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def send_order_update(order_status):
     shop_config = Config.objects.get_current()
     shop_email = shop_config.store_email
 
-    email_slug = slugify(order_status.status.status.decode("utf-8"))
+    email_slug = slugify(order_status.status.status)
 
     text_templates = [
         'email/order/status/{slug}.txt'.format(
@@ -42,12 +42,12 @@ def send_order_update(order_status):
     ]
 
     html_template = loader.select_template(html_templates)
-    context = Context({
+    context = {
         'order': order_status.order,
         'shop_config': shop_config,
         'status': order_status,
         'notes': order_status.notes
-    })
+    }
 
     subject = _("Your {shop_name} order #{order_id} has been updated - {status}").format(
         shop_name=shop_config.store_name,
@@ -71,10 +71,12 @@ def send_order_update(order_status):
         message.send()
     except (SocketError, SMTPRecipientsRefused) as e:
         if settings.DEBUG:
-            log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', customer_email, subject, body)
+            log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s',
+                     customer_email, subject, body)
         else:
             log.fatal('Error sending mail: %s' % e)
-            raise IOError('Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
+            raise IOError(
+                'Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
 
 
 def send_owner_order_notice(new_order, template='email/order/placed_notice.txt'):
@@ -86,7 +88,7 @@ def send_owner_order_notice(new_order, template='email/order/placed_notice.txt')
         shop_config = Config.objects.get_current()
         shop_email = shop_config.store_email
         t = loader.get_template(template)
-        c = Context({'order': new_order, 'shop_config': shop_config})
+        c = {'order': new_order, 'shop_config': shop_config}
         subject = _("New order on {shop_name}").format(
             shop_name=shop_config.store_name,
         )
@@ -111,7 +113,9 @@ def send_owner_order_notice(new_order, template='email/order/placed_notice.txt')
 
         except (SocketError, SMTPRecipientsRefused) as e:
             if settings.DEBUG:
-                log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s', ",".join(eddresses), subject, body)
+                log.warn('Ignoring email error, since you are running in DEBUG mode.  Email was:\nTo:%s\nSubject: %s\n---\n%s',
+                         ",".join(eddresses), subject, body)
             else:
                 log.fatal('Error sending mail: %s' % e)
-                raise IOError('Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')
+                raise IOError(
+                    'Could not send email, please check to make sure your email settings are correct, and that you are not being blocked by your ISP.')

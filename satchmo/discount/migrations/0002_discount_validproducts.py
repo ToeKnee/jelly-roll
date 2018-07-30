@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='discount',
             name='validProducts',
-            field=models.ManyToManyField(help_text=b'Make sure not to include gift certificates!', to='product.Product', null=True, verbose_name='Valid Products', blank=True),
+            field=models.ManyToManyField(help_text='Make sure not to include gift certificates!',
+                                         to='product.Product', null=True, verbose_name='Valid Products', blank=True),
             preserve_default=True,
         ),
     ]

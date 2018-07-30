@@ -2,10 +2,15 @@
 URLConf for Caching app
 """
 
-from django.conf.urls import *
-
-urlpatterns = patterns('satchmo.caching.views',
-    (r'^$', 'stats_page', {}, 'caching_stats'),
-    (r'^view/$', 'view_page', {}, 'caching_view'),
-    (r'^delete/$', 'delete_page', {}, 'caching_delete'),
+from django.urls import path
+from satchmo.caching.views import (
+    stats_page,
+    view_page,
+    delete_page,
 )
+
+urlpatterns = [
+    path('', stats_page, {}, 'caching_stats'),
+    path('view/', view_page, {}, 'caching_view'),
+    path('delete/', delete_page, {}, 'caching_delete'),
+]

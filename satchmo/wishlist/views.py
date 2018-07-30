@@ -1,10 +1,9 @@
 import json
 
 from django.conf import settings
-from django.core import urlresolvers
+from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -31,12 +30,12 @@ def wishlist_view(request, message=""):
 
     wishes = ProductWish.objects.filter(contact=contact)
 
-    ctx = RequestContext(request, {
+    ctx = {
         'wishlist': wishes,
         'wishlist_message': message,
-    })
+    }
 
-    return render_to_response('wishlist/index.html', ctx)
+    return render(request, 'wishlist/index.html', ctx)
 
 
 def wishlist_add(request):
@@ -59,7 +58,7 @@ def wishlist_add(request):
         return bad_or_missing(request, _('The product you have requested does not exist.'))
 
     ProductWish.objects.create_if_new(product, contact, details)
-    url = urlresolvers.reverse('satchmo_wishlist_view')
+    url = reverse('satchmo_wishlist_view')
     return HttpResponseRedirect(url)
 
 
@@ -78,7 +77,8 @@ def wishlist_add_ajax(request, template="json.html"):
         product = None
 
     if not product:
-        data['errors'].append(('product', _('The product you have requested does not exist.')))
+        data['errors'].append(
+            ('product', _('The product you have requested does not exist.')))
 
     else:
         data['id'] = product.id
@@ -95,7 +95,7 @@ def wishlist_add_ajax(request, template="json.html"):
     encoded = mark_safe(encoded)
     log.debug('WISHLIST AJAX: %s', data)
 
-    return render_to_response(template, {'json': encoded})
+    return render(request, template, {'json': encoded})
 
 
 def wishlist_move_to_cart(request):
@@ -111,7 +111,7 @@ def wishlist_move_to_cart(request):
             }
             return wishlist_view(request, message=msg)
 
-        url = urlresolvers.reverse('satchmo_cart')
+        url = reverse('satchmo_cart')
         satchmo_cart_changed.send(cart, cart=cart, request=request)
         return HttpResponseRedirect(url)
     else:
@@ -138,7 +138,7 @@ def wishlist_remove_ajax(request, template="json.html"):
     encoded = json.dumps(data)
     encoded = mark_safe(encoded)
 
-    return render_to_response(template, {'json': encoded})
+    return render(request, template, {'json': encoded})
 
 
 def _wish_from_post(request):
@@ -186,12 +186,13 @@ def _remove_wishes_on_order(order=None, **kwargs):
             log.debug('removing fulfilled wish for: %s', wish)
             wish.delete()
 
+
 order_success.connect(_remove_wishes_on_order, sender=Order)
 
 
 def _wishlist_requires_login(request):
     log.debug("wishlist requires login")
-    ctx = RequestContext(request, {
+    ctx = {
         'login_url': settings.LOGIN_URL
-    })
-    return render_to_response('wishlist/login_required.html', ctx)
+    }
+    return render(request, 'wishlist/login_required.html', ctx)

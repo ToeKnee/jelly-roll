@@ -1,12 +1,13 @@
 from django import template
 from django.utils import translation
-from satchmo.configuration import config_get_group, config_get
+from satchmo.configuration.functions import config_get_group, config_get
 
 register = template.Library()
 
+
 def payment_label(value):
     """convert a payment key into its translated text"""
-    
+
     payments = config_get("PAYMENT", "MODULES")
     for mod in payments.value:
         config = config_get_group(mod)
@@ -14,12 +15,15 @@ def payment_label(value):
             return translation.ugettext(str(config.LABEL))
     return value.capitalize()
 
+
 register.filter(payment_label)
+
 
 def order_payment_summary(order, paylink=False):
     """Output a formatted block giving attached payment details."""
-   
-    return {'order' : order,
-        'paylink' : paylink}
+
+    return {'order': order,
+            'paylink': paylink}
+
 
 register.inclusion_tag('payment/_order_payment_summary.html')(order_payment_summary)

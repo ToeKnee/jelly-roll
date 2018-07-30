@@ -1,7 +1,8 @@
 from decimal import Decimal
 
 from django.core.exceptions import ImproperlyConfigured
-from satchmo.configuration import config_value
+
+from satchmo.configuration.functions import config_value
 from satchmo.contact.models import Contact
 from satchmo.l10n.models import AdminArea, Country
 from satchmo.shop.models import Config
@@ -31,7 +32,7 @@ class Processor(object):
             country = self.order.ship_country
             area = self.order.ship_state
 
-        elif self.user and self.user.is_authenticated():
+        elif self.user and self.user.is_authenticated:
             try:
                 contact = Contact.objects.get(user=self.user)
                 try:

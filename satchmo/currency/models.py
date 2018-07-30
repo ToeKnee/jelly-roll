@@ -18,14 +18,18 @@ class CurrencyManager(models.Manager):
 
 
 class Currency(models.Model):
-    iso_4217_code = models.CharField(_("ISO 4217 code"), max_length=3, unique=True)
+    iso_4217_code = models.CharField(
+        _("ISO 4217 code"), max_length=3, unique=True)
     name = models.CharField(_("Name"), max_length=255)
     symbol = models.CharField(_("Symbol"), max_length=5)
-    minor_symbol = models.CharField(_("Minor Symbol"), max_length=5, help_text=_("Pence, Cent, Sen, etc."))
+    minor_symbol = models.CharField(
+        _("Minor Symbol"), max_length=5, help_text=_("Pence, Cent, Sen, etc."))
     countries = models.ManyToManyField(Country, related_name="currency")
 
-    primary = models.BooleanField(_("Primary"), help_text=_("Primary currency for the shop"), default=False)
-    accepted = models.BooleanField(_("Accepted"), help_text=_("Accepted alternative currency for the shop"), default=False)
+    primary = models.BooleanField(_("Primary"), help_text=_(
+        "Primary currency for the shop"), default=False)
+    accepted = models.BooleanField(_("Accepted"), help_text=_(
+        "Accepted alternative currency for the shop"), default=False)
 
     objects = CurrencyManager()
 
@@ -33,7 +37,7 @@ class Currency(models.Model):
         verbose_name = _('Currency')
         verbose_name_plural = _('Currencies')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.iso_4217_code
 
     def save(self, *args, **kwargs):
@@ -47,9 +51,16 @@ class Currency(models.Model):
 
 
 class ExchangeRate(models.Model):
-    currency = models.ForeignKey(Currency, related_name="exchange_rates", editable=False)
-    date = models.DateField(_("Date"), default=datetime.date.today, editable=False)
-    rate = models.DecimalField(_("Rate"), help_text=_("Rate from primary currency"), max_digits=6, decimal_places=4, editable=False)
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.CASCADE,
+        related_name="exchange_rates",
+        editable=False
+    )
+    date = models.DateField(
+        _("Date"), default=datetime.date.today, editable=False)
+    rate = models.DecimalField(_("Rate"), help_text=_(
+        "Rate from primary currency"), max_digits=6, decimal_places=4, editable=False)
 
     class Meta:
         verbose_name = _('Exchange Rate')
@@ -57,9 +68,8 @@ class ExchangeRate(models.Model):
         unique_together = ('currency', 'date')
         get_latest_by = "date"
         ordering = ("-date", )
-        order_with_respect_to = 'currency'
 
-    def __unicode__(self):
+    def __str__(self):
         return "{currency} {rate}".format(
             currency=self.currency,
             rate=self.rate

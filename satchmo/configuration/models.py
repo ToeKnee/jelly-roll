@@ -6,11 +6,11 @@ from django.db.utils import DatabaseError
 from django.utils.translation import ugettext_lazy as _
 from satchmo.caching import cache_key, cache_get, cache_set, NotCachedError
 from satchmo.caching.models import CachedObjectMixin
-
+from .exceptions import SettingNotSet
 import logging
 log = logging.getLogger(__name__)
 
-__all__ = ['SettingNotSet', 'Setting', 'LongSetting', 'find_setting']
+__all__ = ['Setting', 'LongSetting', 'find_setting']
 
 
 def _safe_get_siteid(site):
@@ -40,12 +40,20 @@ def find_setting(group, key, site=None):
     except NotCachedError:
         if apps.ready:
             try:
-                setting = Setting.objects.get(site__id__exact=siteid, key__exact=key, group__exact=group)
+                setting = Setting.objects.get(
+                    site__id__exact=siteid,
+                    key__exact=key,
+                    group__exact=group
+                )
 
             except Setting.DoesNotExist:
                 # maybe it is a "long setting"
                 try:
-                    setting = LongSetting.objects.get(site__id__exact=siteid, key__exact=key, group__exact=group)
+                    setting = LongSetting.objects.get(
+                        site__id__exact=siteid,
+                        key__exact=key,
+                        group__exact=group
+                    )
 
                 except LongSetting.DoesNotExist:
                     pass
@@ -58,12 +66,6 @@ def find_setting(group, key, site=None):
     return setting
 
 
-class SettingNotSet(Exception):
-    def __init__(self, k, cachekey=None):
-        self.key = k
-        self.cachekey = cachekey
-
-
 class SettingManager(models.Manager):
     def get_queryset(self):
         all = super(SettingManager, self).get_queryset()
@@ -72,7 +74,11 @@ class SettingManager(models.Manager):
 
 
 class Setting(models.Model, CachedObjectMixin):
-    site = models.ForeignKey(Site, verbose_name=_('Site'))
+    site = models.ForeignKey(
+        Site,
+        on_delete=models.CASCADE,
+        verbose_name=_('Site')
+    )
     group = models.CharField(max_length=100, blank=False, null=False)
     key = models.CharField(max_length=100, blank=False, null=False)
     value = models.CharField(max_length=255, blank=True)
@@ -83,7 +89,7 @@ class Setting(models.Model, CachedObjectMixin):
         db_table = "configuration_setting"
         unique_together = ('site', 'group', 'key')
 
-    def __unicode__(self):
+    def __str__(self):
         return "{group}:{key} {value}".format(
             group=self.group,
             key=self.key,
@@ -120,7 +126,11 @@ class LongSettingManager(models.Manager):
 
 class LongSetting(models.Model, CachedObjectMixin):
     """A Setting which can handle more than 255 characters"""
-    site = models.ForeignKey(Site, verbose_name=_('Site'))
+    site = models.ForeignKey(
+        Site,
+        on_delete=models.CASCADE,
+        verbose_name=_('Site')
+    )
     group = models.CharField(max_length=100, blank=False, null=False)
     key = models.CharField(max_length=100, blank=False, null=False)
     value = models.TextField(blank=True)

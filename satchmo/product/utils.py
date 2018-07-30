@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 def get_taxprocessor(user):
-    if user.is_authenticated():
+    if user.is_authenticated:
         user = user
     else:
         user = None
@@ -60,7 +60,8 @@ def productvariation_details(product, include_tax, user, request, create=False):
             ProductPriceLookup.objects.smart_create_for_product(product)
             variations = ProductPriceLookup.objects.filter(parentid=product.id)
         else:
-            log.warning('You must run satchmo_rebuild_pricing and add it to a cron-job to run every day, or else the product details will not work for product detail pages.')
+            log.warning(
+                'You must run satchmo_rebuild_pricing and add it to a cron-job to run every day, or else the product details will not work for product detail pages.')
     for detl in variations:
         key = detl.key
         if key in details:

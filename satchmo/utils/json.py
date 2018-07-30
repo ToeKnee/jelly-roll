@@ -6,9 +6,8 @@
 # BSD license as the rest of Satchmo.
 
 from . import json
-import types
 from django.db import models
-from django.core.serializers.json import DateTimeAwareJSONEncoder
+from django.core.serializers.json import DjangoJSONEncoder
 from decimal import Decimal
 
 
@@ -63,4 +62,4 @@ def json_encode(data):
 
     ret = _any(data)
 
-    return json.dumps(ret, cls=DateTimeAwareJSONEncoder)
+    return json.dumps(ret, cls=DjangoJSONEncoder)

@@ -25,13 +25,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='orderpayment',
             name='currency',
-            field=models.ForeignKey(related_name='order_payments', default=1, editable=False, to='currency.Currency', verbose_name='Currency'),
+            field=models.ForeignKey(related_name='order_payments', default=1, editable=False,
+                                    to='currency.Currency', verbose_name='Currency', on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='orderpayment',
             name='exchange_rate',
-            field=models.DecimalField(decimal_places=4, default=Decimal('1.00'), editable=False, max_digits=6, help_text='Rate from primary currency', verbose_name='Exchange Rate'),
+            field=models.DecimalField(decimal_places=4, default=Decimal(
+                '1.00'), editable=False, max_digits=6, help_text='Rate from primary currency', verbose_name='Exchange Rate'),
             preserve_default=True,
         ),
         migrations.RunPython(set_primary_currency),

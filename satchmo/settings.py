@@ -71,7 +71,6 @@ MIDDLEWARE_CLASSES = (
     "django.contrib.admindocs.middleware.XViewMiddleware",
     "django.middleware.http.ConditionalGetMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "satchmo.recentlist.middleware.RecentProductMiddleware",
 )
 
 # This is used to add additional config variables to each request
@@ -80,9 +79,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.messages.context_processors.messages",
     "django.core.context_processors.debug",
     "django.core.context_processors.i18n",
-    "satchmo.recentlist.context_processors.recent_products",
-    "satchmo.recentlist.context_processors.recent_products",
-    "satchmo.shop.context_processors.settings",
     "satchmo.shop.context_processors.settings",
 )
 
@@ -110,18 +106,17 @@ INSTALLED_APPS = (
     'satchmo.currency',
     'satchmo.discount',
     'satchmo.fulfilment',
-    'satchmo.giftcertificate',
     'satchmo.l10n',
     'satchmo.payment',
     'satchmo.product',
     'satchmo.product.brand',
-    'satchmo.recentlist',
     'satchmo.shipping',
     'satchmo.shipping.modules.tieredweightzone',
     'satchmo.shop',
     'satchmo.tax',
     'satchmo.upsell',
     'satchmo.wishlist',
+    'satchmo.giftcertificate',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -132,14 +127,14 @@ AUTH_PROFILE_MODULE = 'contact.Contact'
 
 SATCHMO_SETTINGS = {
     # this will override any urls set in the store url modules
-    #'SHOP_URLS' : patterns('satchmo.shop.views',
+    # 'SHOP_URLS' : satchmo.shop.views,
     #    (r'^checkout/pay/$', 'paypal.checkout_step2.pay_ship_info', {}, 'satchmo_checkout-step2'),
     #    (r'^checkout/confirm/$', 'paypal.checkout_step3.confirm_info', {}, 'satchmo_checkout-step3'),
     #   if you have satchmo.feeds, make sure to include its URL
     #    (r'^feed/', include('satchmo.feeds.urls')),
     #   enable brands here
     #    (r'^brand/', include('satchmo.product.brand.urls'))
-    #}
+    # }
 
     # This is the base url for the shop.  Only include a leading slash
     # examples: '/shop' or '/mystore'

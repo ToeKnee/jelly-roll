@@ -1,10 +1,10 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 
-from satchmo.configuration import ConfigurationSettings, forms
+from satchmo.configuration.forms import SettingsEditor
+from satchmo.configuration.functions import ConfigurationSettings
 
 import logging
 log = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def group_settings(request, group, template='configuration/group_settings.html')
     if request.method == 'POST':
         # Populate the form with user-submitted data
         data = request.POST.copy()
-        form = forms.SettingsEditor(data, settings=settings)
+        form = SettingsEditor(data, settings=settings)
         if form.is_valid():
             form.full_clean()
             for name, value in list(form.cleaned_data.items()):
@@ -32,18 +32,21 @@ def group_settings(request, group, template='configuration/group_settings.html')
                 cfg = mgr.get_config(group, key)
                 if cfg.update(value):
                     # Give user feedback as to which settings were changed
-                    messages.add_message(request, messages.SUCCESS, 'Updated %s on %s' % (cfg.key, cfg.group.key))
+                    messages.add_message(
+                        request, messages.SUCCESS, 'Updated %s on %s' % (cfg.key, cfg.group.key))
 
             return HttpResponseRedirect(request.path)
     else:
         # Leave the form populated with current setting values
-        form = forms.SettingsEditor(settings=settings)
+        form = SettingsEditor(settings=settings)
 
-    return render_to_response(template, {
+    return render(request, template, {
         'title': title,
         'group': group,
         'form': form,
-    }, context_instance=RequestContext(request))
+    })
+
+
 group_settings = staff_member_required(group_settings)
 
 

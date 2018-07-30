@@ -118,7 +118,7 @@ class CategoryTest(TestCase):
 #        self.assertRaises(ValidationError, womens_jewelry.save)
 #        Model.save(womens_jewelry)
 #        womens_jewelry = Category.objects.get(slug="womens-jewelry")
-#        self.assertEqual(womens_jewelry.get_absolute_url(), (u"%s/category/womens-jewelry/pet-jewelry/womens-jewelry/" % prefix))
+#        self.assertEqual(womens_jewelry.get_absolute_url(), ("%s/category/womens-jewelry/pet-jewelry/womens-jewelry/" % prefix))
 
 #    def test_infinite_loop(self):
 #        """Check that Category methods still work on a Category whose parents list contains an infinite loop."""
@@ -424,4 +424,3 @@ class OptionUtilsTest(TestCase):
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-

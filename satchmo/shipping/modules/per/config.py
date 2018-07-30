@@ -1,5 +1,8 @@
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import *
+
+from satchmo.configuration.functions import config_get, config_get_group, config_register_list
+from satchmo.configuration.values import DecimalValue, StringValue
+
 
 SHIP_MODULES = config_get('SHIPPING', 'MODULES')
 
@@ -11,24 +14,24 @@ SHIPPING_GROUP = config_get_group('SHIPPING')
 config_register_list(
 
     DecimalValue(SHIPPING_GROUP,
-        'PER_RATE',
-        description=_("Per item price"),
-        requires=SHIP_MODULES,
-        requiresvalue='satchmo.shipping.modules.per',
-        default="4.00"),
+                 'PER_RATE',
+                 description=_("Per item price"),
+                 requires=SHIP_MODULES,
+                 requiresvalue='satchmo.shipping.modules.per',
+                 default="4.00"),
 
     StringValue(SHIPPING_GROUP,
-        'PER_SERVICE',
-        description=_("Per Item Shipping Service"),
-        help_text=_("Shipping service used with per item shipping"),
-        requires=SHIP_MODULES,
-        requiresvalue='satchmo.shipping.modules.per',
-        default="U.S. Mail"),
+                'PER_SERVICE',
+                description=_("Per Item Shipping Service"),
+                help_text=_("Shipping service used with per item shipping"),
+                requires=SHIP_MODULES,
+                requiresvalue='satchmo.shipping.modules.per',
+                default="U.S. Mail"),
 
     StringValue(SHIPPING_GROUP,
-        'PER_DAYS',
-        description=_("Per Item Delivery Days"),
-        requires=SHIP_MODULES,
-        requiresvalue='satchmo.shipping.modules.per',
-        default="3 - 4 business days")
+                'PER_DAYS',
+                description=_("Per Item Delivery Days"),
+                requires=SHIP_MODULES,
+                requiresvalue='satchmo.shipping.modules.per',
+                default="3 - 4 business days")
 )

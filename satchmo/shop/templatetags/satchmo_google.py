@@ -1,8 +1,7 @@
-from django.template import Library, Node
+from django.template import Library
 from django.conf import settings
 from satchmo.contact.models import Contact
-from satchmo.configuration import config_value
-import sys
+from satchmo.configuration.functions import config_value
 
 import logging
 logger = logging.getLogger(__name__)

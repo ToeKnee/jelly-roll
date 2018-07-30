@@ -1,4 +1,4 @@
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.utils import load_module
 
 import decimal

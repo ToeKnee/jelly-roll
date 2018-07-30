@@ -3,14 +3,14 @@ from decimal import Decimal
 
 from django.contrib.auth.models import User
 from django.core import mail
-from django.core.urlresolvers import reverse as url
+from django.urls import reverse as url
 from django.test import TestCase
 from django.test.client import Client
 from django.utils.encoding import smart_str
 from django.contrib.sites.models import Site
 
 from satchmo.caching import cache_delete
-from satchmo.configuration import config_get, config_value
+from satchmo.configuration.functions import config_get, config_value
 from satchmo.contact import CUSTOMER_ID
 from satchmo.contact.models import Contact, AddressBook
 from satchmo.l10n.factories import USFactory
@@ -122,7 +122,8 @@ class ShopTest(TestCase):
         """
         Get the page of a Product that is not in a Category.
         """
-        Product.objects.create(name="Orphaned Product", slug="orphaned-product", site=Site.objects.get_current())
+        Product.objects.create(name="Orphaned Product", slug="orphaned-product",
+                               site=Site.objects.get_current())
         response = self.client.get(prefix + '/product/orphaned-product/')
         self.assertContains(response, 'Orphaned Product')
 
@@ -199,12 +200,13 @@ class ShopTest(TestCase):
         User.objects.create_user('teddy', 'sometester@example.com', 'guz90tyc')
         self.client.login(username='teddy', password='guz90tyc')
         response = self.client.get('/accounts/')  # test logged in status
-        self.assertContains(response, "the user you've logged in as doesn't have any contact information.", status_code=200)
+        self.assertContains(
+            response, "the user you've logged in as doesn't have any contact information.", status_code=200)
         CartTest().test_cart_adding()
         self.client.post(prefix + '/checkout/', get_step1_post_data(self.US))
         self.assertTrue(self.client.session.get(CUSTOMER_ID) is not None)
         response = self.client.get('/accounts/logout/')
-        #self.assertRedirects(response, prefix + '/',
+        # self.assertRedirects(response, prefix + '/',
         #    status_code=302, target_status_code=200)
         self.assertTrue(self.client.session.get(CUSTOMER_ID) is None)
         response = self.client.get('/accounts/')  # test logged in status
@@ -230,7 +232,8 @@ class ShopTest(TestCase):
         Verify that the custom product is working as expected.
         """
         pm = config_get("PRODUCT", "PRODUCT_TYPES")
-        pm.update(["product::ConfigurableProduct", "product::ProductVariation", "product::CustomProduct", "product::SubscriptionProduct"])
+        pm.update(["product::ConfigurableProduct", "product::ProductVariation",
+                   "product::CustomProduct", "product::SubscriptionProduct"])
 
         response = self.client.get(prefix + "/")
         self.assertContains(response, "Computer", count=1)
@@ -248,10 +251,14 @@ class ShopTest(TestCase):
                              status_code=302, target_status_code=200)
         response = self.client.get(prefix + '/cart/')
         self.assertContains(response, '/satchmo-computer/">satchmo computer', status_code=200)
-        self.assertContains(response, smart_str("%s168.00" % config_value('CURRENCY', 'CURRENCY')), count=4)
-        self.assertContains(response, smart_str("Monogram: CBM  %s10.00" % config_value('CURRENCY', 'CURRENCY')), count=1)
-        self.assertContains(response, smart_str("Case - External Case: Mid  %s10.00" % config_value('CURRENCY', 'CURRENCY')), count=1)
-        self.assertContains(response, smart_str("Memory - Internal RAM: 1.5 GB  %s25.00" % config_value('CURRENCY', 'CURRENCY')), count=1)
+        self.assertContains(response, smart_str("%s168.00" %
+                                                config_value('CURRENCY', 'CURRENCY')), count=4)
+        self.assertContains(response, smart_str("Monogram: CBM  %s10.00" %
+                                                config_value('CURRENCY', 'CURRENCY')), count=1)
+        self.assertContains(response, smart_str("Case - External Case: Mid  %s10.00" %
+                                                config_value('CURRENCY', 'CURRENCY')), count=1)
+        self.assertContains(response, smart_str(
+            "Memory - Internal RAM: 1.5 GB  %s25.00" % config_value('CURRENCY', 'CURRENCY')), count=1)
         response = self.client.post(url('satchmo_checkout-step1'), get_step1_post_data(self.US))
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-step2'),
                              status_code=302, target_status_code=200)
@@ -266,7 +273,8 @@ class ShopTest(TestCase):
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-step3'),
                              status_code=302, target_status_code=200)
         response = self.client.get(url('DUMMY_satchmo_checkout-step3'))
-        self.assertContains(response, smart_str("satchmo computer - %s168.00" % config_value('CURRENCY', 'CURRENCY')), count=1, status_code=200)
+        self.assertContains(response, smart_str("satchmo computer - %s168.00" %
+                                                config_value('CURRENCY', 'CURRENCY')), count=1, status_code=200)
         response = self.client.post(url('DUMMY_satchmo_checkout-step3'), {'process': 'True'})
         self.assertRedirects(response, url('DUMMY_satchmo_checkout-success'),
                              status_code=302, target_status_code=200)

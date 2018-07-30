@@ -1,8 +1,7 @@
 from django.db import models
-from satchmo.configuration import SettingNotSet
-from satchmo.configuration import config_choice_values
 
-from . import config
+from satchmo.configuration.functions import config_choice_values
+from satchmo.configuration.values import SettingNotSet
 
 
 def shipping_choices():

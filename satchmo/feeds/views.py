@@ -1,6 +1,6 @@
 import datetime
 from django.contrib.auth.decorators import user_passes_test
-from django.core import urlresolvers
+from django.urls import reverse
 from django.http import Http404
 from django.shortcuts import render_to_response
 from django.utils.translation import ugettext_lazy as _
@@ -9,7 +9,7 @@ from satchmo.product.models import Product, Category
 from satchmo.shop.models import Config
 
 
-@user_passes_test(lambda u: u.is_authenticated() and u.is_staff, login_url='/accounts/login/')
+@user_passes_test(lambda u: u.is_authenticated and u.is_staff, login_url='/accounts/login/')
 def admin_product_feed(request, category=None, template="feeds/product_feed.csv", mimetype="text/csv"):
     """Admin authenticated feed - same as product feed but for different types of feeds.
     """
@@ -30,7 +30,12 @@ def product_feed(request, category=None, template="feeds/googlebase_atom.xml", m
         cat = None
         products = Product.objects.active_by_site()
 
-    products = [product for product in products if "ConfigurableProduct" not in product.get_subtypes()]
+    products = [
+        product
+        for product
+        in products
+        if "ConfigurableProduct" not in product.get_subtypes()
+    ]
 
     params = {}
     view = 'satchmo_atom_feed'
@@ -38,7 +43,7 @@ def product_feed(request, category=None, template="feeds/googlebase_atom.xml", m
         params['category'] = category
         view = 'satchmo_atom_category_feed'
 
-    url = shop_config.base_url + urlresolvers.reverse(view, None, params)
+    url = shop_config.base_url + reverse(view, None, params)
 
     payment_choices = [c[1] for c in credit_choices(None, True)]
 

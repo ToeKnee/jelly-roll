@@ -1,13 +1,11 @@
-from django.conf.urls import patterns, url
+from django.urls import path
 
 from .views import (
     CurrencyListAPIView,
     CurrencySessionAPIView,
 )
 
-urlpatterns = patterns(
-    '',
-
-    url(r'^$', CurrencyListAPIView.as_view()),
-    url(r'^session/$', CurrencySessionAPIView.as_view()),
-)
+urlpatterns = [
+    path('', CurrencyListAPIView.as_view()),
+    path('session/', CurrencySessionAPIView.as_view()),
+]

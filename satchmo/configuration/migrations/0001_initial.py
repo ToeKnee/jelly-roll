@@ -15,11 +15,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='LongSetting',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID',
+                                        serialize=False, auto_created=True, primary_key=True)),
                 ('group', models.CharField(max_length=100)),
                 ('key', models.CharField(max_length=100)),
                 ('value', models.TextField(blank=True)),
-                ('site', models.ForeignKey(verbose_name='Site', to='sites.Site')),
+                ('site', models.ForeignKey(verbose_name='Site',
+                                           to='sites.Site', on_delete=models.CASCADE)),
             ],
             options={
                 'db_table': 'configuration_longsetting',
@@ -29,11 +31,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Setting',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID',
+                                        serialize=False, auto_created=True, primary_key=True)),
                 ('group', models.CharField(max_length=100)),
                 ('key', models.CharField(max_length=100)),
                 ('value', models.CharField(max_length=255, blank=True)),
-                ('site', models.ForeignKey(verbose_name='Site', to='sites.Site')),
+                ('site', models.ForeignKey(verbose_name='Site',
+                                           to='sites.Site', on_delete=models.CASCADE)),
             ],
             options={
                 'db_table': 'configuration_setting',

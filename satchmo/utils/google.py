@@ -1,17 +1,18 @@
 from satchmo.product.models import Product
-from string import lower
 
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from satchmo.configuration.functions import config_choice_values
 from satchmo.configuration.functions import config_get
 
 
 def get_google_card_type(card):
-    allowed_payment_types = ["AmericanExpress", "Cash", "Check", "Discover", "GoogleCheckout", "MasterCard", "Visa", "wiretransfer"]
-    for type in allowed_payment_types:
-        if lower(card) == lower(type):
-            return type
+    allowed_payment_types = [
+        "AmericanExpress", "Cash", "Check", "Discover",
+        "GoogleCheckout", "MasterCard", "Visa", "wiretransfer"
+    ]
+    for payment_type in allowed_payment_types:
+        if card.lower() == payment_type.lower():
+            return payment_type
     return None
 
 
@@ -44,4 +45,4 @@ def product_feed(request):
         "payment_types": payment_types,
         "payment_notes": payment_notes
     }
-    return render_to_response("product_feed.xml", context, context_instance=RequestContext(request))
+    return render(request, "product_feed.xml", context)

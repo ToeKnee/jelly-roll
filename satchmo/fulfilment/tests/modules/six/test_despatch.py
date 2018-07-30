@@ -1,6 +1,6 @@
 import json
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse, resolve
 from django.http import Http404
 from django.test import TestCase, RequestFactory
 from django.utils import timezone
@@ -26,13 +26,13 @@ class DespatchTest(TestCase):
         request = self.factory.post("/")
         response = despatch(request, order_id=order.id, verification_hash="abcdef1234567890")
 
-        self.assertEqual(response.content, '{"success": false}')
+        self.assertEqual(response.content, '{"success": false}'.encode("utf-8"))
 
     def test_invalid_json(self):
         order = TestOrderFactory()
         request = self.factory.post("/", data="{Invalid-Json;'", content_type="application/json")
         response = despatch(request, order_id=order.id, verification_hash=order.verification_hash)
-        self.assertEqual(response.content, '{"success": false}')
+        self.assertEqual(response.content, '{"success": false}'.encode("utf-8"))
 
     def test_despatch__no_tracking(self):
         order = TestOrderFactory()
@@ -57,7 +57,7 @@ class DespatchTest(TestCase):
         }
         request = self.factory.post("/", data=json.dumps(data), content_type="application/json")
         response = despatch(request, order_id=order.id, verification_hash=order.verification_hash)
-        self.assertEqual(response.content, '{"success": true}')
+        self.assertEqual(response.content, '{"success": true}'.encode("utf-8"))
         order = Order.objects.get(id=order.id)
         self.assertIn(data["date_despatched"], order.notes)
         self.assertIn(data["client_area_link"], order.notes)
@@ -94,7 +94,7 @@ class DespatchTest(TestCase):
         }
         request = self.factory.post("/", data=json.dumps(data), content_type="application/json")
         response = despatch(request, order_id=order.id, verification_hash=order.verification_hash)
-        self.assertEqual(response.content, '{"success": true}')
+        self.assertEqual(response.content, '{"success": true}'.encode("utf-8"))
         order = Order.objects.get(id=order.id)
         self.assertIn(data["date_despatched"], order.notes)
         self.assertIn(data["client_area_link"], order.notes)
@@ -138,7 +138,7 @@ class DespatchTest(TestCase):
             "order_id": str(order.id),
             "verification_hash": str(order.verification_hash),
         }), data=json.dumps(data), content_type="application/json")
-        self.assertEqual(response.content, '{"success": true}')
+        self.assertEqual(response.content, '{"success": true}'.encode("utf-8"))
         order = Order.objects.get(id=order.id)
         self.assertIn(data["date_despatched"], order.notes)
         self.assertIn(data["client_area_link"], order.notes)
@@ -158,40 +158,5 @@ class DespatchTest(TestCase):
     def test_despatch__replacement_order(self):
         # Replacement orders have "-a" or similar tacked onto the end
         # of the order number
-        order = TestOrderFactory()
-        data = {
-            "type": "despatch",
-            "client_ref": str(order.id),
-            "date_despatched": str(timezone.now()),
-            "client_area_link": "http://subdomain.sixworks.co.uk/order/101",
-            "postage_method": "1st Class Packet",
-            "boxed_weight": 645,
-            "items": [{
-                "client_ref": order.orderitem_set.all()[0].product.slug,
-                "quantity": order.orderitem_set.all()[0].quantity,
-                "batches_used": [
-                    {
-                        "client_ref": order.orderitem_set.all()[0].product.slug,
-                        "batch": "0014",
-                        "quantity": order.orderitem_set.all()[0].quantity
-                    },
-                ]
-            }],
-        }
-        url = reverse("six_despatch_replacement", kwargs={
-            "order_id": "{order_id}-a".format(order_id=order.id),
-            "verification_hash": order.verification_hash,
-        })
-        request = self.factory.post(url, data=json.dumps(data), content_type="application/json")
-        response = despatch(request, order_id="{order_id}-a".format(order_id=order.id), verification_hash=order.verification_hash)
-        self.assertEqual(response.content, '{"success": true}')
-        order = Order.objects.get(id=order.id)
-        self.assertIn(data["date_despatched"], order.notes)
-        self.assertIn(data["client_area_link"], order.notes)
-        self.assertIn(data["postage_method"], order.notes)
-        self.assertIn(str(data["boxed_weight"]), order.notes)
-
-        self.assertIsNone(order.tracking_number)
-        self.assertIsNone(order.tracking_url)
-
-        self.assertEqual(order.status.notes, "Thanks for your order!\n")
+        match = resolve('/shop/fulfilment/six/376-a/6e0a5839fdc477e381eb89480a515524/')
+        self.assertEqual(match.url_name, 'six_despatch_replacement')

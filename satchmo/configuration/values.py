@@ -6,21 +6,27 @@ http://code.google.com/p/django-values/
 import datetime
 import json
 import logging
+
 from . import signals
+from collections import OrderedDict
 from decimal import Decimal
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.encoding import force_text
-from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext, ugettext_lazy as _
-from satchmo.configuration.models import find_setting, LongSetting, Setting, SettingNotSet
+
+from satchmo.configuration.exceptions import SettingNotSet
 from satchmo.utils import load_module, is_string_like, is_list_or_tuple
 
-__all__ = ['SHOP_GROUP', 'ConfigurationGroup', 'Value', 'BooleanValue', 'DecimalValue', 'DurationValue',
-           'FloatValue', 'IntegerValue', 'ModuleValue', 'PercentValue', 'PositiveIntegerValue', 'SortedDotDict',
-           'StringValue', 'LongStringValue', 'MultipleStringValue']
+__all__ = [
+    'SHOP_GROUP', 'ConfigurationGroup', 'Value', 'BooleanValue',
+    'DecimalValue', 'DurationValue', 'FloatValue', 'IntegerValue',
+    'ModuleValue', 'PercentValue', 'PositiveIntegerValue',
+    'SortedDotDict', 'StringValue', 'LongStringValue',
+    'MultipleStringValue'
+]
 
 _WARN = {}
 
@@ -29,7 +35,7 @@ log = logging.getLogger(__name__)
 NOTSET = object()
 
 
-class SortedDotDict(SortedDict):
+class SortedDotDict(OrderedDict):
 
     def __getattr__(self, key):
         try:
@@ -80,9 +86,34 @@ class ConfigurationGroup(SortedDotDict):
         return cmp((self.ordering, self.name), (other.ordering, other.name))
 
     def __eq__(self, other):
-        return (isinstance(self, type(other))
-                and self.ordering == other.ordering
-                and self.name == other.name)
+        if isinstance(self, type(other)):
+            return self.ordering == other.ordering
+        else:
+            return self.name == other.name
+
+    def __lt__(self, other):
+        if isinstance(self, type(other)):
+            return self.ordering < other.ordering
+        else:
+            return self.name < other.name
+
+    def __lte__(self, other):
+        if isinstance(self, type(other)):
+            return self.ordering <= other.ordering
+        else:
+            return self.name <= other.name
+
+    def __gt__(self, other):
+        if isinstance(self, type(other)):
+            return self.ordering > other.ordering
+        else:
+            return self.name > other.name
+
+    def __gte__(self, other):
+        if isinstance(self, type(other)):
+            return self.value >= other.value
+        else:
+            return self.value >= other
 
     def __ne__(self, other):
         return not self == other
@@ -147,7 +178,10 @@ class Value(object):
         Value.creation_counter += 1
 
     def __cmp__(self, other):
-        return cmp((self.ordering, self.description, self.creation_counter), (other.ordering, other.description, other.creation_counter))
+        return cmp(
+            (self.ordering, self.description, self.creation_counter),
+            (other.ordering, other.description, other.creation_counter)
+        )
 
     def __eq__(self, other):
         if isinstance(self, type(other)):
@@ -155,11 +189,32 @@ class Value(object):
         else:
             return self.value == other
 
+    def __lt__(self, other):
+        if isinstance(self, type(other)):
+            return self.value < other.value
+        else:
+            return self.value < other
+
+    def __lte__(self, other):
+        if isinstance(self, type(other)):
+            return self.value <= other.value
+        else:
+            return self.value <= other
+
+    def __gt__(self, other):
+        if isinstance(self, type(other)):
+            return self.value > other.value
+        else:
+            return self.value > other
+
+    def __gte__(self, other):
+        if isinstance(self, type(other)):
+            return self.value >= other.value
+        else:
+            return self.value >= other
+
     def __iter__(self):
         return iter(self.value)
-
-    def __unicode__(self):
-        return str(self.value)
 
     def __str__(self):
         return str(self.value)
@@ -244,10 +299,12 @@ class Value(object):
         return field
 
     def make_setting(self, db_value):
-        log.debug('new setting %s.%s', self.group.key, self.key)
+        from satchmo.configuration.models import Setting
+        log.debug('New setting %s.%s', self.group.key, self.key)
         return Setting(group=self.group.key, key=self.key, value=db_value)
 
     def _setting(self):
+        from satchmo.configuration.models import find_setting
         return find_setting(self.group.key, self.key)
 
     setting = property(fget=_setting)
@@ -272,7 +329,7 @@ class Value(object):
             log.error(e)
             if str(e).find("configuration_setting") > -1:
                 if 'configuration_setting' not in _WARN:
-                    log.warn(
+                    log.warning(
                         'Error loading setting %s.%s from table, OK if you are in syncdb', self.group.key, self.key)
                     _WARN['configuration_setting'] = True
 
@@ -284,8 +341,8 @@ class Value(object):
             else:
                 import traceback
                 traceback.print_exc()
-                log.warn("Problem finding settings %s.%s, %s",
-                         self.group.key, self.key, e)
+                log.warning("Problem finding settings %s.%s, %s",
+                            self.group.key, self.key, e)
                 raise SettingNotSet(
                     "Startup error, couldn't load %s.%s" % (self.group.key, self.key))
         return val
@@ -534,7 +591,8 @@ class LongStringValue(Value):
             forms.CharField.__init__(self, *args, **kwargs)
 
     def make_setting(self, db_value):
-        log.debug('new long setting %s.%s', self.group.key, self.key)
+        from satchmo.configuration.models import LongSetting
+        log.debug('New long setting %s.%s', self.group.key, self.key)
         return LongSetting(group=self.group.key, key=self.key, value=db_value)
 
     def to_python(self, value):

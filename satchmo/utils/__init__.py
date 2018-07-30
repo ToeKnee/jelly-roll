@@ -115,22 +115,25 @@ def is_string_like(maybe):
         return 1
 
 
-def load_module(module):
-    """Load a named python module."""
-    try:
-        module = sys.modules[module]
-    except KeyError:
-        __import__(module)
-        module = sys.modules[module]
-    return module
+_MODULES = {}
 
-_MODULES = []
+
+def load_module(path):
+    """Load a named python module."""
+    if path not in _MODULES:
+        try:
+            module = sys.modules[path]
+        except KeyError:
+            __import__(path)
+            module = sys.modules[path]
+        _MODULES[path] = module
+    else:
+        log.debug("Already Loaded module - %s", path)
+    return _MODULES[path]
 
 
 def load_once(key, module):
-    if key not in _MODULES:
-        load_module(module)
-        _MODULES.append(key)
+    return load_module(module)
 
 
 def normalize_dir(dir_name):
@@ -139,6 +142,7 @@ def normalize_dir(dir_name):
     if dir_name.endswith("/"):
         dir_name = dir_name[:-1]
     return dir_name
+
 
 _LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
@@ -173,7 +177,8 @@ def trunc_decimal(val, places):
         try:
             val = Decimal(val)
         except InvalidOperation:
-            log.warn("invalid operation trying to convert '%s' to decimal, returning raw", val)
+            log.warn(
+                "invalid operation trying to convert '%s' to decimal, returning raw", val)
             return val
     return val.quantize(Decimal(roundfmt), ROUND_HALF_EVEN)
 

@@ -1,11 +1,12 @@
 import logging
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 
-from django.core import urlresolvers
+from django.urls import reverse, NoReverseMatch
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.http import urlencode
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
@@ -13,8 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from sys import exc_info
 from traceback import format_exception
 
-from satchmo.configuration import config_get_group
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_get_group, config_value
 from satchmo.shop.models import Order, OrderPayment
 from satchmo.payment.utils import record_payment, create_pending_payment
 from satchmo.payment.views import payship
@@ -30,7 +30,7 @@ def pay_ship_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
     if cart.not_enough_stock():
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+        return HttpResponseRedirect(reverse("satchmo_cart"))
 
     return payship.base_pay_ship_info(
         request,
@@ -45,7 +45,7 @@ def confirm_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
     if cart.not_enough_stock():
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+        return HttpResponseRedirect(reverse("satchmo_cart"))
 
     payment_module = config_get_group('PAYMENT_PAYPAL')
 
@@ -60,17 +60,15 @@ def confirm_info(request):
     # Check that the cart has items in it.
     if cart.numItems == 0:
         template = lookup_template(payment_module, 'checkout/empty_cart.html')
-        return render_to_response(template, RequestContext(request))
+        return render(request, template)
 
     # Check if the order is still valid
     if not order.validate(request):
-        context = RequestContext(
-            request,
-            {
-                'message': _('Your order is no longer valid.')
-            }
-        )
-        return render_to_response('shop_404.html', context)
+        context = {
+            'message': _('Your order is no longer valid.')
+        }
+
+        return render(request, 'shop_404.html', context)
 
     # Set URL and accounts based on whether the site is LIVE or not
     if payment_module.LIVE.value:
@@ -89,7 +87,7 @@ def confirm_info(request):
             payment_module.RETURN_ADDRESS.value,
             include_server=True
         )
-    except urlresolvers.NoReverseMatch:
+    except NoReverseMatch:
         address = payment_module.RETURN_ADDRESS.value
 
     # Create a pending payment
@@ -123,7 +121,7 @@ def confirm_info(request):
                     recurring['trial2']['expire_unit'] = trial1.expire_unit[0]
                     recurring['trial2']['price'] = trial1.price
 
-    ctx = RequestContext(request, {
+    ctx = {
         'order': order,
         'post_url': url,
         'default_view_tax': default_view_tax,
@@ -133,11 +131,11 @@ def confirm_info(request):
         'invoice': order.id,
         'subscription': recurring,
         'PAYMENT_LIVE': payment_live(payment_module)
-    })
+    }
 
     template = lookup_template(payment_module, 'checkout/paypal/confirm.html')
 
-    return render_to_response(template, ctx)
+    return render(request, template, ctx)
 
 
 @csrf_exempt

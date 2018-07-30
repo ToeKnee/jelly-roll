@@ -2,19 +2,19 @@
 # Last step in the order process - confirm the info and process it
 #####################################################################
 
-from django.core import urlresolvers
+from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
-from satchmo.configuration import config_value
+
+from satchmo.configuration.functions import config_value
 from satchmo.shop.models import Order
 from satchmo.payment.config import payment_live
 from satchmo.utils.dynamic import lookup_url, lookup_template
 from satchmo.shop.models import Cart
 from satchmo.payment import signals
-import logging
 
+import logging
 log = logging.getLogger(__name__)
 
 
@@ -60,7 +60,7 @@ class ConfirmController(object):
             'CONFIRM': 'checkout/confirm.html',
             'EMPTY_CART': 'checkout/empty_cart',
             '404': 'shop_404.html',
-            }
+        }
 
     def confirm(self):
         """Handles confirming an order and processing the charges.
@@ -110,17 +110,17 @@ class ConfirmController(object):
         template = controller.lookup_template('CONFIRM')
         controller.order.recalculate_total()
 
-        base_env = {
+        context = {
             'PAYMENT_LIVE': payment_live(controller.paymentModule),
             'default_view_tax': controller.viewTax,
             'order': controller.order,
             'errors': controller.processorMessage,
-            'checkout_step2': controller.lookup_url('satchmo_checkout-step2')}
+            'checkout_step2': controller.lookup_url('satchmo_checkout-step2')
+        }
         if controller.extra_context:
-            base_env.update(controller.extra_context)
+            context.update(controller.extra_context)
 
-        context = RequestContext(self.request, base_env)
-        return render_to_response(template, context)
+        return render(request, template, context)
 
     def _onSuccess(self, controller):
         """Handles a success in payment.  If the order is paid-off, sends success, else return page to pay remaining."""
@@ -131,14 +131,16 @@ class ConfirmController(object):
                     item.completed = True
                     item.save()
             if not controller.order.status:
-                controller.order.add_status(status='Pending', notes="Order successfully submitted")
+                controller.order.add_status(
+                    status='Pending', notes="Order successfully submitted")
 
             # Redirect to the success page
             url = controller.lookup_url('satchmo_checkout-success')
             return HttpResponseRedirect(url)
 
         else:
-            log.debug('Order #%i not paid in full, sending to pay rest of balance', controller.order.id)
+            log.debug(
+                'Order #%i not paid in full, sending to pay rest of balance', controller.order.id)
             url = controller.order.get_balance_remaining_url()
             return HttpResponseRedirect(url)
 
@@ -151,7 +153,7 @@ class ConfirmController(object):
         Results=%s
         Response=%s
         Reason=%s""", self.paymentModule.LABEL.value, self.paymentModule.KEY.value,
-                      self.order.id, self.processorResults, self.processorReasonCode, self.processorMessage)
+                 self.order.id, self.processorResults, self.processorReasonCode, self.processorMessage)
         return self.processorResults
 
     def sanity_check(self):
@@ -160,7 +162,7 @@ class ConfirmController(object):
             self.order = Order.objects.from_request(self.request)
 
         except Order.DoesNotExist:
-            url = urlresolvers.reverse('satchmo_checkout-step1')
+            url = reverse('satchmo_checkout-step1')
             self.invalidate(HttpResponseRedirect(url))
             return False
 
@@ -168,21 +170,18 @@ class ConfirmController(object):
             self.cart = Cart.objects.from_request(self.request)
             if self.cart.numItems == 0 and not self.order.is_partially_paid:
                 template = self.lookup_template('EMPTY_CART')
-                self.invalidate(render_to_response(template, RequestContext(request)))
+                self.invalidate(render(request, template))
                 return False
 
         except Cart.DoesNotExist:
             template = self.lookup_template('EMPTY_CART')
-            self.invalidate(render_to_response(template, RequestContext(request)))
+            self.invalidate(render(request, template))
             return False
 
         # Check if the order is still valid
         if not self.order.validate(self.request):
-            context = RequestContext(
-                self.request,
-                {'message': _('Your order is no longer valid.')}
-            )
-            self.invalidate(render_to_response(self.templates['404'], context))
+            context = {'message': _('Your order is no longer valid.')}
+            self.invalidate(render(request, self.templates['404'], context))
 
         self.valid = True
         signals.confirm_sanity_check.send(self, controller=self)

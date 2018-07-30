@@ -2,12 +2,12 @@ import json
 import requests
 
 from django.core.exceptions import MultipleObjectsReturned
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.product.models import Product
 from satchmo.utils.urlhelper import external_url
 
@@ -37,7 +37,10 @@ def order_payload(order):
     data["update_stock"] = config_value("satchmo.fulfilment.modules.six", "UPDATE_STOCK")
     data["order"] = {}
 
-    despatch_url = external_url(reverse("six_despatch", kwargs={"order_id": order.id, "verification_hash": order.verification_hash}))
+    despatch_url = external_url(reverse("six_despatch", kwargs={
+        "order_id": order.id,
+        "verification_hash": order.verification_hash
+    }))
 
     data["order"]["client_ref"] = order.id
     data["order"]["po_number"] = order.id
@@ -117,7 +120,8 @@ def send_order(order):
             logger.debug(payload)
 
             if payload["order_ref"] != order.id:
-                logger.warning("Order id is wrong.  Expecting %s, got %s.", order.id, payload["order_ref"])
+                logger.warning("Order id is wrong.  Expecting %s, got %s.",
+                               order.id, payload["order_ref"])
                 return False
 
             # Ensure that notes is a string, even when empty.
@@ -152,7 +156,8 @@ def send_order(order):
                 order.save()
                 order.add_status(
                     status=_("Error"),
-                    notes=_("Something went wrong with your order.  We are taking a look at it and will update you when we have resolved the issue.")
+                    notes=_(
+                        "Something went wrong with your order.  We are taking a look at it and will update you when we have resolved the issue.")
                 )
 
             if payload.get("update_stock") and hasattr(payload["stock_changes"], "items"):
@@ -161,7 +166,8 @@ def send_order(order):
                     try:
                         product = Product.objects.get(slug=slug)
                     except Product.DoesNotExist:
-                        logger.warning("Could not find a product with slug %s.  Six truncates slugs to 40 characters.  Trying to find a product that starts with %s", slug, slug)
+                        logger.warning(
+                            "Could not find a product with slug %s.  Six truncates slugs to 40 characters.  Trying to find a product that starts with %s", slug, slug)
                         # Six truncates long slugs (40 characters) Try
                         # and look-up one that matches.  If more than
                         # one match, log an error.
@@ -172,7 +178,8 @@ def send_order(order):
                             product = None
 
                     if product and product.items_in_stock != stock:
-                        logger.warning("%s: Stock was %s, now %s", product, product.items_in_stock, stock)
+                        logger.warning("%s: Stock was %s, now %s", product,
+                                       product.items_in_stock, stock)
                         product.items_in_stock = stock
                         product.save()
             return True

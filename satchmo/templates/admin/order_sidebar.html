@@ -1,9 +1,8 @@
-{% load i18n %}
-{% load satchmo_currency satchmo_adminorder_tags %}
+{% load i18n satchmo_currency satchmo_adminorder_tags %}
 <div class="module" id="Orders">
-    <h2 class="module-title">{% trans "Satchmo Orders" %}</h2>
-    <div class="module-content">
-        {% order_lists %}
-        <h2><a href="/admin/shop/order/">{% trans "View all Orders" %}</a></h2>
-    </div>
+  <h2 class="module-title">{% trans "Orders" %}</h2>
+  <div class="module-content">
+    {% order_lists %}
+    <h2><a href="{% url "admin:index" %}shop/order/">{% trans "View all Orders" %}</a></h2>
+  </div>
 </div>

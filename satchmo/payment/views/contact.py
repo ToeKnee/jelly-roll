@@ -4,10 +4,10 @@
 
 from django import http
 from django.contrib.auth.decorators import login_required
-from django.core import urlresolvers
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-from satchmo.configuration import config_get_group, config_value, SHOP_GROUP
+from django.urls import reverse
+from django.shortcuts import render
+
+from satchmo.configuration.functions import config_get_group
 from satchmo.contact import CUSTOMER_ID
 from satchmo.contact.models import Contact
 from satchmo.payment.decorators import cart_has_minimum_order
@@ -16,22 +16,23 @@ from satchmo.shop.models import Cart, Config
 from satchmo.utils.dynamic import lookup_url
 
 import logging
-
 log = logging.getLogger(__name__)
 
+
 def authentication_required(request, template='checkout/authentication_required.html'):
-    return render_to_response(
-        template, {}, context_instance = RequestContext(request)
-    )
+    return render(request,
+                  template, {}
+                  )
+
 
 @login_required
 def contact_info(request, **kwargs):
     """View which collects demographic information from customer."""
 
-    #First verify that the cart exists and has items
+    # First verify that the cart exists and has items
     tempCart = Cart.objects.from_request(request)
     if tempCart.numItems == 0:
-        return render_to_response('checkout/empty_cart.html', RequestContext(request))
+        return render(request, 'checkout/empty_cart.html')
 
     init_data = {}
     shop = Config.objects.get_current()
@@ -49,21 +50,21 @@ def contact_info(request, **kwargs):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
     if cart.not_enough_stock():
-        return http.HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+        return http.HttpResponseRedirect(reverse("satchmo_cart"))
 
     if request.method == "POST":
         new_data = request.POST.copy()
         if not tempCart.is_shippable:
             new_data['copy_address'] = True
-        form = PaymentContactInfoForm(new_data, shop=shop, contact=contact, shippable=tempCart.is_shippable, 
-            initial=init_data, cart=tempCart)
+        form = PaymentContactInfoForm(new_data, shop=shop, contact=contact, shippable=tempCart.is_shippable,
+                                      initial=init_data, cart=tempCart)
 
         if form.is_valid():
-            if contact is None and request.user and request.user.is_authenticated():
+            if contact is None and request.user and request.user.is_authenticated:
                 contact = Contact(user=request.user)
             custID = form.save(contact=contact)
             request.session[CUSTOMER_ID] = custID
-            #TODO - Create an order here and associate it with a session
+            # TODO - Create an order here and associate it with a session
             modulename = new_data['paymentmethod']
             if not modulename.startswith('PAYMENT_'):
                 modulename = 'PAYMENT_' + modulename
@@ -74,15 +75,16 @@ def contact_info(request, **kwargs):
             log.debug("Form errors: %s", form.errors)
     else:
         if contact:
-            #If a person has their contact info, make sure we populate it in the form
+            # If a person has their contact info, make sure we populate it in the form
             for item in list(contact.__dict__.keys()):
-                init_data[item] = getattr(contact,item)
+                init_data[item] = getattr(contact, item)
             if contact.shipping_address:
                 for item in list(contact.shipping_address.__dict__.keys()):
-                    init_data["ship_"+item] = getattr(contact.shipping_address,item)
+                    init_data["ship_" +
+                              item] = getattr(contact.shipping_address, item)
             if contact.billing_address:
                 for item in list(contact.billing_address.__dict__.keys()):
-                    init_data[item] = getattr(contact.billing_address,item)
+                    init_data[item] = getattr(contact.billing_address, item)
             if contact.primary_phone:
                 init_data['phone'] = contact.primary_phone.phone
         else:
@@ -90,24 +92,25 @@ def contact_info(request, **kwargs):
             request.session.set_test_cookie()
 
         init_data['copy_address'] = True
-        
+
         form = PaymentContactInfoForm(
-            shop=shop, 
-            contact=contact, 
-            shippable=tempCart.is_shippable, 
-            initial=init_data, 
+            shop=shop,
+            contact=contact,
+            shippable=tempCart.is_shippable,
+            initial=init_data,
             cart=tempCart)
 
     if shop.in_country_only:
         only_country = shop.sales_country
     else:
         only_country = None
-        
-    context = RequestContext(request, {
+
+    context = {
         'form': form,
         'country': only_country,
         'paymentmethod_ct': len(form.fields['paymentmethod'].choices)
-        })
-    return render_to_response('checkout/form.html', context)
+    }
+    return render(request, 'checkout/form.html', context)
+
 
 contact_info_view = cart_has_minimum_order()(contact_info)

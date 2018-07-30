@@ -1,7 +1,7 @@
 import importlib
 from django.core.management.base import BaseCommand
 
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.shop.models import Order
 
 import logging
@@ -28,5 +28,7 @@ class Command(BaseCommand):
                     logger.info('Order fulfilment processed "%s"' % order)
                 else:
                     if options["verbosity"] >= 2:
-                        self.stdout.write('Order fulfilment not processed,  Something went wrong. "%s"' % order)
-                    logger.warning('Order fulfilment not processed,  Something went wrong. "%s"' % order)
+                        self.stdout.write(
+                            'Order fulfilment not processed,  Something went wrong. "%s"' % order)
+                    logger.warning(
+                        'Order fulfilment not processed,  Something went wrong. "%s"' % order)

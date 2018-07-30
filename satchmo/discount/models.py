@@ -35,7 +35,11 @@ class Discount(models.Model):
     Allows for multiple types of discounts including % and dollar off.
     Also allows finite number of uses.
     """
-    site = models.ForeignKey(Site, verbose_name=_('site'))
+    site = models.ForeignKey(
+        Site,
+        on_delete=models.CASCADE,
+        verbose_name=_('Site')
+    )
     description = models.CharField(_("Description"), max_length=100)
     code = models.CharField(_("Discount Code"), max_length=20, unique=True,
                             help_text=_("Coupon Code"))
@@ -50,7 +54,8 @@ class Discount(models.Model):
                                         help_text=_("Use this field to advertise the discount on all products to which it applies.  Generally this is used for site-wide sales."))
     allowedUses = models.IntegerField(_("Number of allowed uses"),
                                       default=1, help_text=_('How many uses are allowed of this discount'))
-    numUses = models.IntegerField(_("Number of times already used"), default=0, editable=False)
+    numUses = models.IntegerField(
+        _("Number of times already used"), default=0, editable=False)
     minOrder = models.DecimalField(_("Minimum order value"),
                                    decimal_places=2, max_digits=6, blank=True, null=True)
     startDate = models.DateField(_("Start Date"))
@@ -61,13 +66,13 @@ class Discount(models.Model):
     includeShipping = models.NullBooleanField(_("Include shipping"), default=False,
                                               help_text=_("Should shipping be included in the discount calculation?"))
     validProducts = models.ManyToManyField(Product, verbose_name=_("Valid Products"),
-                                           blank=True, null=True, help_text="Make sure not to include gift certificates!")
+                                           blank=True, help_text="Make sure not to include gift certificates!")
 
     def __init__(self, *args, **kwargs):
         self._calculated = False
         super(Discount, self).__init__(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.description
 
     def isValid(self, cart=None, request=None):
@@ -224,7 +229,8 @@ def apply_even_split(discounted, amount):
 def apply_percentage(discounted, percentage):
     work = {}
     if percentage > 1:
-        log.warn("Correcting discount percentage, should be less than 1, is %s", percentage)
+        log.warn(
+            "Correcting discount percentage, should be less than 1, is %s", percentage)
         percentage = percentage / 100
 
     for lid, price in list(discounted.items()):
