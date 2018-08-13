@@ -1,12 +1,12 @@
 from django import http
-from django.shortcuts import get_object_or_404, render_to_response
-from django.template import RequestContext
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import select_template
+from django.template.response import TemplateResponse
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
 from django.views.generic.list import ListView
 
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.currency.models import Currency
 from satchmo.currency.utils import (
     convert_to_currency,
@@ -67,7 +67,7 @@ def category_index(request, template="product/category_index.html", root_only=Tr
     ctx = {
         'categorylist': cats
     }
-    return render_to_response(template, RequestContext(request, ctx))
+    return render(request, template, ctx)
 
 
 def category_view(request, slug, parent_slugs='', template='base_category.html'):
@@ -96,7 +96,7 @@ def category_view(request, slug, parent_slugs='', template='base_category.html')
     index_prerender.send(
         Product, request=request, context=ctx, category=category, object_list=products
     )
-    return render_to_response(template, RequestContext(request, ctx))
+    return render(request, template, ctx)
 
 
 def display_featured(limit=None, random=None):
@@ -168,7 +168,7 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
 
     best_discount = find_best_auto_discount(product)
 
-    extra_context = {
+    context = {
         'product': product,
         'category': category,
         'brand': brand,
@@ -177,21 +177,21 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
     }
 
     # Get the template context from the Product.
-    extra_context = product.add_template_context(
-        context=extra_context,
+    context = product.add_template_context(
+        context=context,
         request=request, selected_options=selected_options,
         include_tax=include_tax, default_view_tax=default_view_tax
     )
 
     if include_tax:
         tax_amt = get_tax(request.user, product, 1)
-        extra_context['product_tax'] = tax_amt
-        extra_context['price_with_tax'] = product.unit_price + tax_amt
-        price = extra_context['price_with_tax']
+        context['product_tax'] = tax_amt
+        context['price_with_tax'] = product.unit_price + tax_amt
+        price = context['price_with_tax']
     else:
         price = product.unit_price
 
-    extra_context['all_prices'] = [
+    context['all_prices'] = [
         {
             "currency": currency.iso_4217_code,
             "price": convert_to_currency(price, currency.iso_4217_code)
@@ -201,8 +201,7 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
     ]
 
     template = find_product_template(product, producttypes=subtype_names)
-    context = RequestContext(request, extra_context)
-    return http.HttpResponse(template.render(context))
+    return TemplateResponse(request, template, context)
 
 
 def get_price(request, product_slug):

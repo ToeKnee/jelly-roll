@@ -10,7 +10,6 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
 {% load satchmo_price satchmo_product %}
 {% load satchmo_currency satchmo_category %}
 {% load satchmo_util %}
-{% if "recentlist"|app_enabled %}{% load satchmo_recentlist %}{% endif %}
 
 {% block extra-head %}
 {% if product.meta %}
@@ -37,11 +36,6 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
     </div>
 {% endblock %}
 
-{% block recentview %}
-{% if recent_products %}
-{% if "recentlist"|app_enabled %}{% recentlyviewed recent_products product.slug %}{% endif %}
-{% endif %}
-{% endblock %}
 
 {% block content %}
 {% block productdetail %}

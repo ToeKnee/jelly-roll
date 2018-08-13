@@ -97,12 +97,10 @@ working properly before trying to add any pieces of satchmo.
 
         MEDIA_ROOT = os.path.join(DIRNAME, 'static/')
 
-        MIDDLEWARE_CLASSES = ("django.middleware.locale.LocaleMiddleware",
-                              "satchmo.recentlist.middleware.RecentProductMiddleware")
+        MIDDLEWARE_CLASSES = ("django.middleware.locale.LocaleMiddleware",)
         TEMPLATE_DIRS = (os.path.join(DIRNAME, "templates"))
         TEMPLATE_CONTEXT_PROCESSORS = 	('satchmo.shop.context_processors.settings',
                                          'django.core.context_processors.auth',
-                                         'satchmo.recentlist.context_processors.recent_products',
                                          )
 
         INSTALLED_APPS = (
@@ -128,7 +126,6 @@ working properly before trying to add any pieces of satchmo.
                 'satchmo.thumbnail',
                 'satchmo.l10n',
                 'satchmo.tax',
-                'satchmo.recentlist',
                 'satchmo.productratings'
                 )
 

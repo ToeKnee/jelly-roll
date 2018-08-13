@@ -1,5 +1,6 @@
 from django import template
-from satchmo.configuration import config_value
+
+from satchmo.configuration.functions import config_value
 from satchmo.currency.utils import (
     currency_for_request,
     money_format,
@@ -84,8 +85,8 @@ def cartitem_total(parser, token):
 
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise template.TemplateSyntaxError, "'%s' tag requires a cartitem argument" % tokens[
-            0]
+        raise template.TemplateSyntaxError("'%s' tag requires a cartitem argument" % tokens[
+            0])
 
     cartitem = tokens[1]
 
@@ -155,7 +156,8 @@ def cart_total(parser, token):
 
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise template.TemplateSyntaxError, "'%s' tag requires a cart argument" % tokens[0]
+        raise template.TemplateSyntaxError(
+            "'%s' tag requires a cart argument" % tokens[0])
 
     cart = tokens[1]
 

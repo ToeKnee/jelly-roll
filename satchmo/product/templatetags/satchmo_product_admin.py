@@ -1,16 +1,15 @@
 from django import template
-from django.conf import settings
-from django.core import urlresolvers
 from django.template import Context, Template
-from django.utils.translation import get_language, ugettext_lazy as _
-from satchmo.configuration import config_value
+from django.utils.translation import ugettext_lazy as _
+from satchmo.configuration.functions import config_value
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 
 register = template.Library()
 
+
 def js_make_select_readonly(select):
-    #This is really just a mini-template
-    #select must be a jquery object
+    # This is really just a mini-template
+    # select must be a jquery object
     return """
     select = %(select)s;
     value = select.attr("value");
@@ -25,9 +24,11 @@ def js_make_select_readonly(select):
         select.before("<strong>" + text + "</strong><input type=\\"hidden\\" name=\\"" + select.attr("name") + "\\" value=\\"" + value + "\\" \>");
         select.remove();
     }
-    """ % {'select':select}
+    """ % {'select': select}
+
 
 register.simple_tag(js_make_select_readonly)
+
 
 def edit_subtypes(product):
     output = '<ul>'
@@ -36,17 +37,22 @@ def edit_subtypes(product):
         app, subtype = key.split("::")
         is_config = "ConfigurableProduct" in subtypes
         if subtype in subtypes:
-            output += '<li><a href="/admin/%s/%s/%s/">' % (app, subtype.lower(), product.pk) + _('Edit %(subtype)s') % {'subtype': subtype} + '</a></li>'
-            if is_config or subtype=="ProductVariation":
-                output += '<li><a href="/product/admin/%s/variations/">Variation Manager</a></li>' % (product.slug)
+            output += '<li><a href="/admin/%s/%s/%s/">' % (app, subtype.lower(
+            ), product.pk) + _('Edit %(subtype)s') % {'subtype': subtype} + '</a></li>'
+            if is_config or subtype == "ProductVariation":
+                output += '<li><a href="/product/admin/%s/variations/">Variation Manager</a></li>' % (
+                    product.slug)
         else:
-            if not(is_config and subtype=="ProductVariation"):
-                output += ' <li><a href="/admin/%s/%s/add/?product=%s">' %(app, subtype.lower(), product.pk) + _('Add %(subtype)s') % {'subtype': subtype} + '</a></li>'
+            if not(is_config and subtype == "ProductVariation"):
+                output += ' <li><a href="/admin/%s/%s/add/?product=%s">' % (app, subtype.lower(
+                ), product.pk) + _('Add %(subtype)s') % {'subtype': subtype} + '</a></li>'
 
     output += '</ul>'
     return output
 
+
 register.simple_tag(edit_subtypes)
+
 
 def list_variations(configurableproduct):
     opts = configurableproduct.get_all_options()
@@ -68,16 +74,16 @@ def list_variations(configurableproduct):
             <td><a class="deletelink" href="%s">%s</a></td>
             </tr>
             """ % (opt_str, p_url, product.slug, pv_url,
-                _("Delete ProductVariation"))
+                   _("Delete ProductVariation"))
         else:
             #opt_pks = [str(opt.pk) for opt in p_opt]
             #opt_pks = ','.join(opt_pks)
             # TODO [NFA]: Blocked by Django ticket #7738.
             opt_pks = ''
             add_url = ('/admin/product/productvariation/add/' +
-                "?product=%s&parent=%s&options=%s" % (
-                configurableproduct.product.pk, configurableproduct.product.pk,
-                opt_pks))
+                       "?product=%s&parent=%s&options=%s" % (
+                           configurableproduct.product.pk, configurableproduct.product.pk,
+                           opt_pks))
             output += """
             <tr>
             <td>%s</td>
@@ -89,7 +95,9 @@ def list_variations(configurableproduct):
     t = Template(output)
     return t.render(Context())
 
+
 register.simple_tag(list_variations)
+
 
 def customproduct_management(order):
     custom = []
@@ -98,17 +106,21 @@ def customproduct_management(order):
             custom.append(orderitem)
 
     return {
-        'SHOP_BASE' : get_satchmo_setting('SHOP_BASE'),
-        'customitems' : custom
+        'SHOP_BASE': get_satchmo_setting('SHOP_BASE'),
+        'customitems': custom
     }
 
-register.inclusion_tag('admin/_customproduct_management.html')(customproduct_management)
+
+register.inclusion_tag(
+    'admin/_customproduct_management.html')(customproduct_management)
+
 
 def orderpayment_list(order):
     return {
-        'SHOP_BASE' : get_satchmo_setting('SHOP_BASE'),
-        'order' : order,
-        'payments' : order.payments.all()
-        }
+        'SHOP_BASE': get_satchmo_setting('SHOP_BASE'),
+        'order': order,
+        'payments': order.payments.all()
+    }
+
 
 register.inclusion_tag('admin/_orderpayment_list.html')(orderpayment_list)

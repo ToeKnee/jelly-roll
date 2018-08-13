@@ -2,7 +2,7 @@
 GiftCertificate processor
 """
 from django.utils.translation import ugettext as _
-from models import GiftCertificate
+from .models import GiftCertificate
 
 
 class PaymentProcessor(object):

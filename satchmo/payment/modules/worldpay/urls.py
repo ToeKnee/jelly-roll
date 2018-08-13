@@ -1,11 +1,12 @@
-from django.conf.urls import *
-from satchmo.configuration import config_get_group, config_value
-
-config = config_get_group('PAYMENT_WORLDPAY')
-
-urlpatterns = patterns('satchmo',
-     (r'^$', 'payment.modules.worldpay.views.pay_ship_info',        {}, 'WORLDPAY_satchmo_checkout-step2'),
-     (r'^confirm/$', 'payment.modules.worldpay.views.confirm_info', {}, 'WORLDPAY_satchmo_checkout-step3'),
-     (r'^success/$', 'payment.modules.worldpay.views.success',      {}, 'WORLDPAY_satchmo_checkout-success'),
+from django.urls import path
+from satchmo.payment.modules.worldpay.views import (
+    pay_ship_info,
+    confirm_info,
+    success,
 )
- 
+
+urlpatterns = [
+    path('', pay_ship_info, {}, 'satchmo_checkout-step2'),
+    path('confirm/', confirm_info, {}, 'satchmo_checkout-step3'),
+    path('success/', success, {}, 'satchmo_checkout-success'),
+]

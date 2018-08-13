@@ -12,7 +12,8 @@ class ProductWishManager(models.Manager):
     def create_if_new(self, product, contact, details):
         encoded = json.dumps(details)
 
-        products = ProductWish.objects.filter(product=product, contact=contact, _details=encoded)
+        products = ProductWish.objects.filter(
+            product=product, contact=contact, _details=encoded)
         if products and len(products) > 0:
             wish = products[0]
             if len(products) > 1:
@@ -27,8 +28,18 @@ class ProductWishManager(models.Manager):
 
 
 class ProductWish(models.Model):
-    contact = models.ForeignKey(Contact, verbose_name=_("Contact"), related_name="contacts")
-    product = models.ForeignKey(Product, verbose_name=_("Product"), related_name="products")
+    contact = models.ForeignKey(
+        Contact,
+        on_delete=models.CASCADE,
+        verbose_name=_("Contact"),
+        related_name="contacts"
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name=_("Product"),
+        related_name="products"
+    )
     _details = models.TextField(_('Details'), null=True, blank=True)
     create_date = models.DateTimeField(_("Creation Date"))
 

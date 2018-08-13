@@ -41,49 +41,49 @@ class OrderPayloadTest(TestCase):
         ))
 
         self.assertEqual(json.loads(order_payload(order)), {
-            u"api_key": u"",
-            u"test": True,
-            u"allow_preorder": False,
-            u"update_stock": True,
+            "api_key": "",
+            "test": True,
+            "allow_preorder": False,
+            "update_stock": True,
 
-            u"order": {
-                u"client_ref": order.id,
-                u"po_number": order.id,
-                u"date_placed": unicode(order.time_stamp),
-                u"callback_url": callback_url,
-                u"postage_speed": 2,
-                u"postage_cost": float_price(order.shipping_cost),
-                u"total_amount": float_price(order.sub_total),
-                u"signed_for": False,
-                u"tracked": False,
-                u"ShippingContact": {
-                    u"dear": order.contact.user.first_name,
-                    u"name": order.ship_addressee,
-                    u"email": order.contact.user.email,
-                    u"phone": order.contact.primary_phone or u"",
-                    u"address": order.ship_street1,
-                    u"address_contd": order.ship_street2,
-                    u"city": order.ship_city,
-                    u"county": order.ship_state,
-                    u"country": unicode(order.ship_country),
-                    u"postcode": order.ship_postal_code,
+            "order": {
+                "client_ref": order.id,
+                "po_number": order.id,
+                "date_placed": str(order.time_stamp),
+                "callback_url": callback_url,
+                "postage_speed": 2,
+                "postage_cost": float_price(order.shipping_cost),
+                "total_amount": float_price(order.sub_total),
+                "signed_for": False,
+                "tracked": False,
+                "ShippingContact": {
+                    "dear": order.contact.user.first_name,
+                    "name": order.ship_addressee,
+                    "email": order.contact.user.email,
+                    "phone": order.contact.primary_phone or "",
+                    "address": order.ship_street1,
+                    "address_contd": order.ship_street2,
+                    "city": order.ship_city,
+                    "county": order.ship_state,
+                    "country": str(order.ship_country),
+                    "postcode": order.ship_postal_code,
                 },
-                u"BillingContact": {
-                    u"name": order.bill_addressee,
-                    u"email": order.contact.user.email,
-                    u"phone": order.contact.primary_phone or u"",
-                    u"address": order.bill_street1,
-                    u"address_contd": order.bill_street2,
-                    u"city": order.bill_city,
-                    u"county": order.bill_state,
-                    u"country": unicode(order.bill_country),
-                    u"postcode": order.bill_postal_code,
+                "BillingContact": {
+                    "name": order.bill_addressee,
+                    "email": order.contact.user.email,
+                    "phone": order.contact.primary_phone or "",
+                    "address": order.bill_street1,
+                    "address_contd": order.bill_street2,
+                    "city": order.bill_city,
+                    "county": order.bill_state,
+                    "country": str(order.bill_country),
+                    "postcode": order.bill_postal_code,
                 },
-                u"items": [
+                "items": [
                     {
-                        u"client_ref": order.orderitem_set.all()[0].product.slug,
-                        u"quantity": order.orderitem_set.all()[0].quantity,
-                        u"price": float_price(order.orderitem_set.all()[0].unit_price),
+                        "client_ref": order.orderitem_set.all()[0].product.slug,
+                        "quantity": order.orderitem_set.all()[0].quantity,
+                        "price": float_price(order.orderitem_set.all()[0].unit_price),
                     }
                 ]
             }

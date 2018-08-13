@@ -1,8 +1,7 @@
 from django.contrib.auth.decorators import user_passes_test
-from django.core import urlresolvers
+from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from satchmo.shop.models import Order
 from satchmo.product import forms
@@ -21,28 +20,31 @@ def edit_inventory(request):
         form = forms.InventoryForm(new_data)
         if form.is_valid():
             form.save(request)
-            url = urlresolvers.reverse('satchmo_admin_edit_inventory')
+            url = reverse('satchmo_admin_edit_inventory')
             return HttpResponseRedirect(url)
     else:
         form = forms.InventoryForm()
 
-    context = RequestContext(request, {
+    context = {
         'title': _('Inventory Editor'),
         'form': form,
-        })
+    }
 
-    return render_to_response('admin/inventory_form.html', context)
-
-edit_inventory = user_passes_test(lambda u: u.is_authenticated() and u.is_staff, login_url='/accounts/login/')(edit_inventory)
+    return render(request, 'admin/inventory_form.html', context)
 
 
-@user_passes_test(lambda u: u.is_authenticated() and u.is_staff)
+edit_inventory = user_passes_test(lambda u: u.is_authenticated(
+) and u.is_staff, login_url='/accounts/login/')(edit_inventory)
+
+
+@user_passes_test(lambda u: u.is_authenticated and u.is_staff)
 def picking_list(request):
     """A view that returns a list of stock items that need to be picked from the shelf
 
     Products are order by manufacturer, brand, then product name.
     """
-    processing_orders = Order.objects.filter(status__status__status="Processing")
+    processing_orders = Order.objects.filter(
+        status__status__status="Processing")
     # Category - products
     products = {}
 
@@ -63,15 +65,15 @@ def picking_list(request):
     # Sort the dict into a list of tuples
     # so we can order alphabetically
     for brand in products:
-        products[brand] = products[brand].items()
+        products[brand] = list(products[brand].items())
         products[brand].sort()
 
-    context = RequestContext(request, {
+    context = {
         'title': "Picking List",
         'products': products,
         'order_count': processing_orders.count(),
-        })
-    return render_to_response('admin/picking_list.html', context)
+    }
+    return render(request, 'admin/picking_list.html', context)
 
 
 def export_products(request, template='admin/product_export_form.html'):
@@ -85,14 +87,17 @@ def export_products(request, template='admin/product_export_form.html'):
         form = forms.ProductExportForm()
         fileform = forms.ProductImportForm()
 
-    context = RequestContext(request, {
+    context = {
         'title': _('Product Import/Export'),
         'form': form,
         'importform': fileform,
-        })
+    }
 
-    return render_to_response(template, context)
-export_products = user_passes_test(lambda u: u.is_authenticated() and u.is_staff, login_url='/accounts/login/')(export_products)
+    return render(request, template, context)
+
+
+export_products = user_passes_test(lambda u: u.is_authenticated(
+) and u.is_staff, login_url='/accounts/login/')(export_products)
 
 
 def import_products(request, maxsize=10000000):
@@ -109,36 +114,47 @@ def import_products(request, maxsize=10000000):
             results, errors = form.import_from(infile, maxsize=maxsize)
 
         else:
-            errors.append('File: %s' % request.FILES.keys())
+            errors.append('File: %s' % list(request.FILES.keys()))
             errors.append(_('No upload file found'))
 
-        context = RequestContext(request, {
+        context = {
             'errors': errors,
             'results': results,
-        })
-        return render_to_response("admin/product_import_result.html", context)
+        }
+        return render(request, "admin/product_import_result.html", context)
     else:
-        url = urlresolvers.reverse('satchmo_admin_product_export')
+        url = reverse('satchmo_admin_product_export')
         return HttpResponseRedirect(url)
-import_products = user_passes_test(lambda u: u.is_authenticated() and u.is_staff, login_url='/accounts/login/')(import_products)
+
+
+import_products = user_passes_test(lambda u: u.is_authenticated(
+) and u.is_staff, login_url='/accounts/login/')(import_products)
 
 
 def product_active_report(request):
-
     products = Product.objects.filter(active=True)
-    products = [p for p in products.all() if 'productvariation' not in p.get_subtypes]
-    context = RequestContext(request, {title: 'Active Product Report', 'products': products })
-    return render_to_response('admin/product/active_product_report.html', context)
-product_active_report = user_passes_test(lambda u: u.is_authenticated() and u.is_staff, login_url='/accounts/login/')(product_active_report)
+    products = [
+        p
+        for p
+        in products.all()
+        if 'productvariation' not in p.get_subtypes
+    ]
+    context = {'title': 'Active Product Report', 'products': products}
+    return render(request, 'admin/product/active_product_report.html', context)
+
+
+product_active_report = user_passes_test(lambda u: u.is_authenticated(
+) and u.is_staff, login_url='/accounts/login/')(product_active_report)
 
 
 def variation_list(request):
-    products = [p for p in Product.objects.all() if "ConfigurableProduct" in p.get_subtypes()]
-    context = RequestContext(request, {
-           'products': products,
-    })
+    products = [p for p in Product.objects.all(
+    ) if "ConfigurableProduct" in p.get_subtypes()]
+    context = {
+        'products': products,
+    }
 
-    return render_to_response('admin/product/configurableproduct/variation_manager_list.html', context)
+    return render(request, 'admin/product/configurableproduct/variation_manager_list.html', context)
 
 
 def variation_manager(request, product_slug=""):
@@ -150,14 +166,15 @@ def variation_manager(request, product_slug=""):
             # got a variation, we want to work with its parent
             product = product.productvariation.parent.product
             if 'ConfigurableProduct' in product.get_subtypes():
-                url = urlresolvers.reverse("satchmo_admin_variation_manager", kwargs={'product_slug': product.slug})
+                url = reverse("satchmo_admin_variation_manager",
+                              kwargs={'product_slug': product.slug})
                 return HttpResponseRedirect(url)
 
         if 'ConfigurableProduct' not in subtypes:
             return bad_or_missing(request, _('The product you have requested is not a Configurable Product.'))
 
     except Product.DoesNotExist:
-            return bad_or_missing(request, _('The product you have requested does not exist.'))
+        return bad_or_missing(request, _('The product you have requested does not exist.'))
 
     if request.method == 'POST':
         new_data = request.POST.copy()
@@ -172,9 +189,12 @@ def variation_manager(request, product_slug=""):
     else:
         form = VariationManagerForm(product=product)
 
-    context = RequestContext(request, {
+    context = {
         'product': product,
         'form': form,
-    })
-    return render_to_response('admin/product/configurableproduct/variation_manager.html', context)
-variation_manager = user_passes_test(lambda u: u.is_authenticated() and u.is_staff, login_url='/accounts/login/')(variation_manager)
+    }
+    return render(request, 'admin/product/configurableproduct/variation_manager.html', context)
+
+
+variation_manager = user_passes_test(lambda u: u.is_authenticated(
+) and u.is_staff, login_url='/accounts/login/')(variation_manager)

@@ -2,7 +2,6 @@
 Stores details about the available payment options.
 Also stores credit card info in an encrypted format.
 """
-import config
 import base64
 
 from Crypto.Cipher import Blowfish
@@ -48,8 +47,12 @@ class CreditCardDetail(models.Model):
     Stores an encrypted CC number, its information, and its
     displayable number.
     """
-    orderpayment = models.ForeignKey(OrderPayment, unique=True,
-                                     related_name="creditcards")
+    orderpayment = models.OneToOneField(
+        OrderPayment,
+        on_delete=models.CASCADE,
+        unique=True,
+        related_name="creditcards"
+    )
     credit_type = CreditChoiceCharField(_("Credit Card Type"), max_length=16)
     display_cc = models.CharField(_("CC Number (Last 4 digits)"),
                                   max_length=4, )
@@ -58,7 +61,8 @@ class CreditCardDetail(models.Model):
                                     null=True, editable=False)
     expire_month = models.IntegerField(_("Expiration Month"))
     expire_year = models.IntegerField(_("Expiration Year"))
-    card_holder = models.CharField(_("card_holder Name"), max_length=60, blank=True)
+    card_holder = models.CharField(
+        _("card_holder Name"), max_length=60, blank=True)
     start_month = models.IntegerField(_("Start Month"), blank=True, null=True)
     start_year = models.IntegerField(_("Start Year"), blank=True, null=True)
     issue_num = models.CharField(blank=True, null=True, max_length=2)
@@ -72,15 +76,18 @@ class CreditCardDetail(models.Model):
         padding = ''
         if (len(ccnum) % 8) != 0:
             padding = 'X' * (8 - (len(ccnum) % 8))
-        self.encrypted_cc = base64.b64encode(encryption_object.encrypt(ccnum + padding))
+        self.encrypted_cc = base64.b64encode(
+            encryption_object.encrypt(ccnum + padding))
         self.display_cc = ccnum[-4:]
 
     def setCCV(self, ccv):
         """Put the CCV in the cache, don't save it for security/legal reasons."""
         if not self.encrypted_cc:
-            raise ValueError('CreditCardDetail expecting a credit card number to be stored before storing CCV')
+            raise ValueError(
+                'CreditCardDetail expecting a credit card number to be stored before storing CCV')
 
-        caching.cache_set(self.encrypted_cc, skiplog=True, length=60 * 60, value=ccv)
+        caching.cache_set(self.encrypted_cc, skiplog=True,
+                          length=60 * 60, value=ccv)
 
     def getCCV(self):
         try:
@@ -96,7 +103,8 @@ class CreditCardDetail(models.Model):
         secret_key = settings.SECRET_KEY
         encryption_object = Blowfish.new(secret_key)
         # strip padding from decrypted credit card number
-        ccnum = encryption_object.decrypt(base64.b64decode(self.encrypted_cc)).rstrip('X')
+        ccnum = encryption_object.decrypt(
+            base64.b64decode(self.encrypted_cc)).rstrip('X')
         return (ccnum)
     decryptedCC = property(_decryptCC)
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 import factory
 
@@ -45,7 +45,7 @@ class EURCurrencyFactory(CurrencyFactory):
                 "Slovakia", "Slovenia", "Spain"
             ]
 
-            self.countries = Country.objects.filter(printable_name__in=countries)
+            self.countries.set(Country.objects.filter(printable_name__in=countries))
 
 
 class GBPCurrencyFactory(CurrencyFactory):
@@ -70,7 +70,7 @@ class GBPCurrencyFactory(CurrencyFactory):
                 "United Kingdom", "Guernsey", "Isle of Man", "Jersey"
             ]
 
-            self.countries = Country.objects.filter(printable_name__in=countries)
+            self.countries.set(Country.objects.filter(printable_name__in=countries))
 
             if len(self.countries.all()) == 0:
                 self.countries.add(UKFactory())
@@ -101,7 +101,7 @@ class USDCurrencyFactory(CurrencyFactory):
                 "Panama", "Zimbabwe"
             ]
 
-            self.countries = Country.objects.filter(printable_name__in=countries)
+            self.countries.set(Country.objects.filter(printable_name__in=countries))
             if len(self.countries.all()) == 0:
                 self.countries.add(USFactory())
 

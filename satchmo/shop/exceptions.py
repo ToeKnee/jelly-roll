@@ -15,9 +15,9 @@ class OutOfStockError(CartAddProhibited):
 
     def __init__(self, product, have, need):
         if have == 0:
-            msg = _(u"'%s' is out of stock.") % product.translated_name()
+            msg = _("'%s' is out of stock.") % product.translated_name()
         else:
-            msg = _(u"Only %(amount)i of '%(product)s' in stock.") % {
+            msg = _("Only %(amount)i of '%(product)s' in stock.") % {
                 'amount': have, 
                 'product': product.translated_name()
                 }

@@ -10,6 +10,7 @@ from django.apps import apps
 from django.conf import settings
 
 import logging
+from functools import reduce
 log = logging.getLogger(__name__)
 
 
@@ -101,7 +102,7 @@ def get_flat_list(sequence):
 
 
 def is_list_or_tuple(maybe):
-    return isinstance(maybe, (types.TupleType, types.ListType))
+    return isinstance(maybe, (tuple, list))
 
 
 def is_string_like(maybe):
@@ -114,22 +115,25 @@ def is_string_like(maybe):
         return 1
 
 
-def load_module(module):
-    """Load a named python module."""
-    try:
-        module = sys.modules[module]
-    except KeyError:
-        __import__(module)
-        module = sys.modules[module]
-    return module
+_MODULES = {}
 
-_MODULES = []
+
+def load_module(path):
+    """Load a named python module."""
+    if path not in _MODULES:
+        try:
+            module = sys.modules[path]
+        except KeyError:
+            __import__(path)
+            module = sys.modules[path]
+        _MODULES[path] = module
+    else:
+        log.debug("Already Loaded module - %s", path)
+    return _MODULES[path]
 
 
 def load_once(key, module):
-    if key not in _MODULES:
-        load_module(module)
-        _MODULES.append(key)
+    return load_module(module)
 
 
 def normalize_dir(dir_name):
@@ -139,13 +143,14 @@ def normalize_dir(dir_name):
         dir_name = dir_name[:-1]
     return dir_name
 
+
 _LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 
 def random_string(length, variable=False, charset=_LETTERS):
     if variable:
         length = random.randrange(1, length + 1)
-    return ''.join([random.choice(charset) for x in xrange(length)])
+    return ''.join([random.choice(charset) for x in range(length)])
 
 
 def request_is_secure(request):
@@ -168,11 +173,12 @@ def trunc_decimal(val, places):
         roundfmt += "1"
     if val is None:
         val = Decimal('0.00000000')
-    if type(val) != Decimal:
+    if not isinstance(val, Decimal):
         try:
             val = Decimal(val)
         except InvalidOperation:
-            log.warn("invalid operation trying to convert '%s' to decimal, returning raw", val)
+            log.warn(
+                "invalid operation trying to convert '%s' to decimal, returning raw", val)
             return val
     return val.quantize(Decimal(roundfmt), ROUND_HALF_EVEN)
 

@@ -1,16 +1,10 @@
-try:
-    from decimal import Decimal
-except:
-    from django.utils._decimal import Decimal
 import logging
 
-from django.core import urlresolvers
 from django.core.cache import cache
 from django.template import Library
 from django.template import Node
 
 from satchmo.product.models import Category
-from satchmo.product.brand.models import Brand
 from satchmo.shop.templatetags import get_filter_args
 log = logging.getLogger(__name__)
 try:
@@ -19,6 +13,7 @@ except ImportError:
     from elementtree.ElementTree import Element, SubElement, tostring
 
 register = Library()
+
 
 @register.inclusion_tag('category_tree.html')
 def category_tree(id=None):
@@ -51,8 +46,10 @@ def category_tree(id=None):
         cache.set(key, categories, 86400)
     return {"categories": categories}
 
+
 class CategoryListNode(Node):
     """Template Node tag which pushes the category list into the context"""
+
     def __init__(self, slug, var, nodelist):
         self.var = var
         self.slug = slug
@@ -79,6 +76,7 @@ class CategoryListNode(Node):
         context.pop()
         return output
 
+
 def do_categorylistnode(parser, token):
     """Push the category list into the context using the given variable name.
 
@@ -92,8 +90,9 @@ def do_categorylistnode(parser, token):
     """
     args = token.split_contents()
     ct = len(args)
-    if not ct in (3,4):
-        raise template.TemplateSyntaxError("%r tag expecting '[slug] as varname', got: %s" % (args[0], args))
+    if not ct in (3, 4):
+        raise template.TemplateSyntaxError(
+            "%r tag expecting '[slug] as varname', got: %s" % (args[0], args))
 
     if ct == 3:
         slug = None
@@ -110,11 +109,12 @@ def do_categorylistnode(parser, token):
 
 register.tag('category_list', do_categorylistnode)
 
+
 def product_category_siblings(product, args=""):
     args, kwargs = get_filter_args(args,
-        keywords=('variations', 'include_self'),
-        boolargs=('variations', 'include_self'),
-        stripquotes=True)
+                                   keywords=('variations', 'include_self'),
+                                   boolargs=('variations', 'include_self'),
+                                   stripquotes=True)
 
     sibs = product.get_category.product_set.all().order_by('ordering', 'name')
     if not kwargs.get('variations', True):
@@ -125,5 +125,5 @@ def product_category_siblings(product, args=""):
 
     return sibs
 
-register.filter('product_category_siblings', product_category_siblings)
 
+register.filter('product_category_siblings', product_category_siblings)

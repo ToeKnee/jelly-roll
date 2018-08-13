@@ -1,9 +1,8 @@
-import config
 import os
 import time
 import zipfile
 
-from cStringIO import StringIO
+from io import StringIO
 from django import forms
 from django.db import connection, transaction
 from django.conf import settings
@@ -14,7 +13,8 @@ from django.core.management.color import no_style
 from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from satchmo.configuration import config_value
+
+from satchmo.configuration.functions import config_value
 from satchmo.product.models import Product, Price, Option
 
 import logging
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 def export_choices():
     fmts = serializers.get_serializer_formats()
-    return zip(fmts, fmts)
+    return list(zip(fmts, fmts))
 
 
 class ProductExportForm(forms.Form):
@@ -33,9 +33,12 @@ class ProductExportForm(forms.Form):
 
         super(ProductExportForm, self).__init__(*args, **kwargs)
 
-        self.fields['format'] = forms.ChoiceField(label=_('export format'), choices=export_choices(), required=True)
-        self.fields['include_images'] = forms.BooleanField(label=_('Include Images'), initial=True, required=False)
-        self.fields['include_categories'] = forms.BooleanField(label=_('Include Categories'), initial=True, required=False)
+        self.fields['format'] = forms.ChoiceField(
+            label=_('export format'), choices=export_choices(), required=True)
+        self.fields['include_images'] = forms.BooleanField(
+            label=_('Include Images'), initial=True, required=False)
+        self.fields['include_categories'] = forms.BooleanField(
+            label=_('Include Categories'), initial=True, required=False)
 
         if not products:
             products = Product.objects.by_site().order_by('slug')
@@ -66,7 +69,7 @@ class ProductExportForm(forms.Form):
         include_images = False
         include_categories = False
 
-        for name, value in self.cleaned_data.items():
+        for name, value in list(self.cleaned_data.items()):
             if name == 'format':
                 format = value
                 continue
@@ -111,7 +114,7 @@ class ProductExportForm(forms.Form):
         # Export all categories, translations.  Export images,translations if
         # desired.
         if include_categories:
-            for category in categories.keys():
+            for category in list(categories.keys()):
                 objects.append(category)
                 objects.extend(list(category.translations.all()))
                 if include_images:
@@ -121,7 +124,7 @@ class ProductExportForm(forms.Form):
 
         try:
             raw = serializers.serialize(format, objects, indent=False)
-        except Exception, e:
+        except Exception as e:
             raise CommandError("Unable to serialize database: %s" % e)
 
         if include_images:
@@ -134,15 +137,16 @@ class ProductExportForm(forms.Form):
 
             zinfo = zf.getinfo(str(export_file))
             # Caution, highly magic number, chmods the file to 644
-            zinfo.external_attr = 2175008768L
+            zinfo.external_attr = 2175008768
 
             image_dir = config_value('PRODUCT', 'IMAGE_DIR')
-            config = "PRODUCT.IMAGE_DIR=%s\nEXPORT_FILE=%s" % (image_dir, export_file)
+            config = "PRODUCT.IMAGE_DIR=%s\nEXPORT_FILE=%s" % (
+                image_dir, export_file)
             zf.writestr('VARS', config)
 
             zinfo = zf.getinfo('VARS')
             # Caution, highly magic number, chmods the file to 644
-            zinfo.external_attr = 2175008768L
+            zinfo.external_attr = 2175008768
 
             for image in images:
                 f = os.path.join(filedir, image)
@@ -158,7 +162,8 @@ class ProductExportForm(forms.Form):
             mimetype = "text/" + format
         # TODO: WTF? HTTPResponse from a form? srsly?
         response = HttpResponse(content_type=mimetype, content=raw)
-        response['Content-Disposition'] = 'attachment; filename="products-%s.%s"' % (time.strftime('%Y%m%d-%H%M'), format)
+        response['Content-Disposition'] = 'attachment; filename="products-%s.%s"' % (
+            time.strftime('%Y%m%d-%H%M'), format)
 
         return response
 
@@ -168,7 +173,8 @@ class ProductImportForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ProductImportForm, self).__init__(*args, **kwargs)
 
-        self.fields['upload'] = forms.Field(label=_("File to import"), widget=forms.FileInput, required=False)
+        self.fields['upload'] = forms.Field(
+            label=_("File to import"), widget=forms.FileInput, required=False)
 
     def import_from(self, infile, maxsize=10000000):
         errors = []
@@ -181,7 +187,8 @@ class ProductImportForm(forms.Form):
         if format and format.startswith('.'):
             format = format[1:]
         if not format:
-            errors.append(_('Could not parse format from filename: %s') % filename)
+            errors.append(
+                _('Could not parse format from filename: %s') % filename)
 
         if format == 'zip':
             zf = zipfile.ZipFile(StringIO(raw), 'r')
@@ -211,7 +218,8 @@ class ProductImportForm(forms.Form):
                                 f = f[len(other_image_dir):]
                                 if f[0] in ('/', '\\'):
                                     f = f[1:]
-                                f = os.path.join(settings.MEDIA_ROOT, image_dir, f)
+                                f = os.path.join(
+                                    settings.MEDIA_ROOT, image_dir, f)
                             outf = open(f, 'w')
                             outf.write(buf)
                             outf.close()
@@ -224,7 +232,8 @@ class ProductImportForm(forms.Form):
                     if format and format.startswith('.'):
                         format = format[1:]
                     if not format:
-                        errors.append(_('Could not parse format from filename: %s') % filename)
+                        errors.append(
+                            _('Could not parse format from filename: %s') % filename)
                     else:
                         raw = infile
 
@@ -250,16 +259,19 @@ class ProductImportForm(forms.Form):
                         ct += 1
                     if ct > 0:
                         style = no_style()
-                        sequence_sql = connection.ops.sequence_reset_sql(style, models)
+                        sequence_sql = connection.ops.sequence_reset_sql(
+                            style, models)
                         if sequence_sql:
                             cursor = connection.cursor()
                             for line in sequence_sql:
                                 cursor.execute(line)
 
-                    results.append(_('Added %(count)i objects from %(filename)s') % {'count': ct, 'filename': filename})
+                    results.append(_('Added %(count)i objects from %(filename)s') % {
+                                   'count': ct, 'filename': filename})
 
-                except Exception, e:
-                    errors.append(_("Problem installing fixture '%(filename)s': %(error_msg)s\n") % {'filename': filename, 'error_msg': str(e)})
+                except Exception as e:
+                    errors.append(_("Problem installing fixture '%(filename)s': %(error_msg)s\n") % {
+                                  'filename': filename, 'error_msg': str(e)})
                     errors.append("Raw: %s" % raw)
         return results, errors
 
@@ -305,20 +317,22 @@ class InventoryForm(forms.Form):
             self.fields['price__%s' % product.slug] = price
 
             kw['initial'] = product.active
-            kw['widget'] = forms.CheckboxInput(attrs={'class': "checkbox active"})
+            kw['widget'] = forms.CheckboxInput(
+                attrs={'class': "checkbox active"})
             active = forms.BooleanField(**kw)
             active.slug = product.slug
             self.fields['active__%s' % product.slug] = active
 
             kw['initial'] = product.featured
-            kw['widget'] = forms.CheckboxInput(attrs={'class': "checkbox featured"})
+            kw['widget'] = forms.CheckboxInput(
+                attrs={'class': "checkbox featured"})
             featured = forms.BooleanField(**kw)
             featured.slug = product.slug
             self.fields['featured__%s' % product.slug] = featured
 
     def save(self, request):
         self.full_clean()
-        for name, value in self.cleaned_data.items():
+        for name, value in list(self.cleaned_data.items()):
             opt, key = name.split('__')
 
             prod = Product.objects.get(slug__exact=key)
@@ -326,7 +340,8 @@ class InventoryForm(forms.Form):
 
             if opt == 'qty':
                 if value != prod.items_in_stock:
-                    messages.add_message(request, messages.SUCCESS, 'Updated %s stock to %s' % (key, value))
+                    messages.add_message(
+                        request, messages.SUCCESS, 'Updated %s stock to %s' % (key, value))
                     log.debug('Saving new qty=%i for %s' % (value, key))
                     prod.items_in_stock = value
                     prod.save()
@@ -338,7 +353,8 @@ class InventoryForm(forms.Form):
                     full_price = prod.unit_price
 
                 if value != full_price:
-                    messages.add_message(request, messages.SUCCESS, 'Updated %s unit price to %s' % (key, value))
+                    messages.add_message(
+                        request, messages.SUCCESS, 'Updated %s unit price to %s' % (key, value))
                     log.debug('Saving new price %s for %s' % (value, key))
                     try:
                         price = Price.objects.get(product=prod, quantity=1)
@@ -353,7 +369,8 @@ class InventoryForm(forms.Form):
                         note = "Activated %s"
                     else:
                         note = "Deactivated %s"
-                    messages.add_message(request, messages.SUCCESS, note % (key))
+                    messages.add_message(
+                        request, messages.SUCCESS, note % (key))
 
                     prod.active = value
                     prod.save()
@@ -364,7 +381,8 @@ class InventoryForm(forms.Form):
                         note = "%s is now featured"
                     else:
                         note = "%s is no longer featured"
-                    messages.add_message(request, messages.SUCCESS, note % (key))
+                    messages.add_message(
+                        request, messages.SUCCESS, note % (key))
 
                     prod.featured = value
                     prod.save()
@@ -391,7 +409,8 @@ class VariationManagerForm(forms.Form):
             configurableproduct = self.product.configurableproduct
 
             for grp in configurableproduct.option_group.all():
-                optchoices = [("%i_%i" % (opt.option_group.id, opt.id), opt.name) for opt in grp.option_set.all()]
+                optchoices = [("%i_%i" % (opt.option_group.id, opt.id), opt.name)
+                              for opt in grp.option_set.all()]
                 kw = {
                     'label': grp.name,
                     'widget': forms.CheckboxSelectMultiple(),
@@ -414,7 +433,8 @@ class VariationManagerForm(forms.Form):
                     'required': False
                 }
 
-                opt_str = '__'.join(["%i_%i" % (opt.option_group.id, opt.id) for opt in opts])
+                opt_str = '__'.join(
+                    ["%i_%i" % (opt.option_group.id, opt.id) for opt in opts])
 
                 key = "pv__%s" % opt_str
 
@@ -426,8 +446,9 @@ class VariationManagerForm(forms.Form):
                     self.existing[key] = True
                     self.edit_urls[key] = "/admin/product/product/%i/" % variation.id
                 else:
-                    basename = u'%s (%s)' % (self.product.name, u'/'.join(optnames))
-                    slug = u'%s_%s' % (self.product.slug, u'_'.join(optnames))
+                    basename = '%s (%s)' % (
+                        self.product.name, '/'.join(optnames))
+                    slug = '%s_%s' % (self.product.slug, '_'.join(optnames))
                     sku = ""
 
                 pv = forms.BooleanField(**kw)
@@ -499,10 +520,12 @@ class VariationManagerForm(forms.Form):
         return v
 
     def _delete_variation(self, opts, request):
-        variation = self.product.configurableproduct.get_product_from_options(opts)
+        variation = self.product.configurableproduct.get_product_from_options(
+            opts)
         if variation:
             log.info("Deleting variation for [%s] %s", self.product.slug, opts)
-            messages.add_message(request, messages.SUCCESS, 'Deleted %s' % variation)
+            messages.add_message(request, messages.SUCCESS,
+                                 'Deleted %s' % variation)
             variation.delete()
 
 
@@ -523,5 +546,6 @@ def _get_options_for_key(key, optiondict):
         try:
             opts.append(optiondict[int(grpid)][int(optid)])
         except KeyError:
-            log.warn('Could not find option for group id=%s, option id=%s', grpid, optid)
+            log.warn(
+                'Could not find option for group id=%s, option id=%s', grpid, optid)
     return opts

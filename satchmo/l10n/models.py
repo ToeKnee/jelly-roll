@@ -45,7 +45,7 @@ class Continent(models.Model):
     class Meta:
         db_table = "l10n_continent"
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -63,7 +63,11 @@ class Country(models.Model):
         _('ISO numeric'), null=True, blank=True
     )
     active = models.BooleanField(_('Country is active'), default=True)
-    continent = models.ForeignKey(Continent, to_field='code')
+    continent = models.ForeignKey(
+        Continent,
+        on_delete=models.CASCADE,
+        to_field='code'
+    )
     admin_area = models.CharField(
         _('Administrative Area'), choices=AREAS, max_length=2, null=True, blank=True
     )
@@ -77,7 +81,7 @@ class Country(models.Model):
         verbose_name_plural = _('Countries')
         ordering = ('printable_name',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.printable_name
 
 
@@ -85,7 +89,10 @@ class AdminArea(models.Model):
     """
     Administrative Area level 1 for a country.  For the US, this would be the states
     """
-    country = models.ForeignKey(Country)
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.CASCADE
+    )
     name = models.CharField(_('Admin Area name'), max_length=60, db_index=True)
     abbrev = models.CharField(
         _('Postal Abbreviation'), max_length=3, null=True, blank=True
@@ -98,5 +105,5 @@ class AdminArea(models.Model):
         verbose_name_plural = _('Administrative Areas')
         ordering = ('name',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name

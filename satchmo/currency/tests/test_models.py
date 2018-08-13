@@ -8,7 +8,7 @@ class CurrencyTest(TestCase):
     def test_unicode(self):
         currency = GBPCurrencyFactory.build()
 
-        self.assertEqual(u"{currency}".format(currency=currency), "GBP")
+        self.assertEqual("{currency}".format(currency=currency), "GBP")
 
     def test_save__set_primary__sets_accepted(self):
         currency = GBPCurrencyFactory(primary=False, accepted=False)

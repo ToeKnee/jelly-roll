@@ -1,11 +1,9 @@
 from django import http
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import login_required
-from django.core import urlresolvers
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import config_value, config_get_group, SettingNotSet
+from django.urls import reverse
+from django.shortcuts import render
+
 from satchmo.contact import signals, CUSTOMER_ID
 from satchmo.contact.forms import ExtendedContactInfoForm
 from satchmo.contact.models import Contact
@@ -13,6 +11,7 @@ from satchmo.shop.models import Config
 import logging
 
 log = logging.getLogger(__name__)
+
 
 def view(request):
     """View contact info."""
@@ -22,16 +21,17 @@ def view(request):
         user_data = None
 
     contact_dict = {
-        'user_data': user_data, 
+        'user_data': user_data,
     }
 
-    signals.satchmo_contact_view.send(user_data, contact=user_data, contact_dict=contact_dict)
-            
-    context = RequestContext(request, contact_dict)
-    
-    return render_to_response('contact/view_profile.html', context)
+    signals.satchmo_contact_view.send(
+        user_data, contact=user_data, contact_dict=contact_dict)
+
+    return render(request, 'contact/view_profile.html', contact_dict)
+
 
 view = login_required(view)
+
 
 def update(request):
     """Update contact info"""
@@ -43,12 +43,11 @@ def update(request):
         contact = Contact.objects.from_request(request, create=False)
     except Contact.DoesNotExist:
         contact = None
-    
 
     if request.method == "POST":
         new_data = request.POST.copy()
         form = ExtendedContactInfoForm(new_data, shop=shop, contact=contact, shippable=True,
-            initial=init_data)
+                                       initial=init_data)
 
         if form.is_valid():
             if contact is None and request.user:
@@ -57,28 +56,32 @@ def update(request):
             request.session[CUSTOMER_ID] = custID
             redirect_to = request.REQUEST.get(REDIRECT_FIELD_NAME, '')
             if not redirect_to or '//' in redirect_to or ' ' in redirect_to:
-                redirect_to = urlresolvers.reverse('satchmo_account_info')
-                
+                redirect_to = reverse('satchmo_account_info')
+
             return http.HttpResponseRedirect(redirect_to)
         else:
-            signals.satchmo_contact_view.send(contact, contact=contact, contact_dict=init_data)
+            signals.satchmo_contact_view.send(
+                contact, contact=contact, contact_dict=init_data)
 
     else:
         if contact:
-            #If a person has their contact info, make sure we populate it in the form
-            for item in contact.__dict__.keys():
-                init_data[item] = getattr(contact,item)
+            # If a person has their contact info, make sure we populate it in the form
+            for item in list(contact.__dict__.keys()):
+                init_data[item] = getattr(contact, item)
             if contact.shipping_address:
-                for item in contact.shipping_address.__dict__.keys():
-                    init_data["ship_"+item] = getattr(contact.shipping_address,item)
+                for item in list(contact.shipping_address.__dict__.keys()):
+                    init_data["ship_" +
+                              item] = getattr(contact.shipping_address, item)
             if contact.billing_address:
-                for item in contact.billing_address.__dict__.keys():
-                    init_data[item] = getattr(contact.billing_address,item)
+                for item in list(contact.billing_address.__dict__.keys()):
+                    init_data[item] = getattr(contact.billing_address, item)
             if contact.primary_phone:
                 init_data['phone'] = contact.primary_phone.phone
-            
-        signals.satchmo_contact_view.send(contact, contact=contact, contact_dict=init_data)
-        form = ExtendedContactInfoForm(shop=shop, contact=contact, shippable=True, initial=init_data)
+
+        signals.satchmo_contact_view.send(
+            contact, contact=contact, contact_dict=init_data)
+        form = ExtendedContactInfoForm(
+            shop=shop, contact=contact, shippable=True, initial=init_data)
 
     init_data['form'] = form
     if shop.in_country_only:
@@ -87,10 +90,8 @@ def update(request):
         countries = shop.countries()
         if countries and countries.count() == 1:
             init_data['country'] = countries[0]
-    
-    context = RequestContext(request, init_data)
-        
-    return render_to_response('contact/update_form.html', context)
+
+    return render(request, 'contact/update_form.html', init_data)
+
 
 update = login_required(update)
-

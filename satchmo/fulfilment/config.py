@@ -1,8 +1,8 @@
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import (
+from satchmo.configuration.functions import config_register
+from satchmo.configuration.values import (
     ConfigurationGroup,
     MultipleStringValue,
-    config_register,
 )
 
 import logging
@@ -15,7 +15,8 @@ ACTIVE_FULILMENT_HOUSE = config_register(
         FULFILMENT_SETTINGS,
         'MODULES',
         description=_("Active fulfilment houses"),
-        help_text=_("Select the active fulfilment house, save and reload to set any module-specific fulilment settings."),
+        help_text=_(
+            "Select the active fulfilment house, save and reload to set any module-specific fulilment settings."),
         default=[],
         choices=[]
     )

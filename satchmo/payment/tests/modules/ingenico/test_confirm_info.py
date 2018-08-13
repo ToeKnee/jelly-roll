@@ -26,7 +26,8 @@ class ConfirmInfoTest(TestCase):
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response._headers['location'], ('Location', '{}/'.format(getattr(settings, "SHOP_BASE", "/store"))))
+        self.assertEqual(response._headers['location'], ('Location',
+                                                         '{}/'.format(getattr(settings, "SHOP_BASE", "/store"))))
 
     def test_not_enough_stock(self):
         cart = CartFactory()
@@ -46,7 +47,8 @@ class ConfirmInfoTest(TestCase):
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response._headers['location'], ('Location', '{}/cart/'.format(getattr(settings, "SHOP_BASE", "/store"))))
+        self.assertEqual(response._headers['location'], ('Location',
+                                                         '{}/cart/'.format(getattr(settings, "SHOP_BASE", "/store"))))
 
     def test_form_includes_shasign(self):
         order = TestOrderFactory()
@@ -59,9 +61,9 @@ class ConfirmInfoTest(TestCase):
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("SHASIGN", response.content)
-        self.assertNotIn("ALIAS", response.content)
-        self.assertNotIn("ALIASUSAGE", response.content)
+        self.assertIn("SHASIGN".encode("utf-8"), response.content)
+        self.assertNotIn("ALIAS".encode("utf-8"), response.content)
+        self.assertNotIn("ALIASUSAGE".encode("utf-8"), response.content)
 
     def test_form_includes_alias__if_enabled(self):
         # Enable Aliasing
@@ -81,9 +83,11 @@ class ConfirmInfoTest(TestCase):
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("ALIAS", response.content)
+        self.assertIn("ALIAS".encode("utf-8"), response.content)
         self.assertIn(
-            hashlib.sha512(order.contact.user.username).hexdigest()[:50],
+            hashlib.sha512(
+                order.contact.user.username.encode("utf-8")
+            ).hexdigest()[:50].encode("utf-8"),
             response.content
         )
-        self.assertIn("ALIASUSAGE", response.content)
+        self.assertIn("ALIASUSAGE".encode("utf-8"), response.content)

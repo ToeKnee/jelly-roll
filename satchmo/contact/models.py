@@ -65,7 +65,7 @@ class Organization(models.Model):
 
     objects = OrganizationManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):
@@ -95,7 +95,7 @@ class ContactManager(models.Manager):
             except Contact.DoesNotExist:
                 del request.session[CUSTOMER_ID]
 
-        if contact is None and request.user.is_authenticated():
+        if contact is None and request.user.is_authenticated:
             try:
                 contact = Contact.objects.get(user=request.user.id)
                 request.session[CUSTOMER_ID] = contact.id
@@ -123,10 +123,22 @@ class Contact(models.Model):
     title = models.CharField(_("Title"), max_length=30, blank=True, null=True)
     first_name = models.CharField(_("First name"), max_length=30, )
     last_name = models.CharField(_("Last name"), max_length=30, )
-    user = models.ForeignKey(User, blank=True, null=True, unique=True)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        unique=True
+    )
     role = models.CharField(_("Role"), max_length=20, blank=True, null=True,
                             choices=CONTACT_CHOICES)
-    organization = models.ForeignKey(Organization, verbose_name=_("Organization"), blank=True, null=True)
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        verbose_name=_("Organization"),
+        blank=True,
+        null=True
+    )
     dob = models.DateField(_("Date of birth"), blank=True, null=True)
     email = models.EmailField(_("Email"), blank=True)
     notes = models.TextField(_("Notes"), max_length=500, blank=True)
@@ -138,13 +150,13 @@ class Contact(models.Model):
     def full_name(self):
         """Return the person's full name."""
         if self.title:
-            name = u"{title} {first} {last}".format(
+            name = "{title} {first} {last}".format(
                 title=self.title,
                 first=self.first_name,
                 last=self.last_name,
             )
         else:
-            name = u"{first} {last}".format(
+            name = "{first} {last}".format(
                 first=self.first_name,
                 last=self.last_name,
             )
@@ -174,7 +186,7 @@ class Contact(models.Model):
             return None
     primary_phone = property(_primary_phone)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.full_name
 
     def save(self, *args, **kwargs):
@@ -190,6 +202,7 @@ class Contact(models.Model):
     class Meta:
         verbose_name = _("Contact")
         verbose_name_plural = _("Contacts")
+
 
 PHONE_CHOICES = (
     ('Work', _('Work')),
@@ -210,13 +223,18 @@ class Interaction(models.Model):
     A type of activity with the customer.  Useful to track emails, phone calls,
     or in-person interactions.
     """
-    contact = models.ForeignKey(Contact, verbose_name=_("Contact"))
-    type = models.CharField(_("Type"), max_length=30, choices=INTERACTION_CHOICES)
+    contact = models.ForeignKey(
+        Contact,
+        on_delete=models.CASCADE,
+        verbose_name=_("Contact")
+    )
+    type = models.CharField(_("Type"), max_length=30,
+                            choices=INTERACTION_CHOICES)
     date_time = models.DateTimeField(_("Date and Time"), )
     description = models.TextField(_("Description"), max_length=200)
 
-    def __unicode__(self):
-        return u'%s - %s' % (self.contact.full_name, self.type)
+    def __str__(self):
+        return '%s - %s' % (self.contact.full_name, self.type)
 
     class Meta:
         verbose_name = _("Interaction")
@@ -227,14 +245,17 @@ class PhoneNumber(models.Model):
     """
     Phone number associated with a contact.
     """
-    contact = models.ForeignKey(Contact)
+    contact = models.ForeignKey(
+        Contact,
+        on_delete=models.CASCADE
+    )
     type = models.CharField(_("Description"), choices=PHONE_CHOICES,
                             max_length=20, blank=True)
     phone = models.CharField(_("Phone Number"), blank=True, max_length=30)
     primary = models.BooleanField(_("Primary"), default=False)
 
-    def __unicode__(self):
-        return u'%s - %s' % (self.type, self.phone)
+    def __str__(self):
+        return '%s - %s' % (self.type, self.phone)
 
     def save(self, *args, **kwargs):
         """
@@ -261,7 +282,10 @@ class AddressBook(models.Model):
     """
     Address information associated with a contact.
     """
-    contact = models.ForeignKey(Contact)
+    contact = models.ForeignKey(
+        Contact,
+        on_delete=models.CASCADE
+    )
     description = models.CharField(_("Description"), max_length=20, blank=True,
                                    help_text=_('Description of address - Home, Office, Warehouse, etc.',))
     addressee = models.CharField(_("Addressee"), max_length=80)
@@ -270,7 +294,11 @@ class AddressBook(models.Model):
     state = models.CharField(_("State"), max_length=50, blank=True)
     city = models.CharField(_("City"), max_length=50)
     postal_code = models.CharField(_("Post Code"), max_length=30)
-    country = models.ForeignKey(Country, verbose_name=_("Country"))
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.CASCADE,
+        verbose_name=_("Country")
+    )
     is_default_shipping = models.BooleanField(_("Default Shipping Address"),
                                               default=False)
     is_default_billing = models.BooleanField(_("Default Billing Address"),
@@ -280,8 +308,8 @@ class AddressBook(models.Model):
         verbose_name = _("Address Book")
         verbose_name_plural = _("Address Books")
 
-    def __unicode__(self):
-        return u'%s - %s' % (self.contact.full_name, self.city)
+    def __str__(self):
+        return '%s - %s' % (self.contact.full_name, self.city)
 
     def save(self, *args, **kwargs):
         """
@@ -306,5 +334,3 @@ class AddressBook(models.Model):
             self.is_default_shipping = True
 
         super(AddressBook, self).save(*args, **kwargs)
-
-import config

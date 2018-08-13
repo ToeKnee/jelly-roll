@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from django.test import TestCase
 
@@ -40,7 +40,7 @@ class CurrencySessionSerializerTest(TestCase):
         serializer = CurrencySessionSerializer(currency)
 
         self.assertEqual(serializer.data["iso_4217_code"], currency.iso_4217_code)
-        self.assertEqual(len(serializer.data.keys()), 1)
+        self.assertEqual(len(list(serializer.data.keys())), 1)
 
     def test_validate__correct(self):
         EURCurrencyFactory()

@@ -69,13 +69,6 @@
 		{% url "satchmo_wishlist_view" as wishlist_url %}
 	    {% if wishlist_url %}<p class="wishlist"><a href="{{ wishlist_url }}" />{% trans 'Wishlist' %}</a></p>{% endif %}
 	    {% endif %}
-
-
-            {% satchmo_language_selection_form %}
-
-	    {% block recentview %}
-		{% if recent_list %}{% recentlyviewed recent_list %}{% endif %}
-	    {% endblock recentview %}
 		{% endblock rightnav%}
 
             {% load satchmo_currency %}

@@ -1,6 +1,5 @@
 from django.http import Http404
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 from satchmo.discount.utils import find_best_auto_discount
 from satchmo.product import signals
@@ -17,8 +16,8 @@ def brand_list(request):
         'brands': brands,
     }
     signals.index_prerender.send(Brand, request=request, context=ctx, object_list=brands)
-    requestctx = RequestContext(request, ctx)
-    return render_to_response('product/brand/index.html', requestctx)
+
+    return render(request, 'product/brand/index.html', ctx)
 
 
 def brand_page(request, brandname):
@@ -36,8 +35,7 @@ def brand_page(request, brandname):
         'sale': sale,
     }
 
-    ctx = RequestContext(request, ctx)
-    return render_to_response('product/brand/view_brand.html', ctx)
+    return render(request, 'product/brand/view_brand.html', ctx)
 
 
 def brand_category_page(request, category_slug, brand_slug):
@@ -63,11 +61,11 @@ def brand_category_page(request, category_slug, brand_slug):
         products = brand.active_products()
     sale = find_best_auto_discount(products)
 
-    context = RequestContext(request, {
+    context = {
         'products': products,
         'category': category,
         'brand': brand,
         'sale': sale,
-    })
+    }
 
-    return render_to_response('product/brand/view_brand.html', context)
+    return render(request, 'product/brand/view_brand.html', context)

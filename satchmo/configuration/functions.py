@@ -64,8 +64,9 @@ class ConfigurationSettings(object):
 
                 cg = self.settings.get(group, None)
                 if not cg:
-                    raise SettingNotSet('%s config group does not exist' % group)
-
+                    raise SettingNotSet(
+                        '%s config group does not exist' % group
+                    )
                 else:
                     return cg[key]
             except KeyError:
@@ -73,7 +74,7 @@ class ConfigurationSettings(object):
 
         def groups(self):
             """Return ordered list"""
-            return self.settings.values()
+            return list(self.settings.values())
 
         def has_config(self, group, key):
             if isinstance(group, values.ConfigurationGroup):
@@ -96,7 +97,8 @@ class ConfigurationSettings(object):
         def register(self, value):
             g = value.group
             if not isinstance(g, values.ConfigurationGroup):
-                raise ValueError('value.group should be an instance of ConfigurationGroup')
+                raise ValueError(
+                    'value.group should be an instance of ConfigurationGroup')
 
             groupkey = g.key
             valuekey = value.key
@@ -119,11 +121,12 @@ class ConfigurationSettings(object):
         if ConfigurationSettings.__instance is None:
             ConfigurationSettings.__instance = ConfigurationSettings.__impl()
 
-        self.__dict__['_ConfigurationSettings__instance'] = ConfigurationSettings.__instance
+        self.__dict__[
+            '_ConfigurationSettings__instance'] = ConfigurationSettings.__instance
 
     def __getattr__(self, attr):
-            """ Delegate access to implementation """
-            return getattr(self.__instance, attr)
+        """ Delegate access to implementation """
+        return getattr(self.__instance, attr)
 
     def __getitem__(self, key):
         return self.__instance[key]
@@ -135,8 +138,8 @@ class ConfigurationSettings(object):
         """ Delegate access to implementation """
         return setattr(self.__instance, attr, value)
 
-    def __unicode__(self):
-        return u"ConfigurationSettings: " + unicode(self.groups())
+    def __str__(self):
+        return "ConfigurationSettings: " + str(self.groups())
 
 
 def config_exists(group, key):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 
@@ -14,13 +14,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='brandtranslation',
             name='languagecode',
-            field=models.CharField(max_length=10, verbose_name='language', choices=[(b'en', b'English')]),
+            field=models.CharField(max_length=10, verbose_name='language', choices=[
+                                   (b'en', b'English')]),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='brandtranslation',
             name='picture',
-            field=models.ImageField(max_length=200, upload_to=b'brand/', null=True, verbose_name='Picture', blank=True),
+            field=models.ImageField(
+                max_length=200, upload_to='brand/', null=True, verbose_name='Picture', blank=True),
             preserve_default=True,
         ),
     ]

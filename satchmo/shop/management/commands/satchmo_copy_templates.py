@@ -11,11 +11,11 @@ class Command(NoArgsCommand):
         template_src = os.path.join(satchmo.__path__[0],'templates')
         template_dest = os.path.join(os.getcwd(), 'templates')
         if os.path.exists(template_dest):
-            print "Template directory exists. You must manually copy the files you need."
+            print("Template directory exists. You must manually copy the files you need.")
         else:
             shutil.copytree(template_src, template_dest)
             for root, dirs, files in os.walk(template_dest):
                 if '.svn' in dirs:
                     shutil.rmtree(os.path.join(root,'.svn'), True)
-            print "Copied %s to %s" % (template_src, template_dest)
+            print(("Copied %s to %s" % (template_src, template_dest)))
 

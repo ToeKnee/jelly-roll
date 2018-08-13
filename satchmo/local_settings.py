@@ -37,7 +37,7 @@ import logging
 
 #### Satchmo unique variables ####
 
-#These are used when loading the test data
+# These are used when loading the test data
 SITE_DOMAIN = "example.com"
 SITE_NAME = "My Site"
 
@@ -45,8 +45,7 @@ from django.conf.urls import *
 
 # These can override or add to the default URLs
 from django.conf.urls import *
-URLS = patterns('',
-)
+URLS = []
 
 # a cache backend is required.  Do not use locmem, it will not work properly at all in production
 # Preferably use memcached, but file or DB is OK.  File is faster, I don't know why you'd want to use
@@ -66,7 +65,10 @@ LANGUAGE_CODE = 'en-gb'
 
 # Languages for your site.  The language name
 # should be the utf-8 encoded local name for the language.
-gettext_noop = lambda s: s
+
+
+def gettext_noop(s): return s
+
 
 LANGUAGES = (
     ('en', 'English'),

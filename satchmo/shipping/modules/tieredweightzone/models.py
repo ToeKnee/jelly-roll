@@ -29,7 +29,7 @@ class Shipper(BaseShipper):
         self.carrier = carrier
         super(Shipper, self).__init__()
 
-    def __unicode__(self):
+    def __str__(self):
         """
         This is mainly helpful for debugging purposes
         """
@@ -45,25 +45,33 @@ class Shipper(BaseShipper):
         # calculate the weight of the entire order
         assert(self._calculated)
         weight = Decimal('0.0')
+
         for item in self.cart.cartitem_set.all():
-            if item.is_shippable:
-                if item.product.weight:
-                    weight += item.product.weight * item.quantity
+            if item.is_shippable and item.product.weight:
+                weight += item.product.weight * item.quantity
+
         country = self.contact.shipping_address.country_id
         discount_multiplier = 1 - (self.shipping_discount() / Decimal('100.0'))
+
         return self.carrier.price(weight, country) * discount_multiplier
 
     def shipping_discount(self):
-        discounts = ShippingDiscount.objects.filter(carrier=self.carrier,
-                                                    zone__in=self.contact.shipping_address.country.zone.all,
-                                                    minimum_order_value__lte=self.cart.total
-                                                    ).filter(Q(start_date__lte=datetime.date.today(), end_date__gte=datetime.date.today()) | Q(end_date__isnull=True)).order_by('-percentage')
+        discounts = ShippingDiscount.objects.filter(
+            carrier=self.carrier,
+            zone__in=self.contact.shipping_address.country.zone.all(),
+            minimum_order_value__lte=self.cart.total
+        ).filter(
+            Q(start_date__lte=datetime.date.today(), end_date__gte=datetime.date.today()) |
+            Q(end_date__isnull=True)
+        ).order_by(
+            '-percentage'
+        )
 
-        if discounts.count():
-            discount = discounts[0]
-            percentage = discount.percentage
-        else:
+        try:
+            percentage = discounts[0].percentage
+        except IndexError:
             percentage = 0
+
         return percentage
 
     def method(self):
@@ -97,16 +105,20 @@ class Carrier(models.Model):
     active = models.BooleanField(_('Active'), default=False)
     signed_for = models.BooleanField(_('Signed For'), default=False)
     tracked = models.BooleanField(_('Tracked'), default=False)
-    postage_speed = models.PositiveIntegerField(_('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
-    estimated_delivery_min_days = models.PositiveIntegerField(_('Minimum number of days after shipping until delivery'), default=1)
-    estimated_delivery_expected_days = models.PositiveIntegerField(_('Usual number of days after shipping until delivery'), default=7)
-    estimated_delivery_max_days = models.PositiveIntegerField(_('Maximum number of days after shipping until delivery'), default=25)
+    postage_speed = models.PositiveIntegerField(
+        _('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
+    estimated_delivery_min_days = models.PositiveIntegerField(
+        _('Minimum number of days after shipping until delivery'), default=1)
+    estimated_delivery_expected_days = models.PositiveIntegerField(
+        _('Usual number of days after shipping until delivery'), default=7)
+    estimated_delivery_max_days = models.PositiveIntegerField(
+        _('Maximum number of days after shipping until delivery'), default=25)
 
     class Meta:
         db_table = "tieredweightzone_carrier"
 
-    def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.description)
+    def __str__(self):
+        return "%s (%s)" % (self.name, self.description)
 
     def _find_translation(self, language_code=None):
         if not language_code:
@@ -119,15 +131,18 @@ class Carrier(models.Model):
             pos = language_code.find('-')
             if pos > -1:
                 short_code = language_code[:pos]
-                log.debug("%s: Trying to find root language content for: [%s]", self.id, short_code)
+                log.debug(
+                    "%s: Trying to find root language content for: [%s]", self.id, short_code)
                 c = self.translations.filter(languagecode__exact=short_code)
                 ct = c.count()
                 if ct > 0:
-                    log.debug("%s: Found root language content for: [%s]", self.id, short_code)
+                    log.debug(
+                        "%s: Found root language content for: [%s]", self.id, short_code)
 
         if not c or ct == 0:
             log.debug("Trying to find default language content for: %s", self)
-            c = self.translations.filter(languagecode__istartswith=settings.LANGUAGE_CODE)
+            c = self.translations.filter(
+                languagecode__istartswith=settings.LANGUAGE_CODE)
             ct = c.count()
 
         if not c or ct == 0:
@@ -202,10 +217,12 @@ class Carrier(models.Model):
         tiers = WeightTier.objects.filter(carrier=self, zone=zone)
 
         if not tiers:
-            raise TieredPriceException('No price available. For this zone/country/weight')
+            raise TieredPriceException(
+                'No price available. For this zone/country/weight')
 
         # check for special discounts
-        prices = tiers.filter(expires__isnull=False, min_weight__lte=wgt).exclude(expires__lt=datetime.date.today())
+        prices = tiers.filter(expires__isnull=False, min_weight__lte=wgt).exclude(
+            expires__lt=datetime.date.today())
         if not prices.count() > 0:
             prices = tiers.filter(expires__isnull=True, min_weight__lte=wgt)
 
@@ -214,15 +231,23 @@ class Carrier(models.Model):
             return Decimal(prices.order_by('-min_weight')[0].price)
         else:
             log.debug("No tiered price found for %s: weight=%s", self.id, wgt)
-            raise TieredPriceException('No price available. Please contact us for a price.')
+            raise TieredPriceException(
+                'No price available. Please contact us for a price.'
+            )
 
 
 class CarrierTranslation(models.Model):
-    carrier = models.ForeignKey('Carrier', related_name='translations')
-    languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES,)
+    carrier = models.ForeignKey(
+        'Carrier',
+        on_delete=models.CASCADE,
+        related_name='translations'
+    )
+    languagecode = models.CharField(
+        _('language'), max_length=10, choices=settings.LANGUAGES,)
     name = models.CharField(_('Carrier'), max_length=50, )
     description = models.CharField(_('Description'), max_length=200)
-    method = models.CharField(_('Method'), help_text=_("i.e. US Mail"), max_length=200)
+    method = models.CharField(
+        _('Method'), help_text=_("i.e. US Mail"), max_length=200)
     delivery = models.CharField(_('Delivery Days'), max_length=200)
 
     class Meta:
@@ -232,14 +257,18 @@ class CarrierTranslation(models.Model):
 
 class Zone(models.Model):
     key = models.SlugField(_('Key'))
-    continent = models.ManyToManyField(Continent, related_name='continent', db_table="tieredweightzone_zone_continent")
-    country = models.ManyToManyField(Country, related_name='zone', db_table="tieredweightzone_zone_country", blank=True, null=True)
+    continent = models.ManyToManyField(
+        Continent, related_name='continent', db_table="tieredweightzone_zone_continent"
+    )
+    country = models.ManyToManyField(
+        Country, related_name='zone', db_table="tieredweightzone_zone_country", blank=True
+    )
 
     class Meta:
         db_table = "tieredweightzone_zone"
 
-    def __unicode__(self):
-        return u"%s (%s)" % (self.name, self.description)
+    def __str__(self):
+        return "%s (%s)" % (self.name, self.description)
 
     def _find_translation(self, language_code=None):
         if not language_code:
@@ -252,15 +281,18 @@ class Zone(models.Model):
             pos = language_code.find('-')
             if pos > -1:
                 short_code = language_code[:pos]
-                log.debug("%s: Trying to find root language content for: [%s]", self.id, short_code)
+                log.debug(
+                    "%s: Trying to find root language content for: [%s]", self.id, short_code)
                 c = self.translations.filter(languagecode__exact=short_code)
                 ct = c.count()
                 if ct > 0:
-                    log.debug("%s: Found root language content for: [%s]", self.id, short_code)
+                    log.debug(
+                        "%s: Found root language content for: [%s]", self.id, short_code)
 
         if not c or ct == 0:
             log.debug("Trying to find default language content for: %s", self)
-            c = self.translations.filter(languagecode__istartswith=settings.LANGUAGE_CODE)
+            c = self.translations.filter(
+                languagecode__istartswith=settings.LANGUAGE_CODE)
             ct = c.count()
 
         if not c or ct == 0:
@@ -298,8 +330,13 @@ class Zone(models.Model):
 
 
 class ZoneTranslation(models.Model):
-    zone = models.ForeignKey('Zone', related_name='translations')
-    languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES, )
+    zone = models.ForeignKey(
+        'Zone',
+        on_delete=models.CASCADE,
+        related_name='translations'
+    )
+    languagecode = models.CharField(
+        _('language'), max_length=10, choices=settings.LANGUAGES, )
     name = models.CharField(_('Zone'), max_length=50, )
     description = models.CharField(_('Description'), max_length=200)
 
@@ -309,28 +346,46 @@ class ZoneTranslation(models.Model):
 
 
 class WeightTier(models.Model):
-    carrier = models.ForeignKey('Carrier', related_name='tiers')
-    zone = models.ForeignKey('Zone', related_name='tiers')
+    carrier = models.ForeignKey(
+        'Carrier',
+        on_delete=models.CASCADE,
+        related_name='tiers'
+    )
+    zone = models.ForeignKey(
+        'Zone',
+        on_delete=models.CASCADE,
+        related_name='tiers'
+    )
     min_weight = models.DecimalField(
         _("Min Weight"),
         help_text=_('The minumum weight for this tier to apply'),
         max_digits=10, decimal_places=2, )
-    price = models.DecimalField(_("Shipping Price"), max_digits=10, decimal_places=2, )
+    price = models.DecimalField(
+        _("Shipping Price"), max_digits=10, decimal_places=2, )
     expires = models.DateField(_("Expires"), null=True, blank=True)
 
     class Meta:
         db_table = "tieredweightzone_weighttier"
         ordering = ('zone', 'carrier', 'price')
 
-    def __unicode__(self):
-        return u"%s @ %s" % (self.price, self.min_weight)
+    def __str__(self):
+        return "%s @ %s" % (self.price, self.min_weight)
 
 
 class ShippingDiscount(models.Model):
-    carrier = models.ForeignKey('Carrier', related_name='shipping_discount')
-    zone = models.ForeignKey('Zone', related_name='shipping_discount')
+    carrier = models.ForeignKey(
+        'Carrier',
+        on_delete=models.CASCADE,
+        related_name='shipping_discount'
+    )
+    zone = models.ForeignKey(
+        'Zone',
+        on_delete=models.CASCADE,
+        related_name='shipping_discount'
+    )
     percentage = models.IntegerField(_("Percentage Discount"))
-    minimum_order_value = models.DecimalField(_("Minimum Order Value"), max_digits=10, decimal_places=2)
+    minimum_order_value = models.DecimalField(
+        _("Minimum Order Value"), max_digits=10, decimal_places=2)
     start_date = models.DateField(_("Start Date"))
     end_date = models.DateField(_("End Date"), null=True, blank=True)
 

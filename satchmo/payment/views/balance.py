@@ -1,12 +1,12 @@
 from decimal import Decimal
 
 from django.contrib import messages
-from django.core import urlresolvers
+from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import config_get_group, config_value
+
+from satchmo.configuration.functions import config_get_group, config_value
 from satchmo.payment.forms import PaymentMethodForm, CustomChargeForm
 from satchmo.shop.models import Order, OrderItem
 from satchmo.shop.views.utils import bad_or_missing
@@ -36,7 +36,7 @@ def balance_remaining(request):
             pass
 
     if not order:
-        url = urlresolvers.reverse('satchmo_checkout-step1')
+        url = reverse('satchmo_checkout-step1')
         return HttpResponseRedirect(url)
 
     if request.method == "POST":
@@ -55,12 +55,12 @@ def balance_remaining(request):
     else:
         form = PaymentMethodForm(order=order)
 
-    ctx = RequestContext(request, {
+    ctx = {
         'form': form,
         'order': order,
         'paymentmethod_ct': len(config_value('PAYMENT', 'MODULES'))
-    })
-    return render_to_response('checkout/balance_remaining.html', ctx)
+    }
+    return render(request, 'checkout/balance_remaining.html', ctx)
 
 
 def charge_remaining(request, orderitem_id):
@@ -78,8 +78,8 @@ def charge_remaining(request, orderitem_id):
         'amount': amount,
     }
     form = CustomChargeForm(data)
-    ctx = RequestContext(request, {'form': form})
-    return render_to_response('admin/charge_remaining_confirm.html', ctx)
+    ctx = {'form': form}
+    return render(request, 'admin/charge_remaining_confirm.html', ctx)
 
 
 def charge_remaining_post(request):
@@ -112,7 +112,8 @@ def charge_remaining_post(request):
 
         order.recalculate_total()
 
-        messages.add_message(request, messages.INFO, _('Charged for custom product and recalculated totals.'))
+        messages.add_message(request, messages.INFO, _(
+            'Charged for custom product and recalculated totals.'))
 
         notes = data['notes']
         if not notes:
@@ -122,5 +123,5 @@ def charge_remaining_post(request):
 
         return HttpResponseRedirect('/admin/shop/order/%i' % order.id)
     else:
-        ctx = RequestContext(request, {'form': form})
-        return render_to_response('admin/charge_remaining_confirm.html', ctx)
+        ctx = {'form': form}
+        return render(request, 'admin/charge_remaining_confirm.html', ctx)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 import datetime
@@ -15,10 +15,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ExchangeRate',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('date', models.DateField(default=datetime.date.today, verbose_name='Date', editable=False)),
-                ('rate', models.DecimalField(help_text='Rate from primary currency', verbose_name='Rate', editable=False, max_digits=6, decimal_places=4)),
-                ('currency', models.ForeignKey(related_name='exchange_rates', editable=False, to='currency.Currency')),
+                ('id', models.AutoField(verbose_name='ID',
+                                        serialize=False, auto_created=True, primary_key=True)),
+                ('date', models.DateField(default=datetime.date.today,
+                                          verbose_name='Date', editable=False)),
+                ('rate', models.DecimalField(help_text='Rate from primary currency',
+                                             verbose_name='Rate', editable=False, max_digits=6, decimal_places=4)),
+                ('currency', models.ForeignKey(related_name='exchange_rates',
+                                               editable=False, to='currency.Currency', on_delete=models.CASCADE)),
             ],
             options={
                 'get_latest_by': 'date',
@@ -30,7 +34,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='exchangerate',
-            unique_together=set([('currency', 'date')]),
+            unique_together={('currency', 'date')},
         ),
         migrations.AlterOrderWithRespectTo(
             name='exchangerate',

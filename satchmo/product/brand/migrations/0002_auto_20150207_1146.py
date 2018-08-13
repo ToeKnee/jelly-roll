@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 
@@ -16,19 +16,21 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='brand',
             name='categories',
-            field=models.ManyToManyField(related_name='brands', verbose_name='Category', to='product.Category', blank=True),
+            field=models.ManyToManyField(
+                related_name='brands', verbose_name='Category', to='product.Category', blank=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='brand',
             name='products',
-            field=models.ManyToManyField(related_name='brands', verbose_name='Products', to='product.Product', blank=True),
+            field=models.ManyToManyField(
+                related_name='brands', verbose_name='Products', to='product.Product', blank=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='brand',
             name='site',
-            field=models.ForeignKey(to='sites.Site'),
+            field=models.ForeignKey(to='sites.Site', on_delete=models.CASCADE),
             preserve_default=True,
         ),
     ]

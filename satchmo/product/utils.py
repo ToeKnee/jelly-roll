@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 def get_taxprocessor(user):
-    if user.is_authenticated():
+    if user.is_authenticated:
         user = user
     else:
         user = None
@@ -60,7 +60,8 @@ def productvariation_details(product, include_tax, user, request, create=False):
             ProductPriceLookup.objects.smart_create_for_product(product)
             variations = ProductPriceLookup.objects.filter(parentid=product.id)
         else:
-            log.warning('You must run satchmo_rebuild_pricing and add it to a cron-job to run every day, or else the product details will not work for product detail pages.')
+            log.warning(
+                'You must run satchmo_rebuild_pricing and add it to a cron-job to run every day, or else the product details will not work for product detail pages.')
     for detl in variations:
         key = detl.key
         if key in details:
@@ -139,7 +140,7 @@ def serialize_options(product, selected_options=()):
                 groups[k] = False
                 opts[option] = None
 
-    for option in Option.objects.filter(option_group__id__in=groups.keys(), value__in=vals.keys()):
+    for option in Option.objects.filter(option_group__id__in=list(groups.keys()), value__in=list(vals.keys())):
         uid = option.unique_id
         if uid in opts:
             opts[uid] = option
@@ -148,7 +149,7 @@ def serialize_options(product, selected_options=()):
 
     serialized = {}
 
-    for option in opts.values():
+    for option in list(opts.values()):
         if option.option_group_id not in serialized:
             serialized[option.option_group.id] = {
                 'name': option.option_group.translated_name(),
@@ -161,11 +162,11 @@ def serialize_options(product, selected_options=()):
 
     # first sort the option groups
     values = []
-    for k, v in serialized.items():
+    for k, v in list(serialized.items()):
         values.append((group_sortmap[k], v))
 
     values.sort()
-    values = zip(*values)[1]
+    values = list(zip(*values))[1]
 
     log.debug('serialized: %s', values)
 
@@ -178,6 +179,5 @@ def serialize_options(product, selected_options=()):
 
 
 def _sort_options(lst):
-    work = [(opt.sort_order, opt) for opt in lst]
-    work.sort()
-    return zip(*work)[1]
+    work = sorted([(opt.sort_order, opt) for opt in lst])
+    return list(zip(*work))[1]

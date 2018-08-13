@@ -1,11 +1,13 @@
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import (
-    BooleanValue,
-    StringValue,
+from satchmo.configuration.functions import (
     config_get,
     config_get_group,
     config_register,
+)
+from satchmo.configuration.values import (
+    BooleanValue,
+    StringValue,
 )
 from satchmo.tax.models import TaxClass
 
@@ -54,5 +56,6 @@ def config_tax():
             choices=_tax_classes
         )
     )
+
 
 config_tax()

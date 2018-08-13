@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 
@@ -14,9 +14,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TaxClass',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('title', models.CharField(help_text='Displayed title of this tax.', max_length=20, verbose_name='Title')),
-                ('description', models.CharField(help_text='Description of products that would be taxed.', max_length=30, verbose_name='Description')),
+                ('id', models.AutoField(verbose_name='ID',
+                                        serialize=False, auto_created=True, primary_key=True)),
+                ('title', models.CharField(
+                    help_text='Displayed title of this tax.', max_length=20, verbose_name='Title')),
+                ('description', models.CharField(
+                    help_text='Description of products that would be taxed.', max_length=30, verbose_name='Description')),
             ],
             options={
                 'verbose_name': 'Tax Class',
@@ -27,11 +30,16 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TaxRate',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('percentage', models.DecimalField(help_text='% tax for this area and type', verbose_name='Percentage', max_digits=7, decimal_places=6)),
-                ('taxClass', models.ForeignKey(verbose_name='Tax Class', to='tax.TaxClass')),
-                ('taxCountry', models.ForeignKey(verbose_name='Tax Country', blank=True, to='l10n.Country', null=True)),
-                ('taxZone', models.ForeignKey(verbose_name='Tax Zone', blank=True, to='l10n.AdminArea', null=True)),
+                ('id', models.AutoField(verbose_name='ID',
+                                        serialize=False, auto_created=True, primary_key=True)),
+                ('percentage', models.DecimalField(help_text='% tax for this area and type',
+                                                   verbose_name='Percentage', max_digits=7, decimal_places=6)),
+                ('taxClass', models.ForeignKey(verbose_name='Tax Class',
+                                               to='tax.TaxClass', on_delete=models.CASCADE)),
+                ('taxCountry', models.ForeignKey(verbose_name='Tax Country',
+                                                 blank=True, to='l10n.Country', null=True, on_delete=models.CASCADE)),
+                ('taxZone', models.ForeignKey(verbose_name='Tax Zone', blank=True,
+                                              to='l10n.AdminArea', null=True, on_delete=models.CASCADE)),
             ],
             options={
                 'verbose_name': 'Tax Rate',

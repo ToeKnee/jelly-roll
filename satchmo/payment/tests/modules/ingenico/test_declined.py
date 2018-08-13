@@ -16,7 +16,12 @@ class DeclinedTest(TestCase):
 
         response = declined(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response._headers['location'], ('Location', '{}/'.format(getattr(settings, "SHOP_BASE", "/store"))))
+        self.assertEqual(
+            response._headers['location'],
+            ('Location', '{}/'.format(
+                getattr(settings, "SHOP_BASE", "/store")
+            ))
+        )
 
     def test_order_available(self):
         order = TestOrderFactory()
@@ -29,7 +34,7 @@ class DeclinedTest(TestCase):
 
         response = declined(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("declined", response.content)
+        self.assertIn("declined".encode("utf-8"), response.content)
 
         order = Order.objects.get(id=order.id)
         self.assertTrue(order.frozen)

@@ -1,9 +1,11 @@
 import math
+
 from django import template
 from django.conf import settings
-from django.core import urlresolvers
+from django.urls import reverse, NoReverseMatch
 from django.utils.safestring import mark_safe
-from satchmo.configuration import config_value, config_choice_values
+
+from satchmo.configuration.functions import config_value, config_choice_values
 from satchmo.product.models import Category
 from satchmo.utils import app_enabled, trunc_decimal
 from satchmo.utils.json import json_encode
@@ -20,12 +22,14 @@ def debug_mode(value):
         return "true"
     return ""
 
+
 register.filter('debug_mode', debug_mode)
 
 
 def template_range(value):
     """Return a range 1..value"""
-    return range(1, value + 1)
+    return list(range(1, value + 1))
+
 
 register.filter('template_range', template_range)
 
@@ -35,6 +39,7 @@ def in_list(value, val=None):
     if val in value:
         return "true"
     return ""
+
 
 register.filter('in_list', in_list)
 
@@ -46,6 +51,7 @@ def app_enabled_filter(value):
     else:
         return ""
 
+
 register.filter('app_enabled', app_enabled_filter)
 
 
@@ -53,11 +59,13 @@ def as_json(value):
     """Return the value as a json encoded object"""
     return mark_safe(json_encode(value))
 
+
 register.filter('as_json', as_json)
 
 
 def truncate_decimal(val, places=2):
     return trunc_decimal(val, places)
+
 
 register.filter('truncate_decimal', truncate_decimal)
 
@@ -66,6 +74,7 @@ def tag_attr(obj, arg1):
     att, value = arg1.split("=")
     obj.field.widget.attrs[att] = value
     return obj
+
 
 register.filter('tag_attr', tag_attr)
 
@@ -78,6 +87,7 @@ def shuffle(l):
     l = list(l)
     random.shuffle(l)
     return l
+
 
 register.filter('shuffle', shuffle)
 
@@ -118,6 +128,7 @@ def remove_tags(value):
         ret = ret[:-1]
     return ret
 
+
 register.filter('remove_tags', remove_tags)
 
 
@@ -129,6 +140,7 @@ def lookup(value, key):
         return value[key]
     except KeyError:
         return ""
+
 
 register.filter('lookup', lookup)
 
@@ -144,6 +156,7 @@ def is_mod(value, args=""):
 
     return ""
 
+
 register.filter('is_mod', is_mod)
 
 
@@ -157,6 +170,7 @@ def more_than(value, args=""):
         pass
 
     return ""
+
 
 register.filter('more_than', more_than)
 
@@ -174,7 +188,10 @@ def product_upsell(product):
         pass
 
     return {'goals': goals}
-register.inclusion_tag("upsell/product_upsell.html", takes_context=False)(product_upsell)
+
+
+register.inclusion_tag("upsell/product_upsell.html",
+                       takes_context=False)(product_upsell)
 
 
 def satchmo_category_search_form(category=None):
@@ -182,8 +199,8 @@ def satchmo_category_search_form(category=None):
     Display the form for customer to specify category to search.
     """
     try:
-        url = urlresolvers.reverse('satchmo_search')
-    except urlresolvers.NoReverseMatch:
+        url = reverse('satchmo_search')
+    except NoReverseMatch:
         url = ""
         log.warning('No url found for satchmo_search (OK if running tests)')
 
@@ -193,7 +210,10 @@ def satchmo_category_search_form(category=None):
         'categories': cats,
         'category': category,
     }
-register.inclusion_tag("_search.html", takes_context=False)(satchmo_category_search_form)
+
+
+register.inclusion_tag("_search.html", takes_context=False)(
+    satchmo_category_search_form)
 
 
 def satchmo_language_selection_form():
@@ -204,12 +224,13 @@ def satchmo_language_selection_form():
     languages = []
     if enabled:
         try:
-            url = urlresolvers.reverse('satchmo_set_language')
+            url = reverse('satchmo_set_language')
             languages = config_choice_values('LANGUAGE', 'LANGUAGES_AVAILABLE')
 
-        except urlresolvers.NoReverseMatch:
+        except NoReverseMatch:
             url = ""
-            log.warning('No url found for satchmo_set_language (OK if running tests)')
+            log.warning(
+                'No url found for satchmo_set_language (OK if running tests)')
 
     else:
         url = ""
@@ -219,14 +240,10 @@ def satchmo_language_selection_form():
         'set_language_url': url,
         'languages': languages,
     }
-register.inclusion_tag("l10n/_language_selection_form.html", takes_context=False)(satchmo_language_selection_form)
 
-try:
-    from satchmo.recentlist.templatetags import recentlyviewed
-except ImportError:
-    def recentlyviewed(recent, slug=""):
-        return ""
-    register.simple_tag(recentlyviewed)
+
+register.inclusion_tag("l10n/_language_selection_form.html",
+                       takes_context=False)(satchmo_language_selection_form)
 
 
 def satchmo_search_form():
@@ -234,8 +251,8 @@ def satchmo_search_form():
     Display the search form.
     """
     try:
-        url = urlresolvers.reverse('satchmo_search')
-    except urlresolvers.NoReverseMatch:
+        url = reverse('satchmo_search')
+    except NoReverseMatch:
         url = ""
         log.warning('No url found for satchmo_search (OK if running tests)')
 
@@ -243,7 +260,10 @@ def satchmo_search_form():
         'satchmo_search_url': url,
         'categories': None
     }
-register.inclusion_tag("_search.html", takes_context=False)(satchmo_search_form)
+
+
+register.inclusion_tag("_search.html", takes_context=False)(
+    satchmo_search_form)
 
 
 def pounds(weight):
@@ -252,10 +272,14 @@ def pounds(weight):
     the order.
     """
     return int(weight)
+
+
 register.filter('pounds', pounds)
 
 
 def ounces(weight):
     fract = weight - pounds(weight)
     return int(math.ceil(fract * 16))
+
+
 register.filter('ounces', ounces)

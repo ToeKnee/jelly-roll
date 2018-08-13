@@ -62,7 +62,8 @@ class CountryListTest(APITestCase):
         request = self.factory.post('/api/country/', data)
 
         response = CountryListAPIView.as_view()(request, data)
-        self.assertEqual(response.status_code, 403)
+
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(
             response.data,
             {'detail': 'Authentication credentials were not provided.'}

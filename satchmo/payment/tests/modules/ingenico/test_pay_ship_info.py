@@ -27,7 +27,7 @@ class PayShipInfoTest(TestCase):
 
         response = pay_ship_info(request)
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn("Your cart is empty", response.content)
+        self.assertNotIn("Your cart is empty".encode("utf-8"), response.content)
 
     def test_not_enough_stock(self):
         cart = CartFactory()
@@ -41,4 +41,9 @@ class PayShipInfoTest(TestCase):
 
         response = pay_ship_info(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response._headers['location'], ('Location', '{}/cart/'.format(getattr(settings, "SHOP_BASE", "/store"))))
+        self.assertEqual(
+            response._headers['location'],
+            ('Location', '{}/cart/'.format(
+                getattr(settings, "SHOP_BASE", "/store")
+            ))
+        )

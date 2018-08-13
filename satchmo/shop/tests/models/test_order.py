@@ -195,7 +195,8 @@ class SubTotalInPrimaryCurrencyTest(TestCase):
         alternative_currency = USDCurrencyFactory()
 
         order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("1.06649"))
-        self.assertEqual(order.sub_total_in_primary_currency().quantize(Decimal('.01')), Decimal("23.44"))
+        self.assertEqual(order.sub_total_in_primary_currency().quantize(
+            Decimal('.01')), Decimal("23.44"))
 
     def test_in_alternative_currency__less(self):
         primary_currency = USDCurrencyFactory()
@@ -204,7 +205,8 @@ class SubTotalInPrimaryCurrencyTest(TestCase):
         alternative_currency = EURCurrencyFactory()
 
         order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("0.937658"))
-        self.assertEqual(order.sub_total_in_primary_currency().quantize(Decimal('.01')), Decimal("26.66"))
+        self.assertEqual(order.sub_total_in_primary_currency().quantize(
+            Decimal('.01')), Decimal("26.66"))
 
 
 class ShippingCostInPrimaryCurrencyTest(TestCase):
@@ -220,7 +222,8 @@ class ShippingCostInPrimaryCurrencyTest(TestCase):
         alternative_currency = USDCurrencyFactory()
 
         order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("1.06649"))
-        self.assertEqual(order.shipping_cost_in_primary_currency().quantize(Decimal('.01')), Decimal("9.38"))
+        self.assertEqual(order.shipping_cost_in_primary_currency().quantize(
+            Decimal('.01')), Decimal("9.38"))
 
     def test_in_alternative_currency__less(self):
         primary_currency = USDCurrencyFactory()
@@ -229,7 +232,8 @@ class ShippingCostInPrimaryCurrencyTest(TestCase):
         alternative_currency = EURCurrencyFactory()
 
         order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("0.937658"))
-        self.assertEqual(order.shipping_cost_in_primary_currency().quantize(Decimal('.01')), Decimal("10.66"))
+        self.assertEqual(order.shipping_cost_in_primary_currency().quantize(
+            Decimal('.01')), Decimal("10.66"))
 
 
 class RefundInPrimaryCurrencyTest(TestCase):
@@ -259,7 +263,8 @@ class RefundInPrimaryCurrencyTest(TestCase):
             amount=Decimal("5.00"),
             exchange_rate=Decimal("1.06649"),
         )
-        self.assertEqual(order.refund_in_primary_currency().quantize(Decimal('.01')), Decimal("4.69"))
+        self.assertEqual(order.refund_in_primary_currency().quantize(
+            Decimal('.01')), Decimal("4.69"))
 
     def test_in_alternative_currency__less(self):
         primary_currency = USDCurrencyFactory()
@@ -277,7 +282,8 @@ class RefundInPrimaryCurrencyTest(TestCase):
             amount=Decimal("5.00"),
             exchange_rate=Decimal("0.937658")
         )
-        self.assertEqual(order.refund_in_primary_currency().quantize(Decimal('.01')), Decimal("5.33"))
+        self.assertEqual(order.refund_in_primary_currency().quantize(
+            Decimal('.01')), Decimal("5.33"))
 
     def test_multiple_refunds(self):
         primary_currency = EURCurrencyFactory(primary=True)
@@ -330,7 +336,8 @@ class TotalInPrimaryCurrencyTest(TestCase):
         alternative_currency = USDCurrencyFactory()
 
         order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("1.06649"))
-        self.assertEqual(order.total_in_primary_currency().quantize(Decimal('.01')), Decimal("32.82"))
+        self.assertEqual(order.total_in_primary_currency().quantize(
+            Decimal('.01')), Decimal("32.82"))
 
     def test_in_alternative_currency__less(self):
         primary_currency = USDCurrencyFactory()
@@ -339,27 +346,28 @@ class TotalInPrimaryCurrencyTest(TestCase):
         alternative_currency = EURCurrencyFactory()
 
         order = TestOrderFactory(currency=alternative_currency, exchange_rate=Decimal("0.937658"))
-        self.assertEqual(order.total_in_primary_currency().quantize(Decimal('.01')), Decimal("37.33"))
+        self.assertEqual(order.total_in_primary_currency().quantize(
+            Decimal('.01')), Decimal("37.33"))
 
 
-class OrderTotalTest(TestCase):
+class DisplayTotalTest(TestCase):
     def test_GBP(self):
         currency = GBPCurrencyFactory()
 
         order = TestOrderFactory(currency=currency)
-        self.assertEqual(order.order_total, u'£35.00 (GBP)')
+        self.assertEqual(order.display_total, '£35.00 (GBP)')
 
     def test_EUR(self):
         currency = EURCurrencyFactory()
 
         order = TestOrderFactory(currency=currency)
-        self.assertEqual(order.order_total, u'€35.00 (EUR)')
+        self.assertEqual(order.display_total, '€35.00 (EUR)')
 
     def test_USD(self):
         currency = USDCurrencyFactory()
 
         order = TestOrderFactory(currency=currency)
-        self.assertEqual(order.order_total, u'$35.00 (USD)')
+        self.assertEqual(order.display_total, '$35.00 (USD)')
 
 
 class DisplayMethodsTest(TestCase):
@@ -371,44 +379,44 @@ class DisplayMethodsTest(TestCase):
         self.order = TestOrderFactory(currency=self.currency)
 
     def test_total(self):
-        self.assertEqual(self.order.display_total, u'$35.00 (USD)')
+        self.assertEqual(self.order.display_total, '$35.00 (USD)')
 
     def test_tax(self):
-        self.assertEqual(self.order.display_tax, u'$0.00 (USD)')
+        self.assertEqual(self.order.display_tax, '$0.00 (USD)')
 
     def test_refund(self):
         self.order.refund = Decimal("5.00")
-        self.assertEqual(self.order.display_refund, u'$5.00 (USD)')
+        self.assertEqual(self.order.display_refund, '$5.00 (USD)')
 
     def test_sub_total(self):
-        self.assertEqual(self.order.display_sub_total, u'$25.00 (USD)')
+        self.assertEqual(self.order.display_sub_total, '$25.00 (USD)')
 
     def test_sub_total_with_tax(self):
-        self.assertEqual(self.order.display_sub_total_with_tax, u'$25.00 (USD)')
+        self.assertEqual(self.order.display_sub_total_with_tax, '$25.00 (USD)')
 
     def test_balance(self):
-        self.assertEqual(self.order.display_balance, u'$35.00 (USD)')
+        self.assertEqual(self.order.display_balance, '$35.00 (USD)')
 
     def test_balance_paid(self):
-        self.assertEqual(self.order.display_balance_paid, u'$0.00 (USD)')
+        self.assertEqual(self.order.display_balance_paid, '$0.00 (USD)')
 
     def test_shipping_sub_total(self):
-        self.assertEqual(self.order.display_shipping_sub_total, u'$10.00 (USD)')
+        self.assertEqual(self.order.display_shipping_sub_total, '$10.00 (USD)')
 
     def test_shipping_with_tax(self):
-        self.assertEqual(self.order.display_shipping_with_tax, u'$10.00 (USD)')
+        self.assertEqual(self.order.display_shipping_with_tax, '$10.00 (USD)')
 
     def test_shipping_cost(self):
-        self.assertEqual(self.order.display_shipping_cost, u'$10.00 (USD)')
+        self.assertEqual(self.order.display_shipping_cost, '$10.00 (USD)')
 
     def test_discount(self):
         self.order.discount = Decimal("5.00")
-        self.assertEqual(self.order.display_discount, u'$5.00 (USD)')
+        self.assertEqual(self.order.display_discount, '$5.00 (USD)')
 
     def test_shipping_discount(self):
         self.order.shipping_discount = Decimal("5.00")
-        self.assertEqual(self.order.display_shipping_discount, u'$5.00 (USD)')
+        self.assertEqual(self.order.display_shipping_discount, '$5.00 (USD)')
 
     def test_item_discount(self):
         self.order.discount = Decimal("5.00")
-        self.assertEqual(self.order.display_item_discount, u'$5.00 (USD)')
+        self.assertEqual(self.order.display_item_discount, '$5.00 (USD)')

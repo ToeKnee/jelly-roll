@@ -1,14 +1,13 @@
 from hashlib import md5
 
 from django.contrib.sessions.backends.db import SessionStore
-from django.core import urlresolvers
+from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 
-from satchmo.configuration import config_get_group, config_value
+from satchmo.configuration.functions import config_get_group, config_value
 from satchmo.payment.utils import record_payment
 from satchmo.payment.views import payship
 from satchmo.payment.views.checkout import success as generic_success
@@ -23,7 +22,7 @@ def pay_ship_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
     if cart.not_enough_stock():
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+        return HttpResponseRedirect(reverse("satchmo_cart"))
 
     return payship.simple_pay_ship_info(request, payment_module, template='checkout/worldpay/pay_ship.html')
 
@@ -33,7 +32,7 @@ def confirm_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
     if cart.not_enough_stock():
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+        return HttpResponseRedirect(reverse("satchmo_cart"))
 
     try:
         order = Order.objects.from_request(request)
@@ -41,13 +40,12 @@ def confirm_info(request):
         order = None
 
     if not (order and order.validate(request)):
-        context = RequestContext(
-            request,
-            {'message': _('Your order is no longer valid.')}
-        )
-        return render_to_response('shop_404.html', context)
+        context = {'message': _('Your order is no longer valid.')}
 
-    template = lookup_template(payment_module, 'checkout/worldpay/confirm.html')
+        return render(request, 'shop_404.html', context)
+
+    template = lookup_template(
+        payment_module, 'checkout/worldpay/confirm.html')
 
     live = payment_module.LIVE.value
     currency = order.currency.iso_4217_code
@@ -63,12 +61,13 @@ def confirm_info(request):
         # Doing the MD5 Signature dance
         # Generating secret "secret;amount;currency;cartId"
         balance = trunc_decimal(order.balance, 2)
-        signature = "%s:%s:%s:%s" % (payment_module.MD5.value, balance, currency, order.id)
+        signature = "%s:%s:%s:%s" % (
+            payment_module.MD5.value, balance, currency, order.id)
         MD5 = md5(signature).hexdigest()
     else:
         MD5 = False
 
-    ctx = RequestContext(request, {
+    ctx = {
         'order': order,
         'inst_id': inst_id,
         'currency': currency,
@@ -77,8 +76,8 @@ def confirm_info(request):
         'PAYMENT_LIVE': live,
         'MD5': MD5,
         'session': request.session.session_key
-    })
-    return render_to_response(template, ctx)
+    }
+    return render(request, template, ctx)
 
 
 @csrf_exempt
@@ -94,13 +93,14 @@ def success(request):
 
     if request.POST.get('transStatus', 'N') == 'Y':
         order = Order.objects.get(pk=transaction_id)
-        order.add_status(status='Processing', notes=_("Paid through WorldPay."))
+        order.add_status(status='Processing',
+                         notes=_("Paid through WorldPay."))
         request.user = order.contact.user
-        record_payment(order, payment_module, amount=amount, transaction_id=transaction_id)
+        record_payment(order, payment_module, amount=amount,
+                       transaction_id=transaction_id)
         for cart in Cart.objects.filter(customer=order.contact):
             cart.empty()
         return generic_success(request, template='checkout/worldpay/success.html')
     else:
-        context = RequestContext(request,
-                                 {'message': _('Your transaction was rejected.')})
-        return render_to_response('shop_404.html', context)
+        context = {'message': _('Your transaction was rejected.')}
+        return render(request, 'shop_404.html', context)

@@ -30,7 +30,7 @@ class MoneyFormatTest(TestCase):
 
         self.assertEqual(
             money_format(value, currency_code),
-            u"\u20ac0.00 (EUR)"
+            "€0.00 (EUR)"
         )
 
     def test_value_is_zero(self):
@@ -40,7 +40,7 @@ class MoneyFormatTest(TestCase):
 
         self.assertEqual(
             money_format(value, currency_code),
-            u"\u20ac0.00 (EUR)"
+            "€0.00 (EUR)"
         )
 
     def test_currency(self):
@@ -50,7 +50,7 @@ class MoneyFormatTest(TestCase):
 
         self.assertEqual(
             money_format(value, currency_code),
-            u"\u20ac1.00 (EUR)"
+            "€1.00 (EUR)"
         )
 
     def test_currency__does_not_exist(self):
@@ -315,7 +315,7 @@ class CurrencyForRequest(TestCase):
         self.assertEqual(currency_for_request(request), "EUR")
 
     @override_settings(GEOIP_PATH="/tmp")
-    @mock.patch("satchmo.currency.utils.GeoIP")
+    @mock.patch("satchmo.currency.utils.GeoIP2")
     @mock.patch("satchmo.currency.utils.get_real_ip")
     def test_geoip__no_country(self, mock_get_real_ip, mock_geoip):
         mock_get_real_ip.return_value = "127.0.0.1"
@@ -331,7 +331,7 @@ class CurrencyForRequest(TestCase):
         self.assertEqual(currency_for_request(request), "EUR")
 
     @override_settings(GEOIP_PATH="/tmp")
-    @mock.patch("satchmo.currency.utils.GeoIP")
+    @mock.patch("satchmo.currency.utils.GeoIP2")
     @mock.patch("satchmo.currency.utils.get_real_ip")
     def test_geoip__country_doesnt_match_accepted_country(self, mock_get_real_ip, mock_geoip):
         mock_get_real_ip.return_value = "163.44.191.38"
@@ -347,7 +347,7 @@ class CurrencyForRequest(TestCase):
         self.assertEqual(currency_for_request(request), "EUR")
 
     @override_settings(GEOIP_PATH="/tmp")
-    @mock.patch("satchmo.currency.utils.GeoIP")
+    @mock.patch("satchmo.currency.utils.GeoIP2")
     @mock.patch("satchmo.currency.utils.get_real_ip")
     def test_geoip__country_matches_accepted_country(self, mock_get_real_ip, mock_geoip):
         mock_get_real_ip.return_value = "88.97.34.8"
