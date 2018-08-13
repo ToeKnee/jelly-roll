@@ -50,6 +50,7 @@ setup(
     ],
     install_requires=[
         "Django>=2.0.0,<2.2.0",
+        "currencyconverter>=0.13.3,<1.0.0",
         "django-ipware>=1.1.6,<2.0.0",
         "djangorestframework>=3.8.2,<4.0.0",
         "pycrypto>=2.6.1,<3.0.0",

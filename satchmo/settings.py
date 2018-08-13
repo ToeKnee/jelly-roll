@@ -125,6 +125,10 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_PROFILE_MODULE = 'contact.Contact'
 
+# Exchange Rate settings
+EXCHANGE_RATE_MODULE = 'ecb'
+FIXERIO_KEY = ''
+
 SATCHMO_SETTINGS = {
     # this will override any urls set in the store url modules
     # 'SHOP_URLS' : satchmo.shop.views,

@@ -2,6 +2,26 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.0.0, xx xxx, 2018
+------------------------------
+* Upgrade to Python 3
+* Upgrade to Django 2.1
+
+Version 0.10.3.5, 11 Jun, 2018
+------------------------------
+* Update fixer.io API
+* Add ECB (European Central Bank) exchange rate provider
+
+Version 0.10.3.4, 31 May, 2018
+------------------------------
+* Improved MPN in product feed
+* Added availability to product feed
+* Added additional images to product feed
+
+Version 0.10.3.3, 31 May, 2018
+------------------------------
+* Add MPN to product feed
+
 Version 0.10.3.2, 16 April, 2018
 -------------------------------
 * PayPal checkout deadlock fixes

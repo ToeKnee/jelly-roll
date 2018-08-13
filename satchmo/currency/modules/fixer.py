@@ -1,16 +1,18 @@
 import datetime
 import requests
 
+from django.conf import settings
+
 from satchmo.currency.models import Currency, ExchangeRate
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class FixerEchangeRateClient(object):
+class FixerExchangeRateClient(object):
     """Get the exchange rates from http://fixer.io"""
 
-    API_URL = "https://api.fixer.io/{date}?base={primary}&symbols={accepted}"
+    API_URL = "https://data.fixer.io/api/latest?base={primary}&symbols={accepted}&access_key={access_key}"
 
     def update_exchange_rates(self):
         primary_currency = Currency.objects.get_primary()
@@ -18,12 +20,12 @@ class FixerEchangeRateClient(object):
         exchange_rates = []
 
         url = self.API_URL.format(
-            date=datetime.date.today().isoformat(),
             primary=primary_currency.iso_4217_code,
             accepted=",".join((
                 currency.iso_4217_code
                 for currency in accepted_currencies
-            ))
+            )),
+            access_key=getattr(settings, 'FIXERIO_KEY')
         )
 
         try:
