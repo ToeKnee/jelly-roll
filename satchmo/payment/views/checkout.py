@@ -1,10 +1,11 @@
+from django import http
 from django.core.mail import mail_admins
 from django.db import transaction
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 
-from satchmo.shop.views.utils import bad_or_missing
 from satchmo.shop.models import Order
 
 import logging
@@ -57,7 +58,9 @@ POST:
             ]),
         )
         mail_admins(subject, message)
-        return bad_or_missing(request, _('Your order has already been processed.'))
+
+        history = reverse('satchmo_order_history')
+        return http.HttpResponseRedirect(history)
 
     complete_order(order)
 
