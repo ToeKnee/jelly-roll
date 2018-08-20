@@ -2,6 +2,11 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.0.2, 20 August, 2018
+------------------------------
+* Improve Order.objects.from_request
+* Raise 404 for bad_or_missing
+
 Version 0.11.0.1, 20 August, 2018
 ------------------------------
 * Parse JSON request body in six fulfilment module
