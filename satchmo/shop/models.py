@@ -672,18 +672,25 @@ class OrderManager(models.Manager):
         Returns:
         - Order object or None
         """
+
         order = None
         if 'orderID' in request.session:
             try:
                 order = Order.objects.live().get(id=request.session['orderID'])
-
-                if request.user != order.contact.user:
-                    order = None
             except Order.DoesNotExist:
                 pass
 
             if order is None:
                 del request.session['orderID']
+
+        if order is None:
+            try:
+                order = Order.objects.live().get(id=request.POST.get('invoice'))
+            except Order.DoesNotExist:
+                pass
+
+        if order is not None and request.user != order.contact.user:
+            order = None
 
         if order is None:
             raise Order.DoesNotExist()
