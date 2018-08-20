@@ -1,3 +1,4 @@
+from django.core.mail import mail_admins
 from django.db import transaction
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
@@ -19,6 +20,43 @@ def success(request, template='checkout/success.html'):
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
+        subject = "ERROR Order processing - order not found"
+        message = """Can't find order to process
+
+User: {user}
+
+Session:
+
+{session}
+
+
+GET:
+
+{get}
+
+
+POST:
+
+{post}
+        """.format(
+            user=request.user,
+            session="\n".join([
+                "{key}={value}".format(key=key, value=value)
+                for key, value
+                in request.session.items()
+            ]),
+            get="\n".join([
+                "{key}={value}".format(key=key, value=value)
+                for key, value
+                in request.GET.items()
+            ]),
+            post="\n".join([
+                "{key}={value}".format(key=key, value=value)
+                for key, value
+                in request.POST.items()
+            ]),
+        )
+        mail_admins(subject, message)
         return bad_or_missing(request, _('Your order has already been processed.'))
 
     complete_order(order)
