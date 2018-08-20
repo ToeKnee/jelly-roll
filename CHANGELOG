@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.0.3, 20 August, 2018
+------------------------------
+* Redirect to order status if we can't find the order in the request
+
 Version 0.11.0.2, 20 August, 2018
 ------------------------------
 * Improve Order.objects.from_request
