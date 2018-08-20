@@ -27,7 +27,7 @@ def despatch(request, order_id, verification_hash):
         if request.method == "POST":
             # Yay, let's update the order
             try:
-                payload = json.loads(request.body)
+                payload = json.loads(request.body.decode('utf-8'))
             except ValueError as e:
                 logger.exception(e)
             else:
