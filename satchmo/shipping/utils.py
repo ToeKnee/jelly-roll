@@ -13,7 +13,7 @@ def update_shipping(order, shipping, contact, cart):
     # Save the shipping info
     shipper = shipping_method_by_key(shipping)
     shipper.calculate(cart, contact)
-    order.shipping_description = shipper.description().encode("utf-8")
+    order.shipping_description = shipper.description()
     order.shipping_method = shipper.method()
     order.shipping_cost = convert_to_currency(shipper.cost(), order.currency.iso_4217_code)
     order.shipping_model = shipping
