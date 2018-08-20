@@ -5,7 +5,7 @@ shipping cost and return the value
 import math
 from decimal import Decimal, ROUND_UP
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import config_value
+from satchmo.configuration.values import config_value
 from satchmo.shipping.modules.base import BaseShipper
 
 
@@ -25,16 +25,22 @@ class Shipper(BaseShipper):
         fee = Decimal("0.00")
         weight = Decimal("0.00")
 
-        packing_fee = config_value('satchmo.shipping.modules.royalmailcontract', 'PACKING_FEE')
+        packing_fee = config_value(
+            'satchmo.shipping.modules.royalmailcontract', 'PACKING_FEE')
         # An Item is Royal Mail's name for a packet.  Not a singular
         # product.
-        max_weight_per_item = config_value('satchmo.shipping.modules.royalmailcontract', 'MAX_WEIGHT_PER_ITEM')
+        max_weight_per_item = config_value(
+            'satchmo.shipping.modules.royalmailcontract', 'MAX_WEIGHT_PER_ITEM')
         if self.shipping_to_eu():
-            per_item_rate = config_value('satchmo.shipping.modules.royalmailcontract', 'PER_RATE_EU')
-            per_kg_rate = config_value('satchmo.shipping.modules.royalmailcontract', 'PER_KG_EU')
+            per_item_rate = config_value(
+                'satchmo.shipping.modules.royalmailcontract', 'PER_RATE_EU')
+            per_kg_rate = config_value(
+                'satchmo.shipping.modules.royalmailcontract', 'PER_KG_EU')
         else:
-            per_item_rate = config_value('satchmo.shipping.modules.royalmailcontract', 'PER_RATE_ROW')
-            per_kg_rate = config_value('satchmo.shipping.modules.royalmailcontract', 'PER_KG_ROW')
+            per_item_rate = config_value(
+                'satchmo.shipping.modules.royalmailcontract', 'PER_RATE_ROW')
+            per_kg_rate = config_value(
+                'satchmo.shipping.modules.royalmailcontract', 'PER_KG_ROW')
 
         for cartitem in self.cart.cartitem_set.all():
             if cartitem.product.is_shippable:
@@ -56,9 +62,9 @@ class Shipper(BaseShipper):
         # Add TAX
         if self.shipping_to_eu():
             fee = fee * Decimal(str(1.2))  # 20% VAT - Not happy about
-                                           #this, but this is the only
-                                           #module that is charging
-                                           #VAT atm :(
+            # this, but this is the only
+            # module that is charging
+            # VAT atm :(
 
         # Add packing fee
         fee += packing_fee
@@ -89,8 +95,9 @@ class Shipper(BaseShipper):
         Exclude countries that we don't want to ship to, also exclude
         the United Kingdom as this shipping module doesn't support GB.
         """
-        excluded_countries = config_value('satchmo.shipping.modules.royalmailcontract', 'EXCLUDE_COUNTRY')
-        excluded_countries.append(u'GB')
+        excluded_countries = config_value(
+            'satchmo.shipping.modules.royalmailcontract', 'EXCLUDE_COUNTRY')
+        excluded_countries.append('GB')
         return self.contact.shipping_address.country.iso2_code not in excluded_countries
 
     def shipping_to_eu(self):

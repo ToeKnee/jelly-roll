@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import os
-import urlparse
+import urllib.parse
 
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from satchmo.configuration import (
+from satchmo.configuration.functions import config_register
+from satchmo.configuration.values import (
     BooleanValue,
     ConfigurationGroup,
     MultipleStringValue,
     PositiveIntegerValue,
     SHOP_GROUP,
     StringValue,
-    config_register,
 )
 
-default_icon_url = urlparse.urlunsplit(
+default_icon_url = urllib.parse.urlunsplit(
     ('file',
      '',
      os.path.join(settings.MEDIA_ROOT, 'images/sample-logo.bmp'),
@@ -30,7 +30,8 @@ RANDOM_FEATURED = config_register(
     BooleanValue(
         SHOP_GROUP,
         'RANDOM_FEATURED',
-        description=_("Enable random display of featured products on home page"),
+        description=_(
+            "Enable random display of featured products on home page"),
         default=False)
 )
 
@@ -77,7 +78,8 @@ ENFORCE_STATE = config_register(
         SHOP_GROUP,
         'ENFORCE_STATE',
         description=_('State required?'),
-        help_text=_("Require a state during registration/checkout for countries that have states?"),
+        help_text=_(
+            "Require a state during registration/checkout for countries that have states?"),
         default=True)
 )
 
@@ -99,7 +101,8 @@ GOOGLE_USE_URCHIN = config_register(
         GOOGLE_GROUP,
         'USE_URCHIN',
         description=_("Use Urchin?"),
-        help_text=_("Use the old-style, urchin javascript?.  This is not needed unless your analytics account hasn't been updated yet."),
+        help_text=_(
+            "Use the old-style, urchin javascript?.  This is not needed unless your analytics account hasn't been updated yet."),
         default=False,
         ordering=5,
         requires=GOOGLE_ANALYTICS)

@@ -5,7 +5,7 @@ Ingenico Payments
 https://payment-services.ingenico.com/int/en/ogone/support/guides/integration%20guides/e-commerce/introduction
 
 """
-from __future__ import unicode_literals
+
 
 import hashlib
 from decimal import Decimal
@@ -14,16 +14,15 @@ from .forms import IngenicoForm
 from .status import TRANSACTION_STATUS
 from .utils import verify_shasign
 
-from django.core import urlresolvers
+from django.urls import reverse
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 
-from satchmo.configuration import config_get_group
+from satchmo.configuration.functions import config_get_group
 from satchmo.payment.models import HttpResponsePaymentRequired
 from satchmo.payment.views import payship
 from satchmo.payment.views.checkout import (
@@ -47,7 +46,7 @@ def pay_ship_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
     if cart.not_enough_stock():
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+        return HttpResponseRedirect(reverse("satchmo_cart"))
 
     return payship.simple_pay_ship_info(
         request,
@@ -61,19 +60,17 @@ def confirm_info(request):
     # Check that items are in stock
     cart = Cart.objects.from_request(request)
     if cart.not_enough_stock():
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_cart"))
+        return HttpResponseRedirect(reverse("satchmo_cart"))
 
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_shop_home"))
+        return HttpResponseRedirect(reverse("satchmo_shop_home"))
 
     if order.validate(request) is False:
-        context = RequestContext(
-            request,
-            {'message': _('Your order is no longer valid.')}
-        )
-        return render_to_response('shop_404.html', context)
+        context = {'message': _('Your order is no longer valid.')}
+
+        return render(request, 'shop_404.html', context)
 
     data = {
         "PSPID": payment_module.PSPID.value,
@@ -97,11 +94,14 @@ def confirm_info(request):
     }
 
     if payment_module.ALIAS.value:
-        data["ALIAS"] = hashlib.sha512(order.contact.user.username).hexdigest()[:50]
+        data["ALIAS"] = hashlib.sha512(
+            order.contact.user.username.encode("utf-8")
+        ).hexdigest()[:50]
         data["ALIASUSAGE"] = payment_module.ALIASUSAGE.value
 
     form = IngenicoForm(data)
-    template = lookup_template(payment_module, 'checkout/ingenico/confirm.html')
+    template = lookup_template(
+        payment_module, 'checkout/ingenico/confirm.html')
 
     live = payment_module.LIVE.value
 
@@ -110,13 +110,13 @@ def confirm_info(request):
     else:
         post_url = payment_module.CONNECTION_TEST.value
 
-    ctx = RequestContext(request, {
+    ctx = {
         'form': form,
         'order': order,
         'post_url': post_url,
         'PAYMENT_LIVE': live,
-    })
-    return render_to_response(template, ctx)
+    }
+    return render(request, template, ctx)
 
 
 @transaction.atomic
@@ -138,10 +138,13 @@ def accepted(request):
 
         if order_id:
             return HttpResponseRedirect(
-                urlresolvers.reverse("satchmo_order_tracking", kwargs={"order_id": order_id})
+                reverse(
+                    "satchmo_order_tracking",
+                    kwargs={"order_id": order_id}
+                )
             )
         else:
-            return HttpResponseRedirect(urlresolvers.reverse("satchmo_shop_home"))
+            return HttpResponseRedirect(reverse("satchmo_shop_home"))
     else:
         order.add_status(status='Accepted', notes=_("Paid through Ingenico."))
         return generic_success(request)
@@ -155,14 +158,14 @@ def declined(request):
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
-        return HttpResponseRedirect(urlresolvers.reverse("satchmo_shop_home"))
+        return HttpResponseRedirect(reverse("satchmo_shop_home"))
 
     order.add_status(status='Declined', notes='')
     order.freeze()
     order.save()
 
-    context = RequestContext(request, {'order': order})
-    return render_to_response('checkout/ingenico/declined.html', context)
+    context = {'order': order}
+    return render(request, 'checkout/ingenico/declined.html', context)
 
 
 @transaction.atomic
@@ -204,7 +207,7 @@ def process(request):
 
             if order.notes is None:
                 order.notes = ""
-            order.notes += u"\n------------------ {now} ------------------\n\n".format(
+            order.notes += "\n------------------ {now} ------------------\n\n".format(
                 now=timezone.now()
             )
 
@@ -249,9 +252,11 @@ Expiry date: {ed}
             if "STATUS" in post_data:
                 status = int(post_data["STATUS"])
                 if status == 9:  # Payment requested, ok to send package
-                    record_payment(order, payment_module, amount=amount, transaction_id=transaction_id)
+                    record_payment(order, payment_module,
+                                   amount=amount, transaction_id=transaction_id)
                     complete_order(order)
-                    order.add_status(status='Processing', notes=_("Payment complete."))
+                    order.add_status(status='Processing',
+                                     notes=_("Payment complete."))
                 elif status == 1:  # Cancelled by customer
                     if order.frozen is False:
                         order.freeze()

@@ -41,7 +41,7 @@ class FixerExchangeRateClient(object):
             return exchange_rates
 
         exchange_rates = []
-        for iso_4217_code, rate in data.get("rates", {}).items():
+        for iso_4217_code, rate in list(data.get("rates", {}).items()):
             try:
                 currency = accepted_currencies.get(iso_4217_code=iso_4217_code)
             except Currency.DoesNotExist:

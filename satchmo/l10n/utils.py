@@ -1,7 +1,7 @@
 from ipware.ip import get_real_ip
 
 from django.conf import settings
-from django.contrib.gis.geoip import GeoIP
+from django.contrib.gis.geoip2 import GeoIP2
 
 from satchmo.contact.models import Contact
 from satchmo.shop.models import Config
@@ -30,7 +30,7 @@ def country_for_request(request):
             if hasattr(settings, "GEOIP_PATH"):
                 ip = get_real_ip(request)
                 if ip:
-                    geoip = GeoIP()
+                    geoip = GeoIP2()
                     country = geoip.country(ip)
                     try:
                         # GeoIP returns iso2 codes

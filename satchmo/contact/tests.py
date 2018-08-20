@@ -19,11 +19,11 @@ class ContactTest(TestCase):
         contact1 = Contact.objects.create(first_name="Jim", last_name="Tester",
                                           role="Customer", email="Jim@JimWorld.com")
 
-        self.assertEqual(contact1.full_name, u'Jim Tester')
+        self.assertEqual(contact1.full_name, 'Jim Tester')
 
         # Add a phone number for this person and make sure that it's the default
         phone1 = PhoneNumber.objects.create(contact=contact1, type='Home', phone="800-111-9900")
-        self.assert_(contact1.primary_phone)
+        self.assertTrue(contact1.primary_phone)
         self.assertEqual(contact1.primary_phone.phone, '800-111-9900')
         self.assertEqual(phone1.type, 'Home')
 
@@ -38,7 +38,7 @@ class ContactTest(TestCase):
                                           street1="56 Cool Lane", city="Niftyville",
                                           state="IA", postal_code="12344",
                                           country=self.us)
-        self.assert_(contact1.billing_address)
+        self.assertTrue(contact1.billing_address)
         self.assertEqual(contact1.billing_address, add1)
         self.assertEqual(contact1.billing_address.description, "Home Address")
         self.assertEqual(add1.street1, "56 Cool Lane")
@@ -60,7 +60,7 @@ class ContactTest(TestCase):
         Contact.objects.create(first_name="Org", last_name="Tester",
                                role="Customer", email="org@example.com")
         org = Organization.objects.by_name('The Testers', create=True)
-        self.assert_(org)
+        self.assertTrue(org)
         self.assertEqual(org.role, 'Customer')
         org2 = Organization.objects.by_name('The Testers', create=True)
         self.assertEqual(org, org2)
@@ -76,12 +76,12 @@ class ContactInfoFormTest(TestCase):
         form = ContactInfoForm(shop=shop, contact=None, data={'phone': '800-111-9900'})
         self.assertEqual(False, form.is_valid())
         self.assertEqual(form.errors, {
-            'city': [u'This field is required.'],
-            'first_name': [u'This field is required.'],
-            'last_name': [u'This field is required.'],
-            'street1': [u'This field is required.'],
-            'postal_code': [u'This field is required.'],
-            'email': [u'This field is required.']
+            'city': ['This field is required.'],
+            'first_name': ['This field is required.'],
+            'last_name': ['This field is required.'],
+            'street1': ['This field is required.'],
+            'postal_code': ['This field is required.'],
+            'email': ['This field is required.']
         })
 
 
@@ -104,7 +104,7 @@ class ContactInfoFormL10NTestUS(TestCase):
         self.assertEqual(True, form.is_valid(), form.errors)
         contactid = form.save(contact)
         self.assertEqual(contact.id, contactid)
-        self.assert_(contact.organization)
+        self.assertTrue(contact.organization)
         self.assertEqual(contact.organization.name, 'Testers Anonymous')
 
     def test_valid(self):
@@ -128,8 +128,8 @@ class ContactInfoFormL10NTestUS(TestCase):
         form = ContactInfoForm(data, shop=self.shop, contact=contact)
         self.assertEqual(False, form.is_valid(), form.errors)
         self.assertEqual(form.errors, {
-            'country': [u'Select a valid choice. That choice is not one of the available choices.'],
-            'ship_country': [u'Select a valid choice. That choice is not one of the available choices.']
+            'country': ['Select a valid choice. That choice is not one of the available choices.'],
+            'ship_country': ['Select a valid choice. That choice is not one of the available choices.']
         })
 
 
@@ -161,8 +161,8 @@ class ContactInfoFormL10NTestCA(TestCase):
         form = ContactInfoForm(data, shop=self.shop, contact=contact)
         self.assertEqual(False, form.is_valid(), form.errors)
         self.assertEqual(form.errors, {
-            'country': [u'Select a valid choice. That choice is not one of the available choices.'],
-            'ship_country': [u'Select a valid choice. That choice is not one of the available choices.']
+            'country': ['Select a valid choice. That choice is not one of the available choices.'],
+            'ship_country': ['Select a valid choice. That choice is not one of the available choices.']
         })
 
     def test_invalid_postcode(self):
@@ -175,8 +175,8 @@ class ContactInfoFormL10NTestCA(TestCase):
         form = ContactInfoForm(data, shop=self.shop, contact=contact)
         self.assertEqual(False, form.is_valid(), form.errors)
         self.assertEqual(form.errors, {
-            'ship_postal_code': [u'Please enter a valid Canadian postal code.'],
-            'postal_code': [u'Please enter a valid Canadian postal code.']
+            'ship_postal_code': ['Please enter a valid Canadian postal code.'],
+            'postal_code': ['Please enter a valid Canadian postal code.']
         })
 
 
@@ -207,8 +207,8 @@ class ContactInfoFormL10NTestAU(TestCase):
         form = ContactInfoForm(data, shop=self.shop, contact=contact)
         self.assertEqual(False, form.is_valid(), form.errors)
         self.assertEqual(form.errors, {
-            'country': [u'Select a valid choice. That choice is not one of the available choices.'],
-            'ship_country': [u'Select a valid choice. That choice is not one of the available choices.']
+            'country': ['Select a valid choice. That choice is not one of the available choices.'],
+            'ship_country': ['Select a valid choice. That choice is not one of the available choices.']
         })
 
     def test_invalid_postal_code(self):
@@ -221,6 +221,6 @@ class ContactInfoFormL10NTestAU(TestCase):
         form = ContactInfoForm(data, shop=self.shop, contact=contact)
         self.assertEqual(False, form.is_valid(), form.errors)
         self.assertEqual(form.errors, {
-            'ship_postal_code': [u'Please enter a valid Australian postal code.'],
-            'postal_code': [u'Please enter a valid Australian postal code.']
+            'ship_postal_code': ['Please enter a valid Australian postal code.'],
+            'postal_code': ['Please enter a valid Australian postal code.']
         })

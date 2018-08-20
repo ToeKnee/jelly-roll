@@ -5,10 +5,9 @@
 # Used by written permission to license under the same modified
 # BSD license as the rest of Satchmo.
 
-import json
-import types
+from . import json
 from django.db import models
-from django.core.serializers.json import DateTimeAwareJSONEncoder
+from django.core.serializers.json import DjangoJSONEncoder
 from decimal import Decimal
 
 
@@ -21,9 +20,9 @@ def json_encode(data):
 
     def _any(data):
         ret = None
-        if isinstance(data, types.ListType):
+        if isinstance(data, list):
             ret = _list(data)
-        elif isinstance(data, types.DictType):
+        elif isinstance(data, dict):
             ret = _dict(data)
         elif isinstance(data, Decimal):
             # json.dumps() cant handle Decimal
@@ -43,7 +42,7 @@ def json_encode(data):
         for f in data._meta.fields:
             ret[f.attname] = _any(getattr(data, f.attname))
         # And additionally encode arbitrary properties that had been added.
-        fields = dir(data.__class__) + ret.keys()
+        fields = dir(data.__class__) + list(ret.keys())
         add_ons = [k for k in dir(data) if k not in fields]
         for k in add_ons:
             ret[k] = _any(getattr(data, k))
@@ -57,10 +56,10 @@ def json_encode(data):
 
     def _dict(data):
         ret = {}
-        for k, v in data.items():
+        for k, v in list(data.items()):
             ret[k] = _any(v)
         return ret
 
     ret = _any(data)
 
-    return json.dumps(ret, cls=DateTimeAwareJSONEncoder)
+    return json.dumps(ret, cls=DjangoJSONEncoder)

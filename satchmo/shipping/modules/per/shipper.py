@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from django.utils.translation import ugettext, ugettext_lazy as _
 
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.shipping.modules.base import BaseShipper
 
 

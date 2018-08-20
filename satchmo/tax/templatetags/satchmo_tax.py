@@ -31,7 +31,7 @@ def _get_taxprocessor(request):
     taxprocessor = get_thread_variable('taxer', None)
     if not taxprocessor:
         user = request.user
-        if user.is_authenticated():
+        if user.is_authenticated:
             user = user
         else:
             user = None
@@ -74,7 +74,7 @@ def cartitem_line_taxed_total(parser, token):
     """
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise template.TemplateSyntaxError, "'%s' tag requires a cartitem argument" % tokens[0]
+        raise template.TemplateSyntaxError("'%s' tag requires a cartitem argument" % tokens[0])
 
     return CartitemLineTaxedTotalNode(tokens[1], tokens[2])
 
@@ -113,13 +113,14 @@ def cart_taxed_total(parser, token):
     """
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise template.TemplateSyntaxError, "'%s' tag requires a cart argument" % tokens[0]
+        raise template.TemplateSyntaxError("'%s' tag requires a cart argument" % tokens[0])
 
     return CartTaxedTotalNode(tokens[1], tokens[2])
 
 
 class TaxRateNode(template.Node):
     """Retrieve the tax rate for a category"""
+
     def __init__(self, taxclass, order, digits):
         self.taxclass = taxclass
         self.order = order
@@ -156,7 +157,7 @@ def tax_rate(parser, token):
     """
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise template.TemplateSyntaxError, "'%s' tag requires a taxclass argument" % tokens[0]
+        raise template.TemplateSyntaxError("'%s' tag requires a taxclass argument" % tokens[0])
 
     taxclass = tokens[1]
     if len(tokens) > 2:
@@ -175,6 +176,7 @@ def tax_rate(parser, token):
 class TaxedPriceNode(template.Node):
     """Returns the taxed price for an amount.
     """
+
     def __init__(self, price, currency, taxclass):
         self.price = price
         self.taxclass = taxclass
@@ -208,7 +210,7 @@ def taxed_price(parser, token):
     """
     tokens = token.contents.split()
     if len(tokens) < 2:
-        raise template.TemplateSyntaxError, "'%s' tag requires an amount argument" % tokens[0]
+        raise template.TemplateSyntaxError("'%s' tag requires an amount argument" % tokens[0])
 
     price = tokens[1]
     if len(tokens) > 2:

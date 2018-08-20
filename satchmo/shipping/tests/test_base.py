@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.test import TestCase
 from satchmo import caching
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.product.models import (
     ConfigurableProduct,
     DownloadableProduct,
@@ -17,7 +17,8 @@ from django.contrib.sites.models import Site
 class ShippingBaseTest(TestCase):
     def setUp(self):
         self.site = Site.objects.get_current()
-        self.product1 = Product.objects.create(slug='p1', name='p1', site=self.site)
+        self.product1 = Product.objects.create(
+            slug='p1', name='p1', site=self.site)
         self.cart1 = Cart.objects.create(site=self.site)
         self.cartitem1 = self.cart1.add_item(self.product1, 3)
 
@@ -27,8 +28,10 @@ class ShippingBaseTest(TestCase):
     def test_downloadable_zero_shipping(self):
         subtypes = config_value('PRODUCT', 'PRODUCT_TYPES')
         if "product::DownloadableProduct" in subtypes:
-            subtype2 = DownloadableProduct.objects.create(product=self.product1)
-            self.assertEqual(self.product1.get_subtypes(), ('ConfigurableProduct', 'DownloadableProduct'))
+            subtype2 = DownloadableProduct.objects.create(
+                product=self.product1)
+            self.assertEqual(self.product1.get_subtypes(),
+                             ('ConfigurableProduct', 'DownloadableProduct'))
 
             self.assertFalse(subtype2.is_shippable)
             self.assertFalse(self.product1.is_shippable)
@@ -40,9 +43,9 @@ class ShippingBaseTest(TestCase):
         # Product.is_shippable should be True unless the Product has a subtype
         # where is_shippable == False
         subtype1 = ConfigurableProduct.objects.create(product=self.product1)
-        self.assert_(getattr(subtype1, 'is_shippable', True))
-        self.assert_(self.cartitem1.is_shippable)
-        self.assert_(self.product1.is_shippable)
-        self.assert_(self.cart1.is_shippable)
+        self.assertTrue(getattr(subtype1, 'is_shippable', True))
+        self.assertTrue(self.cartitem1.is_shippable)
+        self.assertTrue(self.product1.is_shippable)
+        self.assertTrue(self.cart1.is_shippable)
         self.assertEqual(flat(self.cart1, None).cost(), Decimal("4.00"))
         self.assertEqual(per(self.cart1, None).cost(), Decimal("12.00"))

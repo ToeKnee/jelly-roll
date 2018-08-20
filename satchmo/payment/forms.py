@@ -2,13 +2,10 @@ import calendar
 import datetime
 
 from django import forms
-from django.template import (
-    loader,
-    RequestContext
-)
+from django.template import loader
 from django.utils.translation import ugettext as _
 
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.contact.forms import ContactInfoForm
 from satchmo.contact.models import Contact
 from satchmo.discount.models import Discount
@@ -77,8 +74,7 @@ def _get_shipping_choices(request, paymentmodule, cart, contact, default_view_ta
         if hasattr(method, 'shipping_discount'):
             data['discount'] = method.shipping_discount()
 
-        c = RequestContext(request, data)
-        shipping_options.append((method.id, t.render(c)))
+        shipping_options.append((method.id, t.render(data)))
         shipping_dict[method.id] = shipcost
 
     return shipping_options, shipping_dict
@@ -187,7 +183,8 @@ class SimplePayShipForm(forms.Form):
             default_view_tax = config_value('TAX', 'TAX_SHIPPING')
 
         shipping_choices, shipping_dict = _get_shipping_choices(
-            request, paymentmodule, self.tempCart, self.tempContact, default_view_tax=default_view_tax)
+            request, paymentmodule, self.tempCart, self.tempContact, default_view_tax=default_view_tax
+        )
         self.fields['shipping'].choices = shipping_choices
         self.shipping_dict = shipping_dict
 

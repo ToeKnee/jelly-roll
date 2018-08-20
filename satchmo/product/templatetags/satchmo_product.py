@@ -92,9 +92,8 @@ def product_sort_by_price(products):
     """
 
     if products:
-        fast = [(product.unit_price, product) for product in products]
-        fast.sort()
-        return zip(*fast)[1]
+        fast = sorted([(product.unit_price, product) for product in products])
+        return list(zip(*fast))[1]
 
 
 register.filter('product_sort_by_price', product_sort_by_price)

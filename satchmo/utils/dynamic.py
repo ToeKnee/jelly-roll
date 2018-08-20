@@ -1,18 +1,20 @@
 from django.contrib.sites.models import Site
-from django.core import urlresolvers
+from django.urls import reverse, NoReverseMatch
 from satchmo.utils import url_join
-from django.contrib.sites.models import Site
+
 import logging
 log = logging.getLogger(__name__)
+
 
 def lookup_template(settings, template):
     """Return a template name, which may have been overridden in the settings."""
 
-    if settings.has_key('TEMPLATE_OVERRIDES'):
+    if 'TEMPLATE_OVERRIDES' in settings:
         val = settings['TEMPLATE_OVERRIDES']
         template = val.get(template, template)
 
     return template
+
 
 def lookup_url(settings, name, include_server=False, ssl=False):
     """Look up a named URL for the payment module.
@@ -25,21 +27,24 @@ def lookup_url(settings, name, include_server=False, ssl=False):
     Last just look up the name
     """
     url = None
-    
+
+    try:
+        namespace = settings.KEY.value.lower()
+        possible = "{namespace}:{url_name}".format(
+            namespace=namespace,
+            url_name=name,
+        )
+        url = reverse(possible)
+    except NoReverseMatch:
+        log.debug('No url found for %s', possible)
+
     if not url:
         try:
-            possible = settings.KEY.value + "_" + name
-            url = urlresolvers.reverse(possible)
-        except urlresolvers.NoReverseMatch:
-            log.debug('No url found for %s', possible)
-    
-    if not url:
-        try:
-            url = urlresolvers.reverse(name)
-        except urlresolvers.NoReverseMatch:
+            url = reverse(name)
+        except NoReverseMatch:
             log.error('Could not find any url for %s', name)
             raise
-    
+
     if include_server:
         if ssl:
             method = "https://"

@@ -1,7 +1,7 @@
-from django.conf.urls import include, patterns, url
+from django.urls import include, path
 
-urlpatterns = patterns(
-    '',
+from satchmo.fulfilment.modules.six import urls as six_urls
 
-    url(r'^six/', include('satchmo.fulfilment.modules.six.urls'))
-)
+urlpatterns = [
+    path('six/', include(six_urls))
+]

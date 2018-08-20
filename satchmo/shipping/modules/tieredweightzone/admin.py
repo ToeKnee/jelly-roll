@@ -34,7 +34,7 @@ class CarrierTranslation_Inline(admin.TabularInline):
 
 
 class CarrierOptions(admin.ModelAdmin):
-    list_display = ('__unicode__', 'estimated_delivery_min_days', 'estimated_delivery_expected_days', 'estimated_delivery_max_days')
+    list_display = ('__str__', 'estimated_delivery_min_days', 'estimated_delivery_expected_days', 'estimated_delivery_max_days')
     ordering = ('key',)
     inlines = [CarrierTranslation_Inline]
 

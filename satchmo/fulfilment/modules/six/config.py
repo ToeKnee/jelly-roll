@@ -1,8 +1,8 @@
 from django.utils.translation import ugettext_lazy as _
 
-from satchmo.configuration import (
+from satchmo.configuration.functions import config_register_list
+from satchmo.configuration.values import (
     ConfigurationGroup,
-    config_register_list,
     StringValue,
     BooleanValue,
 )
@@ -26,7 +26,7 @@ config_register_list(
         'API_KEY',
         description=_("API Key"),
         help_text=_("Client's API key, provided by fulfiller."),
-        default=u""
+        default=""
     ),
 
     BooleanValue(
@@ -42,7 +42,7 @@ config_register_list(
         'URL',
         description=_("API URL"),
         help_text=_("URL of fulfillers API."),
-        default=u"https://[client].sixworks.co.uk/api/1/"
+        default="https://[client].sixworks.co.uk/api/1/"
     ),
 
     BooleanValue(
@@ -57,7 +57,8 @@ config_register_list(
         FULILMENT_HOUSE,
         'ALLOW_PREORDER',
         description=_("Allow Preorder"),
-        help_text=_("If true, permits acceptance of orders which contain lines currently out of stock. Disables Out-Of-Stock feedback in API response."),
+        help_text=_(
+            "If true, permits acceptance of orders which contain lines currently out of stock. Disables Out-Of-Stock feedback in API response."),
         default=False
     ),
 )

@@ -24,8 +24,8 @@ class ShaSignTest(TestCase):
 
     def test_handles_unicode(self):
         data = {
-            "key_1": u"⊙﹏⊙",
-            "key_2": u"(◕‿◕)",
+            "key_1": "⊙﹏⊙",
+            "key_2": "(◕‿◕)",
         }
 
         self.assertEqual(

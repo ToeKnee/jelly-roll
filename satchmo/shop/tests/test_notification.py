@@ -21,7 +21,7 @@ class SendOrderUpdateTest(TestCase):
         shop_config = Config.objects.get_current()
         self.assertEqual(
             mail.outbox[0].subject,
-            u'Your {store_name} order #{id} has been updated - {status}'.format(
+            'Your {store_name} order #{id} has been updated - {status}'.format(
                 store_name=shop_config.store_name.encode("utf-8"),
                 id=order_status.order_id,
                 status=order_status,
@@ -47,7 +47,7 @@ class SendOrderUpdateTest(TestCase):
         shop_config = Config.objects.get_current()
         self.assertEqual(
             mail.outbox[0].subject,
-            u'Your {store_name} order #{id} has been updated - {status}'.format(
+            'Your {store_name} order #{id} has been updated - {status}'.format(
                 store_name=shop_config.store_name.encode("utf-8"),
                 id=order_status.order_id,
                 status=order_status,

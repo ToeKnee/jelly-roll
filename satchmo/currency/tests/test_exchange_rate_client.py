@@ -4,7 +4,7 @@ import requests
 
 from django.core import mail
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.six import StringIO
 
 from satchmo.currency.factories import (
@@ -13,12 +13,12 @@ from satchmo.currency.factories import (
     USDCurrencyFactory,
 )
 from satchmo.currency.models import Currency, ExchangeRate
-from satchmo.currency.modules.fixer import FixerEchangeRateClient
+from satchmo.currency.modules.fixer import FixerExchangeRateClient
 
 
 class FixerExchangeRateClientTest(TestCase):
     def setUp(self):
-        self.client = FixerEchangeRateClient()
+        self.client = FixerExchangeRateClient()
 
         # Set primary currency + accepted currencies
         EURCurrencyFactory()
@@ -28,6 +28,7 @@ class FixerExchangeRateClientTest(TestCase):
         currency.save()
         Currency.objects.update(accepted=True)
 
+    @override_settings(FIXERIO_KEY='test')
     def test_updates_ok(self):
         data = {
             'date': '2017-02-14',
@@ -53,6 +54,7 @@ class FixerExchangeRateClientTest(TestCase):
             self.assertEqual(exchange_rates[1].rate, 1.2483)
             self.assertEqual(exchange_rates[1].date, datetime.date(int(year), int(month), int(day)))
 
+    @override_settings(FIXERIO_KEY='test')
     def test_updates_twice_on_one_day(self):
         #  Should not create another ExchangeRate
         ExchangeRate.objects.create(
@@ -81,6 +83,7 @@ class FixerExchangeRateClientTest(TestCase):
             self.client.update_exchange_rates()
             self.assertEqual(ExchangeRate.objects.count(), 2)
 
+    @override_settings(FIXERIO_KEY='test')
     def test_api_is_down(self):
         # No errors, but nothing created either
 
@@ -91,6 +94,7 @@ class FixerExchangeRateClientTest(TestCase):
             self.client.update_exchange_rates()
             self.assertEqual(ExchangeRate.objects.count(), 0)
 
+    @override_settings(FIXERIO_KEY='test')
     def test_api_contents_malformed(self):
         data = {"key": "Not what we are expecting"}
         with mock.patch("satchmo.currency.modules.fixer.requests") as mock_requests:
@@ -102,6 +106,7 @@ class FixerExchangeRateClientTest(TestCase):
             self.client.update_exchange_rates()
             self.assertEqual(ExchangeRate.objects.count(), 0)
 
+    @override_settings(FIXERIO_KEY='test')
     def test_api_contents_malformed__not_json_decodable(self):
         with mock.patch("satchmo.currency.modules.fixer.requests") as mock_requests:
             class mock_request(object):
@@ -112,6 +117,7 @@ class FixerExchangeRateClientTest(TestCase):
             self.client.update_exchange_rates()
             self.assertEqual(ExchangeRate.objects.count(), 0)
 
+    @override_settings(FIXERIO_KEY='test')
     def test_unexpeted_exchange_rate(self):
         data = {
             'date': '2017-02-14',
@@ -148,6 +154,8 @@ class UpdateExchangeRages(TestCase):
         currency.save()
         Currency.objects.update(accepted=True)
 
+    @override_settings(EXCHANGE_RATE_MODULE='fixer')
+    @override_settings(FIXERIO_KEY='test')
     def test_sends_emails_when_complete(self):
         data = {
             'date': '2017-02-14',

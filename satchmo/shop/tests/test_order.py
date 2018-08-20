@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.test import TestCase
 
 from satchmo.caching import cache_delete
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.shop.factories import TestOrderFactory
 from satchmo.shop.models import (
     Order,

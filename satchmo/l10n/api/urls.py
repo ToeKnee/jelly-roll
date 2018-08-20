@@ -1,14 +1,11 @@
-
-from django.conf.urls import patterns, url
+from django.urls import path
 
 from .views import (
     CountryListAPIView,
     CountrySessionAPIView,
 )
 
-urlpatterns = patterns(
-    '',
-
-    url(r'^$', CountryListAPIView.as_view()),
-    url(r'^session/$', CountrySessionAPIView.as_view()),
-)
+urlpatterns = [
+    path('', CountryListAPIView.as_view()),
+    path('session/', CountrySessionAPIView.as_view()),
+]

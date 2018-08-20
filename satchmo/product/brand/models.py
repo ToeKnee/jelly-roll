@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from satchmo.l10n.mixins import TranslatedObjectMixin
@@ -27,7 +27,10 @@ class BrandManager(models.Manager):
 
 class Brand(models.Model, TranslatedObjectMixin):
     """A product brand"""
-    site = models.ForeignKey(Site)
+    site = models.ForeignKey(
+        Site,
+        on_delete=models.CASCADE
+    )
     slug = models.SlugField(_("Slug"), unique=True,
                             help_text=_("Used for URLs"))
     products = models.ManyToManyField(Product, blank=True,
@@ -39,11 +42,11 @@ class Brand(models.Model, TranslatedObjectMixin):
     ordering = models.IntegerField(_("Ordering"))
     active = models.BooleanField(default=True)
     restock_interval = models.IntegerField(_("Restock Interval"), null=True,
-        blank=False, help_text=_("Typical value in days between restocks"))
+                                           blank=False, help_text=_("Typical value in days between restocks"))
     last_restocked = models.DateField(_("Last Restocked"), null=True, blank=True,
-                           help_text=_("Date of last restock"))
+                                      help_text=_("Date of last restock"))
     stock_due_on = models.DateField(_("Stock Due On"), null=True, blank=True,
-                           help_text=_("Date of next restock if known"))
+                                    help_text=_("Date of next restock if known"))
 
     objects = BrandManager()
 
@@ -52,8 +55,8 @@ class Brand(models.Model, TranslatedObjectMixin):
         verbose_name = _('Brand')
         verbose_name_plural = _('Brands')
 
-    def __unicode__(self):
-        return u"%s" % self.slug
+    def __str__(self):
+        return "%s" % self.slug
 
     def get_absolute_url(self):
         url = reverse('satchmo_brand_view',
@@ -106,12 +109,21 @@ class Brand(models.Model, TranslatedObjectMixin):
 
 
 class BrandTranslation(models.Model):
-    brand = models.ForeignKey(Brand, related_name="translations")
-    languagecode = models.CharField(_('language'), max_length=10, choices=settings.LANGUAGES)
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.CASCADE,
+        related_name="translations"
+    )
+    languagecode = models.CharField(
+        _('language'), max_length=10, choices=settings.LANGUAGES)
     name = models.CharField(_('title'), max_length=100, blank=False)
-    short_description = models.CharField(_('Short Description'), blank=True, max_length=200)  # TODO: This should be changed to meta_keywords
+    # TODO: This should be changed to meta_keywords
+    short_description = models.CharField(
+        _('Short Description'), blank=True, max_length=200)
     meta_description = models.TextField(_('Meta Description'), blank=True)
-    description = models.TextField(_('Full description, visible to customers'), blank=True)  # TODO: Rename this to "full description"
+    # TODO: Rename this to "full description"
+    description = models.TextField(
+        _('Full description, visible to customers'), blank=True)
     picture = models.ImageField(
         verbose_name=_('Picture'),
         upload_to="brand/",

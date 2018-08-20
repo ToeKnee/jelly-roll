@@ -34,8 +34,8 @@ A basic ``models.py`` file with a custom product model looks like this::
         def _get_subtype(self):
             return 'MyNewProduct'
 
-        def __unicode__(self):
-            return u"MyNewProduct: %s" % self.product.name
+        def __str__(self):
+            return "MyNewProduct: %s" % self.product.name
 
         class Admin:
             pass
@@ -61,7 +61,7 @@ The ``config.py`` file tells Satchmo about your product model. Replace
 
 
     from django.utils.translation import ugettext_lazy as _
-    from satchmo.configuration import config_get
+    from satchmo.configuration.functions import config_get
 
     PRODUCT_TYPES = config_get('PRODUCT', 'PRODUCT_TYPES')
 

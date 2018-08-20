@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase, RequestFactory
 
 from satchmo.payment.modules.ingenico.views import accepted
@@ -39,7 +39,10 @@ class AcceptedTest(TestCase):
 
         response = accepted(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response._headers['location'], ('Location', reverse("satchmo_order_tracking", kwargs={"order_id": order.id})))
+        self.assertEqual(
+            response._headers['location'],
+            ('Location', reverse("satchmo_order_tracking", kwargs={"order_id": order.id}))
+        )
 
     def test_order_available(self):
         order = TestOrderFactory()
@@ -52,10 +55,10 @@ class AcceptedTest(TestCase):
 
         response = accepted(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Accepted", response.content)
-        self.assertIn("Paid through Ingenico", response.content)
+        self.assertIn("Accepted".encode("utf-8"), response.content)
+        self.assertIn("Paid through Ingenico".encode("utf-8"), response.content)
         for item in order.orderitem_set.all():
-            self.assertIn(item.product.name, response.content.decode("utf-8"))
+            self.assertIn(item.product.name.encode("utf-8"), response.content)
 
         order = Order.objects.get(id=order.id)
         self.assertTrue(order.frozen)

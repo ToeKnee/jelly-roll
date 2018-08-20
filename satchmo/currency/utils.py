@@ -4,10 +4,10 @@ from decimal import Decimal, ROUND_HALF_EVEN
 from ipware.ip import get_real_ip
 
 from django.conf import settings
-from django.contrib.gis.geoip import GeoIP
+from django.contrib.gis.geoip2 import GeoIP2
 from django.utils.translation import ugettext_lazy as _
 
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from .models import Currency, ExchangeRate
 
 
@@ -22,7 +22,7 @@ def money_format(value, currency_code):
     except Currency.DoesNotExist:
         return _("{currency} is not accepted".format(currency=currency_code))
 
-    return u"{currency_symbol}{value:.2f} ({code})".format(
+    return "{currency_symbol}{value:.2f} ({code})".format(
         currency_symbol=currency.symbol,
         value=value,
         code=currency.iso_4217_code,
@@ -91,7 +91,7 @@ def currency_for_request(request):
             if hasattr(settings, "GEOIP_PATH"):
                 ip = get_real_ip(request)
                 if ip:
-                    geoip = GeoIP()
+                    geoip = GeoIP2()
                     country = geoip.country(ip)
 
                     try:

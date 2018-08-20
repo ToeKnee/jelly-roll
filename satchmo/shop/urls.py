@@ -1,49 +1,51 @@
-from django.conf.urls import include, patterns, url
+from django.urls import include, path
 from satchmo.product.urls import urlpatterns as productpatterns
 from satchmo.shop.satchmo_settings import get_satchmo_setting
-from satchmo.utils import app_enabled
+
+from satchmo.shop.views import (
+    home,
+    smart,
+    cart,
+    orders,
+    search,
+    download,
+)
+
 
 urlpatterns = get_satchmo_setting('SHOP_URLS')
 
-urlpatterns += patterns(
-    'satchmo.shop.views',
-
-    (r'^$', 'home.home', {}, 'satchmo_shop_home'),
-    (r'^add/$', 'smart.smart_add', {}, 'satchmo_smart_add'),
-    (r'^cart/$', 'cart.display', {}, 'satchmo_cart'),
-    (r'^cart/accept/$', 'cart.agree_terms', {}, 'satchmo_cart_accept_terms'),
-    (r'^cart/add/$', 'cart.add', {}, 'satchmo_cart_add'),
-    (r'^cart/add/ajax/$', 'cart.add_ajax', {}, 'satchmo_cart_add_ajax'),
-    (r'^cart/qty/$', 'cart.set_quantity', {}, 'satchmo_cart_set_qty'),
-    (r'^cart/qty/ajax/$', 'cart.set_quantity_ajax', {}, 'satchmo_cart_set_qty_ajax'),
-    (r'^cart/remove/$', 'cart.remove', {}, 'satchmo_cart_remove'),
-    (r'^cart/remove/ajax$', 'cart.remove_ajax', {}, 'satchmo_cart_remove_ajax'),
-    (r'^checkout/', include('satchmo.payment.urls')),
-    (r'^history/$', 'orders.order_history', {}, 'satchmo_order_history'),
-    (r'^tracking/(?P<order_id>\d+)/$',
-     'orders.order_tracking', {}, 'satchmo_order_tracking'),
-    (r'^search/$', 'search.search_view', {}, 'satchmo_search'),
+urlpatterns += [
+    path('', home.home, {}, 'satchmo_shop_home'),
+    path('add/', smart.smart_add, {}, 'satchmo_smart_add'),
+    path('cart/', cart.display, {}, 'satchmo_cart'),
+    path('cart/accept/', cart.agree_terms, {}, 'satchmo_cart_accept_terms'),
+    path('cart/add/', cart.add, {}, 'satchmo_cart_add'),
+    path('cart/add/ajax/', cart.add_ajax, {}, 'satchmo_cart_add_ajax'),
+    path('cart/qty/', cart.set_quantity, {}, 'satchmo_cart_set_qty'),
+    path('cart/qty/ajax/', cart.set_quantity_ajax, {}, 'satchmo_cart_set_qty_ajax'),
+    path('cart/remove/', cart.remove, {}, 'satchmo_cart_remove'),
+    path('cart/remove/ajax/', cart.remove_ajax, {}, 'satchmo_cart_remove_ajax'),
+    path('checkout/', include('satchmo.payment.urls')),
+    path('history/', orders.order_history, {}, 'satchmo_order_history'),
+    path('tracking/<int:order_id>/',
+         orders.order_tracking, {}, 'satchmo_order_tracking'),
+    path('search/', search.search_view, {}, 'satchmo_search'),
 
     # Used for downloadable products.
-    (r'^download/process/(?P<download_key>\w+)/$',
-     'download.process', {}, 'satchmo_download_process'),
-    (r'^download/send/(?P<download_key>\w+)/$',
-     'download.send_file', {}, 'satchmo_download_send'),
+    path('download/process/<slug:download_key>/',
+         download.process, {}, 'satchmo_download_process'),
+    path('download/send/<slug:download_key>/',
+         download.send_file, {}, 'satchmo_download_send'),
 
-    url(r'^contact/', include('satchmo.contact.urls')),
-    url(r'^wishlist/', include('satchmo.wishlist.urls')),
-    url(r'^fulfilment/', include('satchmo.fulfilment.urls')),
+    path('contact/', include('satchmo.contact.urls')),
+    path('wishlist/', include('satchmo.wishlist.urls')),
+    path('fulfilment/', include('satchmo.fulfilment.urls')),
 
     # API
-    url(r'^api/currency/', include('satchmo.currency.api.urls')),
-    url(r'^api/l10n/', include('satchmo.l10n.api.urls')),
-)
+    path('api/currency/', include('satchmo.currency.api.urls')),
+    path('api/l10n/', include('satchmo.l10n.api.urls')),
+    path('i18n/', include('satchmo.l10n.urls'))
+]
 
-if app_enabled('l10n'):
-    urlpatterns += patterns('',
-                            # Used to set the default language.
-                            (r'^i18n/', include('satchmo.l10n.urls'))
-                            )
-
-# here we add product patterns directly into the root url
+# Here we add product patterns directly into the root url
 urlpatterns += productpatterns

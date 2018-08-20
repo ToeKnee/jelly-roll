@@ -47,7 +47,7 @@ To allow users to choose a translation using Satchmo's language selection form, 
 
 Create a `config.py` file in your project directory. Add the following lines, and replace `en` with the language code for the translation and replace `English` with the language's name::
 
-    from satchmo.configuration import config_get
+    from satchmo.configuration.functions import config_get
 
     LANGUAGES_AVAILABLE = config_get('LANGUAGE', 'LANGUAGES_AVAILABLE')
 

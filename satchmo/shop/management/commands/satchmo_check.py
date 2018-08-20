@@ -11,15 +11,15 @@ class Command(NoArgsCommand):
     def handle_noargs(self, **options):
         from django.conf import settings
         errors = []
-        print "Checking your satchmo configuration."
+        print("Checking your satchmo configuration.")
         try:
             import satchmo
         except ImportError:
             errors.append(
                 "Satchmo is not installed correctly. Please verify satchmo is on your sys path."
             )
-        print "Using Django version %s" % django.get_version()
-        print "Using Satchmo version %s" % satchmo.get_version()
+        print(("Using Django version %s" % django.get_version()))
+        print(("Using Satchmo version %s" % satchmo.get_version()))
         try:
             import Crypto.Cipher
         except ImportError:
@@ -76,8 +76,8 @@ class Command(NoArgsCommand):
             except ImportError:
                 errors.append("Elementtree is not installed.")
         if len(errors) == 0:
-            print "Your configuration has no errors."
+            print("Your configuration has no errors.")
         else:
-            print "The following errors were found:"
+            print("The following errors were found:")
             for error in errors:
-                print error
+                print(error)

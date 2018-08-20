@@ -1,6 +1,5 @@
 from django.db import transaction
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 
@@ -30,8 +29,8 @@ def success(request, template='checkout/success.html'):
     del request.session['orderID']
 
     log.info("Successully processed %s" % (order))
-    context = RequestContext(request, {'order': order})
-    return render_to_response(template, context)
+    context = {'order': order}
+    return render(request, template, context)
 
 
 @transaction.atomic

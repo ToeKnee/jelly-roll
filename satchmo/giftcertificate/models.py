@@ -5,7 +5,7 @@ from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from satchmo.configuration import config_get_group
+from satchmo.configuration.functions import config_get_group
 from satchmo.contact.models import Contact
 from satchmo.currency.utils import money_format
 from satchmo.giftcertificate.utils import generate_certificate_code
@@ -32,18 +32,32 @@ class GiftCertificateManager(models.Manager):
 
 class GiftCertificate(models.Model):
     """A Gift Cert which holds value."""
-    site = models.ForeignKey(Site, null=True, blank=True, verbose_name=_('Site'))
+    site = models.ForeignKey(
+        Site,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name=_('Site')
+    )
     order = models.ForeignKey(
-        Order, null=True, blank=True,
-        related_name="giftcertificates", verbose_name=_('Order')
+        Order,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="giftcertificates",
+        verbose_name=_('Order')
     )
     code = models.CharField(
         _('Certificate Code'), max_length=100,
         blank=True, null=True
     )
     purchased_by = models.ForeignKey(
-        Contact, verbose_name=_('Purchased by'),
-        blank=True, null=True, related_name='giftcertificates_purchased'
+        Contact,
+        on_delete=models.CASCADE,
+        verbose_name=_('Purchased by'),
+        blank=True,
+        null=True,
+        related_name='giftcertificates_purchased'
     )
     date_added = models.DateField(_("Date added"), null=True, blank=True)
     valid = models.BooleanField(_('Valid'), default=True)
@@ -78,7 +92,7 @@ class GiftCertificate(models.Model):
                  money_format(self.balance, order.currency.iso_4217_code),
                  order.id,
                  money_format(order.balance, order.currency.iso_4217_code)
-        )
+                 )
         config = config_get_group('PAYMENT_GIFTCERTIFICATE')
         orderpayment = record_payment(order, config, amount)
         return self.use(amount, orderpayment=orderpayment)
@@ -101,10 +115,10 @@ class GiftCertificate(models.Model):
             self.site = Site.objects.get_current()
         super(GiftCertificate, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         sb = money_format(self.start_balance, self.order.iso_4217_code)
         b = money_format(self.balance, self.order.iso_4217_code)
-        return u"Gift Cert: %s/%s" % (sb, b)
+        return "Gift Cert: %s/%s" % (sb, b)
 
     class Meta:
         verbose_name = _("Gift Certificate")
@@ -119,15 +133,28 @@ class GiftCertificateUsage(models.Model):
         _("Amount Used"), decimal_places=2,
         max_digits=8,
     )
-    orderpayment = models.ForeignKey(OrderPayment, null=True, verbose_name=_('Order Payment'))
-    used_by = models.ForeignKey(
-        Contact, verbose_name=_('Used by'),
-        blank=True, null=True, related_name='giftcertificates_used'
+    orderpayment = models.ForeignKey(
+        OrderPayment,
+        on_delete=models.CASCADE,
+        null=True,
+        verbose_name=_('Order Payment')
     )
-    giftcertificate = models.ForeignKey(GiftCertificate, related_name='usages')
+    used_by = models.ForeignKey(
+        Contact,
+        on_delete=models.CASCADE,
+        verbose_name=_('Used by'),
+        blank=True,
+        null=True,
+        related_name='giftcertificates_used'
+    )
+    giftcertificate = models.ForeignKey(
+        GiftCertificate,
+        on_delete=models.CASCADE,
+        related_name='usages'
+    )
 
-    def __unicode__(self):
-        return u"GiftCertificateUsage: %s" % self.balance_used
+    def __str__(self):
+        return "GiftCertificateUsage: %s" % self.balance_used
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -139,12 +166,17 @@ class GiftCertificateProduct(models.Model):
     """
     The product model for a Gift Certificate
     """
-    product = models.OneToOneField(Product, verbose_name=_('Product'), primary_key=True)
+    product = models.OneToOneField(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name=_('Product'),
+        primary_key=True
+    )
     is_shippable = False
     discountable = False
 
-    def __unicode__(self):
-        return u"GiftCertificateProduct: %s" % self.product.name
+    def __str__(self):
+        return "GiftCertificateProduct: %s" % self.product.name
 
     def _get_subtype(self):
         return 'GiftCertificateProduct'
@@ -174,5 +206,3 @@ class GiftCertificateProduct(models.Model):
     class Meta:
         verbose_name = _("Gift certificate product")
         verbose_name_plural = _("Gift certificate products")
-
-import config

@@ -1,8 +1,13 @@
-from django.conf.urls import patterns, url
+from django.urls import path
 
-urlpatterns = patterns(
-    'satchmo.product.brand.views',
-
-    url(r'^$', 'brand_list', {}, name='satchmo_brand_list'),
-    url(r'^(?P<brandname>[a-z0-9-]+)/$', 'brand_page', {}, name='satchmo_brand_view'),
+from satchmo.product.brand.views import (
+    brand_list,
+    brand_page,
 )
+
+
+urlpatterns = [
+    path('', brand_list, {}, name='satchmo_brand_list'),
+    path('<slug:brandname>/',
+         brand_page, {}, name='satchmo_brand_view'),
+]

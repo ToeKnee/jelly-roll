@@ -1,23 +1,44 @@
-{# used by status_ordercounts templatetags #}
+{# used by order_lists templatetags #}
 {% load satchmo_currency i18n %}
-<ul>
-    {% for s, value in status %}
-        {% if value > 0 %}
+
+<style type="text/css">
+  #order-list {
+    margin-left: 0;
+  }
+
+  #order-list li {
+    list-style: none;
+  }
+
+  #order-list li ul.status {
+    margin: 0;
+  }
+
+  #order-list li ul.status li ul.products li{
+    list-style: disc;
+  }
+</style>
+
+<ul id="order-list">
+  {% for s, value in status %}
+    {% if value %}
         <li>
             <h2><a href="{% url "admin:index"%}shop/order/?status__status__id__exact={{ s.id }}">{{ s }} {{ value }}</a></h2>
-            <ul>
+            <ul class="status">
             {% for order in s.orders %}
-        	<li>{{ order.status }} -
-                    {% if multihost %}[{{ order.site.name }}] {% endif %}<a href="{% url "admin:index"%}shop/order/{{ order.id }}">{{ order }}</a>
-                    &ndash; {{ order.display_total }} {% trans "on" %} {{ order.time_stamp|date:"F jS Y H:i" }}
-                    <ul>
-                    {% for item in order.orderitem_set.all %}
-                        <li>
-                            {{ item }} x {{ item.quantity }}
-                        </li>
-                    {% endfor %}
-                    </ul>
+        	<li>
+              <a href="{% url "admin:index"%}shop/order/{{ order.id }}">{{ order }}</a>
+              <br>
+              {{ order.display_total }} —
+              {{ order.time_stamp|date:"DATETIME_FORMAT" }}
+              <ul class="products">
+                {% for item in order.orderitem_set.all %}
+                <li>
+                  {{ item }} x {{ item.quantity }}
                 </li>
+                {% endfor %}
+              </ul>
+            </li>
             {% endfor %}
             </ul>
         </li>

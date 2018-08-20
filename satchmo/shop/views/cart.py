@@ -2,10 +2,10 @@ import json
 from decimal import Decimal
 
 from django.conf import settings
-from django.contrib.gis.geoip import GeoIP
-from django.core import urlresolvers
+from django.contrib.gis.geoip2 import GeoIP2
+from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.safestring import mark_safe
@@ -13,7 +13,7 @@ from django.utils.translation import ugettext as _
 
 from ipware.ip import get_real_ip
 
-from satchmo.configuration import config_value
+from satchmo.configuration.functions import config_value
 from satchmo.contact.models import AddressBook, Contact
 from satchmo.currency.models import Currency
 from satchmo.currency.utils import convert_to_currency, money_format
@@ -119,7 +119,7 @@ def display(request, cart=None, error_message='', default_view_tax=NOTSET):
     if country is None and hasattr(settings, "GEOIP_PATH"):
         ip = get_real_ip(request)
         if ip:
-            geoip = GeoIP()
+            geoip = GeoIP2()
             ip_country = geoip.country(ip)
             try:
                 country = Country.objects.get(
@@ -175,7 +175,7 @@ def display(request, cart=None, error_message='', default_view_tax=NOTSET):
     except Currency.DoesNotExist:
         display_total = cart.total + cheapest_shipping
 
-    context = RequestContext(request, {
+    context = {
         'cart': cart,
         'error_message': error_message,
         'default_view_tax': default_view_tax,
@@ -183,8 +183,8 @@ def display(request, cart=None, error_message='', default_view_tax=NOTSET):
         'cheapest_shipping': display_shipping,
         'display_total': display_total,
         'country': country,
-    })
-    return render_to_response('base_cart.html', context)
+    }
+    return render(request, 'base_cart.html', context)
 
 
 def add(request, id=0, redirect_to='satchmo_cart'):
@@ -229,7 +229,7 @@ def add(request, id=0, redirect_to='satchmo_cart'):
         added_item = cart.add_item(
             product, number_added=quantity, details=details)
 
-    except CartAddProhibited, cap:
+    except CartAddProhibited as cap:
         return _product_error(request, product, cap.message)
 
     # got to here with no error, now send a signal so that listeners can also operate on this form.
@@ -237,7 +237,7 @@ def add(request, id=0, redirect_to='satchmo_cart'):
         cart, cart=cart, cartitem=added_item, product=product, request=request, form=formdata)
     satchmo_cart_changed.send(cart, cart=cart, request=request)
 
-    url = urlresolvers.reverse(redirect_to)
+    url = reverse(redirect_to)
     return HttpResponseRedirect(url)
 
 
@@ -311,7 +311,7 @@ def add_ajax(request, id=0, template="json.html"):
                     form=formdata
                 )
 
-        except CartAddProhibited, cap:
+        except CartAddProhibited as cap:
             data['results'] = _('Error')
             data['errors'].append(('product', cap.message))
 
@@ -325,14 +325,14 @@ def add_ajax(request, id=0, template="json.html"):
     log.debug('CART AJAX: %s', data)
 
     satchmo_cart_changed.send(tempCart, cart=tempCart, request=request)
-    return render_to_response(template, {'json': encoded})
+    return render(template, {'json': encoded})
 
 
 def agree_terms(request):
     """Agree to terms"""
     if request.method == "POST":
         if request.POST.get('agree_terms', False):
-            url = urlresolvers.reverse('satchmo_checkout-step1')
+            url = reverse('satchmo_checkout-step1')
             return HttpResponseRedirect(url)
 
     return display(request, error_message=_('You must accept the terms and conditions.'))
@@ -344,7 +344,7 @@ def remove(request):
     if errors:
         return display(request, cart=cart, error_message=errors)
     else:
-        url = urlresolvers.reverse('satchmo_cart')
+        url = reverse('satchmo_cart')
         return HttpResponseRedirect(url)
 
 
@@ -368,7 +368,7 @@ def remove_ajax(request, template="json.html"):
             data['cart_count'] = cart.numItems
             data['item_id'] = cartitem.id
 
-        return render_to_response(template, {'json': json.JSONEncoder().encode(data)})
+        return render(template, {'json': json.JSONEncoder().encode(data)})
 
 
 def set_quantity(request):
@@ -376,7 +376,7 @@ def set_quantity(request):
 
     Intended to be called via the cart itself, returning to the cart after done.
     """
-    cart_url = urlresolvers.reverse('satchmo_cart')
+    cart_url = reverse('satchmo_cart')
 
     if not request.POST:
         return HttpResponseRedirect(cart_url)
@@ -428,7 +428,7 @@ def set_quantity_ajax(request, template="json.html"):
 
     encoded = json.JSONEncoder().encode(data)
     encoded = mark_safe(encoded)
-    return render_to_response(template, {'json': encoded})
+    return render(template, {'json': encoded})
 
 
 def product_from_post(productslug, formdata):
@@ -469,8 +469,8 @@ def product_from_post(productslug, formdata):
             else:
                 price_change = zero
             data = {
-                'name': unicode(result.option_group),
-                'value': unicode(result.translated_name()),
+                'name': str(result.option_group),
+                'value': str(result.translated_name()),
                 'sort_order': result.sort_order,
                 'price_change': price_change
             }

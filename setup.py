@@ -49,15 +49,13 @@ setup(
         'Topic :: Office/Business',
     ],
     install_requires=[
+        "Django>=2.0.0,<2.2.0",
         "currencyconverter>=0.13.3,<1.0.0",
-        "Django>=1.7,<1.8",
         "django-ipware>=1.1.6,<2.0.0",
-        "djangorestframework>=3.3.0,<3.4.0",
-        "factory-boy>=2.7.0,<3.0.0",
-        "httmock>=1.2.3,<2.0.0",
-        "mock>=2.0.0,<3.0.0",
+        "djangorestframework>=3.8.2,<4.0.0",
         "pycrypto>=2.6.1,<3.0.0",
         "requests>=2.13.0,<3.0.0",
         "workdays>=1.4,<2.0",
+        "GeoIP2>=2.8.0,<3.0.0",
     ],
 )

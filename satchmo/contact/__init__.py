@@ -1,3 +1,3 @@
 CUSTOMER_ID = 'custID'
 
-import listeners
+default_app_config = 'satchmo.contact.apps.ContactConfig'

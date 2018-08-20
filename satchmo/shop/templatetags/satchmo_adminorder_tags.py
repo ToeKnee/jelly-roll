@@ -12,6 +12,7 @@ def order_lists():
     """ Show all orders that are in status' that have display set to True """
     status = []
     primary_currency = Currency.objects.get_primary()
+
     for s in Status.objects.filter(display=True):
         value = 0
         for order in s.orders():
@@ -19,6 +20,7 @@ def order_lists():
 
         if value:
             status.append((s, money_format(value, primary_currency.iso_4217_code)))
+
     return {
         'status': status,
     }

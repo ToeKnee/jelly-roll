@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 
@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='creditcarddetail',
             name='orderpayment',
-            field=models.ForeignKey(related_name='creditcards', to='shop.OrderPayment', unique=True),
+            field=models.ForeignKey(
+                related_name='creditcards', to='shop.OrderPayment', unique=True, on_delete=models.CASCADE),
             preserve_default=True,
         ),
     ]

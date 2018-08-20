@@ -1,7 +1,9 @@
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration import (
+from satchmo.configuration.function import (
     config_get,
     config_register_list,
+)
+from satchmo.configuration.values(
     ConfigurationGroup,
     DecimalValue,
     MultipleStringValue
@@ -9,12 +11,15 @@ from satchmo.configuration import (
 from satchmo.l10n.models import Country
 
 SHIP_MODULES = config_get('SHIPPING', 'MODULES')
-SHIP_MODULES.add_choice(('satchmo.shipping.modules.royalmailcontract', _('Royal Mail Contract')))
+SHIP_MODULES.add_choice(
+    ('satchmo.shipping.modules.royalmailcontract', _('Royal Mail Contract')))
 
-SHIPPING_GROUP = ConfigurationGroup('satchmo.shipping.modules.royalmailcontract',
-                                    _('Royal Mail Contract Shipping Settings'),
-                                    requires=SHIP_MODULES,
-                                    ordering=101)
+SHIPPING_GROUP = ConfigurationGroup(
+    'satchmo.shipping.modules.royalmailcontract',
+    _('Royal Mail Contract Shipping Settings'),
+    requires=SHIP_MODULES,
+    ordering=101
+)
 
 
 config_register_list(
@@ -28,7 +33,8 @@ config_register_list(
     DecimalValue(SHIPPING_GROUP,
                  'MAX_WEIGHT_PER_ITEM',
                  description=_("Max weight per item in Kgs (packet)"),
-                 help_text=_("The orders weight is rounded up and divided by this and multiplied by the per item price"),
+                 help_text=_(
+                     "The orders weight is rounded up and divided by this and multiplied by the per item price"),
                  requires=SHIP_MODULES,
                  requiresvalue='satchmo.shipping.modules.royalmailcontract',
                  default="2.00"),
@@ -63,8 +69,10 @@ config_register_list(
 
     MultipleStringValue(SHIPPING_GROUP,
                         'EXCLUDE_COUNTRY',
-                        description=_("Countries excluded from Royal Mail Contract shipping."),
-                        help_text=_("Select the countries that you want to exclude."),
+                        description=_(
+                            "Countries excluded from Royal Mail Contract shipping."),
+                        help_text=_(
+                            "Select the countries that you want to exclude."),
                         requires=SHIP_MODULES,
                         requiresvalue='satchmo.shipping.modules.royalmailcontract',
                         default=[],

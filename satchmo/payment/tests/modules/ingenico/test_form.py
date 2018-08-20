@@ -3,7 +3,7 @@ from datetime import date
 from django.test import TestCase
 
 from satchmo.caching import cache_delete
-from satchmo.configuration import config_get_group
+from satchmo.configuration.functions import config_get_group
 from satchmo.configuration.models import Setting
 from satchmo.payment.modules.ingenico.forms import IngenicoForm
 from satchmo.payment.modules.ingenico.utils import shasign

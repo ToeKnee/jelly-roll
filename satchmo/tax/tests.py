@@ -1,9 +1,9 @@
 from decimal import Decimal
 
 from django.test import TestCase
-from models import *
+from .models import *
 from satchmo.caching import cache_delete
-from satchmo.configuration import config_get
+from satchmo.configuration.functions import config_get
 from satchmo.shop.tests import make_test_order
 
 
@@ -35,7 +35,7 @@ class TaxTest(TestCase):
         self.assertEqual(2, len(taxes))
         t1 = taxes[0]
         t2 = taxes[1]
-        self.assert_('Shipping' in (t1.description, t2.description))
+        self.assertTrue('Shipping' in (t1.description, t2.description))
         if t1.description == 'Shipping':
             tship = t1
             tmain = t2
@@ -61,7 +61,7 @@ class TaxTest(TestCase):
         self.assertEqual(2, len(taxes))
         t1 = taxes[0]
         t2 = taxes[1]
-        self.assert_('Shipping' in (t1.description, t2.description))
+        self.assertTrue('Shipping' in (t1.description, t2.description))
         if t1.description == 'Shipping':
             tship = t1
             tmain = t2
@@ -94,7 +94,7 @@ class TaxTest(TestCase):
         self.assertEqual(2, len(taxes))
         t1 = taxes[0]
         t2 = taxes[1]
-        self.assert_('Shipping' in (t1.description, t2.description))
+        self.assertTrue('Shipping' in (t1.description, t2.description))
         if t1.description == 'Shipping':
             tship = t1
             tmain = t2
@@ -155,7 +155,7 @@ class TaxTest(TestCase):
         self.assertEqual(2, len(taxes))
         t1 = taxes[0]
         t2 = taxes[1]
-        self.assert_('Shipping' in (t1.description, t2.description))
+        self.assertTrue('Shipping' in (t1.description, t2.description))
         if t1.description == 'Shipping':
             tship = t1
             tmain = t2

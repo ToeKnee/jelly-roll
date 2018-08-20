@@ -1,11 +1,13 @@
-from satchmo.configuration import (
+from satchmo.configuration.functions import (
+    config_get,
+    config_register_list,
+)
+from satchmo.configuration.values import (
     BooleanValue,
     ConfigurationGroup,
     ModuleValue,
     MultipleStringValue,
     StringValue,
-    config_get,
-    config_register_list,
 )
 
 from django.utils.translation import ugettext_lazy as _
@@ -76,8 +78,9 @@ config_register_list(
 
     StringValue(PAYMENT_GROUP,
                 'URL_BASE',
-                description=_('The url base used for constructing urlpatterns which will use this module'),
-                default=r'^worldpay/'),
+                description=_(
+                    'The url base used for constructing urlpatterns which will use this module'),
+                default='worldpay/'),
 
     MultipleStringValue(PAYMENT_GROUP,
                         'CREDITCHOICES',
@@ -92,7 +95,8 @@ config_register_list(
                             (('Laser', 'Laser')),  # Euro - ROI only
                             (('American Express', 'American Express')),
                             (('Diners Club', 'Diners Club'))),
-                        default=('Mastercard', 'Visa', 'Visa Electron', 'Solo', 'JCB', 'Maestro', 'Laser')
+                        default=('Mastercard', 'Visa', 'Visa Electron',
+                                 'Solo', 'JCB', 'Maestro', 'Laser')
                         ),
 
     BooleanValue(PAYMENT_GROUP,

@@ -26,7 +26,7 @@ class TranslatedObjectMixin(object):
         try:
             site = Site.objects.get_current()
             trans = caching.cache_get("{}-{}".format(self.__class__.__name__, self.id), site=site, trans=attr, lang=language_code)
-        except caching.NotCachedError, nce:
+        except caching.NotCachedError as nce:
             translations = getattr(self, attr)
 
             c = translations.filter(languagecode__exact=language_code)

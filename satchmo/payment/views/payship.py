@@ -3,8 +3,7 @@
 #####################################################################
 
 from django import http
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 
 from satchmo.contact.models import Contact
@@ -37,7 +36,7 @@ def pay_ship_info_verify(request, payment_module):
     tempCart = Cart.objects.from_request(request)
     if tempCart.numItems == 0:
         template = lookup_template(payment_module, 'checkout/empty_cart.html')
-        return (False, render_to_response(template, RequestContext(request)))
+        return (False, render(request, template))
 
     return (True, contact, tempCart)
 
@@ -101,11 +100,12 @@ def pay_ship_render_form(request, form, template, payment_module, cart):
     else:
         sale = None
 
-    ctx = RequestContext(request, {
+    ctx = {
         'form': form,
         'sale': sale,
-        'PAYMENT_LIVE': payment_live(payment_module)})
-    return render_to_response(template, ctx)
+        'PAYMENT_LIVE': payment_live(payment_module)
+    }
+    return render(request, template, ctx)
 
 
 def base_pay_ship_info(request, payment_module, form_handler, template):

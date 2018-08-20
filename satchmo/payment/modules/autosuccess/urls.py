@@ -1,6 +1,8 @@
-from django.conf.urls import patterns
+from django.urls import path
+from satchmo.payment.views.checkout import success
+from .views import one_step
 
-urlpatterns = patterns('satchmo',
-                       (r'^$', 'payment.modules.autosuccess.views.one_step', {}, 'AUTOSUCCESS_satchmo_checkout-step2'),
-                       (r'^success/$', 'payment.views.checkout.success', {}, 'AUTOSUCCESS_satchmo_checkout-success'),
-                       )
+urlpatterns = [
+    path('', one_step, {}, 'satchmo_checkout-step2'),
+    path('success/', success, {}, 'satchmo_checkout-success'),
+]

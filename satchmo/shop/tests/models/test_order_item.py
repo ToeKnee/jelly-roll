@@ -24,17 +24,17 @@ class DisplayMethodsTest(TestCase):
         self.order_item = OrderItemFactory(order=self.order)
 
     def test_unit_price(self):
-        self.assertEqual(self.order_item.display_unit_price, u'$5.00 (USD)')
+        self.assertEqual(self.order_item.display_unit_price, '$5.00 (USD)')
 
     def test_unit_price_with_tax(self):
-        self.assertEqual(self.order_item.display_unit_price_with_tax, u'$5.00 (USD)')
+        self.assertEqual(self.order_item.display_unit_price_with_tax, '$5.00 (USD)')
 
     def test_discount(self):
         self.order_item.discount = Decimal("3.00")
-        self.assertEqual(self.order_item.display_discount, u'$3.00 (USD)')
+        self.assertEqual(self.order_item.display_discount, '$3.00 (USD)')
 
     def test_sub_total(self):
-        self.assertEqual(self.order_item.display_sub_total, u'$25.00 (USD)')
+        self.assertEqual(self.order_item.display_sub_total, '$25.00 (USD)')
 
     def test_total_with_tax(self):
-        self.assertEqual(self.order_item.display_total_with_tax, u'$25.00 (USD)')
+        self.assertEqual(self.order_item.display_total_with_tax, '$25.00 (USD)')

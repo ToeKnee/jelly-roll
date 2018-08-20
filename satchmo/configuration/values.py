@@ -6,21 +6,27 @@ http://code.google.com/p/django-values/
 import datetime
 import json
 import logging
-import signals
+
+from . import signals
+from collections import OrderedDict
 from decimal import Decimal
 
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.text import force_text
-from django.utils.datastructures import SortedDict
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext, ugettext_lazy as _
-from satchmo.configuration.models import find_setting, LongSetting, Setting, SettingNotSet
+
+from satchmo.configuration.exceptions import SettingNotSet
 from satchmo.utils import load_module, is_string_like, is_list_or_tuple
 
-__all__ = ['SHOP_GROUP', 'ConfigurationGroup', 'Value', 'BooleanValue', 'DecimalValue', 'DurationValue',
-           'FloatValue', 'IntegerValue', 'ModuleValue', 'PercentValue', 'PositiveIntegerValue', 'SortedDotDict',
-           'StringValue', 'LongStringValue', 'MultipleStringValue']
+__all__ = [
+    'SHOP_GROUP', 'ConfigurationGroup', 'Value', 'BooleanValue',
+    'DecimalValue', 'DurationValue', 'FloatValue', 'IntegerValue',
+    'ModuleValue', 'PercentValue', 'PositiveIntegerValue',
+    'SortedDotDict', 'StringValue', 'LongStringValue',
+    'MultipleStringValue'
+]
 
 _WARN = {}
 
@@ -29,7 +35,7 @@ log = logging.getLogger(__name__)
 NOTSET = object()
 
 
-class SortedDotDict(SortedDict):
+class SortedDotDict(OrderedDict):
 
     def __getattr__(self, key):
         try:
@@ -38,18 +44,18 @@ class SortedDotDict(SortedDict):
             raise AttributeError(key)
 
     def __iter__(self):
-        vals = self.values()
+        vals = list(self.values())
         for k in vals:
             yield k
 
     def values(self):
-        vals = super(SortedDotDict, self).values()
-        vals.sort()
+        vals = sorted(list(super(SortedDotDict, self).values()))
         return vals
 
 
 class ConfigurationGroup(SortedDotDict):
     """A simple wrapper for a group of configuration values"""
+
     def __init__(self, key, name, *args, **kwargs):
         """Create a new ConfigurationGroup.
 
@@ -80,16 +86,42 @@ class ConfigurationGroup(SortedDotDict):
         return cmp((self.ordering, self.name), (other.ordering, other.name))
 
     def __eq__(self, other):
-        return (type(self) == type(other)
-                and self.ordering == other.ordering
-                and self.name == other.name)
+        if isinstance(self, type(other)):
+            return self.ordering == other.ordering
+        else:
+            return self.name == other.name
+
+    def __lt__(self, other):
+        if isinstance(self, type(other)):
+            return self.ordering < other.ordering
+        else:
+            return self.name < other.name
+
+    def __lte__(self, other):
+        if isinstance(self, type(other)):
+            return self.ordering <= other.ordering
+        else:
+            return self.name <= other.name
+
+    def __gt__(self, other):
+        if isinstance(self, type(other)):
+            return self.ordering > other.ordering
+        else:
+            return self.name > other.name
+
+    def __gte__(self, other):
+        if isinstance(self, type(other)):
+            return self.value >= other.value
+        else:
+            return self.value >= other
 
     def __ne__(self, other):
         return not self == other
 
     def values(self):
-        vals = super(ConfigurationGroup, self).values()
+        vals = list(super(ConfigurationGroup, self).values())
         return [v for v in vals if v.enabled()]
+
 
 SHOP_GROUP = ConfigurationGroup('SHOP', _('Base Settings'), ordering=0)
 
@@ -146,19 +178,43 @@ class Value(object):
         Value.creation_counter += 1
 
     def __cmp__(self, other):
-        return cmp((self.ordering, self.description, self.creation_counter), (other.ordering, other.description, other.creation_counter))
+        return cmp(
+            (self.ordering, self.description, self.creation_counter),
+            (other.ordering, other.description, other.creation_counter)
+        )
 
     def __eq__(self, other):
-        if type(self) == type(other):
+        if isinstance(self, type(other)):
             return self.value == other.value
         else:
             return self.value == other
 
+    def __lt__(self, other):
+        if isinstance(self, type(other)):
+            return self.value < other.value
+        else:
+            return self.value < other
+
+    def __lte__(self, other):
+        if isinstance(self, type(other)):
+            return self.value <= other.value
+        else:
+            return self.value <= other
+
+    def __gt__(self, other):
+        if isinstance(self, type(other)):
+            return self.value > other.value
+        else:
+            return self.value > other
+
+    def __gte__(self, other):
+        if isinstance(self, type(other)):
+            return self.value >= other.value
+        else:
+            return self.value >= other
+
     def __iter__(self):
         return iter(self.value)
-
-    def __unicode__(self):
-        return unicode(self.value)
 
     def __str__(self):
         return str(self.value)
@@ -204,7 +260,7 @@ class Value(object):
                 for x in self.choices:
                     if x[0] in self.default:
                         work.append(force_text(x[1]))
-                note = ugettext('Default value: ') + u", ".join(work)
+                note = ugettext('Default value: ') + ", ".join(work)
 
             else:
                 note = _("Default value: %s") % force_text(self.default)
@@ -243,10 +299,12 @@ class Value(object):
         return field
 
     def make_setting(self, db_value):
-        log.debug('new setting %s.%s', self.group.key, self.key)
+        from satchmo.configuration.models import Setting
+        log.debug('New setting %s.%s', self.group.key, self.key)
         return Setting(group=self.group.key, key=self.key, value=db_value)
 
     def _setting(self):
+        from satchmo.configuration.models import find_setting
         return find_setting(self.group.key, self.key)
 
     setting = property(fget=_setting)
@@ -261,28 +319,32 @@ class Value(object):
             else:
                 val = NOTSET
 
-        except AttributeError, ae:
+        except AttributeError as ae:
             log.error("Attribute error: %s", ae)
             log.error("%s: Could not get _value of %s", self.key, self.setting)
             raise(ae)
 
-        except Exception, e:
+        except Exception as e:
             global _WARN
             log.error(e)
             if str(e).find("configuration_setting") > -1:
                 if 'configuration_setting' not in _WARN:
-                    log.warn('Error loading setting %s.%s from table, OK if you are in syncdb', self.group.key, self.key)
+                    log.warning(
+                        'Error loading setting %s.%s from table, OK if you are in syncdb', self.group.key, self.key)
                     _WARN['configuration_setting'] = True
 
                 if self.use_default:
                     val = self.default
                 else:
-                    raise ImproperlyConfigured("All settings used in startup must have defaults, %s.%s does not", self.group.key, self.key)
+                    raise ImproperlyConfigured(
+                        "All settings used in startup must have defaults, %s.%s does not", self.group.key, self.key)
             else:
                 import traceback
                 traceback.print_exc()
-                log.warn("Problem finding settings %s.%s, %s", self.group.key, self.key, e)
-                raise SettingNotSet("Startup error, couldn't load %s.%s" % (self.group.key, self.key))
+                log.warning("Problem finding settings %s.%s, %s",
+                            self.group.key, self.key, e)
+                raise SettingNotSet(
+                    "Startup error, couldn't load %s.%s" % (self.group.key, self.key))
         return val
 
     def update(self, value):
@@ -303,10 +365,12 @@ class Value(object):
                     log.info("Deleted setting %s.%s", self.group.key, self.key)
                     s.delete()
             else:
-                log.info("Updated setting %s.%s = %s", self.group.key, self.key, value)
+                log.info("Updated setting %s.%s = %s",
+                         self.group.key, self.key, value)
                 s.save()
 
-            signals.configuration_value_changed.send(self, old_value=current_value, new_value=new_value, setting=self)
+            signals.configuration_value_changed.send(
+                self, old_value=current_value, new_value=new_value, setting=self)
 
             return True
         return False
@@ -335,13 +399,13 @@ class Value(object):
         "Returns a value suitable for storage into a CharField"
         if value == NOTSET:
             value = ""
-        return unicode(value)
+        return str(value)
 
     def to_editor(self, value):
         "Returns a value suitable for display in a form widget"
         if value == NOTSET:
             return NOTSET
-        return unicode(value)
+        return str(value)
 
 ###############
 # VALUE TYPES #
@@ -381,15 +445,16 @@ class DecimalValue(Value):
 
         try:
             return Decimal(value)
-        except TypeError, te:
-            log.warning("Can't convert %s to Decimal for settings %s.%s", value, self.group.key, self.key)
+        except TypeError as te:
+            log.warning("Can't convert %s to Decimal for settings %s.%s",
+                        value, self.group.key, self.key)
             raise TypeError(te)
 
     def to_editor(self, value):
         if value == NOTSET:
             return "0"
         else:
-            return unicode(value)
+            return str(value)
 
 
 # DurationValue has a lot of duplication and ugliness because of issue #2443
@@ -401,9 +466,11 @@ class DurationValue(Value):
             try:
                 return datetime.timedelta(seconds=float(value))
             except (ValueError, TypeError):
-                raise forms.ValidationError('This value must be a real number.')
+                raise forms.ValidationError(
+                    'This value must be a real number.')
             except OverflowError:
-                raise forms.ValidationError('The maximum allowed value is %s' % datetime.timedelta.max)
+                raise forms.ValidationError(
+                    'The maximum allowed value is %s' % datetime.timedelta.max)
 
     def to_python(self, value):
         if value == NOTSET:
@@ -415,13 +482,14 @@ class DurationValue(Value):
         except (ValueError, TypeError):
             raise forms.ValidationError('This value must be a real number.')
         except OverflowError:
-            raise forms.ValidationError('The maximum allowed value is %s' % datetime.timedelta.max)
+            raise forms.ValidationError(
+                'The maximum allowed value is %s' % datetime.timedelta.max)
 
     def get_db_prep_save(self, value):
         if value == NOTSET:
             return NOTSET
         else:
-            return unicode(value.days * 24 * 3600 + value.seconds + float(value.microseconds) / 1000000)
+            return str(value.days * 24 * 3600 + value.seconds + float(value.microseconds) / 1000000)
 
 
 class FloatValue(Value):
@@ -441,7 +509,7 @@ class FloatValue(Value):
         if value == NOTSET:
             return "0"
         else:
-            return unicode(value)
+            return str(value)
 
 
 class IntegerValue(Value):
@@ -460,7 +528,7 @@ class IntegerValue(Value):
         if value == NOTSET:
             return "0"
         else:
-            return unicode(value)
+            return str(value)
 
 
 class PercentValue(Value):
@@ -487,7 +555,7 @@ class PercentValue(Value):
         if value == NOTSET:
             return "0"
         else:
-            return unicode(value)
+            return str(value)
 
 
 class PositiveIntegerValue(IntegerValue):
@@ -509,7 +577,7 @@ class StringValue(Value):
     def to_python(self, value):
         if value == NOTSET:
             value = ""
-        return unicode(value)
+        return str(value)
 
     to_editor = to_python
 
@@ -523,13 +591,14 @@ class LongStringValue(Value):
             forms.CharField.__init__(self, *args, **kwargs)
 
     def make_setting(self, db_value):
-        log.debug('new long setting %s.%s', self.group.key, self.key)
+        from satchmo.configuration.models import LongSetting
+        log.debug('New long setting %s.%s', self.group.key, self.key)
         return LongSetting(group=self.group.key, key=self.key, value=db_value)
 
     def to_python(self, value):
         if value == NOTSET:
             value = ""
-        return unicode(value)
+        return str(value)
 
     to_editor = to_python
 
@@ -545,7 +614,8 @@ class MultipleStringValue(Value):
     def choice_field(self, **kwargs):
         kwargs['required'] = False
         if len(self.choices) > 7:
-            field = forms.MultipleChoiceField(choices=self.choices, widget=FilteredSelectMultiple("", False), **kwargs)
+            field = forms.MultipleChoiceField(
+                choices=self.choices, widget=FilteredSelectMultiple("", False), **kwargs)
         else:
             field = forms.MultipleChoiceField(choices=self.choices, **kwargs)
         return field
@@ -567,7 +637,8 @@ class MultipleStringValue(Value):
                 if is_string_like(value):
                     return [value]
                 else:
-                    log.warning('Could not decode returning empty list: %s', value)
+                    log.warning(
+                        'Could not decode returning empty list: %s', value)
                     return []
 
     to_editor = to_python

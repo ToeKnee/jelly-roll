@@ -2,6 +2,11 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.0.0, 20 August, 2018
+------------------------------
+* Upgrade to Python 3
+* Upgrade to Django 2.1
+
 Version 0.10.3.5, 11 Jun, 2018
 ------------------------------
 * Update fixer.io API
