@@ -10,7 +10,8 @@ class Command(BaseCommand):
     help = 'Updates exchange rates'
 
     def handle(self, *args, **options):
-        if settings.EXCHANGE_RATE_MODULE == 'fixer':
+        module = getattr(settings, 'EXCHANGE_RATE_MODULE', 'ecb')
+        if module == 'fixer':
             client = FixerExchangeRateClient()
         else:
             client = EcbExchangeRateClient()
