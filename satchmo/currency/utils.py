@@ -2,6 +2,7 @@ import math
 
 from decimal import Decimal, ROUND_HALF_EVEN
 from ipware.ip import get_real_ip
+from geoip2.errors import AddressNotFoundError
 
 from django.conf import settings
 from django.contrib.gis.geoip2 import GeoIP2
@@ -92,16 +93,19 @@ def currency_for_request(request):
                 ip = get_real_ip(request)
                 if ip:
                     geoip = GeoIP2()
-                    country = geoip.country(ip)
-
                     try:
-                        currency = Currency.objects.all_accepted().get(
-                            countries__iso2_code=country["country_code"]
-                        )
-                    except Currency.DoesNotExist:
+                        country = geoip.country(ip)
+                    except AddressNotFoundError:
                         pass
                     else:
-                        currency_code = currency.iso_4217_code
+                        try:
+                            currency = Currency.objects.all_accepted().get(
+                                countries__iso2_code=country["country_code"]
+                            )
+                        except Currency.DoesNotExist:
+                            pass
+                        else:
+                            currency_code = currency.iso_4217_code
 
     # If not, fall back to primary currency
     if currency_code is None:
