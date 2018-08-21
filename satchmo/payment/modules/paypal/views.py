@@ -18,7 +18,10 @@ from satchmo.configuration.functions import config_get_group, config_value
 from satchmo.shop.models import Order, OrderPayment
 from satchmo.payment.utils import record_payment, create_pending_payment
 from satchmo.payment.views import payship
-from satchmo.payment.views.checkout import complete_order
+from satchmo.payment.views.checkout import (
+    complete_order,
+    success as generic_success,
+)
 from satchmo.payment.config import payment_live
 from satchmo.shop.models import Cart
 from satchmo.utils.dynamic import lookup_url, lookup_template
@@ -136,6 +139,41 @@ def confirm_info(request):
     template = lookup_template(payment_module, 'checkout/paypal/confirm.html')
 
     return render(request, template, ctx)
+
+
+@transaction.atomic
+def success(request):
+    """When the order has been successfully accepted, the user will be
+    redirected here.
+
+    This doesn't mean that the payment has been fully processed yet,
+    the servers will talk to each other and confirm the payment.
+
+    """
+    # Accept the payment (but don't mark it as "Processing" yet)
+    order_id = request.session.get('orderID')
+    # If there is no session orderID, try to find it from the PayPal data
+    if order_id is None:
+        request.session['orderID'] = request.POST.get('invoice')
+
+    try:
+        order = Order.objects.from_request(request)
+    except Order.DoesNotExist:
+        if 'cart' in request.session:
+            del request.session['cart']
+
+        if order_id:
+            return HttpResponseRedirect(
+                reverse(
+                    "satchmo_order_tracking",
+                    kwargs={"order_id": order_id}
+                )
+            )
+        else:
+            return HttpResponseRedirect(reverse("satchmo_shop_home"))
+    else:
+        order.add_status(status='Accepted', notes=_("Accepted through PayPal."))
+        return generic_success(request)
 
 
 @csrf_exempt

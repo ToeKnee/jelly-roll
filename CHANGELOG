@@ -5,6 +5,7 @@ JellyRoll Change Log
 Version 0.11.0.7, 21 August, 2018
 ------------------------------
 * Fix admin settings
+* Add accepted stage to PayPal IPN
 
 Version 0.11.0.6, 21 August, 2018
 ------------------------------
