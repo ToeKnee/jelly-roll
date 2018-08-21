@@ -49,8 +49,9 @@ def group_settings(request, group, template='configuration/group_settings.html')
 
 group_settings = staff_member_required(group_settings)
 
-
 # Site-wide setting editor is identical, but without a group
 # staff_member_required is implied, since it calls group_settings
+
+
 def site_settings(request):
     return group_settings(request, group=None, template='configuration/site_settings.html')

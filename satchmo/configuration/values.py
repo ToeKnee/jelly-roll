@@ -187,31 +187,31 @@ class Value(object):
         if isinstance(self, type(other)):
             return self.value == other.value
         else:
-            return self.value == other
+            return str(self.value) == str(other)
 
     def __lt__(self, other):
         if isinstance(self, type(other)):
             return self.value < other.value
         else:
-            return self.value < other
+            return str(self.value) < str(other)
 
     def __lte__(self, other):
         if isinstance(self, type(other)):
             return self.value <= other.value
         else:
-            return self.value <= other
+            return str(self.value) <= str(other)
 
     def __gt__(self, other):
         if isinstance(self, type(other)):
             return self.value > other.value
         else:
-            return self.value > other
+            return str(self.value) > str(other)
 
     def __gte__(self, other):
         if isinstance(self, type(other)):
             return self.value >= other.value
         else:
-            return self.value >= other
+            return str(self.value) >= str(other)
 
     def __iter__(self):
         return iter(self.value)

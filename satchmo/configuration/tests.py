@@ -280,7 +280,7 @@ class ConfigTestRequires(TestCase):
         self.assertTrue(v)
 
         keys = [cfg.key for cfg in self.g1]
-        self.assertEqual(keys, ['bool1', 'c2', 'c3', 'bool2'])
+        self.assertEqual(keys, ['c2', 'c3', 'bool1', 'bool2'])
 
         c = config_get('req1', 'bool1')
         c.update(True)
