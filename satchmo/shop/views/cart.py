@@ -11,6 +11,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
+from geoip2.errors import AddressNotFoundError
 from ipware.ip import get_real_ip
 
 from satchmo.configuration.functions import config_value
@@ -120,14 +121,18 @@ def display(request, cart=None, error_message='', default_view_tax=NOTSET):
         ip = get_real_ip(request)
         if ip:
             geoip = GeoIP2()
-            ip_country = geoip.country(ip)
             try:
-                country = Country.objects.get(
-                    active=True,
-                    iso2_code=ip_country["country_code"]
-                )
-            except Country.DoesNotExist:
-                country = None
+                ip_country = geoip.country(ip)
+            except AddressNotFoundError:
+                pass
+            else:
+                try:
+                    country = Country.objects.get(
+                        active=True,
+                        iso2_code=ip_country["country_code"]
+                    )
+                except Country.DoesNotExist:
+                    country = None
 
     # If the user doesn't have a contact, make a dummy contact so
     # we can work out the shipping

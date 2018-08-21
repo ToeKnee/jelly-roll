@@ -8,7 +8,7 @@ class ExchangeRateInline(admin.TabularInline):
     readonly_fields = ("currency", "date", "rate",)
     ordering = ("-date",)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -18,7 +18,8 @@ class ExchangeRateInline(admin.TabularInline):
 @admin.register(Currency)
 class CurrencyAdmin(admin.ModelAdmin):
     filter_horizontal = ("countries", )
-    list_display = ("iso_4217_code", "name", "symbol", "minor_symbol", "primary", "accepted", "current_exchange_rate")
+    list_display = ("iso_4217_code", "name", "symbol", "minor_symbol",
+                    "primary", "accepted", "current_exchange_rate")
     list_filter = ("accepted", )
     search_fields = ("iso_4217_code", "name", "symbol", "countries__printable_name")
     ordering = ("-primary", "-accepted", "iso_4217_code")

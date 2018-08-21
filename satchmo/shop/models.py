@@ -1032,7 +1032,10 @@ class Order(models.Model):
 
         # Save the total discount in this Order's discount attribute
         self.discount = convert_to_currency(
-            discount.total, self.currency.iso_4217_code)
+            discount.total,
+            self.currency.iso_4217_code,
+            ignore_buffer=True,
+        )
 
         itemprices = []
         fullprices = []
@@ -1043,7 +1046,8 @@ class Order(models.Model):
             if lid in discount.item_discounts:
                 lineitem.discount = convert_to_currency(
                     discount.item_discounts[lid],
-                    self.currency.iso_4217_code
+                    self.currency.iso_4217_code,
+                    ignore_buffer=True,
                 )
             else:
                 lineitem.discount = zero
@@ -1056,7 +1060,8 @@ class Order(models.Model):
         if 'Shipping' in discount.item_discounts:
             self.shipping_discount = convert_to_currency(
                 discount.item_discounts['Shipping'],
-                self.currency.iso_4217_code
+                self.currency.iso_4217_code,
+                ignore_buffer=True,
             )
         else:
             self.shipping_discount = zero
@@ -1083,7 +1088,8 @@ class Order(models.Model):
 
         for taxdesc, taxamt in list(taxrates.items()):
             taxdetl = OrderTaxDetail(
-                order=self, tax=taxamt, description=taxdesc, method=taxProcessor.method)
+                order=self, tax=taxamt, description=taxdesc, method=taxProcessor.method
+            )
             taxdetl.save()
 
         log.debug(
@@ -1096,7 +1102,8 @@ class Order(models.Model):
         )
 
         self.total = Decimal(
-            item_sub_total + self.shipping_sub_total + self.tax)
+            item_sub_total + self.shipping_sub_total + self.tax
+        )
 
         if save:
             self.save()
