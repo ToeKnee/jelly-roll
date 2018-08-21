@@ -21,8 +21,8 @@ def success(request, template='checkout/success.html'):
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
-        subject = "ERROR Order processing - order not found"
-        message = """Can't find order to process
+        subject = _("ERROR Order processing - order not found")
+        message = _("""Can't find order to process
 
 URL: {url}
 
@@ -41,8 +41,8 @@ GET:
 POST:
 
 {post}
-        """.format(
-            url=request.url,
+            """.format(
+            url=request.path,
             user=request.user,
             session="\n".join([
                 "{key} {value}".format(key=key, value=value)
@@ -59,7 +59,7 @@ POST:
                 for key, value
                 in request.POST.items()
             ]),
-        )
+        ))
         mail_admins(subject, message)
 
         history = reverse('satchmo_order_history')

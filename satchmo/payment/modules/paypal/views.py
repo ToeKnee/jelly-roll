@@ -144,7 +144,6 @@ def ipn(request):
     """PayPal IPN (Instant Payment Notification)
     Cornfirms that payment has been completed and marks invoice as paid.
     Adapted from IPN cgi script provided at http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/456361"""
-
     payment_module = config_get_group('PAYMENT_PAYPAL')
     if payment_module.LIVE.value:
         log.debug("PayPal IPN: Live IPN on %s", payment_module.KEY.value)
@@ -220,13 +219,12 @@ def ipn(request):
 
 def confirm_ipn_data(data, PP_URL):
     # data is the form data that was submitted to the IPN URL.
-
     newparams = {}
     for key in list(data.keys()):
         newparams[key] = data[key]
 
     newparams['cmd'] = "_notify-validate"
-    params = urlencode(newparams)
+    params = urlencode(newparams).encode("utf-8")
 
     req = urllib.request.Request(PP_URL)
     req.add_header("Content-type", "application/x-www-form-urlencoded")
