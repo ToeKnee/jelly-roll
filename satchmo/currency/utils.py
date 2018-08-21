@@ -30,7 +30,7 @@ def money_format(value, currency_code):
     )
 
 
-def convert_to_currency(value, currency_code):
+def convert_to_currency(value, currency_code, ignore_buffer=False):
     """Convert a Decimal value using the current exchange rate for the supplied currency_code"""
     if value is None or value == Decimal("0.00"):
         return Decimal("0.00")
@@ -48,7 +48,7 @@ def convert_to_currency(value, currency_code):
             exchange_rate = Decimal("1.00")
 
         # Add a small buffer
-        if value:
+        if value and ignore_buffer is False:
             buffer = config_value('CURRENCY', 'BUFFER')
             value = value + buffer
 
