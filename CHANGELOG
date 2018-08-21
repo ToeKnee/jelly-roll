@@ -2,6 +2,15 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.0.5, 21 August, 2018
+------------------------------
+* Handle AddressNotFoundError when using geoip
+* Add URL to payment success error email
+* Empty shipping migrations
+  Covered by tieredweightzone migrations, split during Django 2.1 upgrade
+* Add obj=None to ExchangeRateInline has_add_permission
+* Fix calculating of currency converted discounts
+
 Version 0.11.0.4, 20 August, 2018
 ------------------------------
 * Don't re-encode shipping description
