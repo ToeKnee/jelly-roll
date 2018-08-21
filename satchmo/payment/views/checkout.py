@@ -24,6 +24,8 @@ def success(request, template='checkout/success.html'):
         subject = "ERROR Order processing - order not found"
         message = """Can't find order to process
 
+URL: {url}
+
 User: {user}
 
 Session:
@@ -40,19 +42,20 @@ POST:
 
 {post}
         """.format(
+            url=request.url,
             user=request.user,
             session="\n".join([
-                "{key}={value}".format(key=key, value=value)
+                "{key} {value}".format(key=key, value=value)
                 for key, value
                 in request.session.items()
             ]),
             get="\n".join([
-                "{key}={value}".format(key=key, value=value)
+                "{key} {value}".format(key=key, value=value)
                 for key, value
                 in request.GET.items()
             ]),
             post="\n".join([
-                "{key}={value}".format(key=key, value=value)
+                "{key} {value}".format(key=key, value=value)
                 for key, value
                 in request.POST.items()
             ]),
