@@ -42,7 +42,7 @@ POST:
 
 {post}
         """.format(
-            url=request.url,
+            url=request.path,
             user=request.user,
             session="\n".join([
                 "{key} {value}".format(key=key, value=value)
