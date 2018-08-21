@@ -26,6 +26,8 @@ def lookup_url(settings, name, include_server=False, ssl=False):
     Next try prepending the module name to the name
     Last just look up the name
     """
+    if name.startswith("http"):
+        return name
     url = None
 
     try:
@@ -41,8 +43,9 @@ def lookup_url(settings, name, include_server=False, ssl=False):
     if not url:
         try:
             url = reverse(name)
-        except NoReverseMatch:
+        except NoReverseMatch as e:
             log.error('Could not find any url for %s', name)
+            log.exception(e)
             raise
 
     if include_server:
