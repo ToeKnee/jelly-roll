@@ -20,7 +20,6 @@ class SettingsEditor(forms.Form):
                     flattened.append(s)
             else:
                 flattened.append(setting)
-
         for setting in flattened:
             # Add the field to the customized field list
             kw = {
@@ -33,8 +32,9 @@ class SettingsEditor(forms.Form):
 
             k = '%s__%s' % (setting.group.key, setting.key)
             self.fields[k] = field
-            if setting.group not in groups:
-                groups.append(setting.group)
-            log.debug("Added field: %s = %s" % (k, str(field)))
 
+            if setting.group.key not in (g.key for g in groups):
+                groups.append(setting.group)
+
+            log.debug("Added field: %s = %s" % (k, str(field)))
         self.groups = groups

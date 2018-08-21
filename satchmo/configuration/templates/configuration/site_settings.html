@@ -48,7 +48,7 @@ div.fieldcontainer { float: left; margin-right: 0; }
         {% if field.is_hidden %}
             {{ field }}
         {% else %}
-            {% ifchanged field.field.group %}{% with field.field.group as group %}
+            {% ifchanged field.field.group.key %}{% with field.field.group as group %}
             {% if not forloop.first %}
             </table>
             </fieldset>
