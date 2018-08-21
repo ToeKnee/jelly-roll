@@ -1,3 +1,4 @@
+from geoip2.errors import AddressNotFoundError
 from ipware.ip import get_real_ip
 
 from django.conf import settings
@@ -31,17 +32,21 @@ def country_for_request(request):
                 ip = get_real_ip(request)
                 if ip:
                     geoip = GeoIP2()
-                    country = geoip.country(ip)
                     try:
-                        # GeoIP returns iso2 codes
-                        country = Country.objects.filter().get(
-                            active=True,
-                            iso2_code=country["country_code"]
-                        )
-                    except Country.DoesNotExist:
+                        country = geoip.country(ip)
+                    except AddressNotFoundError:
                         pass
                     else:
-                        country_code = country.iso2_code
+                        try:
+                            # GeoIP returns iso2 codes
+                            country = Country.objects.filter().get(
+                                active=True,
+                                iso2_code=country["country_code"]
+                            )
+                        except Country.DoesNotExist:
+                            pass
+                        else:
+                            country_code = country.iso2_code
 
     # If not, fall back to primary country
     if country_code is None:

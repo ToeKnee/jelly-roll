@@ -11,10 +11,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='carrier',
-            name='postage_speed',
-            field=models.PositiveIntegerField(default=2, verbose_name='Postage Speed', choices=[(0, 'Urgent'), (1, 'Priority'), (2, 'Standard'), (3, 'Economy')]),
-            preserve_default=True,
-        ),
     ]
