@@ -1,23 +1,19 @@
 from unittest import mock
 
-from django.conf import settings
 from django.test import TestCase, RequestFactory
 
 from satchmo.payment.modules.paypal.views import webhook
 from satchmo.shop.factories import PaidOrderFactory
-from satchmo.shop.models import Order
 
 
 class WebhookTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_customer_dispute(self, mock_reqests_post, mock_get_access_token):
+    @mock.patch('satchmo.payment.modules.paypal.views.paypalrestsdk.notifications.WebhookEvent.verify')
+    def test_customer_dispute(self, mock_paypal):
         "PayPal CUSTOMER.DISPUTE.CREATED A customer dispute is created."
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 200
+        mock_paypal.return_value = True
 
         order = PaidOrderFactory()
         data = {
@@ -91,12 +87,12 @@ class WebhookTest(TestCase):
             data=data,
             content_type='application/json'
         )
-        request.headers = {
-            'PAYPAL-AUTH-ALGO': 'test',
-            'PAYPAL-CERT-URL': 'test',
-            'PAYPAL-TRANSMISSION-ID': 'test',
-            'PAYPAL-TRANSMISSION-SIG': 'test',
-            'PAYPAL-TRANSMISSION-TIME': 'test',
+        request.META = {
+            'HTTP_PAYPAL_AUTH_ALGO': 'test',
+            'HTTP_PAYPAL_CERT_URL': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_ID': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_SIG': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_TIME': 'test',
         }
 
         webhook(request)
@@ -104,12 +100,10 @@ class WebhookTest(TestCase):
         order.refresh_from_db()
         self.assertIn('--- Paypal Customer Dispute ---', order.notes)
 
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_pay_completed(self, mock_reqests_post, mock_get_access_token):
+    @mock.patch('satchmo.payment.modules.paypal.views.paypalrestsdk.notifications.WebhookEvent.verify')
+    def test_pay_completed(self, mock_paypal):
         "PayPal PAYMENT.SALE.COMPLETED A sale completes."
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 200
+        mock_paypal.return_value = True
 
         order = PaidOrderFactory()
         data = {
@@ -120,6 +114,7 @@ class WebhookTest(TestCase):
             "summary": "A successful sale payment was made for $ 0.48 USD",
             "resource": {
                 "parent_payment": order.payments.first().transaction_id,
+                "invoice_number": order.id,
                 "update_time": "2014-10-23T17:23:04Z",
                 "amount": {
                     "total": "0.48",
@@ -171,12 +166,12 @@ class WebhookTest(TestCase):
             data=data,
             content_type='application/json'
         )
-        request.headers = {
-            'PAYPAL-AUTH-ALGO': 'test',
-            'PAYPAL-CERT-URL': 'test',
-            'PAYPAL-TRANSMISSION-ID': 'test',
-            'PAYPAL-TRANSMISSION-SIG': 'test',
-            'PAYPAL-TRANSMISSION-TIME': 'test',
+        request.META = {
+            'HTTP_PAYPAL_AUTH_ALGO': 'test',
+            'HTTP_PAYPAL_CERT_URL': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_ID': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_SIG': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_TIME': 'test',
         }
 
         webhook(request)
@@ -186,12 +181,10 @@ class WebhookTest(TestCase):
         self.assertEqual(float(order.payments.last().amount), 0.48)
         self.assertEqual(order.status.status.status, 'Processing')
 
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_denied(self, mock_reqests_post, mock_get_access_token):
+    @mock.patch('satchmo.payment.modules.paypal.views.paypalrestsdk.notifications.WebhookEvent.verify')
+    def test_denied(self, mock_paypal):
         "PayPal PAYMENT.SALE.DENIED The state of a sale changes from pending to denied."
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 200
+        mock_paypal.return_value = True
 
         order = PaidOrderFactory()
         data = {
@@ -251,12 +244,12 @@ class WebhookTest(TestCase):
             data=data,
             content_type='application/json'
         )
-        request.headers = {
-            'PAYPAL-AUTH-ALGO': 'test',
-            'PAYPAL-CERT-URL': 'test',
-            'PAYPAL-TRANSMISSION-ID': 'test',
-            'PAYPAL-TRANSMISSION-SIG': 'test',
-            'PAYPAL-TRANSMISSION-TIME': 'test',
+        request.META = {
+            'HTTP_PAYPAL_AUTH_ALGO': 'test',
+            'HTTP_PAYPAL_CERT_URL': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_ID': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_SIG': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_TIME': 'test',
         }
 
         webhook(request)
@@ -264,12 +257,10 @@ class WebhookTest(TestCase):
         order.refresh_from_db()
         self.assertIn('--- Paypal Payment Denied ---', order.notes)
 
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_pending(self, mock_reqests_post, mock_get_access_token):
+    @mock.patch('satchmo.payment.modules.paypal.views.paypalrestsdk.notifications.WebhookEvent.verify')
+    def test_pending(self, mock_paypal):
         "PayPal PAYMENT.SALE.PENDING The state of a sale changes to pending."
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 200
+        mock_paypal.return_value = True
 
         order = PaidOrderFactory()
         data = {
@@ -330,12 +321,12 @@ class WebhookTest(TestCase):
             data=data,
             content_type='application/json'
         )
-        request.headers = {
-            'PAYPAL-AUTH-ALGO': 'test',
-            'PAYPAL-CERT-URL': 'test',
-            'PAYPAL-TRANSMISSION-ID': 'test',
-            'PAYPAL-TRANSMISSION-SIG': 'test',
-            'PAYPAL-TRANSMISSION-TIME': 'test',
+        request.META = {
+            'HTTP_PAYPAL_AUTH_ALGO': 'test',
+            'HTTP_PAYPAL_CERT_URL': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_ID': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_SIG': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_TIME': 'test',
         }
 
         webhook(request)
@@ -344,12 +335,10 @@ class WebhookTest(TestCase):
         self.assertIn('--- Paypal Payment Pending ---', order.notes)
         self.assertEqual(order.status.status.status, 'Pending')
 
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_refunded(self, mock_reqests_post, mock_get_access_token):
+    @mock.patch('satchmo.payment.modules.paypal.views.paypalrestsdk.notifications.WebhookEvent.verify')
+    def test_refunded(self, mock_paypal):
         "PayPal PAYMENT.SALE.REFUNDED A merchant refunds a sale."
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 200
+        mock_paypal.return_value = True
 
         order = PaidOrderFactory()
         data = {
@@ -361,6 +350,7 @@ class WebhookTest(TestCase):
             "resource": {
                 "sale_id": "9T0916710M1105906",
                 "parent_payment": order.payments.first().transaction_id,
+                "invoice_number": order.id,
                 "update_time": "2014-10-31T15:41:51Z",
                 "amount": {
                     "total": "-0.01",
@@ -408,12 +398,12 @@ class WebhookTest(TestCase):
             data=data,
             content_type='application/json'
         )
-        request.headers = {
-            'PAYPAL-AUTH-ALGO': 'test',
-            'PAYPAL-CERT-URL': 'test',
-            'PAYPAL-TRANSMISSION-ID': 'test',
-            'PAYPAL-TRANSMISSION-SIG': 'test',
-            'PAYPAL-TRANSMISSION-TIME': 'test',
+        request.META = {
+            'HTTP_PAYPAL_AUTH_ALGO': 'test',
+            'HTTP_PAYPAL_CERT_URL': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_ID': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_SIG': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_TIME': 'test',
         }
 
         webhook(request)
@@ -423,12 +413,10 @@ class WebhookTest(TestCase):
         self.assertEqual(float(order.refunds.last().amount), -0.01)
         self.assertEqual(order.status.status.status, 'Refunded')
 
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_reversed(self, mock_reqests_post, mock_get_access_token):
+    @mock.patch('satchmo.payment.modules.paypal.views.paypalrestsdk.notifications.WebhookEvent.verify')
+    def test_reversed(self, mock_paypal):
         "PayPal PAYMENT.SALE.REVERSED PayPal reverses a sale."
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 200
+        mock_paypal.return_value = True
 
         order = PaidOrderFactory()
         data = {
@@ -456,7 +444,6 @@ class WebhookTest(TestCase):
                     }
                 ],
                 "id": order.payments.first().transaction_id,
-
                 "state": "completed"
             },
             "links": [
@@ -480,12 +467,12 @@ class WebhookTest(TestCase):
             data=data,
             content_type='application/json'
         )
-        request.headers = {
-            'PAYPAL-AUTH-ALGO': 'test',
-            'PAYPAL-CERT-URL': 'test',
-            'PAYPAL-TRANSMISSION-ID': 'test',
-            'PAYPAL-TRANSMISSION-SIG': 'test',
-            'PAYPAL-TRANSMISSION-TIME': 'test',
+        request.META = {
+            'HTTP_PAYPAL_AUTH_ALGO': 'test',
+            'HTTP_PAYPAL_CERT_URL': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_ID': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_SIG': 'test',
+            'HTTP_PAYPAL_TRANSMISSION_TIME': 'test',
         }
 
         webhook(request)
