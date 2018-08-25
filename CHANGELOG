@@ -2,6 +2,11 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.1.2, 25 August, 2018
+------------------------------
+* 404 When order can't be found on payment-create
+* Make sure we pass payment info to payment-execute
+
 Version 0.11.1.1, 25 August, 2018
 ------------------------------
 * Replace straight API calls with PayPalRestSDK

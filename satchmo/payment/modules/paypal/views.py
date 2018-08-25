@@ -126,8 +126,7 @@ def create_payment(request, retries=0):
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
-        url = reverse('paypal:satchmo_checkout-step1')
-        return HttpResponseRedirect(url)
+        raise Http404
 
     # Contact PayPal to create the payment
     configure_api()
@@ -242,7 +241,6 @@ If the problem persists, please contact us.""")}
 def execute_payment(request, retries=0):
     if request.method != "POST":
         raise Http404
-
     configure_api()
 
     payment = paypalrestsdk.Payment.find(request.POST.get('paymentID'))
