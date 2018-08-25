@@ -26,15 +26,13 @@ div.fieldcontainer { float: left; margin-right: 0; }
 </div>
 {% endif %}{% endblock %}
 {% block content %}
-{% comment %}
 <div class="fieldcontainer">
-<ul class="fieldref">
+  <ul class="fieldref">
 {% for group in form.groups %}
     <li><a onclick="javascript:CollapsedFieldsets.show({{ forloop.counter0 }});" href="#{{ group.key }}">{{ group.name }}</a></li>
 {% endfor %}
 </ul>
 </div>
-{% endcomment %}
 <span style="clear: both;" />
 <div id="content-main">
 {% if form.errors %}
@@ -44,6 +42,7 @@ div.fieldcontainer { float: left; margin-right: 0; }
 {% endif %}
 {% if form.fields %}
 <form method="post">
+      {% csrf_token %}
     {% for field in form %}
         {% if field.is_hidden %}
             {{ field }}
