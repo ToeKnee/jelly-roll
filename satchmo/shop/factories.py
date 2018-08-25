@@ -1,4 +1,5 @@
 import factory
+import uuid
 from decimal import Decimal
 
 from django.contrib.sites.models import Site
@@ -116,6 +117,7 @@ class OrderPaymentFactory(factory.django.DjangoModelFactory):
     order = factory.SubFactory(PaidOrderFactory)
     payment = "PAYMENT_AUTOSUCCESS"
     amount = factory.LazyAttribute(lambda obj: obj.order.total)
+    transaction_id = factory.LazyAttribute(lambda obj: uuid.uuid4())
 
 
 class OrderRefundFactory(factory.django.DjangoModelFactory):

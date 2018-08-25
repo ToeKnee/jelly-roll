@@ -30,9 +30,16 @@ config_register_list(
     ),
     StringValue(
         PAYMENT_GROUP,
-        'PAYEE',
-        description=_("Who to pay"),
-        default='you@domain.com'
+        'WEBHOOK_ID',
+        description=_("Live Webhook ID"),
+        default='xxx'
+    ),
+    StringValue(
+        PAYMENT_GROUP,
+        'SANDBOX_WEBHOOK_ID',
+        description=_("Sandbox Webhook ID"),
+        default='xxx',
+        help_text=_("This is used for asynchronous callbacks")
     ),
     StringValue(
         PAYMENT_GROUP,

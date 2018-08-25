@@ -7,10 +7,12 @@ import json
 import logging
 import pprint
 
-import requests
+from decimal import Decimal
+
+import paypalrestsdk
+from paypalrestsdk.notifications import WebhookEvent
 
 from django.contrib.sites.models import Site
-from django.core.cache import caches
 from django.core.mail import mail_admins
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect, JsonResponse
@@ -22,7 +24,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from satchmo.configuration.functions import config_get_group
 from satchmo.shop.models import Order, OrderPayment, OrderRefund
-from satchmo.payment.utils import record_payment, create_pending_payment
+from satchmo.payment.utils import create_pending_payment
 from satchmo.payment.views import payship
 from satchmo.payment.views.checkout import complete_order
 from satchmo.payment.config import payment_live
@@ -30,6 +32,25 @@ from satchmo.shop.models import Cart
 from satchmo.utils.dynamic import lookup_url, lookup_template
 
 log = logging.getLogger(__name__)
+
+
+def configure_api():
+    ''' Configure PayPal api '''
+    payment_module = config_get_group('PAYMENT_PAYPAL')
+    if payment_module.LIVE.value:
+        MODE = 'live'
+        CLIENT = payment_module.CLIENT_ID.value
+        SECRET = payment_module.SECRET_KEY.value
+    else:
+        MODE = 'sandbox'
+        CLIENT = payment_module.SANDBOX_CLIENT_ID.value
+        SECRET = payment_module.SANDBOX_SECRET_KEY.value
+
+    paypalrestsdk.configure({
+        "mode": MODE,
+        "client_id": CLIENT,
+        "client_secret": SECRET,
+    })
 
 
 def pay_ship_info(request):
@@ -109,76 +130,15 @@ def create_payment(request, retries=0):
         return HttpResponseRedirect(url)
 
     # Contact PayPal to create the payment
+    configure_api()
     payment_module = config_get_group('PAYMENT_PAYPAL')
     site = Site.objects.get_current()
 
-    PATH = '/v1/checkout/orders'
-    if payment_module.LIVE.value:
-        PAYPAL_API = 'https://api.paypal.com'
-    else:
-        PAYPAL_API = 'https://api.sandbox.paypal.com'
-
-    # Create data to send to PayPal
-    headers = {
-        'Authorization': 'Bearer {access_token}'.format(
-            access_token=get_access_token(),
-        ),
-    }
-    # Add the following to headers to test transaction failures
-    # 'PayPal-Mock-Response': '{"mock_application_codes": "PAYEE_BLOCKED_TRANSACTION"}',
-    # https://developer.paypal.com/docs/api/payments/v1/#errors
-
     data = {
-        'intent': 'SALE',
-        'payment_method': 'paypal',
-        'application_context': {
-            'brand_name': site.name,
-            'landing_page': 'login',
-            'user_action': 'commit',
+        'intent': 'order',
+        'payer': {
+            'payment_method': 'paypal',
         },
-
-        "purchase_units": [{
-            "reference_id": order.id,
-            "description": 'Your {site} order.'.format(site=site.name),
-            "amount": {
-                'currency': order.currency.iso_4217_code,
-                'total': float(order.total),
-                'details': {
-                    'subtotal': float(order.sub_total),
-                    'tax': float(order.tax),
-                    'shipping': float(order.shipping_cost),
-                    'shipping_discount': float(order.shipping_discount),
-                }
-            },
-            "payee": {
-                "email": payment_module.PAYEE.value,
-            },
-            "items": [
-                {
-                    'name': item.product.name,
-                    'description': item.product.meta,
-                    'quantity': item.quantity,
-                    'currency': order.currency.iso_4217_code,
-                    'price': float(item.unit_price),
-                    'tax': float(item.unit_tax),
-                    'sku': item.product.sku,
-                }
-                for item
-                in order.orderitem_set.all()
-            ],
-            'shipping_address': {
-                'recipient_name': order.ship_addressee,
-                'line1': order.ship_street1,
-                'line2': order.ship_street2,
-                'city': order.ship_city,
-                'country_code': order.ship_country.iso2_code,
-                'postal_code': order.ship_postal_code,
-                'state': order.ship_state
-            },
-            "shipping_method": order.shipping_description,
-            "invoice_number": order.id,
-            "payment_descriptor": site.name,
-        }],
         'redirect_urls': {
             'return_url': lookup_url(
                 payment_module,
@@ -190,50 +150,91 @@ def create_payment(request, retries=0):
                 'satchmo_checkout-step1',
                 include_server=True
             )
-        }
+        },
+        'transactions': [{
+            'amount': {
+                'currency': order.currency.iso_4217_code,
+                'total': str(order.total),
+                'details': {
+                    'subtotal': str(order.sub_total),
+                    'tax': str(order.tax),
+                    'shipping': str(order.shipping_cost),
+                    'shipping_discount': str(order.shipping_discount),
+                }
+            },
+            'description': 'Your {site} order.'.format(site=site.name),
+            'invoice_number': str(order.id),
+            'payment_options': {
+                'allowed_payment_method': 'UNRESTRICTED'
+            },
+            'item_list': {
+                'items': [
+                    {
+                        'name': item.product.name,
+                        'description': item.product.meta,
+                        'quantity': item.quantity,
+                        'currency': order.currency.iso_4217_code,
+                        'price': str(item.unit_price),
+                        'tax': str(item.unit_tax),
+                        'sku': item.product.sku,
+                    }
+                    for item
+                    in order.orderitem_set.all()
+                ],
+                'shipping_address': {
+                    'recipient_name': order.ship_addressee,
+                    'line1': order.ship_street1,
+                    'line2': order.ship_street2,
+                    'city': order.ship_city,
+                    'country_code': order.ship_country.iso2_code,
+                    'postal_code': order.ship_postal_code,
+                    'state': order.ship_state
+                },
+                'shipping_method': order.shipping_description,
+            },
+        }],
     }
 
     # Send it to PayPal
-    url = PAYPAL_API + PATH
-    response = requests.post(url, headers=headers, json=data)
-    # Handle invalid token
-    if response.status_code == 401 and response.json().get('error') == 'invalid_token':
-        # Force getting a new token
-        get_access_token(force=True)
-        if retries <= 3:
-            return create_payment(request, retries=retries + 1)
-        else:
-            subject = 'PayPal API error: Create Payment Retries Exceeded'
-            message = response.text
-            mail_admins(subject, message)
-            log.error(response.text)
-            raise RuntimeError('Too Many Retries: Create Payment')
-    # Then other errors
-    elif response.status_code >= 400:
-        subject = 'PayPal API error: {status_code}'.format(status_code=response.status_code)
-        message = response.text
+    payment = paypalrestsdk.Payment(data)
+
+    if payment.create():
+        order.notes += _('--- Paypal Payment Created ---') + '\n'
+        order.notes += str(timezone.now()) + '\n'
+        order.notes += pprint.pformat(payment.to_dict()) + '\n'
+        order.freeze()
+        order.save()
+        # Create a pending payment in our system
+        order_payment = create_pending_payment(order, payment_module)
+        order_payment.transaction_id = payment['id']
+        order_payment.save()
+
+        # Return JSON to client
+        return JsonResponse(payment.to_dict(), status=201,)
+
+    else:
+        subject = 'PayPal API error'
+        message = "\n".join(
+            "{key}: {value}".format(
+                key=key,
+                value=value
+            )
+            for key, value
+            in payment.error.items()
+        )
         mail_admins(subject, message)
-        log.error(response.text)
-        data = {"message": _("""Something went wrong with your PayPal payment.
+        log.error(payment.error)
+        log.error(pprint.pformat(data))
+        if payment.error['name'] == 'VALIDATION_ERROR':
+            data = payment.error['details']
+        else:
+            data = {"message": _("""Something went wrong with your PayPal payment.
 
 Please try again.
 
 If the problem persists, please contact us.""")}
-        return JsonResponse(data, status=response.status_code)
-
-    order.notes += _('--- Paypal Payment Created ---') + '\n'
-    order.notes += str(timezone.now()) + '\n'
-    order.notes += pprint.pformat(response.json()) + '\n'
-    order.freeze()
-    order.save()
-
-    # Create a pending payment in our system
-    order_payment = create_pending_payment(order, payment_module)
-    order_payment.transaction_id = response.json()['id']
-    order_payment.save()
-
-    # Return JSON to client
-    return JsonResponse(response.json(), status=201)
+        # Because we are returning a list of dicts, we must mark it as unsafe
+        return JsonResponse(data, status=400, safe=False)
 
 
 @transaction.atomic
@@ -242,105 +243,134 @@ def execute_payment(request, retries=0):
     if request.method != "POST":
         raise Http404
 
-    payment_module = config_get_group('PAYMENT_PAYPAL')
+    configure_api()
 
-    PATH = '/v1/checkout/orders/{order_id}'.format(
-        order_id=request.POST.get('orderID')
-    )
-    if payment_module.LIVE.value:
-        PAYPAL_API = 'https://api.paypal.com'
-    else:
-        PAYPAL_API = 'https://api.sandbox.paypal.com'
+    payment = paypalrestsdk.Payment.find(request.POST.get('paymentID'))
+    if payment.execute({"payer_id": request.POST.get('payerID')}):
+        # Get Order Payment and order
+        order_payment = get_object_or_404(
+            OrderPayment,
+            transaction_id=request.POST.get('paymentID')
+        )
+        order = order_payment.order
 
-    # Create data to send to PayPal
-    headers = {
-        'Authorization': 'Bearer {access_token}'.format(
-            access_token=get_access_token(),
-        ),
-    }
-    # Add the following to headers to test transaction failures
-    # 'PayPal-Mock-Response': '{"mock_application_codes": "PAYEE_BLOCKED_TRANSACTION"}',
-    # https://developer.paypal.com/docs/api/payments/v1/#errors
+        order.notes += '\n' + _('--- Paypal Payment Executed ---') + '\n'
+        order.notes += str(timezone.now()) + '\n'
+        order.notes += pprint.pformat(payment.to_dict()) + '\n'
+        order.save()
 
-    # Send it to PayPal
-    url = PAYPAL_API + PATH
-    response = requests.get(url, headers=headers)
-    # Handle invalid token
-    if response.status_code == 401 and response.json().get('error') == 'invalid_token':
-        # Force getting a new token
-        get_access_token(force=True)
-        if retries <= 3:
-            return execute_payment(request, retries=retries + 1)
+        pp_order_id = payment.transactions[0].related_resources[0].order.id
+        pp_order = paypalrestsdk.Order.find(pp_order_id)
+        authorize = pp_order.authorize({
+            "amount": {
+                'currency': order.currency.iso_4217_code,
+                'total': str(order.total),
+            }
+        })
+        order.notes += '\n' + _('--- Paypal Payment Authorise ---') + '\n'
+        order.notes += str(timezone.now()) + '\n'
+        order.notes += str(authorize) + '\n'
+        order.save()
+
+        if pp_order.success():  # Hmm?
+            capture = pp_order.capture({
+                'amount': {
+                    'currency': order.currency.iso_4217_code,
+                    'total': str(order.total),
+                },
+                'is_final_capture': True
+            })
+
+            order.notes += '\n' + _('--- Paypal Payment Capture ---') + '\n'
+            order.notes += str(timezone.now()) + '\n'
+            order.notes += pprint.pformat(capture.to_dict()) + '\n'
+            order.save()
+
+            if capture.success():
+                state = capture['state']
+                if state == 'completed':
+                    # Update order payment values
+                    order_payment.amount = capture['amount']['total']
+                    order_payment.transaction_id = payment['id']
+                    order_payment.save()
+
+                    # Set Order to Processing
+                    order.add_status(
+                        status='Processing',
+                        notes=_("Paid by PayPal. Thank you.")
+                    )
+                elif state == 'pending':
+                    order.add_status(
+                        status='Pending',
+                        notes=_(
+                            "Payment pending with PayPal.\n\nWe are waiting for funds to clear before shipping your order.\n\nThank you.")
+                    )
+                else:
+                    order.add_status(
+                        status=state.capitalize(),
+                        notes=""
+                    )
+
+                # Freeze the order as payment has now been taken
+                complete_order(order)
+                if 'cart' in request.session:
+                    del request.session['cart']
+
+                response_data = {
+                    'status': 'success',
+                    'url': reverse('paypal:satchmo_checkout-success')
+                }
+
+                return JsonResponse(
+                    data=response_data,
+                    status=201
+                )
+
+            else:
+                subject = 'PayPal API Capture error'
+                message = "\n".join(
+                    "{key}: {value}".format(
+                        key=key,
+                        value=value
+                    )
+                    for key, value
+                    in capture.error.items()
+                )
+                mail_admins(subject, message)
+                log.error(message)
         else:
-            subject = 'PayPal API error: Execute Payment Retries Exceeded'
-            message = response.text
+            subject = 'PayPal API Order error'
+            message = "\n".join(
+                "{key}: {value}".format(
+                    key=key,
+                    value=value
+                )
+                for key, value
+                in pp_order.error.items()
+            )
             mail_admins(subject, message)
-            log.error(response.text)
-            raise RuntimeError('Too Many Retries: Execute Payment')
-    # Then other errors
-    elif response.status_code >= 400:
-        subject = 'PayPal API error: {status_code}'.format(status_code=response.status_code)
-        message = response.text
+            log.error(message)
+    else:
+        subject = 'PayPal API Payment error'
+        message = "\n".join(
+            "{key}: {value}".format(
+                key=key,
+                value=value
+            )
+            for key, value
+            in payment.error.items()
+        )
         mail_admins(subject, message)
-        log.error(response.text)
-        data = {"message": _("""Something went wrong with your PayPal payment.
+        log.error(message)
+
+    data = {
+        "message": _("""Something went wrong with your PayPal payment.
 
 Please try again.
 
-If the problem persists, please contact us.""")}
-        return JsonResponse(data, status=response.status_code)
-
-    response_data = response.json()
-
-    # Get Order Payment and order
-    order_payment = get_object_or_404(OrderPayment, transaction_id=request.POST.get('orderID'))
-    order = order_payment.order
-
-    order.notes += '\n' + _('--- Paypal Payment Executed ---') + '\n'
-    order.notes += str(timezone.now()) + '\n'
-    order.notes += pprint.pformat(response_data) + '\n'
-    order.save()
-
-    status = response_data.get('status')
-    if status in ('APPROVED', 'CREATED'):
-        order.add_status(
-            status='Accepted',
-            notes=_(
-                "Payment approved by PayPal.\n\nWe are waiting for funds to clear before shipping your order.\n\nThank you.")
-        )
-    elif status in ('COMPLETED', 'EXECUTED'):
-        # Update values
-        record_payment(
-            order, payment_module,
-            amount=response_data['gross_total_amount']['value'],
-            transaction_id=response_data['id']
-        )
-
-        # Set Order to Processing
-        order.add_status(
-            status='Processing',
-            notes=_("Paid by PayPal. Thank you.")
-        )
-    else:
-        order.add_status(
-            status=status,
-            notes=""
-        )
-
-    # Freeze the order as payment has now been taken
-    complete_order(order)
-    if 'cart' in request.session:
-        del request.session['cart']
-
-    response_data = {
-        'status': 'success',
-        'url': reverse('paypal:satchmo_checkout-success')
+If the problem persists, please contact us.""")
     }
-
-    return JsonResponse(
-        data=response_data,
-        status=201
-    )
+    return JsonResponse(data, status=400)
 
 
 @transaction.atomic
@@ -354,6 +384,7 @@ def success(request):
 
     try:
         order = Order.objects.get(id=request.session.get('orderID'))
+        del request.session['orderID']
     except Order.DoesNotExist:
         return HttpResponseRedirect(reverse("satchmo_order_history"))
 
@@ -362,6 +393,8 @@ def success(request):
     return render(request, template, context)
 
 
+@transaction.atomic
+@csrf_exempt
 def webhook(request):
     '''Handle PayPal webhooks.
 
@@ -382,13 +415,34 @@ def webhook(request):
     PAYMENT.SALE.REFUNDED A merchant refunds a sale.
     PAYMENT.SALE.REVERSED PayPal reverses a sale.
     '''
-
     if request.method != "POST":
         raise Http404
 
     data = json.loads(request.body)
 
-    if verify_webhook(request) is False:
+    payment_module = config_get_group('PAYMENT_PAYPAL')
+    if payment_module.LIVE.value:
+        webhook_id = payment_module.WEBHOOK_ID.value
+    else:
+        webhook_id = payment_module.SANDBOX_WEBHOOK_ID.value
+
+    transmission_id = request.META['HTTP_PAYPAL_TRANSMISSION_ID']
+    timestamp = request.META['HTTP_PAYPAL_TRANSMISSION_TIME']
+    event_body = request.body.decode("utf-8")
+    cert_url = request.META['HTTP_PAYPAL_CERT_URL']
+    actual_signature = request.META['HTTP_PAYPAL_TRANSMISSION_SIG']
+    auth_algo = request.META['HTTP_PAYPAL_AUTH_ALGO']
+    verified = WebhookEvent.verify(
+        transmission_id,
+        timestamp,
+        webhook_id,
+        event_body,
+        cert_url,
+        actual_signature,
+        auth_algo,
+    )
+
+    if verified is False:
         subject = 'PayPal API webhook verification error'
         message = pprint.pformat(data)
         mail_admins(subject, message)
@@ -409,24 +463,26 @@ def webhook(request):
             order.notes += '\n' + _('--- Paypal Customer Dispute ---') + '\n'
         elif event_type.endswith('COMPLETED'):
             # Payment complete
-            order_payment = get_object_or_404(
-                OrderPayment,
-                transaction_id=data['resource']['parent_payment']
+            order = get_object_or_404(
+                Order,
+                id=data['resource']['invoice_number']
             )
-            order = order_payment.order
-            order.notes += '\n' + _('--- Paypal Payment Complete ---') + '\n'
-            # Update values
-            payment_module = config_get_group('PAYMENT_PAYPAL')
-            record_payment(
-                order, payment_module,
-                amount=data['resource']['amount']['total'],
-                transaction_id=data['id']
-            )
-            # Set Order to Processing
-            order.add_status(
-                status='Processing',
-                notes=_("Paid by PayPal. Thank you.")
-            )
+            if order.orderstatus_set.filter(status__status='Processing').exists() is False:
+                order.notes += '\n' + _('--- Paypal Payment Complete ---') + '\n'
+                # Update order payment values
+                order_payment = get_object_or_404(
+                    OrderPayment,
+                    transaction_id=data['resource']['parent_payment']
+                )
+                order_payment.amount = data['resource']['amount']['total']
+                order_payment.transaction_id = data['id']
+                order_payment.save()
+
+                # Set Order to Processing
+                order.add_status(
+                    status='Processing',
+                    notes=_("Paid by PayPal. Thank you.")
+                )
         elif event_type.endswith('DENIED'):
             order_payment = get_object_or_404(
                 OrderPayment,
@@ -450,16 +506,16 @@ def webhook(request):
                 notes=_("PayPal Payment Pending.")
             )
         elif event_type.endswith('REFUNDED'):
-            order_payment = get_object_or_404(
-                OrderPayment,
-                transaction_id=data['resource']['parent_payment']
+            order = get_object_or_404(
+                Order,
+                id=data['resource']['invoice_number']
             )
-            order = order_payment.order
             order.notes += '\n' + _('--- Paypal Payment Refunded ---') + '\n'
             order.add_status(status='Refunded', notes=_("PayPal Refund"))
             OrderRefund.objects.create(
+                payment="PAYPAL",
                 order=order,
-                amount=data['resource']['amount']['total'],
+                amount=Decimal(data['resource']['amount']['total']),
                 exchange_rate=order.exchange_rate,
                 transaction_id=data['id'],
             )
@@ -482,6 +538,11 @@ def webhook(request):
                 transaction_id=data['id']
             )
         else:
+            order_payment = get_object_or_404(
+                OrderPayment,
+                transaction_id=data['resource']['parent_payment']
+            )
+            order = order_payment.order
             order.notes += '\n' + _('--- Paypal {event_type} ---'.format(
                 event_type=event_type)
             ) + '\n'
@@ -496,118 +557,5 @@ def webhook(request):
 
     return JsonResponse(
         data=response_data,
-        status=200
+        status=201
     )
-
-
-def verify_webhook(request, retries=0):
-    data = json.loads(request.body)
-    payment_module = config_get_group('PAYMENT_PAYPAL')
-
-    PATH = '/v1/notifications/webhooks-event-types'
-    if payment_module.LIVE.value:
-        PAYPAL_API = 'https://api.paypal.com'
-    else:
-        PAYPAL_API = 'https://api.sandbox.paypal.com'
-
-    # Create data to send to PayPal
-    headers = {
-        'Authorization': 'Bearer {access_token}'.format(
-            access_token=get_access_token(),
-        ),
-    }
-    # Add the following to headers to test transaction failures
-    # 'PayPal-Mock-Response': '{"mock_application_codes": "PAYEE_BLOCKED_TRANSACTION"}',
-    # https://developer.paypal.com/docs/api/payments/v1/#errors
-
-    PLACEHOLDER = '---REPLACE---'
-    data = {
-        'auth_algo': request.headers['PAYPAL-AUTH-ALGO'],
-        'cert_url': request.headers['PAYPAL-CERT-URL'],
-        'transmission_id': request.headers['PAYPAL-TRANSMISSION-ID'],
-        'transmission_sig': request.headers['PAYPAL-TRANSMISSION-SIG'],
-        'transmission_time': request.headers['PAYPAL-TRANSMISSION-TIME'],
-        'webhook_id': data.get('webhook_id'),
-        'webhook_event': PLACEHOLDER
-    }
-    data = json.dumps(data)
-    data = data.replace('"%s"' % PLACEHOLDER, json.dumps(data))
-
-    # Send it to PayPal
-    url = PAYPAL_API + PATH
-    response = requests.post(url, headers=headers, datat=data)
-    # Handle invalid token
-    if response.status_code == 401 and response.json().get('error') == 'invalid_token':
-        # Force getting a new token
-        get_access_token(force=True)
-        if retries <= 3:
-            return webhook(request, retries=retries + 1)
-        else:
-            subject = 'PayPal API error: Webhool Retries Exceeded'
-            message = response.text
-            mail_admins(subject, message)
-            log.error(response.text)
-            raise RuntimeError('Too Many Retries: Webhook')
-    # Then other errors
-    elif response.status_code >= 400:
-        subject = 'PayPal API webhook verification error: {status_code}'.format(
-            status_code=response.status_code
-        )
-        message = response.text
-        mail_admins(subject, message)
-        log.error(response.text)
-        return JsonResponse(response.json(), status=response.status_code)
-
-    log.debug('PAYAPL Webhook verification:' + response.text)
-
-    if response.json().get('verification_status') == 'SUCCESS':
-        return True
-    else:
-        log.info("PAYAPL Webhook verification: Soft Fail")
-        # It is currently impossible to test verification through the
-        # PayPal sandbox, until we can verify that this method works,
-        # we will return True (even for fails) :(
-        return True
-        # return False
-
-
-def get_access_token(force=False):
-    ''' Get the oAuth bearer access token and cache it '''
-    payment_module = config_get_group('PAYMENT_PAYPAL')
-    cache = caches['default']
-    key = 'PAYPAL_ACCESS_TOKEN'
-    access_token = cache.get(key)
-    if force or access_token is None:
-        PATH = '/v1/oauth2/token'
-        if payment_module.LIVE.value:
-            PAYPAL_API = 'https://api.paypal.com'
-            CLIENT = payment_module.CLIENT_ID.value
-            SECRET = payment_module.SECRET_KEY.value
-        else:
-            PAYPAL_API = 'https://api.sandbox.paypal.com'
-            CLIENT = payment_module.SANDBOX_CLIENT_ID.value
-            SECRET = payment_module.SANDBOX_SECRET_KEY.value
-
-        url = PAYPAL_API + PATH
-        data = {'grant_type': 'client_credentials'}
-
-        response = requests.post(
-            url,
-            data=data,
-            auth=requests.auth.HTTPBasicAuth(CLIENT, SECRET)
-        )
-        if response.status_code >= 400:
-            subject = 'PayPal API Get Access Token error: {status_code}'.format(
-                status_code=response.status_code
-            )
-            message = response.text
-            mail_admins(subject, message)
-            log.error(response.text)
-        else:
-            data = response.json()
-            access_token = data['access_token']
-            # We want a new token before the old one expires
-            expires_in = int(data['expires_in']) - 5
-            cache.set(key, access_token, expires_in)
-
-    return access_token

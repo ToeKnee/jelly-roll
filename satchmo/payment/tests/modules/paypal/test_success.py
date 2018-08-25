@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase, RequestFactory
@@ -35,7 +34,6 @@ class ConfirmInfoTest(TestCase):
 
     def test_success(self):
         order = TestOrderFactory()
-
         request = self.factory.get('/shop/checkout/paypal/success/')
         request.user = order.contact.user
         request.session = {
@@ -44,4 +42,4 @@ class ConfirmInfoTest(TestCase):
 
         response = success(request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(order.id, response.content)
+        self.assertIn(str(order.id), response.content.decode("utf-8"))

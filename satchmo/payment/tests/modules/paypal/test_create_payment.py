@@ -19,11 +19,9 @@ class CreatePaymentTest(TestCase):
         with self.assertRaises(Http404):
             create_payment(request)
 
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_order_available(self, mock_reqests_post, mock_get_access_token):
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 200
+    @mock.patch('satchmo.payment.modules.paypal.views.paypalrestsdk.Payment')
+    def test_order_available(self, mock_paypal):
+        m = mock.MagicMock()
         data = {
             "id": "8RU61172JS455403V",
             "gross_total_amount": {
@@ -117,8 +115,11 @@ class CreatePaymentTest(TestCase):
             ],
             "status": "CREATED"
         }
-        mock_reqests_post.return_value.json = lambda: data
-        mock_get_access_token.return_value = "test-access-token"
+        m.__getitem__.return_value = data['id']
+        m.to_dict = lambda: data
+        m.status_code = 200
+        mock_paypal.return_value = m
+
         order = TestOrderFactory()
 
         request = self.factory.post('/shop/checkout/paypal/create-payment/')
@@ -142,29 +143,16 @@ class CreatePaymentTest(TestCase):
             data['id']
         )
 
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_order_available__invalid_token(self, mock_reqests_post, mock_get_access_token):
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 401
-        mock_get_access_token.return_value = "test-access-token"
-        order = TestOrderFactory()
-
-        request = self.factory.post('/shop/checkout/paypal/create-payment/')
-        request.user = order.contact.user
-        request.session = {
-            "orderID": order.id,
-        }
-
-        response = create_payment(request)
-        self.assertEqual(response.status_code, 401)
-
-    @mock.patch('satchmo.payment.modules.paypal.views.get_access_token')
-    @mock.patch('satchmo.payment.modules.paypal.views.requests.post')
-    def test_order_available__api_error(self, mock_reqests_post, mock_get_access_token):
-        mock_reqests_post.return_value = mock.MagicMock()
-        mock_reqests_post.return_value.status_code = 400
-        mock_get_access_token.return_value = "test-access-token"
+    @mock.patch('satchmo.payment.modules.paypal.views.paypalrestsdk.Payment')
+    def test_order_available__api_error(self, mock_paypal):
+        m = mock.MagicMock()
+        data = {"name": "VALIDATION_ERROR", "details": [{"some": "error"}]}
+        m.__getitem__.return_value = data
+        m.to_dict = lambda: data
+        m.status_code = 400
+        m.create = lambda: False
+        m.errors = data
+        mock_paypal.return_value = m
         order = TestOrderFactory()
 
         request = self.factory.post('/shop/checkout/paypal/create-payment/')
