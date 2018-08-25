@@ -38,19 +38,25 @@ const setupPayPal = () => {
       // 1. Add an onAuthorize callback
       onAuthorize: function(data, actions) {
         // 2. Make a request to your server
-        return actions.request
-          .post(getValueForInput('execute-payment'), data)
-          .then(function(res) {
-            // 3. Show the buyer a confirmation message.
-            // Redirect to order history page
-            window.location = res.url;
-          });
+        return actions.payment.get().then(function(paymentDetails) {
+          const paymentData = {
+            paymentID: paymentDetails.id,
+            payerID: paymentDetails.payer.payer_info.payer_id
+          };
+          return actions.request
+            .post(getValueForInput('execute-payment'), paymentData)
+            .then(function(res) {
+              // 3. Show the buyer a confirmation message.
+              // Redirect to order history page
+              window.location = res.url;
+            });
+        });
       },
 
       onError: function(error) {
         // Show an error page here, when an error occurs
         alert(
-          'Something went wrong with your PayPal payment.\n\nPlease try again.\n\nIf the problem persists, please contact us.'
+          'Something went wrong with your PayPal payment.\n\nPlease check your address and try again.\n\nIf the problem persists, please contact us.'
         );
         window.location.reload();
       }
