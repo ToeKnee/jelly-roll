@@ -2,8 +2,8 @@
 from decimal import Decimal
 
 from django.contrib.sites.models import Site
-from django.core import NoReverseMatch
-from django.urls import reverse as url
+from django.urls import NoReverseMatch
+from django.urls import reverse
 from django.test import TestCase
 from django.test.client import Client
 
@@ -15,7 +15,7 @@ from satchmo.product.models import *
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.shop.models import *
 from satchmo.utils.dynamic import lookup_template, lookup_url
-from .urls import make_urlpatterns
+from satchmo.payment.urls import make_urlpatterns
 
 
 alphabet = 'abcdefghijklmnopqrstuvwxyz'
@@ -233,12 +233,12 @@ class TestMinimumOrder(TestCase):
         response = self.client.get(prefix+'/cart/')
         self.assertContains(
             response, "Django Rocks shirt (Large/Blue)", count=2, status_code=200)
-        response = self.client.get(url('satchmo_checkout-step1'))
+        response = self.client.get(reverse('satchmo_checkout-step1'))
         self.assertContains(response, "Billing Address", status_code=200)
 
         # now check for min order not met
         min_order.update("100.00")
-        response = self.client.get(url('satchmo_checkout-step1'))
+        response = self.client.get(reverse('satchmo_checkout-step1'))
         self.assertContains(
             response, "This store requires a minimum order", count=1, status_code=200)
 
@@ -249,5 +249,5 @@ class TestMinimumOrder(TestCase):
                                                           "quantity": 10})
         self.assertRedirects(response, prefix + '/cart/',
                              status_code=302, target_status_code=200)
-        response = self.client.get(url('satchmo_checkout-step1'))
+        response = self.client.get(reverse('satchmo_checkout-step1'))
         self.assertContains(response, "Billing Address", status_code=200)

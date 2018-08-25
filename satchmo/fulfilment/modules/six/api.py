@@ -125,9 +125,7 @@ def send_order(order):
                 return False
 
             # Ensure that notes is a string, even when empty.
-            if order.notes is None:
-                order.notes = ""
-            else:
+            if order.notes != "":
                 order.notes += "\n\n------------------ {now} ------------------\n\n".format(
                     now=timezone.now()
                 )
