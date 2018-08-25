@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.1.1, 25 August, 2018
+------------------------------
+* Replace straight API calls with PayPalRestSDK
+
 Version 0.11.1.0, 25 August, 2018
 ------------------------------
 * Change from PayPal IPN to PayPal API

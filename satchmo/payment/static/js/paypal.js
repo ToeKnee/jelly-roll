@@ -30,8 +30,6 @@ const setupPayPal = () => {
         return actions.request
           .post(getValueForInput('create-payment'))
           .then(function(res) {
-            console.log(res);
-            console.log(res.id);
             // 3. Return res.id from the response
             return res.id;
           });
@@ -39,14 +37,9 @@ const setupPayPal = () => {
       // Execute the payment:
       // 1. Add an onAuthorize callback
       onAuthorize: function(data, actions) {
-        console.log('onAuthorize');
-        console.log(data);
-        console.log(actions);
         // 2. Make a request to your server
         return actions.request
-          .post(getValueForInput('execute-payment'), {
-            orderID: data.orderID
-          })
+          .post(getValueForInput('execute-payment'), data)
           .then(function(res) {
             // 3. Show the buyer a confirmation message.
             // Redirect to order history page
@@ -59,7 +52,7 @@ const setupPayPal = () => {
         alert(
           'Something went wrong with your PayPal payment.\n\nPlease try again.\n\nIf the problem persists, please contact us.'
         );
-        //        window.location.reload();
+        window.location.reload();
       }
     },
     '#paypal-button'

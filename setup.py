@@ -53,6 +53,7 @@ setup(
         "currencyconverter>=0.13.3,<1.0.0",
         "django-ipware>=1.1.6,<2.0.0",
         "djangorestframework>=3.8.2,<4.0.0",
+        "paypalrestsdk>=1.13.1,<2.0.0",
         "pycrypto>=2.6.1,<3.0.0",
         "requests>=2.13.0,<3.0.0",
         "workdays>=1.4,<2.0",
