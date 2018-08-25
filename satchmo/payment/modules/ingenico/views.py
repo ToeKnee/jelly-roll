@@ -271,6 +271,7 @@ Expiry date: {ed}
                     OrderRefund.objects.create(
                         order=order,
                         amount=amount,
+                        exchange_rate=order.exchange_rate,
                         transaction_id=transaction_id,
                     )
                 elif status == 2:  # Authorisation refused

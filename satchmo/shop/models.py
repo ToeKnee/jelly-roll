@@ -725,7 +725,7 @@ class Order(models.Model):
     frozen = models.BooleanField(default=False)
     fulfilled = models.BooleanField(default=False)
     time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
-    notes = models.TextField(_("Notes"), blank=True, null=True)
+    notes = models.TextField(_("Notes"), blank=True, null=True, default='')
     method = models.CharField(
         _("Order method"), choices=ORDER_CHOICES, max_length=200, blank=True)
     status = models.ForeignKey(
@@ -1613,7 +1613,10 @@ class OrderPayment(models.Model):
     time_stamp = models.DateTimeField(
         _("timestamp"), default=timezone.now, editable=True)
     transaction_id = models.CharField(
-        _("Transaction ID"), max_length=25, blank=True, null=True)
+        _("Transaction ID"),
+        max_length=64,
+        blank=True, null=True,
+    )
 
     class Meta:
         verbose_name = _("Order Payment")
@@ -1661,7 +1664,7 @@ class OrderRefund(models.Model):
     timestamp = models.DateTimeField(
         _("Timestamp"), default=timezone.now, editable=True)
     transaction_id = models.CharField(
-        _("Transaction ID"), max_length=25, blank=True, null=True)
+        _("Transaction ID"), max_length=64, blank=True, null=True)
 
     class Meta:
         verbose_name = _("Order Refund")
