@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.1.3, 28 August, 2018
+------------------------------
+* Make sure add_status sets the current status to the latest order status
+
 Version 0.11.1.2, 25 August, 2018
 ------------------------------
 * 404 When order can't be found on payment-create
