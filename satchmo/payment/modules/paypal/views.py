@@ -416,7 +416,7 @@ def webhook(request):
     if request.method != "POST":
         raise Http404
 
-    data = json.loads(request.body)
+    data = json.loads(request.body.decode("utf-8"))
 
     payment_module = config_get_group('PAYMENT_PAYPAL')
     if payment_module.LIVE.value:
