@@ -860,6 +860,10 @@ class Order(models.Model):
         order_status.order = self
         order_status.save()
 
+        # Set the current status to the latest order status too
+        self.status = order_status
+        self.save()
+
         return order_status
 
     def add_variable(self, key, value):
