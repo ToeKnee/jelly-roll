@@ -6,7 +6,6 @@ from django.contrib.gis.geoip2 import GeoIP2
 from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
-from django.template import RequestContext
 from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
@@ -232,8 +231,8 @@ def add(request, id=0, redirect_to='satchmo_cart'):
     )
     try:
         added_item = cart.add_item(
-            product, number_added=quantity, details=details)
-
+            product, number_added=quantity, details=details
+        )
     except CartAddProhibited as cap:
         return _product_error(request, product, cap.message)
 
@@ -502,11 +501,12 @@ def product_from_post(productslug, formdata):
 def _product_error(request, product, msg):
     brand = product.brands.all()[0]
     category = product.category.all()[0]
-    template = find_product_template(product)
-    context = RequestContext(request, {
+    template = find_product_template(product, names_only=True)
+    print(template)
+    context = {
         'product': product,
         'brand': brand,
         'category': category,
         'error_message': msg
-    })
-    return HttpResponse(template.render(context))
+    }
+    return render(request, template, context)
