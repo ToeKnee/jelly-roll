@@ -69,18 +69,12 @@ class Brand(models.Model, TranslatedObjectMixin):
         try:
             category = self.active_categories[0]
         except IndexError:
-            category = None
-
-        if category:
+            url = None
+        else:
             url = reverse('satchmo_brand_category_view',
                           kwargs={
                               'category_slug': category.slug,
                               'brand_slug': self.slug
-                          })
-        else:
-            url = reverse('satchmo_brand_view',
-                          kwargs={
-                              'brandname': self.slug
                           })
         return url
 

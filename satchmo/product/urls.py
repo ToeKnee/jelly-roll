@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from satchmo.product.views import IngredientsListView
 from satchmo.product.filterviews import display_bestsellers
 
@@ -43,12 +43,10 @@ urlpatterns = [
     path('product/admin/variations/',
          variation_list, {}, 'satchmo_admin_variation_list'),
 
-    path('brand/', include('satchmo.product.brand.urls')),
-    path('<slug:category_slug>/<slug:brand_slug>/',
-         brand_category_page, {}, name='satchmo_brand_category_view'),
-
     path('product/configurableproduct/<int:id>/getoptions/',
          get_configurable_product_options, {}, 'satchmo_admin_configurableproduct'),
+    path('<slug:category_slug>/<slug:brand_slug>/',
+         brand_category_page, {}, name='satchmo_brand_category_view'),
     path('<slug:category_slug>/<slug:brand_slug>/<slug:product_slug>/',
          get_product, {}, 'satchmo_product'),
     path('<slug:category_slug>/<slug:brand_slug>/<slug:product_slug>/prices/',
