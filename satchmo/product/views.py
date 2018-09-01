@@ -34,13 +34,16 @@ NOTSET = object()
 
 
 # ---- Helpers ----
-def find_product_template(product, producttypes=None):
+def find_product_template(product, producttypes=None, names_only=False):
     """Searches for the correct override template given a product."""
     if producttypes is None:
         producttypes = product.get_subtypes()
 
     templates = ["product/detail_%s.html" % x.lower() for x in producttypes]
     templates.append('base_product.html')
+    print(templates)
+    if names_only:
+        return templates
     return select_template(templates)
 
 

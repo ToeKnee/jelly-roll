@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.1.5, 01 September, 2018
+------------------------------
+* Fix adding more products to cart than stock available
+
 Version 0.11.1.4, 28 August, 2018
 ------------------------------
 * Fix encoding when reading request.body in webhook
