@@ -14,6 +14,7 @@ from workdays import workday
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
+from django.db.models import OuterRef, Subquery
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -647,24 +648,53 @@ class Status(models.Model):
 
     def orders(self):
         """ Get all orders of this status """
-        return Order.objects.filter(status__status=self)
+        return Order.objects.by_latest_status(self)
 
     class Meta:
         verbose_name = _("Status")
         verbose_name_plural = _("Statuses")
 
 
-class OrderManager(models.Manager):
-
+class OrderQuerySet(models.QuerySet):
     def live(self):
         return self.filter(frozen=False)
 
     def unfulfilled(self):
-        return self.filter(
+        return self.by_latest_status(
+            'Processing'
+        ).filter(
             frozen=True,
             fulfilled=False,
-            status__status__status="Processing",
         )
+
+    def by_latest_status(self, status):
+        ''' Return orders with their latest status matching `status` '''
+        if isinstance(status, str):
+            status = Status.objects.get(status=status)
+        newest_status = OrderStatus.objects.filter(
+            order=OuterRef('pk'),
+        ).order_by(
+            '-time_stamp'
+        )
+        return self.annotate(
+            status=Subquery(newest_status.values('status')[:1])
+        ).filter(
+            status=status.id
+        )
+
+
+class OrderManager(models.Manager):
+    def get_queryset(self):
+        return OrderQuerySet(self.model, using=self._db)
+
+    def live(self):
+        return self.get_queryset().live()
+
+    def unfulfilled(self):
+        return self.get_queryset().unfulfilled()
+
+    def by_latest_status(self, status):
+        return self.get_queryset().by_latest_status(status)
 
     def from_request(self, request):
         """Get the order from the session
@@ -728,14 +758,6 @@ class Order(models.Model):
     notes = models.TextField(_("Notes"), blank=True, null=True, default='')
     method = models.CharField(
         _("Order method"), choices=ORDER_CHOICES, max_length=200, blank=True)
-    status = models.ForeignKey(
-        "OrderStatus",
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        editable=False,
-        related_name="current_status"
-    )
     discount_code = models.CharField(
         _("Discount Code"), max_length=20, blank=True, null=True, help_text=_("Coupon Code"))
 
@@ -839,10 +861,10 @@ class Order(models.Model):
         self.frozen = True
         self.time_stamp = timezone.now()
 
-    def add_status(self, status=None, notes=None, status_notify_by_default=False):
+    def add_status(self, status=None, notes='', status_notify_by_default=False):
         order_status = OrderStatus()
         if not status:
-            if self.orderstatus_set.count() > 0:
+            if self.order_states.count() > 0:
                 status_obj = self.status
             else:
                 status_obj, __ = Status.objects.get_or_create(status="Pending")
@@ -859,12 +881,11 @@ class Order(models.Model):
         order_status.time_stamp = timezone.now()
         order_status.order = self
         order_status.save()
-
-        # Set the current status to the latest order status too
-        self.status = order_status
-        self.save()
-
         return order_status
+
+    @cached_property
+    def status(self):
+        return self.order_states.last()
 
     def add_variable(self, key, value):
         """Add an OrderVariable, used for misc stuff that is just too small to get its own field"""
@@ -1273,7 +1294,7 @@ class Order(models.Model):
     @property
     def shipped(self):
         """ Returns True if the order has a Shipped status """
-        return self.orderstatus_set.filter(status__status="Shipped").exists()
+        return self.order_states.filter(status__status="Shipped").exists()
 
     def shipping_date(self):
         """Returns the shipping date.
@@ -1286,7 +1307,7 @@ class Order(models.Model):
         """
         if self.shipped:
             # Most recent shipped status
-            shipped = self.orderstatus_set.filter(
+            shipped = self.order_states.filter(
                 status__status="Shipped"
             ).order_by("-time_stamp")[0]
             ship_date = shipped.time_stamp.date()
@@ -1381,9 +1402,9 @@ class OrderItem(models.Model):
                               null=True)
     expire_date = models.DateField(_("Subscription End"),
                                    help_text=_(
-                                       "Subscription expiration date."),
-                                   blank=True,
-                                   null=True)
+        "Subscription expiration date."),
+        blank=True,
+        null=True)
     completed = models.BooleanField(_("Completed"), default=False)
     stock_updated = models.BooleanField(_("Stock Updated"), default=False)
     discount = models.DecimalField(_("Line item discount"),
@@ -1562,7 +1583,8 @@ class OrderStatus(models.Model):
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
-        verbose_name=_("Order")
+        verbose_name=_("Order"),
+        related_name='order_states',
     )
     status = models.ForeignKey(
         Status,
@@ -1589,11 +1611,6 @@ class OrderStatus(models.Model):
             send_order_notification = True
 
         super(OrderStatus, self).save(*args, **kwargs)
-
-        # Set the most recent status
-        if self.order.status is None or self.order.status.time_stamp < self.time_stamp:
-            self.order.status = self
-            self.order.save()
 
         # Actually send the notification
         if send_order_notification:

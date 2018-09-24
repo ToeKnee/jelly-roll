@@ -43,8 +43,7 @@ def picking_list(request):
 
     Products are order by manufacturer, brand, then product name.
     """
-    processing_orders = Order.objects.filter(
-        status__status__status="Processing")
+    processing_orders = Order.objects.by_latest_status("Processing")
     # Category - products
     products = {}
 

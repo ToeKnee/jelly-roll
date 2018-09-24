@@ -1,38 +1,65 @@
-from django.contrib.auth.models import User
-from django.test import TestCase
-from django.test.client import Client
+from django.contrib.admin.sites import AdminSite
+from django.test import TestCase, RequestFactory
+from django.utils.translation import gettext_lazy as _
 
-from satchmo.caching import cache_delete
+from satchmo.shop.admin import OrderOptions, OrderStatusListFilter
+from satchmo.shop.factories import (
+    StatusFactory,
+    TestOrderFactory,
+    PaidOrderFactory,
+    ShippedOrderFactory,
+)
+from satchmo.shop.models import Order, OrderStatus
 
 
-class AdminTest(TestCase):
+class OrderStatusListFilterTest(TestCase):
+
     def setUp(self):
-        self.client = Client()
-        user = User.objects.create_user('fredsu', 'fred@root.org', 'passwd')
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
-        self.client.login(username='fredsu', password='passwd')
+        self.request_factory = RequestFactory()
 
-    def tearDown(self):
-        cache_delete()
+    def test_pipeline_approved_list_filter__lookups(self):
+        StatusFactory(status="Processing")
+        StatusFactory(status="Shipped")
+        admin = OrderOptions(OrderStatus, AdminSite())
+        request = self.request_factory.get("/admin")
 
-    def test_index(self):
-        response = self.client.get('/admin/')
-        self.assertContains(response, "contact/contact/", status_code=200)
+        list_filter = OrderStatusListFilter(request, {}, OrderStatus, admin)
 
-    def test_product(self):
-        response = self.client.get('/admin/product/product/1/')
-        self.assertContains(response, "Django Rocks shirt", status_code=200)
+        self.assertEqual(list(list_filter.lookups(request, admin)), [
+            ('Processing', _('Processing')),
+            ('Shipped', _('Shipped')),
+        ])
 
-    def test_configurableproduct(self):
-        response = self.client.get('/admin/product/configurableproduct/1/')
-        self.assertContains(response, "Small, Black", status_code=200)
+    def test_pipeline_approved_list_filter__queryset_no_filter(self):
+        admin = OrderOptions(OrderStatus, AdminSite())
+        request = self.request_factory.get("/admin")
 
-    def test_productimage_list(self):
-        response = self.client.get('/admin/product/productimage/')
-        self.assertContains(response, "Photo Not Available", status_code=200)
+        list_filter = OrderStatusListFilter(
+            request, {}, OrderStatus, admin
+        )
 
-    def test_productimage(self):
-        response = self.client.get('/admin/product/productimage/1/')
-        self.assertContains(response, "Photo Not Available", status_code=200)
+        order = TestOrderFactory()
+        paid = PaidOrderFactory()
+        shipped = ShippedOrderFactory()
+
+        queryset = Order.objects.all()
+
+        self.assertIn(order, list_filter.queryset(request, queryset))
+        self.assertIn(paid, list_filter.queryset(request, queryset))
+        self.assertIn(shipped, list_filter.queryset(request, queryset))
+
+    def test_pipeline_approved_list_filter__queryset_filtered(self):
+        admin = OrderOptions(OrderStatus, AdminSite())
+        request = self.request_factory.get("/admin")
+
+        list_filter = OrderStatusListFilter(request, {'status': 'Shipped'}, OrderStatus, admin)
+
+        order = TestOrderFactory()
+        paid = PaidOrderFactory()
+        shipped = ShippedOrderFactory()
+
+        queryset = Order.objects.all()
+
+        self.assertNotIn(order, list_filter.queryset(request, queryset))
+        self.assertNotIn(paid, list_filter.queryset(request, queryset))
+        self.assertIn(shipped, list_filter.queryset(request, queryset))

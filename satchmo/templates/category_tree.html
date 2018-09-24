@@ -1,4 +1,4 @@
-{% load satchmo_category satchmo_brands %}
+{% load satchmo_category %}
 {% if categories %}
 <ul>
     {% for category in categories %}
@@ -9,7 +9,6 @@
                 {{ category.name }}
             </a>
             {% category_tree category.id %}
-            {% brand_tree category %}
             {% endwith %}
         </li>
         {% endif %}
