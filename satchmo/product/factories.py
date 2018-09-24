@@ -2,9 +2,8 @@ import factory
 from decimal import Decimal
 
 from django.contrib.sites.models import Site
-from django.template.defaultfilters import slugify
+from django.utils.text import slugify
 
-from satchmo.product.brand.factories import BrandFactory
 from satchmo.product.models import (
     ConfigurableProduct,
     Product,

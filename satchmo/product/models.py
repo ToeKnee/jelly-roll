@@ -20,6 +20,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.fields.files import FileField
 from django.utils.safestring import mark_safe
+from django.utils.text import slugify
 from django.utils.translation import (
     get_language,
     ugettext_lazy as _
@@ -41,7 +42,6 @@ from satchmo.utils import (
     get_flat_list,
     normalize_dir
 )
-from satchmo.utils.unique_id import slugify
 from . import signals
 
 log = logging.getLogger(__name__)
@@ -180,7 +180,7 @@ class Category(models.Model):
                         _("You must not save a category in itself!"))
 
         if not self.slug:
-            self.slug = slugify(self.name, instance=self)
+            self.slug = slugify(self.name)
 
         super(Category, self).save(*args, **kwargs)
         img_key = "Category_get_mainImage %s" % (self.id)
@@ -731,7 +731,7 @@ class Product(models.Model):
             self.date_added = self.date_updated
 
         if self.name and not self.slug:
-            self.slug = slugify(self.name, instance=self)
+            self.slug = slugify(self.name)
 
         if not self.sku:
             self.sku = self.slug
@@ -764,7 +764,7 @@ class Product(models.Model):
 
     @property
     def mpn(self):
-       return self.productattribute_set.filter(name="mpn").first().value
+        return self.productattribute_set.filter(name="mpn").first().value
 
     def _get_mainImage(self):
         key = "Product_get_mainImage %s" % (self.id)
@@ -1363,11 +1363,13 @@ class ConfigurableProduct(models.Model):
             variant = Product(site=site, items_in_stock=0, name=name)
             optnames = [opt.value for opt in options]
             if not slug:
-                slug = slugify('%s_%s' %
-                               (self.product.slug, '_'.join(optnames)))
+                slug = slugify(
+                    '%s-%s' %
+                    (self.product.slug, '-'.join(optnames))
+                )
 
             while Product.objects.filter(slug=slug).count():
-                slug = '_'.join((slug, str(self.product.id)))
+                slug = '-'.join((slug, str(self.product.id)))
 
             variant.slug = slug
 
