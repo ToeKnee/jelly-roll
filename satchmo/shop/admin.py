@@ -103,6 +103,42 @@ class OrderTaxDetail_Inline(admin.TabularInline):
     extra = 1
 
 
+class OrderStatusListFilter(admin.SimpleListFilter):
+    # Human-readable title which will be displayed in the
+    # right admin sidebar just above the filter options.
+    title = _('Status')
+    template = "admin/_order_status_list_filter.html"
+
+    # Parameter for the filter that will be used in the URL query.
+    parameter_name = 'status'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+
+        return (
+            (status.status, status.status)
+            for status
+            in Status.objects.all().order_by('status')
+        )
+
+    def queryset(self, request, queryset):
+        """
+        Returns the filtered queryset based on the value
+        provided in the query string and retrievable via
+        `self.value()`.
+        """
+        if self.value():
+            return queryset.by_latest_status(self.value())
+        else:
+            return queryset
+
+
 class OrderOptions(admin.ModelAdmin):
     fieldsets = (
         (None,
@@ -124,7 +160,7 @@ class OrderOptions(admin.ModelAdmin):
                        'estimated_delivery_expected_date', 'estimated_delivery_max_date', 'currency', 'exchange_rate', 'refund')
     list_display = ('id', 'contact', 'contact_user', 'ship_country', 'time_stamp', 'display_total',
                     'balance_forward', 'status', 'late_date', 'tracking_number', 'invoice', 'frozen')
-    list_filter = ['time_stamp', 'status__status', 'frozen']
+    list_filter = ['time_stamp', 'frozen', OrderStatusListFilter]
     search_fields = ['id', 'contact__user__username', 'contact__user__email',
                      'contact__first_name', 'contact__last_name', 'contact__email']
     date_hierarchy = 'time_stamp'
@@ -153,6 +189,15 @@ class OrderOptions(admin.ModelAdmin):
 
     def late_date(self, obj):
         return obj.estimated_delivery_max_date().strftime("%d/%m/%Y")
+
+    def status(self, obj):
+        if obj.status:
+            if isinstance(obj.status, int):
+                return Status.objects.get(id=obj.status).status
+            else:
+                return obj.status.status
+        else:
+            return None
 
 
 class OrderItemOptions(admin.ModelAdmin):

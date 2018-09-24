@@ -41,7 +41,6 @@ def find_product_template(product, producttypes=None, names_only=False):
 
     templates = ["product/detail_%s.html" % x.lower() for x in producttypes]
     templates.append('base_product.html')
-    print(templates)
     if names_only:
         return templates
     return select_template(templates)

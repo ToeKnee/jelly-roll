@@ -70,7 +70,7 @@
 
 	<ul id="picking-list">
 		{% for brand, items in products.items %}
-		<li class="{% cycle left,right %}">
+		<li class="{% cycle 'left' 'right' %}">
 			<h3>{{ brand }}</h3>
 			<ol>
 				{% for item, quantity in items %}

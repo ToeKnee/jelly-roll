@@ -465,7 +465,7 @@ def webhook(request):
                 Order,
                 id=data['resource']['invoice_number']
             )
-            if order.orderstatus_set.filter(status__status='Processing').exists() is False:
+            if order.order_states.filter(status__status='Processing').exists() is False:
                 order.notes += '\n' + _('--- Paypal Payment Complete ---') + '\n'
                 # Update order payment values
                 order_payment = get_object_or_404(
@@ -481,6 +481,8 @@ def webhook(request):
                     status='Processing',
                     notes=_("Paid by PayPal. Thank you.")
                 )
+            else:
+                log.info("Already processed" % data['resource']['parent_payment'])
         elif event_type.endswith('DENIED'):
             order_payment = get_object_or_404(
                 OrderPayment,

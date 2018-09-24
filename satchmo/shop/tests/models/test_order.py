@@ -20,7 +20,55 @@ from satchmo.shop.factories import (
     StatusFactory,
     TestOrderFactory
 )
-from satchmo.shop.models import OrderRefund
+from satchmo.shop.models import Order, OrderRefund
+
+
+class OrderManagerTest(TestCase):
+    def test_live__unfrozen(self):
+        order = OrderFactory(frozen=False)
+        self.assertIn(order, Order.objects.live())
+
+    def test_live__frozen(self):
+        order = OrderFactory(frozen=True)
+        self.assertNotIn(order, Order.objects.live())
+
+    def test_unfulfilled(self):
+        order = OrderFactory(
+            frozen=True,
+            fulfilled=False,
+        )
+        order.add_status('Processing')
+        self.assertIn(order, Order.objects.unfulfilled())
+
+    def test_unfulfilled__fulfilled(self):
+        order = OrderFactory(
+            frozen=True,
+            fulfilled=True,
+        )
+        order.add_status('Processing')
+        self.assertNotIn(order, Order.objects.unfulfilled())
+
+    def test_by_status__no_status(self):
+        order = OrderFactory()
+        status = StatusFactory()
+        self.assertNotIn(order, list(Order.objects.by_latest_status(status.status)))
+
+    def test_by_status__only_status(self):
+        order = OrderFactory()
+        order.add_status('test')
+        self.assertIn(order, Order.objects.by_latest_status('test'))
+
+    def test_by_status__last_status(self):
+        order = OrderFactory()
+        order.add_status('other')
+        order.add_status('test')
+        self.assertIn(order, Order.objects.by_latest_status('test'))
+
+    def test_by_status__not_last_status(self):
+        order = OrderFactory()
+        order.add_status('test')
+        order.add_status('other')
+        self.assertNotIn(order, Order.objects.by_latest_status('test'))
 
 
 class OrderShippedTest(TestCase):

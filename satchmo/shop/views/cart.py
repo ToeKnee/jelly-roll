@@ -502,7 +502,6 @@ def _product_error(request, product, msg):
     brand = product.brands.all()[0]
     category = product.category.all()[0]
     template = find_product_template(product, names_only=True)
-    print(template)
     context = {
         'product': product,
         'brand': brand,
