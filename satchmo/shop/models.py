@@ -1796,7 +1796,7 @@ def _remove_order_on_cart_update(request=None, cart=None, **kwargs):
 
 def _recalc_total_on_contact_change(contact=None, **kwargs):
     log.debug("Recalculating all contact orders not in process")
-    orders = Order.objects.live().filter(contact=contact, status=None)
+    orders = Order.objects.live().filter(contact=contact)
     log.debug("Found %i orders to recalc", len(orders))
     for order in orders:
         order.copy_addresses()
