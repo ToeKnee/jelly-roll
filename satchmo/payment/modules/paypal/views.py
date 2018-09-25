@@ -482,7 +482,9 @@ def webhook(request):
                     notes=_("Paid by PayPal. Thank you.")
                 )
             else:
-                log.info("Already processed" % data['resource']['parent_payment'])
+                log.info("Already processed {payment}".format(
+                    payment=data['resource']['parent_payment']
+                ))
         elif event_type.endswith('DENIED'):
             order_payment = get_object_or_404(
                 OrderPayment,

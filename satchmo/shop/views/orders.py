@@ -12,10 +12,9 @@ def order_history(request):
     orders = None
     try:
         contact = Contact.objects.from_request(request, create=False)
-        # Work around for order creation problem where new orders show in order_history page before they've been completed
         orders = Order.objects.filter(contact=contact).exclude(
-            orderstatus__isnull=True).order_by('-time_stamp')
-
+            order_states__isnull=True
+        ).order_by('-time_stamp')
     except Contact.DoesNotExist:
         contact = None
 
