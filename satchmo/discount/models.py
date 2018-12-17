@@ -8,6 +8,7 @@ import operator
 from decimal import Decimal
 
 from django.contrib.sites.models import Site
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
 from satchmo.currency.utils import currency_for_request, money_format
@@ -46,9 +47,17 @@ class Discount(models.Model):
     amount = models.DecimalField(_("Discount Amount"), decimal_places=2,
                                  max_digits=4, blank=True, null=True,
                                  help_text=_("Enter absolute discount amount OR percentage."))
-    percentage = models.DecimalField(_("Discount Percentage"), decimal_places=2,
-                                     max_digits=4, blank=True, null=True,
-                                     help_text=_("Enter absolute discount amount OR percentage.  Percentage example: \"0.10\"."))
+    percentage = models.DecimalField(
+        _("Discount Percentage"),
+        decimal_places=2,
+        max_digits=4,
+        blank=True, null=True,
+        help_text=_("Enter absolute discount amount OR percentage.  Percentage example: \"0.10\"."),
+        validators=[
+            MaxValueValidator(Decimal("1.0")),
+            MinValueValidator(Decimal("0.0"))
+        ]
+    )
     automatic = models.NullBooleanField(_("Is this an automatic discount?"), default=False, blank=True,
                                         null=True,
                                         help_text=_("Use this field to advertise the discount on all products to which it applies.  Generally this is used for site-wide sales."))

@@ -1050,11 +1050,7 @@ class Order(models.Model):
         discount.calc(self)
 
         # Save the total discount in this Order's discount attribute
-        self.discount = convert_to_currency(
-            discount.total,
-            self.currency.iso_4217_code,
-            ignore_buffer=True,
-        )
+        self.discount = discount.total
 
         itemprices = []
         fullprices = []
@@ -1063,11 +1059,7 @@ class Order(models.Model):
         for lineitem in self.orderitem_set.all():
             lid = lineitem.id
             if lid in discount.item_discounts:
-                lineitem.discount = convert_to_currency(
-                    discount.item_discounts[lid],
-                    self.currency.iso_4217_code,
-                    ignore_buffer=True,
-                )
+                lineitem.discount = discount.item_discounts[lid]
             else:
                 lineitem.discount = zero
             if save:
@@ -1077,11 +1069,7 @@ class Order(models.Model):
             fullprices.append(lineitem.line_item_price)
 
         if 'Shipping' in discount.item_discounts:
-            self.shipping_discount = convert_to_currency(
-                discount.item_discounts['Shipping'],
-                self.currency.iso_4217_code,
-                ignore_buffer=True,
-            )
+            self.shipping_discount = discount.item_discounts['Shipping']
         else:
             self.shipping_discount = zero
 
