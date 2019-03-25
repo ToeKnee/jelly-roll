@@ -12,7 +12,7 @@ from satchmo.payment.modules.ingenico.views import process
 from satchmo.shop.factories import TestOrderFactory
 from satchmo.shop.models import Order, OrderRefund
 
-payment_module = config_get_group('PAYMENT_INGENICO')
+payment_module = config_get_group("PAYMENT_INGENICO")
 
 
 class ProcessTest(TestCase):
@@ -20,7 +20,7 @@ class ProcessTest(TestCase):
         self.factory = RequestFactory()
 
     def test_GET(self):
-        request = self.factory.get('/shop/checkout/ingenico/success/')
+        request = self.factory.get("/shop/checkout/ingenico/success/")
 
         response = process(request)
         # Method Not Allowed
@@ -46,7 +46,7 @@ class ProcessTest(TestCase):
             "TRXDATE": date.today().isoformat(),
         }
 
-        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+        request = self.factory.post("/shop/checkout/ingenico/success/", data)
 
         response = process(request)
         # Payment required
@@ -72,7 +72,7 @@ class ProcessTest(TestCase):
         }
         data["SHASIGN"] = shasign(data)
 
-        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+        request = self.factory.post("/shop/checkout/ingenico/success/", data)
 
         with self.assertRaises(Http404):
             process(request)
@@ -97,7 +97,7 @@ class ProcessTest(TestCase):
         }
         data["SHASIGN"] = shasign(data)
 
-        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+        request = self.factory.post("/shop/checkout/ingenico/success/", data)
 
         response = process(request)
         self.assertEqual(response.status_code, 200)
@@ -125,7 +125,7 @@ class ProcessTest(TestCase):
         }
         data["SHASIGN"] = shasign(data)
 
-        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+        request = self.factory.post("/shop/checkout/ingenico/success/", data)
 
         response = process(request)
         self.assertEqual(response.status_code, 200)
@@ -133,11 +133,13 @@ class ProcessTest(TestCase):
         order = Order.objects.get(id=order.id)
         self.assertTrue(order.frozen)
         self.assertEqual(order.status.status.status, "Processing")
-        self.assertTrue(order.payments.filter(
-            amount=order.total,
-            payment="INGENICO",
-            transaction_id=data["ACCEPTANCE"],
-        ).exists())
+        self.assertTrue(
+            order.payments.filter(
+                amount=order.total,
+                payment="INGENICO",
+                transaction_id=data["ACCEPTANCE"],
+            ).exists()
+        )
         for item in order.orderitem_set.all():
             self.assertEqual(item.product.items_in_stock, 0)
             self.assertEqual(item.product.total_sold, item.quantity)
@@ -164,7 +166,7 @@ class ProcessTest(TestCase):
         }
         data["SHASIGN"] = shasign(data)
 
-        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+        request = self.factory.post("/shop/checkout/ingenico/success/", data)
 
         response = process(request)
         self.assertEqual(response.status_code, 200)
@@ -172,11 +174,13 @@ class ProcessTest(TestCase):
         order = Order.objects.get(id=order.id)
         self.assertTrue(order.frozen)
         self.assertEqual(order.status.status.status, "Cancelled")
-        self.assertFalse(order.payments.filter(
-            amount=order.total,
-            payment="INGENICO",
-            transaction_id=data["ACCEPTANCE"],
-        ).exists())
+        self.assertFalse(
+            order.payments.filter(
+                amount=order.total,
+                payment="INGENICO",
+                transaction_id=data["ACCEPTANCE"],
+            ).exists()
+        )
         for item in order.orderitem_set.all():
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
@@ -203,7 +207,7 @@ class ProcessTest(TestCase):
         }
         data["SHASIGN"] = shasign(data)
 
-        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+        request = self.factory.post("/shop/checkout/ingenico/success/", data)
 
         response = process(request)
         self.assertEqual(response.status_code, 200)
@@ -211,11 +215,13 @@ class ProcessTest(TestCase):
         order = Order.objects.get(id=order.id)
         self.assertTrue(order.frozen)
         self.assertEqual(order.status.status.status, "Authorisation refused")
-        self.assertFalse(order.payments.filter(
-            amount=order.total,
-            payment="INGENICO",
-            transaction_id=data["ACCEPTANCE"],
-        ).exists())
+        self.assertFalse(
+            order.payments.filter(
+                amount=order.total,
+                payment="INGENICO",
+                transaction_id=data["ACCEPTANCE"],
+            ).exists()
+        )
         for item in order.orderitem_set.all():
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
@@ -241,7 +247,7 @@ class ProcessTest(TestCase):
         }
         data["SHASIGN"] = shasign(data)
 
-        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+        request = self.factory.post("/shop/checkout/ingenico/success/", data)
 
         response = process(request)
         self.assertEqual(response.status_code, 200)
@@ -250,20 +256,22 @@ class ProcessTest(TestCase):
         self.assertTrue(order.frozen)
         self.assertEqual(order.refund, order.total)
         self.assertEqual(order.status.status.status, "Refunded")
-        self.assertFalse(order.payments.filter(
-            amount=order.total,
-            payment="INGENICO",
-            transaction_id=data["ACCEPTANCE"],
-        ).exists())
+        self.assertFalse(
+            order.payments.filter(
+                amount=order.total,
+                payment="INGENICO",
+                transaction_id=data["ACCEPTANCE"],
+            ).exists()
+        )
         for item in order.orderitem_set.all():
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
         self.assertIn("Status: Refund", order.notes)
-        self.assertTrue(OrderRefund.objects.filter(
-            order=order,
-            amount=order.refund,
-            transaction_id="trans-1",
-        ).exists())
+        self.assertTrue(
+            OrderRefund.objects.filter(
+                order=order, amount=order.refund, transaction_id="trans-1"
+            ).exists()
+        )
 
     def test_status__refund__payment_deleted(self):
         order = TestOrderFactory()
@@ -285,7 +293,7 @@ class ProcessTest(TestCase):
         }
         data["SHASIGN"] = shasign(data)
 
-        request = self.factory.post('/shop/checkout/ingenico/success/', data)
+        request = self.factory.post("/shop/checkout/ingenico/success/", data)
 
         response = process(request)
         self.assertEqual(response.status_code, 200)
@@ -294,17 +302,19 @@ class ProcessTest(TestCase):
         self.assertTrue(order.frozen)
         self.assertEqual(order.refund, order.total)
         self.assertEqual(order.status.status.status, "Refunded")
-        self.assertFalse(order.payments.filter(
-            amount=order.total,
-            payment="INGENICO",
-            transaction_id=data["ACCEPTANCE"],
-        ).exists())
+        self.assertFalse(
+            order.payments.filter(
+                amount=order.total,
+                payment="INGENICO",
+                transaction_id=data["ACCEPTANCE"],
+            ).exists()
+        )
         for item in order.orderitem_set.all():
             self.assertEqual(item.product.items_in_stock, item.quantity)
             self.assertEqual(item.product.total_sold, 0)
         self.assertIn("Status: Payment deleted", order.notes)
-        self.assertTrue(OrderRefund.objects.filter(
-            order=order,
-            amount=order.refund,
-            transaction_id="trans-1",
-        ).exists())
+        self.assertTrue(
+            OrderRefund.objects.filter(
+                order=order, amount=order.refund, transaction_id="trans-1"
+            ).exists()
+        )

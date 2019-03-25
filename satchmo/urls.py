@@ -7,6 +7,6 @@ from satchmo.urls_base import urlpatterns as satchmopatterns
 # own base URLs, you'll need to autodiscover there.
 admin.autodiscover()
 
-urlpatterns = getattr(settings, 'URLS', [])
+urlpatterns = getattr(settings, "URLS", [])
 
 urlpatterns += satchmopatterns

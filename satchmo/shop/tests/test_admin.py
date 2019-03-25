@@ -13,7 +13,6 @@ from satchmo.shop.models import Order, OrderStatus
 
 
 class OrderStatusListFilterTest(TestCase):
-
     def setUp(self):
         self.request_factory = RequestFactory()
 
@@ -25,18 +24,16 @@ class OrderStatusListFilterTest(TestCase):
 
         list_filter = OrderStatusListFilter(request, {}, OrderStatus, admin)
 
-        self.assertEqual(list(list_filter.lookups(request, admin)), [
-            ('Processing', _('Processing')),
-            ('Shipped', _('Shipped')),
-        ])
+        self.assertEqual(
+            list(list_filter.lookups(request, admin)),
+            [("Processing", _("Processing")), ("Shipped", _("Shipped"))],
+        )
 
     def test_pipeline_approved_list_filter__queryset_no_filter(self):
         admin = OrderOptions(OrderStatus, AdminSite())
         request = self.request_factory.get("/admin")
 
-        list_filter = OrderStatusListFilter(
-            request, {}, OrderStatus, admin
-        )
+        list_filter = OrderStatusListFilter(request, {}, OrderStatus, admin)
 
         order = TestOrderFactory()
         paid = PaidOrderFactory()
@@ -52,7 +49,9 @@ class OrderStatusListFilterTest(TestCase):
         admin = OrderOptions(OrderStatus, AdminSite())
         request = self.request_factory.get("/admin")
 
-        list_filter = OrderStatusListFilter(request, {'status': 'Shipped'}, OrderStatus, admin)
+        list_filter = OrderStatusListFilter(
+            request, {"status": "Shipped"}, OrderStatus, admin
+        )
 
         order = TestOrderFactory()
         paid = PaidOrderFactory()

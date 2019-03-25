@@ -20,14 +20,16 @@ class ConfirmInfoTest(TestCase):
         cache_delete()
 
     def test_order_unavailable(self):
-        request = self.factory.get('/shop/checkout/ingenico/confirm/')
+        request = self.factory.get("/shop/checkout/ingenico/confirm/")
         request.user = AnonymousUser()
         request.session = {}
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response._headers['location'], ('Location',
-                                                         '{}/'.format(getattr(settings, "SHOP_BASE", "/store"))))
+        self.assertEqual(
+            response._headers["location"],
+            ("Location", "{}/".format(getattr(settings, "SHOP_BASE", "/store"))),
+        )
 
     def test_not_enough_stock(self):
         cart = CartFactory()
@@ -37,7 +39,7 @@ class ConfirmInfoTest(TestCase):
             item.product.items_in_stock = 0
             item.product.save()
 
-        request = self.factory.get('/shop/checkout/ingenico/confirm/')
+        request = self.factory.get("/shop/checkout/ingenico/confirm/")
         request.user = order.contact.user
         request.session = {
             "cart": cart.id,
@@ -47,17 +49,17 @@ class ConfirmInfoTest(TestCase):
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response._headers['location'], ('Location',
-                                                         '{}/cart/'.format(getattr(settings, "SHOP_BASE", "/store"))))
+        self.assertEqual(
+            response._headers["location"],
+            ("Location", "{}/cart/".format(getattr(settings, "SHOP_BASE", "/store"))),
+        )
 
     def test_form_includes_shasign(self):
         order = TestOrderFactory()
 
-        request = self.factory.get('/shop/checkout/ingenico/confirm/')
+        request = self.factory.get("/shop/checkout/ingenico/confirm/")
         request.user = order.contact.user
-        request.session = {
-            "orderID": order.id,
-        }
+        request.session = {"orderID": order.id}
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 200)
@@ -67,27 +69,21 @@ class ConfirmInfoTest(TestCase):
 
     def test_form_includes_alias__if_enabled(self):
         # Enable Aliasing
-        Setting.objects.create(
-            key='ALIAS',
-            group='PAYMENT_INGENICO',
-            value=True,
-        )
+        Setting.objects.create(key="ALIAS", group="PAYMENT_INGENICO", value=True)
 
         order = TestOrderFactory()
 
-        request = self.factory.get('/shop/checkout/ingenico/confirm/')
+        request = self.factory.get("/shop/checkout/ingenico/confirm/")
         request.user = order.contact.user
-        request.session = {
-            "orderID": order.id,
-        }
+        request.session = {"orderID": order.id}
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 200)
         self.assertIn("ALIAS".encode("utf-8"), response.content)
         self.assertIn(
-            hashlib.sha512(
-                order.contact.user.username.encode("utf-8")
-            ).hexdigest()[:50].encode("utf-8"),
-            response.content
+            hashlib.sha512(order.contact.user.username.encode("utf-8"))
+            .hexdigest()[:50]
+            .encode("utf-8"),
+            response.content,
         )
         self.assertIn("ALIASUSAGE".encode("utf-8"), response.content)

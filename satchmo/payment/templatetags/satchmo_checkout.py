@@ -22,8 +22,7 @@ register.filter(payment_label)
 def order_payment_summary(order, paylink=False):
     """Output a formatted block giving attached payment details."""
 
-    return {'order': order,
-            'paylink': paylink}
+    return {"order": order, "paylink": paylink}
 
 
-register.inclusion_tag('payment/_order_payment_summary.html')(order_payment_summary)
+register.inclusion_tag("payment/_order_payment_summary.html")(order_payment_summary)

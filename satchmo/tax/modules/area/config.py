@@ -5,21 +5,19 @@ from satchmo.configuration.functions import (
     config_get_group,
     config_register,
 )
-from satchmo.configuration.values import (
-    BooleanValue,
-    StringValue,
-)
+from satchmo.configuration.values import BooleanValue, StringValue
 from satchmo.tax.models import TaxClass
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 @transaction.atomic
 def config_tax():
-    TAX_MODULE = config_get('TAX', 'MODULE')
-    TAX_MODULE.add_choice(('satchmo.tax.modules.area', _('By Country/Area')))
-    TAX_GROUP = config_get_group('TAX')
+    TAX_MODULE = config_get("TAX", "MODULE")
+    TAX_MODULE.add_choice(("satchmo.tax.modules.area", _("By Country/Area")))
+    TAX_GROUP = config_get_group("TAX")
 
     _tax_classes = []
     ship_default = ""
@@ -30,7 +28,9 @@ def config_tax():
             if "ship" in tax.title.lower():
                 ship_default = tax.title
     except:
-        log.warn("Ignoring database error retrieving tax classes - OK if you are in syncdb.")
+        log.warn(
+            "Ignoring database error retrieving tax classes - OK if you are in syncdb."
+        )
 
     if ship_default == "" and len(_tax_classes) > 0:
         ship_default = _tax_classes[0][0]
@@ -38,22 +38,22 @@ def config_tax():
     config_register(
         BooleanValue(
             TAX_GROUP,
-            'TAX_SHIPPING',
+            "TAX_SHIPPING",
             description=_("Tax Shipping?"),
             requires=TAX_MODULE,
-            requiresvalue='satchmo.tax.modules.area',
-            default=False
+            requiresvalue="satchmo.tax.modules.area",
+            default=False,
         )
     )
 
     config_register(
         StringValue(
             TAX_GROUP,
-            'TAX_CLASS',
+            "TAX_CLASS",
             description=_("TaxClass for shipping"),
             help_text=_("Select a TaxClass that should be applied for shipments."),
             default=ship_default,
-            choices=_tax_classes
+            choices=_tax_classes,
         )
     )
 

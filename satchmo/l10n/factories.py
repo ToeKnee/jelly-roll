@@ -7,7 +7,7 @@ from satchmo.l10n.models import Country
 class ContinentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Continent
-        django_get_or_create = ('code',)
+        django_get_or_create = ("code",)
 
     code = "PG"
     name = "Patagonia"
@@ -31,7 +31,7 @@ class OCFactory(ContinentFactory):
 class CountryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Country
-        django_get_or_create = ('iso2_code',)
+        django_get_or_create = ("iso2_code",)
 
     iso2_code = "GB"
     name = "United Kingdom of Great Britain & Northern Ireland"

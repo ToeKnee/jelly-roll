@@ -1,7 +1,7 @@
 from hashlib import sha512
 from satchmo.configuration.functions import config_get_group
 
-payment_module = config_get_group('PAYMENT_INGENICO')
+payment_module = config_get_group("PAYMENT_INGENICO")
 
 
 def shasign(data):
@@ -22,15 +22,16 @@ def shasign(data):
     # passphrase (and append it to the end too)
     #
     # See https://payment-services.ingenico.com/int/en/ogone/support/guides/integration%20guides/e-commerce#shainsignature
-    phrase = secret.join((
-        "{key}={value}".format(
-            key=key.upper(),
-            value=value
+    phrase = (
+        secret.join(
+            (
+                "{key}={value}".format(key=key.upper(), value=value)
+                for key, value in sorted(list(data.items()), key=lambda i: i[0].upper())
+                if value and key != "SHASIGN"
+            )
         )
-        for key, value
-        in sorted(list(data.items()), key=lambda i: i[0].upper())
-        if value and key != "SHASIGN"
-    )) + secret
+        + secret
+    )
 
     digest = sha512(phrase.encode("utf-8")).hexdigest()
     return digest

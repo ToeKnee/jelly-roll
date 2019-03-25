@@ -7,11 +7,13 @@ class UpsellTranslation_Inline(admin.TabularInline):
     model = UpsellTranslation
     extra = 1
 
+
 class UpsellOptions(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('target', 'goal', 'style', 'notes', 'create_date')}), )
+        (None, {"fields": ("target", "goal", "style", "notes", "create_date")}),
+    )
     inlines = [UpsellTranslation_Inline]
-    filter_horizontal = ('target',)
+    filter_horizontal = ("target",)
+
 
 admin.site.register(Upsell, UpsellOptions)
-

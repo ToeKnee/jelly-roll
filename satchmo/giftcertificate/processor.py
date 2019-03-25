@@ -6,7 +6,6 @@ from .models import GiftCertificate
 
 
 class PaymentProcessor(object):
-
     def __init__(self, settings):
         self.settings = settings
 
@@ -44,6 +43,9 @@ class PaymentProcessor(object):
                 success = True
 
                 if not self.order.paid_in_full:
-                    response_text = _("%s balance remains after gift certificate was applied") % self.order.display_balance
+                    response_text = (
+                        _("%s balance remains after gift certificate was applied")
+                        % self.order.display_balance
+                    )
 
         return (success, reason_code, response_text)

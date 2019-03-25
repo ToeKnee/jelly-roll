@@ -1,1 +1,1 @@
-default_app_config = 'satchmo.currency.apps.CurrencyConfig'
+default_app_config = "satchmo.currency.apps.CurrencyConfig"

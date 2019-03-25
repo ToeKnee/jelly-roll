@@ -24,9 +24,7 @@ def money_format(value, currency_code):
         return _("{currency} is not accepted".format(currency=currency_code))
 
     return "{currency_symbol}{value:.2f} ({code})".format(
-        currency_symbol=currency.symbol,
-        value=value,
-        code=currency.iso_4217_code,
+        currency_symbol=currency.symbol, value=value, code=currency.iso_4217_code
     )
 
 
@@ -49,24 +47,24 @@ def convert_to_currency(value, currency_code, ignore_buffer=False):
 
         # Add a small buffer
         if value and ignore_buffer is False:
-            buffer = config_value('CURRENCY', 'BUFFER')
+            buffer = config_value("CURRENCY", "BUFFER")
             value = value + buffer
 
         # Multiply by the exchange rate
         value = value * exchange_rate
 
         # Quantize value using bankers rounding
-        value = value.quantize(Decimal('.01'), rounding=ROUND_HALF_EVEN)
+        value = value.quantize(Decimal(".01"), rounding=ROUND_HALF_EVEN)
 
         # Round up to the nearest half unit of currency
-        if config_value('CURRENCY', 'ROUND_UP'):
+        if config_value("CURRENCY", "ROUND_UP"):
             if value % 1 > Decimal("0.5"):
                 value = Decimal(math.ceil(value))
             else:
                 value = Decimal(math.floor(value)) + Decimal("0.5")
 
     # Take away 1 minor unit of currency
-    if config_value('CURRENCY', 'PSYCHOLOGICAL_PRICING') and value == math.ceil(value):
+    if config_value("CURRENCY", "PSYCHOLOGICAL_PRICING") and value == math.ceil(value):
         value = value - Decimal("0.01")
 
     return value

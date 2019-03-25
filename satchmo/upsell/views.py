@@ -3,6 +3,7 @@ from satchmo.shop.exceptions import CartAddProhibited
 
 log = logging.getLogger(__name__)
 
+
 def cart_add_listener(cart=None, product=None, form=None, request=None, **kwargs):
     """Post-processes the form, handling upsell formfields.
 
@@ -15,18 +16,19 @@ def cart_add_listener(cart=None, product=None, form=None, request=None, **kwargs
     """
     log.debug("cart_add_listener heard satchmo_cart_add_complete")
     try:
-        rawct = form.get('upsell_count', 0)
+        rawct = form.get("upsell_count", 0)
         ct = int(rawct)
     except ValueError:
         log.debug("Got bad upsell_count: %s", rawct)
         ct = 0
 
     results = []
-    if ct>0:
-        for i in range(0,ct):
+    if ct > 0:
+        for i in range(0, ct):
             results.append(_add_upsell(form, cart, i))
 
     return results
+
 
 def _add_upsell(form, cart, i):
     field_include = "upsell_include_%i" % i
@@ -41,30 +43,34 @@ def _add_upsell(form, cart, i):
             try:
                 rawqty = form.get(field_qty, 0)
                 if rawqty == "MATCH":
-                    qty = int(form['quantity'])
+                    qty = int(form["quantity"])
                 else:
                     qty = int(rawqty)
             except ValueError:
-                log.debug('Bad upsell qty=%s', rawqty)
+                log.debug("Bad upsell qty=%s", rawqty)
                 qty = 0
 
         if qty > 0:
             from satchmo.product.models import Product
+
             try:
                 product = Product.objects.get_by_site(slug=slug)
 
                 try:
                     cart.add_item(product, number_added=qty)
-                    log.info('Added upsell item: %s qty=%i', product.slug, qty)
+                    log.info("Added upsell item: %s qty=%i", product.slug, qty)
                     return (True, product)
 
                 except CartAddProhibited as cap:
                     vetomsg = cap.veto_messages()
-                    msg = _("'%(product)s' couldn't be added to the cart. %(details)s") % {
-                        'product' : product.slug,
-                        'detail' : cap.message
-                        }
-                    log.debug("Failed to add upsell item: '%s', message= %s", product.slug, msg)
+                    msg = _(
+                        "'%(product)s' couldn't be added to the cart. %(details)s"
+                    ) % {"product": product.slug, "detail": cap.message}
+                    log.debug(
+                        "Failed to add upsell item: '%s', message= %s",
+                        product.slug,
+                        msg,
+                    )
                     return (False, product)
 
             except Product.DoesNotExist:

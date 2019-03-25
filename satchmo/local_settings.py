@@ -17,23 +17,23 @@ import logging
 # SATCHMO_DIRNAME = ''
 
 # Only set these if Satchmo is part of another Django project
-#SITE_NAME = ''
-#ROOT_URLCONF = ''
-#MEDIA_ROOT = os.path.join(DIRNAME, 'static/')
-#DJANGO_PROJECT = 'Your Main Project Name'
-#DJANGO_SETTINGS_MODULE = 'main-project.settings'
-#DATABASE_NAME = ''
-#DATABASE_PASSWORD = ''
-#DATABASE_USER = ''
-#SECRET_KEY = ''
+# SITE_NAME = ''
+# ROOT_URLCONF = ''
+# MEDIA_ROOT = os.path.join(DIRNAME, 'static/')
+# DJANGO_PROJECT = 'Your Main Project Name'
+# DJANGO_SETTINGS_MODULE = 'main-project.settings'
+# DATABASE_NAME = ''
+# DATABASE_PASSWORD = ''
+# DATABASE_USER = ''
+# SECRET_KEY = ''
 
 ##### For Email ########
 # If this isn't set in your settings file, you can set these here
-#EMAIL_HOST = 'host here'
-#EMAIL_PORT = 587
-#EMAIL_HOST_USER = 'your user here'
-#EMAIL_HOST_PASSWORD = 'your password'
-#EMAIL_USE_TLS = True
+# EMAIL_HOST = 'host here'
+# EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'your user here'
+# EMAIL_HOST_PASSWORD = 'your password'
+# EMAIL_USE_TLS = True
 
 #### Satchmo unique variables ####
 
@@ -45,15 +45,16 @@ from django.conf.urls import *
 
 # These can override or add to the default URLs
 from django.conf.urls import *
+
 URLS = []
 
 # a cache backend is required.  Do not use locmem, it will not work properly at all in production
 # Preferably use memcached, but file or DB is OK.  File is faster, I don't know why you'd want to use
 # db, personally.  See: http://www.djangoproject.com/documentation/cache/ for help setting up your
 # cache backend
-#CACHE_BACKEND = "memcached://127.0.0.1:11211/"
-#CACHE_BACKEND = "file:///var/tmp/django_cache"
-CACHE_TIMEOUT = 60*5
+# CACHE_BACKEND = "memcached://127.0.0.1:11211/"
+# CACHE_BACKEND = "file:///var/tmp/django_cache"
+CACHE_TIMEOUT = 60 * 5
 
 # modify the cache_prefix if you have multiple concurrent stores.
 CACHE_PREFIX = "STORE"
@@ -61,18 +62,17 @@ CACHE_PREFIX = "STORE"
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-gb'
+LANGUAGE_CODE = "en-gb"
 
 # Languages for your site.  The language name
 # should be the utf-8 encoded local name for the language.
 
 
-def gettext_noop(s): return s
+def gettext_noop(s):
+    return s
 
 
-LANGUAGES = (
-    ('en', 'English'),
-)
+LANGUAGES = (("en", "English"),)
 
 # Locale path settings.  Needs to be set for Translation compilation.
 # It can be blank

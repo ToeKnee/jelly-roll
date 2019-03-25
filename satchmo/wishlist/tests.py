@@ -8,33 +8,38 @@ from satchmo.product.models import Product
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.wishlist.models import ProductWish
 
-domain = 'http://testserver'
-prefix = get_satchmo_setting('SHOP_BASE')
-if prefix == '/':
-    prefix = ''
+domain = "http://testserver"
+prefix = get_satchmo_setting("SHOP_BASE")
+if prefix == "/":
+    prefix = ""
 
 
 def get_step1_post_data(US):
     return {
-        'email': 'sometester@example.com',
-        'first_name': 'Teddy',
-        'last_name': 'Tester',
-        'phone': '456-123-5555',
-        'street1': '8299 Some Street',
-        'city': 'Springfield',
-        'state': 'MO',
-        'postal_code': '81122',
-        'country': US.pk,
-        'ship_street1': '1011 Some Other Street',
-        'ship_city': 'Springfield',
-        'ship_state': 'MO',
-        'ship_postal_code': '81123',
-        'paymentmethod': 'DUMMY'
+        "email": "sometester@example.com",
+        "first_name": "Teddy",
+        "last_name": "Tester",
+        "phone": "456-123-5555",
+        "street1": "8299 Some Street",
+        "city": "Springfield",
+        "state": "MO",
+        "postal_code": "81122",
+        "country": US.pk,
+        "ship_street1": "1011 Some Other Street",
+        "ship_city": "Springfield",
+        "ship_state": "MO",
+        "ship_postal_code": "81123",
+        "paymentmethod": "DUMMY",
     }
 
 
 class WishTest(TestCase):
-    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
+    fixtures = [
+        "l10n_data.xml",
+        "sample-store-data.yaml",
+        "products.yaml",
+        "test-config.yaml",
+    ]
 
     def setUp(self):
         # Every test needs a client
@@ -47,29 +52,38 @@ class WishTest(TestCase):
         """
         Validate we can't add unless we are logged in.
         """
-        response = self.client.get(prefix + '/product/dj-rocks/')
+        response = self.client.get(prefix + "/product/dj-rocks/")
         self.assertContains(response, "Django Rocks shirt", count=2, status_code=200)
-        response = self.client.post(prefix + '/add/', {
-            "productname": "dj-rocks",
-            "1": "M",
-            "2": "BL",
-            "addwish": "Add to wishlist"
-        })
+        response = self.client.post(
+            prefix + "/add/",
+            {
+                "productname": "dj-rocks",
+                "1": "M",
+                "2": "BL",
+                "addwish": "Add to wishlist",
+            },
+        )
         self.assertContains(response, "Sorry, you must be", count=1, status_code=200)
 
 
 class WishTestLoggedIn(TestCase):
-    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
+    fixtures = [
+        "l10n_data.xml",
+        "sample-store-data.yaml",
+        "products.yaml",
+        "test-config.yaml",
+    ]
 
     def setUp(self):
         self.client = Client()
-        user = User.objects.create_user('wisher', 'wisher@example.com', 'passwd')
+        user = User.objects.create_user("wisher", "wisher@example.com", "passwd")
         user.is_staff = False
         user.is_superuser = False
         user.save()
-        self.contact = Contact.objects.create(user=user, first_name="Wish",
-                                              last_name="Tester")
-        self.client.login(username='wisher', password='passwd')
+        self.contact = Contact.objects.create(
+            user=user, first_name="Wish", last_name="Tester"
+        )
+        self.client.login(username="wisher", password="passwd")
 
     def tearDown(self):
         cache_delete()
@@ -78,19 +92,28 @@ class WishTestLoggedIn(TestCase):
         """
         Validate we can add some items to the wishlist
         """
-        response = self.client.get(prefix+'/product/dj-rocks/')
+        response = self.client.get(prefix + "/product/dj-rocks/")
         self.assertContains(response, "Django Rocks shirt", count=2, status_code=200)
-        response = self.client.post(prefix+'/add/', {
-            "productname": "dj-rocks",
-            "1": "M",
-            "2": "BL",
-            "addwish": "Add to wishlist"
-        })
-        self.assertRedirects(response, domain + prefix+'/wishlist/',
-                             status_code=302, target_status_code=200)
-        response = self.client.get(prefix+'/wishlist/')
+        response = self.client.post(
+            prefix + "/add/",
+            {
+                "productname": "dj-rocks",
+                "1": "M",
+                "2": "BL",
+                "addwish": "Add to wishlist",
+            },
+        )
+        self.assertRedirects(
+            response,
+            domain + prefix + "/wishlist/",
+            status_code=302,
+            target_status_code=200,
+        )
+        response = self.client.get(prefix + "/wishlist/")
 
-        self.assertContains(response, "Django Rocks shirt (Medium/Blue)", count=1, status_code=200)
+        self.assertContains(
+            response, "Django Rocks shirt (Medium/Blue)", count=1, status_code=200
+        )
 
     def test_wish_removing(self):
         """
@@ -104,15 +127,17 @@ class WishTestLoggedIn(TestCase):
         wish = ProductWish(product=product, contact=self.contact)
         wish.save()
 
-        response = self.client.get(prefix+'/wishlist/')
+        response = self.client.get(prefix + "/wishlist/")
         self.assertContains(response, "Robots Attack", count=1, status_code=200)
-        self.assertContains(response, "Django Rocks shirt (Medium/Blue)", count=1, status_code=200)
+        self.assertContains(
+            response, "Django Rocks shirt (Medium/Blue)", count=1, status_code=200
+        )
 
-        response = self.client.post(prefix+'/wishlist/remove/', {
-            'id': wish.id
-        })
+        response = self.client.post(prefix + "/wishlist/remove/", {"id": wish.id})
         self.assertContains(response, "Robots Attack", count=0, status_code=200)
-        self.assertContains(response, "Django Rocks shirt (Medium/Blue)", count=1, status_code=200)
+        self.assertContains(
+            response, "Django Rocks shirt (Medium/Blue)", count=1, status_code=200
+        )
 
     def test_wish_to_cart(self):
         """
@@ -126,14 +151,18 @@ class WishTestLoggedIn(TestCase):
         wish = ProductWish(product=product, contact=self.contact)
         wish.save()
 
-        response = self.client.get(prefix+'/wishlist/')
+        response = self.client.get(prefix + "/wishlist/")
         self.assertContains(response, "Robots Attack", count=1, status_code=200)
-        self.assertContains(response, "Django Rocks shirt (Medium/Blue)", count=1, status_code=200)
+        self.assertContains(
+            response, "Django Rocks shirt (Medium/Blue)", count=1, status_code=200
+        )
 
-        response = self.client.post(prefix+'/wishlist/add_cart/', {
-            'id': wish.id
-        })
-        self.assertRedirects(response, domain + prefix+'/cart/',
-                             status_code=302, target_status_code=200)
-        response = self.client.get(prefix+'/cart/')
+        response = self.client.post(prefix + "/wishlist/add_cart/", {"id": wish.id})
+        self.assertRedirects(
+            response,
+            domain + prefix + "/cart/",
+            status_code=302,
+            target_status_code=200,
+        )
+        response = self.client.get(prefix + "/cart/")
         self.assertContains(response, "Robots Attack", count=2, status_code=200)

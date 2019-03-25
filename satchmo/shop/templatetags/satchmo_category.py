@@ -6,6 +6,7 @@ from django.template import Node
 
 from satchmo.product.models import Category
 from satchmo.shop.templatetags import get_filter_args
+
 log = logging.getLogger(__name__)
 try:
     from xml.etree.ElementTree import Element, SubElement, tostring
@@ -15,7 +16,7 @@ except ImportError:
 register = Library()
 
 
-@register.inclusion_tag('category_tree.html')
+@register.inclusion_tag("category_tree.html")
 def category_tree(id=None):
     """
     Creates an unordered list of the categories.
@@ -35,7 +36,7 @@ def category_tree(id=None):
                 </ul>
         </ul>
     """
-    key = 'category_tree_%s' % id
+    key = "category_tree_%s" % id
     if cache.get(key):
         categories = cache.get(key)
     else:
@@ -92,7 +93,8 @@ def do_categorylistnode(parser, token):
     ct = len(args)
     if not ct in (3, 4):
         raise template.TemplateSyntaxError(
-            "%r tag expecting '[slug] as varname', got: %s" % (args[0], args))
+            "%r tag expecting '[slug] as varname', got: %s" % (args[0], args)
+        )
 
     if ct == 3:
         slug = None
@@ -101,29 +103,31 @@ def do_categorylistnode(parser, token):
         slug = args[1]
         var = args[3]
 
-    nodelist = parser.parse(('endcategory_list',))
+    nodelist = parser.parse(("endcategory_list",))
     parser.delete_first_token()
 
     return CategoryListNode(slug, var, nodelist)
 
 
-register.tag('category_list', do_categorylistnode)
+register.tag("category_list", do_categorylistnode)
 
 
 def product_category_siblings(product, args=""):
-    args, kwargs = get_filter_args(args,
-                                   keywords=('variations', 'include_self'),
-                                   boolargs=('variations', 'include_self'),
-                                   stripquotes=True)
+    args, kwargs = get_filter_args(
+        args,
+        keywords=("variations", "include_self"),
+        boolargs=("variations", "include_self"),
+        stripquotes=True,
+    )
 
-    sibs = product.get_category.product_set.all().order_by('ordering', 'name')
-    if not kwargs.get('variations', True):
+    sibs = product.get_category.product_set.all().order_by("ordering", "name")
+    if not kwargs.get("variations", True):
         sibs = [sib for sib in sibs if not sib.has_variants]
 
-    if not kwargs.get('include_self', True):
+    if not kwargs.get("include_self", True):
         sibs = [sib for sib in sibs if not sib == product]
 
     return sibs
 
 
-register.filter('product_category_siblings', product_category_siblings)
+register.filter("product_category_siblings", product_category_siblings)

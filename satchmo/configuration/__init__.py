@@ -10,4 +10,4 @@ Appropriate:  Your google code for adwords.
 Inappropriate: The caching timeout for the store.
 
 """
-default_app_config = 'satchmo.configuration.apps.ConfigurationConfig'
+default_app_config = "satchmo.configuration.apps.ConfigurationConfig"

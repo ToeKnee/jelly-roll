@@ -5,10 +5,7 @@ from django.test import TestCase
 from satchmo.caching import cache_delete
 from satchmo.configuration.functions import config_value
 from satchmo.shop.factories import TestOrderFactory
-from satchmo.shop.models import (
-    Order,
-    OrderPayment,
-)
+from satchmo.shop.models import Order, OrderPayment
 
 
 class OrderTest(TestCase):
@@ -21,11 +18,11 @@ class OrderTest(TestCase):
         price = order.total
         subtotal = order.sub_total
 
-        self.assertEqual(subtotal, Decimal('25.00'))
-        self.assertEqual(price, Decimal('35.00'))
+        self.assertEqual(subtotal, Decimal("25.00"))
+        self.assertEqual(price, Decimal("35.00"))
         self.assertEqual(order.balance, price)
 
-        paytype = config_value('PAYMENT', 'MODULES')[0]
+        paytype = config_value("PAYMENT", "MODULES")[0]
         pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("5.00"))
         pmt.save()
 
@@ -45,7 +42,7 @@ class OrderTest(TestCase):
         order = TestOrderFactory()
         order.recalculate_total(save=False)
 
-        paytype = config_value('PAYMENT', 'MODULES')[0]
+        paytype = config_value("PAYMENT", "MODULES")[0]
         pmt = OrderPayment(order=order, payment=paytype, amount=Decimal("0.000001"))
         pmt.save()
 
@@ -54,7 +51,9 @@ class OrderTest(TestCase):
     def test_verification_hash(self):
         with self.settings(SECRET_KEY="123"):
             order = Order(id=1, contact_id=1)
-            self.assertEqual(order.verification_hash, "97f97b0cd887f1b61e6f7e136aa752b1")
+            self.assertEqual(
+                order.verification_hash, "97f97b0cd887f1b61e6f7e136aa752b1"
+            )
 
     def test_verify_hash__match(self):
         order = Order(id=1, contact_id=1)

@@ -1,1 +1,1 @@
-default_app_config = 'satchmo.tax.apps.TaxConfig'
+default_app_config = "satchmo.tax.apps.TaxConfig"

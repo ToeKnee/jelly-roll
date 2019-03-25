@@ -26,7 +26,7 @@ def currency(context, value, currency_code=None):
 
     """
 
-    if value == '' or value is None:
+    if value == "" or value is None:
         return value
 
     if currency_code is None:
@@ -36,4 +36,6 @@ def currency(context, value, currency_code=None):
     value = convert_to_currency(value, currency_code)
 
     return mark_safe(money_format(value, currency_code))
+
+
 currency.is_safe = True

@@ -24,14 +24,20 @@ class DespatchTest(TestCase):
     def test_verification_does_not_match(self):
         order = TestOrderFactory()
         request = self.factory.post("/")
-        response = despatch(request, order_id=order.id, verification_hash="abcdef1234567890")
+        response = despatch(
+            request, order_id=order.id, verification_hash="abcdef1234567890"
+        )
 
         self.assertEqual(response.content, '{"success": false}'.encode("utf-8"))
 
     def test_invalid_json(self):
         order = TestOrderFactory()
-        request = self.factory.post("/", data="{Invalid-Json;'", content_type="application/json")
-        response = despatch(request, order_id=order.id, verification_hash=order.verification_hash)
+        request = self.factory.post(
+            "/", data="{Invalid-Json;'", content_type="application/json"
+        )
+        response = despatch(
+            request, order_id=order.id, verification_hash=order.verification_hash
+        )
         self.assertEqual(response.content, '{"success": false}'.encode("utf-8"))
 
     def test_despatch__no_tracking(self):
@@ -43,20 +49,26 @@ class DespatchTest(TestCase):
             "client_area_link": "http://subdomain.sixworks.co.uk/order/101",
             "postage_method": "1st Class Packet",
             "boxed_weight": 645,
-            "items": [{
-                "client_ref": order.orderitem_set.all()[0].product.slug,
-                "quantity": order.orderitem_set.all()[0].quantity,
-                "batches_used": [
-                    {
-                        "client_ref": order.orderitem_set.all()[0].product.slug,
-                        "batch": "0014",
-                        "quantity": order.orderitem_set.all()[0].quantity
-                    },
-                ]
-            }],
+            "items": [
+                {
+                    "client_ref": order.orderitem_set.all()[0].product.slug,
+                    "quantity": order.orderitem_set.all()[0].quantity,
+                    "batches_used": [
+                        {
+                            "client_ref": order.orderitem_set.all()[0].product.slug,
+                            "batch": "0014",
+                            "quantity": order.orderitem_set.all()[0].quantity,
+                        }
+                    ],
+                }
+            ],
         }
-        request = self.factory.post("/", data=json.dumps(data), content_type="application/json")
-        response = despatch(request, order_id=order.id, verification_hash=order.verification_hash)
+        request = self.factory.post(
+            "/", data=json.dumps(data), content_type="application/json"
+        )
+        response = despatch(
+            request, order_id=order.id, verification_hash=order.verification_hash
+        )
         self.assertEqual(response.content, '{"success": true}'.encode("utf-8"))
         order = Order.objects.get(id=order.id)
         self.assertIn(data["date_despatched"], order.notes)
@@ -80,20 +92,26 @@ class DespatchTest(TestCase):
             "boxed_weight": 645,
             "tracking_number": "GB1010101010A",
             "tracking_link": "http://royalmail.com/track?tracking_number=GB1010101010A",
-            "items": [{
-                "client_ref": order.orderitem_set.all()[0].product.slug,
-                "quantity": order.orderitem_set.all()[0].quantity,
-                "batches_used": [
-                    {
-                        "client_ref": order.orderitem_set.all()[0].product.slug,
-                        "batch": "0014",
-                        "quantity": order.orderitem_set.all()[0].quantity
-                    },
-                ]
-            }],
+            "items": [
+                {
+                    "client_ref": order.orderitem_set.all()[0].product.slug,
+                    "quantity": order.orderitem_set.all()[0].quantity,
+                    "batches_used": [
+                        {
+                            "client_ref": order.orderitem_set.all()[0].product.slug,
+                            "batch": "0014",
+                            "quantity": order.orderitem_set.all()[0].quantity,
+                        }
+                    ],
+                }
+            ],
         }
-        request = self.factory.post("/", data=json.dumps(data), content_type="application/json")
-        response = despatch(request, order_id=order.id, verification_hash=order.verification_hash)
+        request = self.factory.post(
+            "/", data=json.dumps(data), content_type="application/json"
+        )
+        response = despatch(
+            request, order_id=order.id, verification_hash=order.verification_hash
+        )
         self.assertEqual(response.content, '{"success": true}'.encode("utf-8"))
         order = Order.objects.get(id=order.id)
         self.assertIn(data["date_despatched"], order.notes)
@@ -104,11 +122,15 @@ class DespatchTest(TestCase):
         self.assertEqual(order.tracking_number, data["tracking_number"])
         self.assertEqual(order.tracking_url, data["tracking_link"])
 
-        order_status = """Thanks for your order!\nYou can track your order at {tracking_url}\n"""
-        self.assertEqual(order.status.notes, order_status.format(
-            tracking_number=order.tracking_number,
-            tracking_url=order.tracking_url,
-        ))
+        order_status = (
+            """Thanks for your order!\nYou can track your order at {tracking_url}\n"""
+        )
+        self.assertEqual(
+            order.status.notes,
+            order_status.format(
+                tracking_number=order.tracking_number, tracking_url=order.tracking_url
+            ),
+        )
 
     def test__web_client(self):
         order = TestOrderFactory()
@@ -122,22 +144,31 @@ class DespatchTest(TestCase):
             "boxed_weight": 645,
             "tracking_number": "GB1010101010A",
             "tracking_link": "http://royalmail.com/track?tracking_number=GB1010101010A",
-            "items": [{
-                "client_ref": order.orderitem_set.all()[0].product.slug,
-                "quantity": order.orderitem_set.all()[0].quantity,
-                "batches_used": [
-                    {
-                        "client_ref": order.orderitem_set.all()[0].product.slug,
-                        "batch": "0014",
-                        "quantity": order.orderitem_set.all()[0].quantity
-                    },
-                ]
-            }],
+            "items": [
+                {
+                    "client_ref": order.orderitem_set.all()[0].product.slug,
+                    "quantity": order.orderitem_set.all()[0].quantity,
+                    "batches_used": [
+                        {
+                            "client_ref": order.orderitem_set.all()[0].product.slug,
+                            "batch": "0014",
+                            "quantity": order.orderitem_set.all()[0].quantity,
+                        }
+                    ],
+                }
+            ],
         }
-        response = self.client.post(reverse("six_despatch", kwargs={
-            "order_id": str(order.id),
-            "verification_hash": str(order.verification_hash),
-        }), data=json.dumps(data), content_type="application/json")
+        response = self.client.post(
+            reverse(
+                "six_despatch",
+                kwargs={
+                    "order_id": str(order.id),
+                    "verification_hash": str(order.verification_hash),
+                },
+            ),
+            data=json.dumps(data),
+            content_type="application/json",
+        )
         self.assertEqual(response.content, '{"success": true}'.encode("utf-8"))
         order = Order.objects.get(id=order.id)
         self.assertIn(data["date_despatched"], order.notes)
@@ -149,14 +180,18 @@ class DespatchTest(TestCase):
         self.assertEqual(order.tracking_number, data["tracking_number"])
         self.assertEqual(order.tracking_url, data["tracking_link"])
 
-        order_status = """Thanks for your order!\nYou can track your order at {tracking_url}\n"""
-        self.assertEqual(order.status.notes, order_status.format(
-            tracking_number=order.tracking_number,
-            tracking_url=order.tracking_url,
-        ))
+        order_status = (
+            """Thanks for your order!\nYou can track your order at {tracking_url}\n"""
+        )
+        self.assertEqual(
+            order.status.notes,
+            order_status.format(
+                tracking_number=order.tracking_number, tracking_url=order.tracking_url
+            ),
+        )
 
     def test_despatch__replacement_order(self):
         # Replacement orders have "-a" or similar tacked onto the end
         # of the order number
-        match = resolve('/shop/fulfilment/six/376-a/6e0a5839fdc477e381eb89480a515524/')
-        self.assertEqual(match.url_name, 'six_despatch_replacement')
+        match = resolve("/shop/fulfilment/six/376-a/6e0a5839fdc477e381eb89480a515524/")
+        self.assertEqual(match.url_name, "six_despatch_replacement")

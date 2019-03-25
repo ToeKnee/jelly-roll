@@ -19,6 +19,7 @@ from satchmo.shop.views.utils import bad_or_missing
 from satchmo.wishlist.models import ProductWish
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -30,12 +31,9 @@ def wishlist_view(request, message=""):
 
     wishes = ProductWish.objects.filter(contact=contact)
 
-    ctx = {
-        'wishlist': wishes,
-        'wishlist_message': message,
-    }
+    ctx = {"wishlist": wishes, "wishlist_message": message}
 
-    return render(request, 'wishlist/index.html', ctx)
+    return render(request, "wishlist/index.html", ctx)
 
 
 def wishlist_add(request):
@@ -45,30 +43,32 @@ def wishlist_add(request):
     except Contact.DoesNotExist:
         return _wishlist_requires_login(request)
 
-    log.debug('FORM: %s', request.POST)
+    log.debug("FORM: %s", request.POST)
     formdata = request.POST.copy()
     productslug = None
-    if 'productname' in formdata:
-        productslug = formdata['productname']
+    if "productname" in formdata:
+        productslug = formdata["productname"]
 
     try:
         product, details = product_from_post(productslug, formdata)
     except (Product.DoesNotExist, MultiValueDictKeyError):
         log.debug("Could not find product: %s", productslug)
-        return bad_or_missing(request, _('The product you have requested does not exist.'))
+        return bad_or_missing(
+            request, _("The product you have requested does not exist.")
+        )
 
     ProductWish.objects.create_if_new(product, contact, details)
-    url = reverse('satchmo_wishlist_view')
+    url = reverse("satchmo_wishlist_view")
     return HttpResponseRedirect(url)
 
 
 def wishlist_add_ajax(request, template="json.html"):
-    data = {'errors': []}
+    data = {"errors": []}
     product = None
     formdata = request.POST.copy()
-    productslug = formdata['productname']
+    productslug = formdata["productname"]
 
-    log.debug('WISHLIST AJAX: slug=%s', productslug)
+    log.debug("WISHLIST AJAX: slug=%s", productslug)
     try:
         product, details = product_from_post(productslug, formdata)
 
@@ -77,25 +77,26 @@ def wishlist_add_ajax(request, template="json.html"):
         product = None
 
     if not product:
-        data['errors'].append(
-            ('product', _('The product you have requested does not exist.')))
+        data["errors"].append(
+            ("product", _("The product you have requested does not exist."))
+        )
 
     else:
-        data['id'] = product.id
-        data['name'] = product.translated_name()
+        data["id"] = product.id
+        data["name"] = product.translated_name()
 
-    if not data['errors']:
+    if not data["errors"]:
         contact = Contact.objects.from_request(request)
         ProductWish.objects.create_if_new(product, contact, details)
-        data['results'] = _('Success')
+        data["results"] = _("Success")
     else:
-        data['results'] = _('Error')
+        data["results"] = _("Error")
 
     encoded = json.dumps(data)
     encoded = mark_safe(encoded)
-    log.debug('WISHLIST AJAX: %s', data)
+    log.debug("WISHLIST AJAX: %s", data)
 
-    return render(request, template, {'json': encoded})
+    return render(request, template, {"json": encoded})
 
 
 def wishlist_move_to_cart(request):
@@ -105,13 +106,12 @@ def wishlist_move_to_cart(request):
         try:
             cart.add_item(wish.product, number_added=1, details=wish.details)
         except CartAddProhibited as cap:
-            msg = _("Wishlist product '%(product)s' could't be added to the cart. %(details)s") % {
-                'product': wish.product.translated_name,
-                'detail': cap.message
-            }
+            msg = _(
+                "Wishlist product '%(product)s' could't be added to the cart. %(details)s"
+            ) % {"product": wish.product.translated_name, "detail": cap.message}
             return wishlist_view(request, message=msg)
 
-        url = reverse('satchmo_cart')
+        url = reverse("satchmo_cart")
         satchmo_cart_changed.send(cart, cart=cart, request=request)
         return HttpResponseRedirect(url)
     else:
@@ -131,18 +131,15 @@ def wishlist_remove(request):
 def wishlist_remove_ajax(request, template="json.html"):
     success, msg = _wishlist_remove(request)
 
-    data = {
-        'success': success,
-        'wishlist_message': msg
-    }
+    data = {"success": success, "wishlist_message": msg}
     encoded = json.dumps(data)
     encoded = mark_safe(encoded)
 
-    return render(request, template, {'json': encoded})
+    return render(request, template, {"json": encoded})
 
 
 def _wish_from_post(request):
-    wid = request.POST.get('id', None)
+    wid = request.POST.get("id", None)
     msg = ""
     wish = None
     if wid:
@@ -182,8 +179,10 @@ def _remove_wishes_on_order(order=None, **kwargs):
     log.debug("Caught order success, inspecting for wishes to remove.")
     if order:
         products = [item.product for item in order.orderitem_set.all()]
-        for wish in ProductWish.objects.filter(contact=order.contact, product__in=products):
-            log.debug('removing fulfilled wish for: %s', wish)
+        for wish in ProductWish.objects.filter(
+            contact=order.contact, product__in=products
+        ):
+            log.debug("removing fulfilled wish for: %s", wish)
             wish.delete()
 
 
@@ -192,7 +191,5 @@ order_success.connect(_remove_wishes_on_order, sender=Order)
 
 def _wishlist_requires_login(request):
     log.debug("wishlist requires login")
-    ctx = {
-        'login_url': settings.LOGIN_URL
-    }
-    return render(request, 'wishlist/login_required.html', ctx)
+    ctx = {"login_url": settings.LOGIN_URL}
+    return render(request, "wishlist/login_required.html", ctx)

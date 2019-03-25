@@ -3,6 +3,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 class CachedObjectMixin(object):
     """Provides basic object caching for any objects using this as a mixin."""
 
@@ -25,20 +26,21 @@ class CachedObjectMixin(object):
         self.cache_set()
 
     def cache_set(self, *args, **kwargs):
-        val = kwargs.pop('value', self)
+        val = kwargs.pop("value", self)
         key = self.cache_key(*args, **kwargs)
         caching.cache_set(key, value=val)
-        
+
     def is_cached(self, *args, **kwargs):
         return caching.is_cached(self.cache_key(*args, **kwargs))
-        
+
+
 def find_by_id(cls, groupkey, objectid, raises=False):
     """A helper function to look up an object by id"""
     ob = None
     try:
         ob = caching.cache_get(groupkey, objectid)
     except caching.NotCachedError as e:
-        try: 
+        try:
             ob = cls.objects.get(pk=objectid)
             caching.cache_set(e.key, value=ob)
 
@@ -56,7 +58,7 @@ def find_by_key(cls, groupkey, key, raises=False):
     try:
         ob = caching.cache_get(groupkey, key)
     except caching.NotCachedError as e:
-        try: 
+        try:
             ob = cls.objects.get(key__exact=key)
             caching.cache_set(e.key, value=ob)
 
@@ -66,14 +68,15 @@ def find_by_key(cls, groupkey, key, raises=False):
                 raise
 
     return ob
-    
+
+
 def find_by_slug(cls, groupkey, slug, raises=False):
     """A helper function to look up an object by slug"""
     ob = None
     try:
         ob = caching.cache_get(groupkey, slug)
     except caching.NotCachedError as e:
-        try: 
+        try:
             ob = cls.objects.get(slug__exact=slug)
             caching.cache_set(e.key, value=ob)
 
@@ -83,4 +86,3 @@ def find_by_slug(cls, groupkey, slug, raises=False):
                 raise
 
     return ob
-

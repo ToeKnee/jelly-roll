@@ -17,7 +17,7 @@ class Shipper(BaseShipper):
         """
         This is mainly helpful for debugging purposes
         """
-        return "Per Item: %s" % config_value('SHIPPING', 'PER_RATE')
+        return "Per Item: %s" % config_value("SHIPPING", "PER_RATE")
 
     def description(self):
         """
@@ -30,7 +30,7 @@ class Shipper(BaseShipper):
         Complex calculations can be done here as long as the return value is a dollar figure
         """
         fee = Decimal("0.00")
-        rate = config_value('SHIPPING', 'PER_RATE')
+        rate = config_value("SHIPPING", "PER_RATE")
         for cartitem in self.cart.cartitem_set.all():
             if cartitem.product.is_shippable:
                 fee += rate * cartitem.quantity
@@ -40,13 +40,13 @@ class Shipper(BaseShipper):
         """
         Describes the actual delivery service (Mail, FedEx, DHL, UPS, etc)
         """
-        return ugettext(config_value('SHIPPING', 'PER_SERVICE'))
+        return ugettext(config_value("SHIPPING", "PER_SERVICE"))
 
     def expectedDelivery(self):
         """
         Can be a plain string or complex calcuation returning an actual date
         """
-        return ugettext(config_value('SHIPPING', 'PER_DAYS'))
+        return ugettext(config_value("SHIPPING", "PER_DAYS"))
 
     def valid(self, order=None):
         """

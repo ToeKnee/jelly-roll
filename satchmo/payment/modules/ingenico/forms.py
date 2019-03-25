@@ -3,7 +3,7 @@ from .utils import shasign
 from django import forms
 from satchmo.configuration.functions import config_get_group
 
-payment_module = config_get_group('PAYMENT_INGENICO')
+payment_module = config_get_group("PAYMENT_INGENICO")
 
 
 class IngenicoForm(forms.Form):
@@ -27,8 +27,12 @@ class IngenicoForm(forms.Form):
 
         # If Alias / Tokenisation is used
         if payment_module.ALIAS.value:
-            self.fields["ALIAS"] = forms.CharField(required=True, widget=forms.HiddenInput())
-            self.fields["ALIASUSAGE"] = forms.CharField(required=True, widget=forms.HiddenInput())
+            self.fields["ALIAS"] = forms.CharField(
+                required=True, widget=forms.HiddenInput()
+            )
+            self.fields["ALIASUSAGE"] = forms.CharField(
+                required=True, widget=forms.HiddenInput()
+            )
 
         # Generate the SHASIGN
         self.data["SHASIGN"] = shasign(self.data)

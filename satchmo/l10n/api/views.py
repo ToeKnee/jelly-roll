@@ -1,6 +1,7 @@
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import DjangoModelPermissionsOrAnonReadOnly
 from rest_framework.response import Response
+
 # Error 422 exists in a newer version of rest_framework, use it if
 # it's available.
 try:
@@ -15,13 +16,12 @@ from satchmo.l10n.utils import country_for_request
 
 
 class CountryListAPIView(ListAPIView):
-    permission_classes = (DjangoModelPermissionsOrAnonReadOnly, )
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
     serializer_class = CountrySerializer
     pagination_class = None
 
     def get_queryset(self):
-        queryset = Country.objects.filter(
-            active=True).order_by("printable_name")
+        queryset = Country.objects.filter(active=True).order_by("printable_name")
         return queryset
 
 
@@ -31,10 +31,7 @@ class CountrySessionAPIView(APIView):
         Return the country for the request.
         """
         country_code = country_for_request(request)
-        country = Country.objects.get(
-            active=True,
-            iso2_code=country_code
-        )
+        country = Country.objects.get(active=True, iso2_code=country_code)
         serializer = CountrySerializer(country)
         return Response(serializer.data)
 
@@ -50,8 +47,7 @@ class CountrySessionAPIView(APIView):
             return Response(serializer.errors, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
         country = Country.objects.get(
-            active=True,
-            iso2_code=serializer.data["iso2_code"],
+            active=True, iso2_code=serializer.data["iso2_code"]
         )
         serializer = CountrySerializer(country)
         return Response(serializer.data)

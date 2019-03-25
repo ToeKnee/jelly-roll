@@ -13,22 +13,22 @@ root_dir = os.path.dirname(__file__)
 if root_dir:
     os.chdir(root_dir)
 
-for dirpath, dirnames, filenames in os.walk('satchmo'):
+for dirpath, dirnames, filenames in os.walk("satchmo"):
     # Ignore dirnames that start with '.'
     for i, dirname in enumerate(dirnames):
-        if dirname.startswith('.'):
+        if dirname.startswith("."):
             del dirnames[i]
-    if '__init__.py' in filenames:
-        pkg = dirpath.replace(os.path.sep, '.')
+    if "__init__.py" in filenames:
+        pkg = dirpath.replace(os.path.sep, ".")
         if os.path.altsep:
-            pkg = pkg.replace(os.path.altsep, '.')
+            pkg = pkg.replace(os.path.altsep, ".")
         packages.append(pkg)
     elif filenames:
         prefix = dirpath[8:]  # Strip "satchmo/" or "satchmo\"
         for f in filenames:
             data_files.append(os.path.join(prefix, f))
 
-version = __import__('satchmo').__version__
+version = __import__("satchmo").__version__
 
 setup(
     name="Satchmo",
@@ -39,14 +39,14 @@ setup(
     license="BSD",
     description="The webshop for perfectionists with deadlines.",
     long_description="Satchmo is an ecommerce framework created using Django.",
-    package_dir={'satchmo': 'satchmo'},
+    package_dir={"satchmo": "satchmo"},
     packages=packages,
-    package_data={'satchmo': data_files},
+    package_data={"satchmo": data_files},
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
-        'Topic :: Office/Business',
+        "Development Status :: 4 - Beta",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Topic :: Office/Business",
     ],
     install_requires=[
         "Django>=2.1.2,<2.2.0",

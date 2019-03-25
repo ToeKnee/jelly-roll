@@ -16,7 +16,7 @@ def smart_add(request):
     """Redirect the request to cart_add (default) or satchmo_wishlist_add
     (overridden) view"""
 
-    if request.POST.get('addwish', '') != '' or request.POST.get('addwish.x', '') != '':
+    if request.POST.get("addwish", "") != "" or request.POST.get("addwish.x", "") != "":
         log.debug("Found addwish in post, returning the wishlist add view")
         return wishlist_add(request)
 

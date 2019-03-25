@@ -9,15 +9,14 @@ satchmo_settings_defaults = {
     # Only settings for core `satchmo` applications are defined here,
     # (or global settings) -- all other defaults should be added using
     # the add_setting_defaults method !
-
-    'SHOP_URLS' : [],
-    'SHOP_BASE' : '/shop',
-    'CUSTOM_PAYMENT_MODULES' : [],
-    'CUSTOM_SHIPPING_MODULES' : [],
-    'CUSTOM_PRODUCT_MODULES' : [],
-    'CUSTOM_TAX_MODULES' : [],
-    'ALLOW_PRODUCT_TRANSLATIONS' : True,
-    }
+    "SHOP_URLS": [],
+    "SHOP_BASE": "/shop",
+    "CUSTOM_PAYMENT_MODULES": [],
+    "CUSTOM_SHIPPING_MODULES": [],
+    "CUSTOM_PRODUCT_MODULES": [],
+    "CUSTOM_TAX_MODULES": [],
+    "ALLOW_PRODUCT_TRANSLATIONS": True,
+}
 
 
 def add_setting_defaults(newdefaults):
@@ -32,13 +31,15 @@ def add_setting_defaults(newdefaults):
 
 
 def set_satchmo_setting(name, value):
-    if not hasattr(settings, 'SATCHMO_SETTINGS'):
+    if not hasattr(settings, "SATCHMO_SETTINGS"):
         settings.SATCHMO_SETTINGS = {}
     settings.SATCHMO_SETTINGS[name] = value
 
 
-def get_satchmo_setting(name, default_value = None):
-    if not hasattr(settings, 'SATCHMO_SETTINGS'):
+def get_satchmo_setting(name, default_value=None):
+    if not hasattr(settings, "SATCHMO_SETTINGS"):
         return satchmo_settings_defaults.get(name, default_value)
 
-    return settings.SATCHMO_SETTINGS.get(name, satchmo_settings_defaults.get(name, default_value))
+    return settings.SATCHMO_SETTINGS.get(
+        name, satchmo_settings_defaults.get(name, default_value)
+    )

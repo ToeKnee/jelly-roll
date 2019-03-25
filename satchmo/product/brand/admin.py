@@ -1,9 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from satchmo.product.brand.models import (
-    Brand,
-    BrandTranslation
-)
+from satchmo.product.brand.models import Brand, BrandTranslation
 
 
 class BrandTranslation_Inline(admin.StackedInline):
@@ -19,7 +16,8 @@ class BrandOptions(admin.ModelAdmin):
 
 class BrandTranslationOptions(admin.ModelAdmin):
     fieldsets = (
-        (None, {'fields': ('brand', 'languagecode', 'name', 'description', 'picture')}),
+        (None, {"fields": ("brand", "languagecode", "name", "description", "picture")}),
     )
+
 
 admin.site.register(Brand, BrandOptions)

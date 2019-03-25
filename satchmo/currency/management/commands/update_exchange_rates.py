@@ -7,11 +7,11 @@ from satchmo.currency.modules.ecb import EcbExchangeRateClient
 
 
 class Command(BaseCommand):
-    help = 'Updates exchange rates'
+    help = "Updates exchange rates"
 
     def handle(self, *args, **options):
-        module = getattr(settings, 'EXCHANGE_RATE_MODULE', 'ecb')
-        if module == 'fixer':
+        module = getattr(settings, "EXCHANGE_RATE_MODULE", "ecb")
+        if module == "fixer":
             client = FixerExchangeRateClient()
         else:
             client = EcbExchangeRateClient()

@@ -4,7 +4,7 @@ from django import template
 register = template.Library()
 
 
-@register.inclusion_tag('cn22.html')
+@register.inclusion_tag("cn22.html")
 def cn22(order, group_by_category=True):
     """Generate a CN22 form for customs usage
 
@@ -27,7 +27,7 @@ def cn22(order, group_by_category=True):
                 "name": name,
                 "quantity": item.quantity,
                 "weight": item.weight,
-                "value": item.line_item_price
+                "value": item.line_item_price,
             }
         else:
             items_dict[name]["quantity"] += item.quantity
@@ -42,5 +42,5 @@ def cn22(order, group_by_category=True):
         "order": order,
         "items": list(items_dict.values()),
         "total_weight": total_weight,
-        "total_value": total_value
+        "total_value": total_value,
     }

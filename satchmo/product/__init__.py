@@ -1,1 +1,1 @@
-default_app_config = 'satchmo.product.apps.ProductConfig'
+default_app_config = "satchmo.product.apps.ProductConfig"

@@ -10,13 +10,13 @@ def home(request, template="base_index.html"):
     # Display the category, its child categories, and its products.
 
     if request.method == "GET":
-        currpage = request.GET.get('page', 1)
+        currpage = request.GET.get("page", 1)
     else:
         currpage = 1
 
     featured = display_featured()
 
-    count = config_value('SHOP', 'NUM_PAGINATED')
+    count = config_value("SHOP", "NUM_PAGINATED")
 
     paginator = Paginator(featured, count)
 
@@ -32,10 +32,10 @@ def home(request, template="base_index.html"):
     page = paginator.page(currpage)
 
     ctx = {
-        'all_products_list': page.object_list,
-        'is_paginated': is_paged,
-        'page_obj': page,
-        'paginator': paginator
+        "all_products_list": page.object_list,
+        "is_paginated": is_paged,
+        "page_obj": page,
+        "paginator": paginator,
     }
 
     return render(request, template, ctx)

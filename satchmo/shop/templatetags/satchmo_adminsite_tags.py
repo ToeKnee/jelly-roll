@@ -24,11 +24,8 @@ def admin_site_views(view):
 
         links.append((config.store_name, url_join(paths)))
 
-    ret = {
-        'links': links,
-        'multihost': is_multihost_enabled()
-    }
+    ret = {"links": links, "multihost": is_multihost_enabled()}
     return ret
 
 
-register.inclusion_tag('admin/_admin_site_views.html')(admin_site_views)
+register.inclusion_tag("admin/_admin_site_views.html")(admin_site_views)

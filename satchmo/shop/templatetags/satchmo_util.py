@@ -11,6 +11,7 @@ from satchmo.utils import app_enabled, trunc_decimal
 from satchmo.utils.json import json_encode
 
 import logging
+
 log = logging.getLogger(__name__)
 
 register = template.Library()
@@ -23,7 +24,7 @@ def debug_mode(value):
     return ""
 
 
-register.filter('debug_mode', debug_mode)
+register.filter("debug_mode", debug_mode)
 
 
 def template_range(value):
@@ -31,7 +32,7 @@ def template_range(value):
     return list(range(1, value + 1))
 
 
-register.filter('template_range', template_range)
+register.filter("template_range", template_range)
 
 
 def in_list(value, val=None):
@@ -41,7 +42,7 @@ def in_list(value, val=None):
     return ""
 
 
-register.filter('in_list', in_list)
+register.filter("in_list", in_list)
 
 
 def app_enabled_filter(value):
@@ -52,7 +53,7 @@ def app_enabled_filter(value):
         return ""
 
 
-register.filter('app_enabled', app_enabled_filter)
+register.filter("app_enabled", app_enabled_filter)
 
 
 def as_json(value):
@@ -60,14 +61,14 @@ def as_json(value):
     return mark_safe(json_encode(value))
 
 
-register.filter('as_json', as_json)
+register.filter("as_json", as_json)
 
 
 def truncate_decimal(val, places=2):
     return trunc_decimal(val, places)
 
 
-register.filter('truncate_decimal', truncate_decimal)
+register.filter("truncate_decimal", truncate_decimal)
 
 
 def tag_attr(obj, arg1):
@@ -76,7 +77,7 @@ def tag_attr(obj, arg1):
     return obj
 
 
-register.filter('tag_attr', tag_attr)
+register.filter("tag_attr", tag_attr)
 
 
 def shuffle(l):
@@ -84,12 +85,13 @@ def shuffle(l):
     Returns the shuffled list.
     """
     import random
+
     l = list(l)
     random.shuffle(l)
     return l
 
 
-register.filter('shuffle', shuffle)
+register.filter("shuffle", shuffle)
 
 
 def remove_tags(value):
@@ -104,14 +106,14 @@ def remove_tags(value):
         >> remove_tags('<<> <test></test>')
             '<test></test>'
     """
-    i = value.find('<')
+    i = value.find("<")
     last = -1
     out = []
     if i == -1:
         return value
 
     while i > -1:
-        out.append(value[last + 1:i])
+        out.append(value[last + 1 : i])
         last = value.find(">", i)
         if last > -1:
             i = value.find("<", last)
@@ -119,7 +121,7 @@ def remove_tags(value):
             break
 
     if last > -1:
-        out.append(value[last + 1:])
+        out.append(value[last + 1 :])
 
     ret = " ".join(out)
     ret = ret.replace("  ", " ")
@@ -129,7 +131,7 @@ def remove_tags(value):
     return ret
 
 
-register.filter('remove_tags', remove_tags)
+register.filter("remove_tags", remove_tags)
 
 
 def lookup(value, key):
@@ -142,7 +144,7 @@ def lookup(value, key):
         return ""
 
 
-register.filter('lookup', lookup)
+register.filter("lookup", lookup)
 
 
 def is_mod(value, args=""):
@@ -157,7 +159,7 @@ def is_mod(value, args=""):
     return ""
 
 
-register.filter('is_mod', is_mod)
+register.filter("is_mod", is_mod)
 
 
 def more_than(value, args=""):
@@ -172,7 +174,7 @@ def more_than(value, args=""):
     return ""
 
 
-register.filter('more_than', more_than)
+register.filter("more_than", more_than)
 
 
 def product_upsell(product):
@@ -187,11 +189,12 @@ def product_upsell(product):
         # upsell probably not enabled
         pass
 
-    return {'goals': goals}
+    return {"goals": goals}
 
 
-register.inclusion_tag("upsell/product_upsell.html",
-                       takes_context=False)(product_upsell)
+register.inclusion_tag("upsell/product_upsell.html", takes_context=False)(
+    product_upsell
+)
 
 
 def satchmo_category_search_form(category=None):
@@ -199,51 +202,44 @@ def satchmo_category_search_form(category=None):
     Display the form for customer to specify category to search.
     """
     try:
-        url = reverse('satchmo_search')
+        url = reverse("satchmo_search")
     except NoReverseMatch:
         url = ""
-        log.warning('No url found for satchmo_search (OK if running tests)')
+        log.warning("No url found for satchmo_search (OK if running tests)")
 
     cats = Category.objects.root_categories()
-    return {
-        'satchmo_search_url': url,
-        'categories': cats,
-        'category': category,
-    }
+    return {"satchmo_search_url": url, "categories": cats, "category": category}
 
 
 register.inclusion_tag("_search.html", takes_context=False)(
-    satchmo_category_search_form)
+    satchmo_category_search_form
+)
 
 
 def satchmo_language_selection_form():
     """
     Display the set language form, if enabled in shop settings.
     """
-    enabled = config_value('LANGUAGE', 'ALLOW_TRANSLATION')
+    enabled = config_value("LANGUAGE", "ALLOW_TRANSLATION")
     languages = []
     if enabled:
         try:
-            url = reverse('satchmo_set_language')
-            languages = config_choice_values('LANGUAGE', 'LANGUAGES_AVAILABLE')
+            url = reverse("satchmo_set_language")
+            languages = config_choice_values("LANGUAGE", "LANGUAGES_AVAILABLE")
 
         except NoReverseMatch:
             url = ""
-            log.warning(
-                'No url found for satchmo_set_language (OK if running tests)')
+            log.warning("No url found for satchmo_set_language (OK if running tests)")
 
     else:
         url = ""
 
-    return {
-        'enabled': enabled,
-        'set_language_url': url,
-        'languages': languages,
-    }
+    return {"enabled": enabled, "set_language_url": url, "languages": languages}
 
 
-register.inclusion_tag("l10n/_language_selection_form.html",
-                       takes_context=False)(satchmo_language_selection_form)
+register.inclusion_tag("l10n/_language_selection_form.html", takes_context=False)(
+    satchmo_language_selection_form
+)
 
 
 def satchmo_search_form():
@@ -251,19 +247,15 @@ def satchmo_search_form():
     Display the search form.
     """
     try:
-        url = reverse('satchmo_search')
+        url = reverse("satchmo_search")
     except NoReverseMatch:
         url = ""
-        log.warning('No url found for satchmo_search (OK if running tests)')
+        log.warning("No url found for satchmo_search (OK if running tests)")
 
-    return {
-        'satchmo_search_url': url,
-        'categories': None
-    }
+    return {"satchmo_search_url": url, "categories": None}
 
 
-register.inclusion_tag("_search.html", takes_context=False)(
-    satchmo_search_form)
+register.inclusion_tag("_search.html", takes_context=False)(satchmo_search_form)
 
 
 def pounds(weight):
@@ -274,7 +266,7 @@ def pounds(weight):
     return int(weight)
 
 
-register.filter('pounds', pounds)
+register.filter("pounds", pounds)
 
 
 def ounces(weight):
@@ -282,4 +274,4 @@ def ounces(weight):
     return int(math.ceil(fract * 16))
 
 
-register.filter('ounces', ounces)
+register.filter("ounces", ounces)

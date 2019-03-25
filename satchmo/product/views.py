@@ -28,6 +28,7 @@ from satchmo.shop.views.utils import bad_or_missing
 from satchmo.utils.json import json_encode
 
 import logging
+
 log = logging.getLogger(__name__)
 
 NOTSET = object()
@@ -40,7 +41,7 @@ def find_product_template(product, producttypes=None, names_only=False):
         producttypes = product.get_subtypes()
 
     templates = ["product/detail_%s.html" % x.lower() for x in producttypes]
-    templates.append('base_product.html')
+    templates.append("base_product.html")
     if names_only:
         return templates
     return select_template(templates)
@@ -52,9 +53,7 @@ def optionids_from_post(configurableproduct, POST):
     chosen_options = []
     for opt_grp in configurableproduct.option_group.all():
         if str(opt_grp.id) in POST:
-            chosen_options.append(
-                '%s-%s' % (opt_grp.id, POST[str(opt_grp.id)])
-            )
+            chosen_options.append("%s-%s" % (opt_grp.id, POST[str(opt_grp.id)]))
     return sorted_tuple(chosen_options)
 
 
@@ -66,13 +65,11 @@ def category_index(request, template="product/category_index.html", root_only=Tr
     - root_only: If true, then only show root categories.
     """
     cats = Category.objects.root_categories()
-    ctx = {
-        'categorylist': cats
-    }
+    ctx = {"categorylist": cats}
     return render(request, template, ctx)
 
 
-def category_view(request, slug, parent_slugs='', template='base_category.html'):
+def category_view(request, slug, parent_slugs="", template="base_category.html"):
     """Display the category, its child categories, and its products.
 
     Parameters:
@@ -85,15 +82,17 @@ def category_view(request, slug, parent_slugs='', template='base_category.html')
         sale = find_best_auto_discount(products)
 
     except Category.DoesNotExist:
-        return bad_or_missing(request, _('The category you have requested does not exist.'))
+        return bad_or_missing(
+            request, _("The category you have requested does not exist.")
+        )
 
     child_categories = category.get_all_children()
 
     ctx = {
-        'category': category,
-        'child_categories': child_categories,
-        'sale': sale,
-        'products': products,
+        "category": category,
+        "child_categories": child_categories,
+        "sale": sale,
+        "products": products,
     }
     index_prerender.send(
         Product, request=request, context=ctx, category=category, object_list=products
@@ -109,22 +108,22 @@ def display_featured(limit=None, random=None):
     if random:
         random_display = random
     else:
-        random_display = config_value('SHOP', 'RANDOM_FEATURED')
+        random_display = config_value("SHOP", "RANDOM_FEATURED")
     if limit:
         num_to_display = limit
     else:
-        num_to_display = config_value('SHOP', 'NUM_DISPLAY')
+        num_to_display = config_value("SHOP", "NUM_DISPLAY")
     q = Product.objects.featured_by_site().filter(items_in_stock__gt=0)
     if not random_display:
         return q[:num_to_display]
     else:
-        return q.order_by('?')[:num_to_display]
+        return q.order_by("?")[:num_to_display]
 
 
 def get_configurable_product_options(request, id):
     """Used by admin views"""
     cp = get_object_or_404(ConfigurableProduct, product__id=id)
-    options = ''
+    options = ""
     for og in cp.option_group.all():
         for opt in og.option_set.all():
             options += '<option value="%s">%s</option>' % (opt.id, str(opt))
@@ -134,13 +133,22 @@ def get_configurable_product_options(request, id):
 
 
 @never_cache
-def get_product(request, category_slug, brand_slug, product_slug, selected_options=(),
-                include_tax=NOTSET, default_view_tax=NOTSET):
+def get_product(
+    request,
+    category_slug,
+    brand_slug,
+    product_slug,
+    selected_options=(),
+    include_tax=NOTSET,
+    default_view_tax=NOTSET,
+):
     """Basic product view"""
     try:
         product = Product.objects.get_by_site(active=True, slug=product_slug)
     except Product.DoesNotExist:
-        return bad_or_missing(request, _('The product you have requested does not exist.'))
+        return bad_or_missing(
+            request, _("The product you have requested does not exist.")
+        )
 
     try:
         category = Category.objects.get(slug=category_slug)
@@ -149,7 +157,7 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
     brand = Brand.objects.get(slug=brand_slug)
 
     if default_view_tax == NOTSET:
-        default_view_tax = config_value('TAX', 'DEFAULT_VIEW_TAX')
+        default_view_tax = config_value("TAX", "DEFAULT_VIEW_TAX")
 
     if default_view_tax:
         include_tax = True
@@ -162,7 +170,7 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
 
     subtype_names = product.get_subtypes()
 
-    if 'ProductVariation' in subtype_names:
+    if "ProductVariation" in subtype_names:
         selected_options = product.productvariation.unique_option_ids
         # Display the ConfigurableProduct that this ProductVariation belongs to.
         product = product.productvariation.parent.product
@@ -171,35 +179,36 @@ def get_product(request, category_slug, brand_slug, product_slug, selected_optio
     best_discount = find_best_auto_discount(product)
 
     context = {
-        'product': product,
-        'category': category,
-        'brand': brand,
-        'default_view_tax': default_view_tax,
-        'sale': best_discount,
+        "product": product,
+        "category": category,
+        "brand": brand,
+        "default_view_tax": default_view_tax,
+        "sale": best_discount,
     }
 
     # Get the template context from the Product.
     context = product.add_template_context(
         context=context,
-        request=request, selected_options=selected_options,
-        include_tax=include_tax, default_view_tax=default_view_tax
+        request=request,
+        selected_options=selected_options,
+        include_tax=include_tax,
+        default_view_tax=default_view_tax,
     )
 
     if include_tax:
         tax_amt = get_tax(request.user, product, 1)
-        context['product_tax'] = tax_amt
-        context['price_with_tax'] = product.unit_price + tax_amt
-        price = context['price_with_tax']
+        context["product_tax"] = tax_amt
+        context["price_with_tax"] = product.unit_price + tax_amt
+        price = context["price_with_tax"]
     else:
         price = product.unit_price
 
-    context['all_prices'] = [
+    context["all_prices"] = [
         {
             "currency": currency.iso_4217_code,
-            "price": convert_to_currency(price, currency.iso_4217_code)
+            "price": convert_to_currency(price, currency.iso_4217_code),
         }
-        for currency
-        in Currency.objects.filter(accepted=True)
+        for currency in Currency.objects.filter(accepted=True)
     ]
 
     template = find_product_template(product, producttypes=subtype_names)
@@ -213,21 +222,25 @@ def get_price(request, product_slug):
     try:
         product = Product.objects.get_by_site(active=True, slug=product_slug)
     except Product.DoesNotExist:
-        return http.HttpResponseNotFound(json_encode(('', _("not available"))), mimetype="text/javascript")
+        return http.HttpResponseNotFound(
+            json_encode(("", _("not available"))), mimetype="text/javascript"
+        )
 
     prod_slug = product.slug
 
-    if request.method == "POST" and 'quantity' in request.POST:
-        quantity = int(request.POST['quantity'])
+    if request.method == "POST" and "quantity" in request.POST:
+        quantity = int(request.POST["quantity"])
 
     currency_code = currency_for_request(request)
-    if 'ConfigurableProduct' in product.get_subtypes():
+    if "ConfigurableProduct" in product.get_subtypes():
         cp = product.configurableproduct
         chosen_options = optionids_from_post(cp, request.POST)
         pvp = cp.get_product_from_options(chosen_options)
 
         if not pvp:
-            return http.HttpResponse(json_encode(('', _("not available"))), mimetype="text/javascript")
+            return http.HttpResponse(
+                json_encode(("", _("not available"))), mimetype="text/javascript"
+            )
         prod_slug = pvp.slug
 
         price = money_format(pvp.get_qty_price(quantity), currency_code)
@@ -235,17 +248,18 @@ def get_price(request, product_slug):
         price = money_format(product.get_qty_price(quantity), currency_code)
 
     if not price:
-        return http.HttpResponse(json_encode(('', _("not available"))), mimetype="text/javascript")
+        return http.HttpResponse(
+            json_encode(("", _("not available"))), mimetype="text/javascript"
+        )
 
-    return http.HttpResponse(json_encode((prod_slug, price)), mimetype="text/javascript")
+    return http.HttpResponse(
+        json_encode((prod_slug, price)), mimetype="text/javascript"
+    )
 
 
 def get_price_detail(request, product_slug):
     """Get all price details for a product, returning the response encoded as JSON."""
-    results = {
-        "success": False,
-        "message": _("not available")
-    }
+    results = {"success": False, "message": _("not available")}
     price = None
 
     if request.method == "POST":
@@ -257,12 +271,12 @@ def get_price_detail(request, product_slug):
         product = Product.objects.get_by_site(active=True, slug=product_slug)
         found = True
 
-        if 'quantity' in reqdata:
-            quantity = int(reqdata['quantity'])
+        if "quantity" in reqdata:
+            quantity = int(reqdata["quantity"])
         else:
             quantity = 1
 
-        if 'ConfigurableProduct' in product.get_subtypes():
+        if "ConfigurableProduct" in product.get_subtypes():
             cp = product.configurableproduct
             chosen_options = optionids_from_post(cp, reqdata)
             product = cp.get_product_from_options(chosen_options)
@@ -273,17 +287,17 @@ def get_price_detail(request, product_slug):
             price_with_tax = price + base_tax
 
             currency_code = currency_for_request(request)
-            results['slug'] = product.slug
-            results['currency_price'] = money_format(price, currency_code)
-            results['price'] = float(price)
-            results['tax'] = float(base_tax)
-            results['currency_tax'] = money_format(base_tax, currency_code)
-            results['currency_price_with_tax'] = money_format(
+            results["slug"] = product.slug
+            results["currency_price"] = money_format(price, currency_code)
+            results["price"] = float(price)
+            results["tax"] = float(base_tax)
+            results["currency_tax"] = money_format(base_tax, currency_code)
+            results["currency_price_with_tax"] = money_format(
                 price_with_tax, currency_code
             )
-            results['price_with_tax'] = float(price_with_tax)
-            results['success'] = True
-            results['message'] = ""
+            results["price_with_tax"] = float(price_with_tax)
+            results["success"] = True
+            results["message"] = ""
 
     except Product.DoesNotExist:
         found = False

@@ -15,34 +15,44 @@ from satchmo.product.models import Product
 log = logging.getLogger(__name__)
 
 UPSELL_CHOICES = (
-    ('CHECKBOX_1_FALSE', _('Checkbox to add 1')),
-    ('CHECKBOX_1_TRUE', _('Checkbox to add 1, checked by default')),
-    ('CHECKBOX_MATCH_FALSE', _('Checkbox to match quantity')),
-    ('CHECKBOX_MATCH_TRUE', _('Checkbox to match quantity, checked by default')),
-    ('FORM', _('Form with 0 quantity')),
+    ("CHECKBOX_1_FALSE", _("Checkbox to add 1")),
+    ("CHECKBOX_1_TRUE", _("Checkbox to add 1, checked by default")),
+    ("CHECKBOX_MATCH_FALSE", _("Checkbox to match quantity")),
+    ("CHECKBOX_MATCH_TRUE", _("Checkbox to match quantity, checked by default")),
+    ("FORM", _("Form with 0 quantity")),
 )
 
 
 class Upsell(models.Model, CachedObjectMixin):
 
-    target = models.ManyToManyField(Product, verbose_name=_('Target Product'),
-                                    related_name="upselltargets",
-                                    help_text=_("The products for which you want to show this goal product as an Upsell."))
+    target = models.ManyToManyField(
+        Product,
+        verbose_name=_("Target Product"),
+        related_name="upselltargets",
+        help_text=_(
+            "The products for which you want to show this goal product as an Upsell."
+        ),
+    )
 
     goal = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        verbose_name=_('Goal Product'),
-        related_name="upsellgoals"
+        verbose_name=_("Goal Product"),
+        related_name="upsellgoals",
     )
 
     create_date = models.DateField(_("Creation Date"))
 
-    style = models.CharField(_("Upsell Style"), choices=UPSELL_CHOICES,
-                             default='CHECKBOX_1_FALSE', max_length=20)
+    style = models.CharField(
+        _("Upsell Style"),
+        choices=UPSELL_CHOICES,
+        default="CHECKBOX_1_FALSE",
+        max_length=20,
+    )
 
-    notes = models.TextField(_('Notes'), blank=True, null=True,
-                             help_text=_("Internal notes"))
+    notes = models.TextField(
+        _("Notes"), blank=True, null=True, help_text=_("Internal notes")
+    )
 
     def _description(self):
         """Get the description, looking up by language code, falling back intelligently.
@@ -67,25 +77,30 @@ class Upsell(models.Model, CachedObjectMixin):
         ct = c.count()
 
         if not c or ct == 0:
-            pos = language_code.find('-')
+            pos = language_code.find("-")
             if pos > -1:
                 short_code = language_code[:pos]
                 log.debug(
-                    "%s: Trying to find root language content for: [%s]", self, short_code)
+                    "%s: Trying to find root language content for: [%s]",
+                    self,
+                    short_code,
+                )
                 c = self.translations.filter(languagecode__exact=short_code)
                 ct = c.count()
                 if ct > 0:
                     log.debug(
-                        "%s: Found root language content for: [%s]", self, short_code)
+                        "%s: Found root language content for: [%s]", self, short_code
+                    )
 
         if not c or ct == 0:
-            #log.debug("Trying to find default language content for: %s", self)
+            # log.debug("Trying to find default language content for: %s", self)
             c = self.translations.filter(
-                languagecode__istartswith=settings.LANGUAGE_CODE)
+                languagecode__istartswith=settings.LANGUAGE_CODE
+            )
             ct = c.count()
 
         if not c or ct == 0:
-            #log.debug("Trying to find *any* language content for: %s", self)
+            # log.debug("Trying to find *any* language content for: %s", self)
             c = self.translations.all()
             ct = c.count()
 
@@ -105,11 +120,11 @@ class Upsell(models.Model, CachedObjectMixin):
     def is_qty_one(self):
         """Returns true if this style has a '1' in the center field"""
         parts = self.style.split("_")
-        return parts[1] == '1'
+        return parts[1] == "1"
 
     def is_checked(self):
         """Returns true if this style ends with TRUE"""
-        return self.style.endswith('TRUE')
+        return self.style.endswith("TRUE")
 
     def __str__(self):
         return "Upsell for %s" % self.goal
@@ -122,21 +137,21 @@ class Upsell(models.Model, CachedObjectMixin):
         return self
 
     class Meta:
-        ordering = ('goal',)
+        ordering = ("goal",)
 
 
 class UpsellTranslation(models.Model):
 
     menu = models.ForeignKey(
-        Upsell,
-        on_delete=models.CASCADE,
-        related_name="translations"
+        Upsell, on_delete=models.CASCADE, related_name="translations"
     )
     languagecode = models.CharField(
-        _('language'), max_length=10,
-        choices=settings.LANGUAGES, default=settings.LANGUAGES[0][0]
+        _("language"),
+        max_length=10,
+        choices=settings.LANGUAGES,
+        default=settings.LANGUAGES[0][0],
     )
-    description = models.TextField(_('Description'), blank=True)
+    description = models.TextField(_("Description"), blank=True)
 
     class Meta:
-        ordering = ('languagecode', )
+        ordering = ("languagecode",)

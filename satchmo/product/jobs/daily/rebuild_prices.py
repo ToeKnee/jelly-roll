@@ -1,6 +1,7 @@
 from django_extensions.management.jobs import DailyJob
 from satchmo.product.models import ProductPriceLookup
 
+
 class Job(DailyJob):
     help = "Update the pricing lookup table."
 

@@ -2,6 +2,7 @@ from django import template
 from satchmo.configuration.functions import config_value
 
 import logging
+
 log = logging.getLogger(__name__)
 
 register = template.Library()
@@ -25,7 +26,7 @@ def force_space(value, chars=40):
             out.append(value[start:end])
             looping = end < len(value)
 
-    return ' '.join(out)
+    return " ".join(out)
 
 
 def break_at(value, chars=40):
@@ -37,7 +38,7 @@ def break_at(value, chars=40):
         return value
     else:
         out = []
-        line = value.split(' ')
+        line = value.split(" ")
         for word in line:
             if len(word) > chars:
                 out.append(force_space(word, chars))
@@ -47,17 +48,19 @@ def break_at(value, chars=40):
     return " ".join(out)
 
 
-register.filter('break_at', break_at)
+register.filter("break_at", break_at)
 
 
 def config_boolean(option):
     """Looks up the configuration option, returning true or false."""
-    args = option.split('.')
+    args = option.split(".")
     try:
         val = config_value(*args)
     except:
         log.warn(
-            'config_boolean tag: Tried to look up config setting "%s", got SettingNotSet, returning False', option)
+            'config_boolean tag: Tried to look up config setting "%s", got SettingNotSet, returning False',
+            option,
+        )
         val = False
     if val:
         return "true"
@@ -65,4 +68,4 @@ def config_boolean(option):
         return ""
 
 
-register.filter('config_boolean', config_boolean)
+register.filter("config_boolean", config_boolean)

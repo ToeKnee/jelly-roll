@@ -11,26 +11,22 @@ class DeclinedTest(TestCase):
         self.factory = RequestFactory()
 
     def test_order_unavailable(self):
-        request = self.factory.get('/shop/checkout/ingenico/declined/')
+        request = self.factory.get("/shop/checkout/ingenico/declined/")
         request.session = {}
 
         response = declined(request)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response._headers['location'],
-            ('Location', '{}/'.format(
-                getattr(settings, "SHOP_BASE", "/store")
-            ))
+            response._headers["location"],
+            ("Location", "{}/".format(getattr(settings, "SHOP_BASE", "/store"))),
         )
 
     def test_order_available(self):
         order = TestOrderFactory()
 
-        request = self.factory.get('/shop/checkout/ingenico/declined/')
+        request = self.factory.get("/shop/checkout/ingenico/declined/")
         request.user = order.contact.user
-        request.session = {
-            "orderID": order.id,
-        }
+        request.session = {"orderID": order.id}
 
         response = declined(request)
         self.assertEqual(response.status_code, 200)

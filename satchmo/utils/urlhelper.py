@@ -10,8 +10,6 @@ def external_url(url):
 
     site = Site.objects.get_current()
     full_url = "{protocol}{domain}{url}".format(
-        protocol=protocol,
-        domain=site.domain,
-        url=url,
+        protocol=protocol, domain=site.domain, url=url
     )
     return full_url

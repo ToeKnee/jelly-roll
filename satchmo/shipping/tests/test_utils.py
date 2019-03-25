@@ -19,7 +19,6 @@ from satchmo.shop.models import Cart, CartItem
 
 
 class UpdateShippingTest(TransactionTestCase):
-
     @mock.patch("satchmo.shipping.utils.shipping_method_by_key")
     def test_updates_from_shipper(self, mock_shipping_method_by_key):
         currency = EURCurrencyFactory(primary=True)
@@ -27,9 +26,7 @@ class UpdateShippingTest(TransactionTestCase):
         cart = Cart.objects.create(currency=currency)
         for item in order.orderitem_set.all():
             CartItem.objects.create(
-                cart=cart,
-                product=item.product,
-                quantity=item.quantity,
+                cart=cart, product=item.product, quantity=item.quantity
             )
         tier = WeightTierFactory()
 
@@ -51,9 +48,7 @@ class UpdateShippingTest(TransactionTestCase):
         cart = Cart.objects.create()
         for item in order.orderitem_set.all():
             CartItem.objects.create(
-                cart=cart,
-                product=item.product,
-                quantity=item.quantity,
+                cart=cart, product=item.product, quantity=item.quantity
             )
 
         update_shipping(order, "per", order.contact, cart)
@@ -68,11 +63,7 @@ class UpdateShippingTest(TransactionTestCase):
         self.assertEqual(order.estimated_delivery_max_days, 25)
 
     def test_converts_currency(self):
-        Setting.objects.create(
-            group='CURRENCY',
-            key='BUFFER',
-            value=Decimal("0.00"),
-        )
+        Setting.objects.create(group="CURRENCY", key="BUFFER", value=Decimal("0.00"))
         EURCurrencyFactory(primary=True)
         currency = GBPCurrencyFactory()
         currency.accepted = True
@@ -82,14 +73,9 @@ class UpdateShippingTest(TransactionTestCase):
         cart = Cart.objects.create(currency=currency)
         for item in order.orderitem_set.all():
             CartItem.objects.create(
-                cart=cart,
-                product=item.product,
-                quantity=item.quantity,
+                cart=cart, product=item.product, quantity=item.quantity
             )
-        ExchangeRateFactory(
-            rate=Decimal("0.5"),
-            currency=currency
-        )
+        ExchangeRateFactory(rate=Decimal("0.5"), currency=currency)
 
         update_shipping(order, "per", order.contact, cart)
 

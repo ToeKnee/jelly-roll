@@ -13,7 +13,7 @@ from .models import Currency, ExchangeRate
 class CurrencyFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Currency
-        django_get_or_create = ('iso_4217_code',)
+        django_get_or_create = ("iso_4217_code",)
 
     iso_4217_code = "EUR"
     name = "Euro"
@@ -38,11 +38,25 @@ class EURCurrencyFactory(CurrencyFactory):
                 self.countries.add(country)
         else:
             countries = [
-                "Austria", "Belgium", "Cyprus", "Estonia",
-                "Finland", "France", "Germany", "Greece",
-                "Ireland", "Italy", "Latvia", "Lithuania",
-                "Luxembourg", "Malta", "Netherlands", "Portugal",
-                "Slovakia", "Slovenia", "Spain"
+                "Austria",
+                "Belgium",
+                "Cyprus",
+                "Estonia",
+                "Finland",
+                "France",
+                "Germany",
+                "Greece",
+                "Ireland",
+                "Italy",
+                "Latvia",
+                "Lithuania",
+                "Luxembourg",
+                "Malta",
+                "Netherlands",
+                "Portugal",
+                "Slovakia",
+                "Slovenia",
+                "Spain",
             ]
 
             self.countries.set(Country.objects.filter(printable_name__in=countries))
@@ -66,9 +80,7 @@ class GBPCurrencyFactory(CurrencyFactory):
             for country in extracted:
                 self.countries.add(country)
         else:
-            countries = [
-                "United Kingdom", "Guernsey", "Isle of Man", "Jersey"
-            ]
+            countries = ["United Kingdom", "Guernsey", "Isle of Man", "Jersey"]
 
             self.countries.set(Country.objects.filter(printable_name__in=countries))
 
@@ -96,9 +108,14 @@ class USDCurrencyFactory(CurrencyFactory):
         else:
             countries = [
                 "United States of America",
-                "Timor-Leste", "Ecuador", "El Salvador", "Marshall Islands",
-                "Micronesia, Federated States of", "Palau",
-                "Panama", "Zimbabwe"
+                "Timor-Leste",
+                "Ecuador",
+                "El Salvador",
+                "Marshall Islands",
+                "Micronesia, Federated States of",
+                "Palau",
+                "Panama",
+                "Zimbabwe",
             ]
 
             self.countries.set(Country.objects.filter(printable_name__in=countries))
@@ -110,5 +127,7 @@ class ExchangeRateFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExchangeRate
 
-    currency = factory.LazyAttribute(lambda a: Currency.objects.get(iso_4217_code="GBP"))
+    currency = factory.LazyAttribute(
+        lambda a: Currency.objects.get(iso_4217_code="GBP")
+    )
     rate = Decimal("0.5")

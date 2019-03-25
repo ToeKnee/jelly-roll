@@ -12,4 +12,4 @@ class ConfigTest(TestCase):
     def test_base_url(self):
         ShopConfigFactory()
         config = Config.objects.get_current()
-        self.assertEqual(config.base_url, 'http://example.com')
+        self.assertEqual(config.base_url, "http://example.com")

@@ -34,7 +34,7 @@ class SignalTest(TestCase):
             p = ProductFactory()
             cart.add_item(p, 1)
             TestOrderFactory()
-            self.fail('Should have thrown a CartAddProhibited error')
+            self.fail("Should have thrown a CartAddProhibited error")
         except CartAddProhibited:
             pass
 

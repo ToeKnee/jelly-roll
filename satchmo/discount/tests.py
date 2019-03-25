@@ -14,13 +14,23 @@ from .models import Discount
 
 
 class DiscountTest(TestCase):
-
     def setUp(self):
         self.site = Site.objects.get_current()
         start = datetime.date(2006, 10, 1)
         end = datetime.date(5000, 10, 1)
-        self.discount = Discount.objects.create(description="New Sale", code="BUYME", amount="5.00", allowedUses=10,
-                                                numUses=0, minOrder=5, active=True, startDate=start, endDate=end, freeShipping=False, site=self.site)
+        self.discount = Discount.objects.create(
+            description="New Sale",
+            code="BUYME",
+            amount="5.00",
+            allowedUses=10,
+            numUses=0,
+            minOrder=5,
+            active=True,
+            startDate=start,
+            endDate=end,
+            freeShipping=False,
+            site=self.site,
+        )
 
     def tearDown(self):
         cache_delete()
@@ -29,7 +39,7 @@ class DiscountTest(TestCase):
 
         v = self.discount.isValid()
         self.assertTrue(v[0])
-        self.assertEqual(v[1], 'Valid.')
+        self.assertEqual(v[1], "Valid.")
 
     def testFutureDate(self):
         """Test a future date for discount start"""
@@ -39,7 +49,7 @@ class DiscountTest(TestCase):
         self.discount.isValid()
         v = self.discount.isValid()
         self.assertFalse(v[0])
-        self.assertEqual(v[1], 'This coupon is not active yet.')
+        self.assertEqual(v[1], "This coupon is not active yet.")
 
     def testPastDate(self):
         """Test an expired discount"""
@@ -51,7 +61,7 @@ class DiscountTest(TestCase):
         self.discount.save()
         v = self.discount.isValid()
         self.assertFalse(v[0])
-        self.assertEqual(v[1], 'This coupon has expired.')
+        self.assertEqual(v[1], "This coupon has expired.")
 
     def testNotActive(self):
         """Not active should always be invalid."""
@@ -61,11 +71,10 @@ class DiscountTest(TestCase):
         self.discount.save()
         v = self.discount.isValid()
         self.assertFalse(v[0], False)
-        self.assertEqual(v[1], 'This coupon is disabled.')
+        self.assertEqual(v[1], "This coupon is disabled.")
 
 
 class CalcFunctionTest(TestCase):
-
     def testEvenSplit1(self):
         """Simple split test"""
         d = {
@@ -127,11 +136,7 @@ class CalcFunctionTest(TestCase):
         self.assertEqual(s[4], Decimal("6.00"))
 
     def testThirds(self):
-        d = {
-            1: Decimal("10.00"),
-            2: Decimal("10.00"),
-            3: Decimal("10.00"),
-        }
+        d = {1: Decimal("10.00"), 2: Decimal("10.00"), 3: Decimal("10.00")}
 
         s = apply_even_split(d, Decimal("10.00"))
         self.assertEqual(s[1], Decimal("3.33"))
@@ -139,11 +144,7 @@ class CalcFunctionTest(TestCase):
         self.assertEqual(s[3], Decimal("3.33"))
 
     def testThirdsUneven(self):
-        d = {
-            1: Decimal("10.00"),
-            2: Decimal("10.00"),
-            3: Decimal("3.00"),
-        }
+        d = {1: Decimal("10.00"), 2: Decimal("10.00"), 3: Decimal("3.00")}
 
         s = apply_even_split(d, Decimal("10.00"))
         self.assertEqual(s[1], Decimal("3.50"))
@@ -151,11 +152,7 @@ class CalcFunctionTest(TestCase):
         self.assertEqual(s[3], Decimal("3.00"))
 
     def testPercentage1(self):
-        d = {
-            1: Decimal("10.00"),
-            2: Decimal("10.00"),
-            3: Decimal("10.00"),
-        }
+        d = {1: Decimal("10.00"), 2: Decimal("10.00"), 3: Decimal("10.00")}
 
         s = apply_percentage(d, Decimal("10.00"))
         self.assertEqual(s[1], Decimal("1.00"))
@@ -164,40 +161,53 @@ class CalcFunctionTest(TestCase):
 
 
 class DiscountAmountTest(TestCase):
-    fixtures = ['l10n_data.xml', 'test_discount.yaml']
+    fixtures = ["l10n_data.xml", "test_discount.yaml"]
 
     def setUp(self):
-        self.US = Country.objects.get(iso2_code__iexact='US')
+        self.US = Country.objects.get(iso2_code__iexact="US")
         self.site = Site.objects.get_current()
-        tax = config_get('TAX', 'MODULE')
-        tax.update('satchmo.tax.modules.no')
-        c = Contact(first_name="Jim", last_name="Tester",
-                    role="Customer", email="Jim@JimWorld.com")
+        tax = config_get("TAX", "MODULE")
+        tax.update("satchmo.tax.modules.no")
+        c = Contact(
+            first_name="Jim",
+            last_name="Tester",
+            role="Customer",
+            email="Jim@JimWorld.com",
+        )
         c.save()
-        ad = AddressBook(contact=c, description="home",
-                         street1="test", state="OR", city="Portland",
-                         country=self.US, is_default_shipping=True,
-                         is_default_billing=True)
+        ad = AddressBook(
+            contact=c,
+            description="home",
+            street1="test",
+            state="OR",
+            city="Portland",
+            country=self.US,
+            is_default_shipping=True,
+            is_default_billing=True,
+        )
         ad.save()
-        o = Order(contact=c, shipping_cost=Decimal('6.00'), site=self.site)
+        o = Order(contact=c, shipping_cost=Decimal("6.00"), site=self.site)
         o.save()
-        small = Order(contact=c, shipping_cost=Decimal('6.00'), site=self.site)
+        small = Order(contact=c, shipping_cost=Decimal("6.00"), site=self.site)
         small.save()
 
-        p = Product.objects.get(slug='neat-book-soft')
+        p = Product.objects.get(slug="neat-book-soft")
         price = p.unit_price
-        item1 = OrderItem(order=o, product=p, quantity=1,
-                          unit_price=price, line_item_price=price)
+        item1 = OrderItem(
+            order=o, product=p, quantity=1, unit_price=price, line_item_price=price
+        )
         item1.save()
 
-        item1s = OrderItem(order=small, product=p, quantity=1,
-                           unit_price=price, line_item_price=price)
+        item1s = OrderItem(
+            order=small, product=p, quantity=1, unit_price=price, line_item_price=price
+        )
         item1s.save()
 
-        p = Product.objects.get(slug='neat-book-hard')
+        p = Product.objects.get(slug="neat-book-hard")
         price = p.unit_price
-        item2 = OrderItem(order=o, product=p, quantity=1,
-                          unit_price=price, line_item_price=price)
+        item2 = OrderItem(
+            order=o, product=p, quantity=1, unit_price=price, line_item_price=price
+        )
         item2.save()
         self.order = o
         self.small = small
@@ -214,11 +224,11 @@ class DiscountAmountTest(TestCase):
         sub_total = self.order.sub_total
         discount = self.order.discount
 
-        self.assertEqual(price, Decimal('17.00'))
-        self.assertEqual(sub_total, Decimal('11.00'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('6.00'))
-        self.assertEqual(discount, Decimal('0.00'))
+        self.assertEqual(price, Decimal("17.00"))
+        self.assertEqual(sub_total, Decimal("11.00"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("6.00"))
+        self.assertEqual(discount, Decimal("0.00"))
 
         self.small.recalculate_total(save=False)
         price = self.small.total
@@ -227,11 +237,11 @@ class DiscountAmountTest(TestCase):
         sub_total = self.small.sub_total
         discount = self.small.discount
 
-        self.assertEqual(price, Decimal('12.00'))
-        self.assertEqual(sub_total, Decimal('6.00'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('6.00'))
-        self.assertEqual(discount, Decimal('0.00'))
+        self.assertEqual(price, Decimal("12.00"))
+        self.assertEqual(sub_total, Decimal("6.00"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("6.00"))
+        self.assertEqual(discount, Decimal("0.00"))
 
     def testApplyAmountSimple(self):
         """Check straight amount discount."""
@@ -243,11 +253,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.order.shipping_sub_total
         discount = self.order.discount
 
-        self.assertEqual(sub_total, Decimal('11.00'))
-        self.assertEqual(price, Decimal('7.00'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('6.00'))
-        self.assertEqual(discount, Decimal('10.00'))
+        self.assertEqual(sub_total, Decimal("11.00"))
+        self.assertEqual(price, Decimal("7.00"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("6.00"))
+        self.assertEqual(discount, Decimal("10.00"))
 
     def testApplySmallAmountSimple(self):
         """Check small straight amount discount."""
@@ -259,11 +269,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.small.shipping_sub_total
         discount = self.small.discount
 
-        self.assertEqual(sub_total, Decimal('6.00'))
-        self.assertEqual(price, Decimal('6.00'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('6.00'))
-        self.assertEqual(discount, Decimal('6.00'))
+        self.assertEqual(sub_total, Decimal("6.00"))
+        self.assertEqual(price, Decimal("6.00"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("6.00"))
+        self.assertEqual(discount, Decimal("6.00"))
 
     def testApplyAmountShip(self):
         """Check amount discount w/ship."""
@@ -275,11 +285,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.order.shipping_sub_total
         discount = self.order.discount
 
-        self.assertEqual(sub_total, Decimal('11.00'))
-        self.assertEqual(price, Decimal('7.01'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('2.67'))
-        self.assertEqual(discount, Decimal('9.99'))
+        self.assertEqual(sub_total, Decimal("11.00"))
+        self.assertEqual(price, Decimal("7.01"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("2.67"))
+        self.assertEqual(discount, Decimal("9.99"))
 
     def testApplySmallAmountShip(self):
         """Check small amount discount w/ship."""
@@ -291,11 +301,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.small.shipping_sub_total
         discount = self.small.discount
 
-        self.assertEqual(sub_total, Decimal('6.00'))
-        self.assertEqual(price, Decimal('2.00'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('1.00'))
-        self.assertEqual(discount, Decimal('10.00'))
+        self.assertEqual(sub_total, Decimal("6.00"))
+        self.assertEqual(price, Decimal("2.00"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("1.00"))
+        self.assertEqual(discount, Decimal("10.00"))
 
     def testApplyAmountFreeShip(self):
         """Check amount discount w/free ship."""
@@ -307,11 +317,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.order.shipping_sub_total
         discount = self.order.discount
 
-        self.assertEqual(sub_total, Decimal('11.00'))
-        self.assertEqual(price, Decimal('1.00'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('0.00'))
-        self.assertEqual(discount, Decimal('16.00'))
+        self.assertEqual(sub_total, Decimal("11.00"))
+        self.assertEqual(price, Decimal("1.00"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("0.00"))
+        self.assertEqual(discount, Decimal("16.00"))
 
     def testApplySmallAmountFreeShip(self):
         """Check amount discount w/free ship."""
@@ -323,12 +333,12 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.small.shipping_sub_total
         discount = self.small.discount
 
-        self.assertEqual(sub_total, Decimal('6.00'))
-        self.assertEqual(price, Decimal('0.00'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(price, Decimal('0.00'))
-        self.assertEqual(shiptotal, Decimal('0.00'))
-        self.assertEqual(discount, Decimal('12.00'))
+        self.assertEqual(sub_total, Decimal("6.00"))
+        self.assertEqual(price, Decimal("0.00"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(price, Decimal("0.00"))
+        self.assertEqual(shiptotal, Decimal("0.00"))
+        self.assertEqual(discount, Decimal("12.00"))
 
     def testApplyPercentSimple(self):
         self.order.discount_code = "test20"
@@ -339,11 +349,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.order.shipping_sub_total
         discount = self.order.discount
 
-        self.assertEqual(sub_total, Decimal('11.00'))
-        self.assertEqual(price, Decimal('14.80'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('6.00'))
-        self.assertEqual(discount, Decimal('2.20'))
+        self.assertEqual(sub_total, Decimal("11.00"))
+        self.assertEqual(price, Decimal("14.80"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("6.00"))
+        self.assertEqual(discount, Decimal("2.20"))
 
     def testApplySmallPercentSimple(self):
         self.small.discount_code = "test20"
@@ -354,11 +364,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.small.shipping_sub_total
         discount = self.small.discount
 
-        self.assertEqual(sub_total, Decimal('6.00'))
-        self.assertEqual(price, Decimal('10.80'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('6.00'))
-        self.assertEqual(discount, Decimal('1.20'))
+        self.assertEqual(sub_total, Decimal("6.00"))
+        self.assertEqual(price, Decimal("10.80"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("6.00"))
+        self.assertEqual(discount, Decimal("1.20"))
 
     def testApplyPercentShip(self):
         self.order.discount_code = "test20ship"
@@ -369,11 +379,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.order.shipping_sub_total
         discount = self.order.discount
 
-        self.assertEqual(sub_total, Decimal('11.00'))
-        self.assertEqual(price, Decimal('13.60'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('4.80'))
-        self.assertEqual(discount, Decimal('3.40'))
+        self.assertEqual(sub_total, Decimal("11.00"))
+        self.assertEqual(price, Decimal("13.60"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("4.80"))
+        self.assertEqual(discount, Decimal("3.40"))
 
     def testApplySmallPercentShip(self):
         self.small.discount_code = "test20ship"
@@ -384,11 +394,11 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.small.shipping_sub_total
         discount = self.small.discount
 
-        self.assertEqual(sub_total, Decimal('6.00'))
-        self.assertEqual(price, Decimal('9.60'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('4.80'))
-        self.assertEqual(discount, Decimal('2.40'))
+        self.assertEqual(sub_total, Decimal("6.00"))
+        self.assertEqual(price, Decimal("9.60"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("4.80"))
+        self.assertEqual(discount, Decimal("2.40"))
 
     def testApplySmallPercentFreeShip(self):
         self.small.discount_code = "test20freeship"
@@ -399,8 +409,8 @@ class DiscountAmountTest(TestCase):
         shiptotal = self.small.shipping_sub_total
         discount = self.small.discount
 
-        self.assertEqual(sub_total, Decimal('6.00'))
-        self.assertEqual(price, Decimal('4.80'))
-        self.assertEqual(shipcost, Decimal('6.00'))
-        self.assertEqual(shiptotal, Decimal('0.00'))
-        self.assertEqual(discount, Decimal('7.20'))
+        self.assertEqual(sub_total, Decimal("6.00"))
+        self.assertEqual(price, Decimal("4.80"))
+        self.assertEqual(shipcost, Decimal("6.00"))
+        self.assertEqual(shiptotal, Decimal("0.00"))
+        self.assertEqual(discount, Decimal("7.20"))

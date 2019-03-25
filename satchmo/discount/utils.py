@@ -6,12 +6,15 @@ from satchmo.discount.models import Discount, NullDiscount
 from satchmo.product.models import Product
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 def calc_by_percentage(price, percentage):
     if percentage > 1:
-        log.warn("Correcting discount percentage, should be less than 1, is %s", percentage)
+        log.warn(
+            "Correcting discount percentage, should be less than 1, is %s", percentage
+        )
         percentage = percentage / 100
 
     work = price * (1 - percentage)
@@ -40,12 +43,9 @@ def find_auto_discounts(products):
         products = [products]
     today = datetime.date.today()
     discs = Discount.objects.filter(
-        automatic=True,
-        active=True,
-        startDate__lte=today,
-        endDate__gt=today
+        automatic=True, active=True, startDate__lte=today, endDate__gt=today
     )
-    return discs.filter(validProducts__in=products).order_by('-percentage')
+    return discs.filter(validProducts__in=products).order_by("-percentage")
 
 
 def find_best_auto_discount(product):

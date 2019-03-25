@@ -12,7 +12,7 @@ from satchmo.utils.dynamic import lookup_url
 from .forms import GiftCertCodeForm, GiftCertPayShipForm
 from .models import GiftCertificate, GIFTCODE_KEY
 
-gc = config_get_group('PAYMENT_GIFTCERTIFICATE')
+gc = config_get_group("PAYMENT_GIFTCERTIFICATE")
 
 
 def giftcert_pay_ship_process_form(request, contact, working_cart, payment_module):
@@ -24,13 +24,13 @@ def giftcert_pay_ship_process_form(request, contact, working_cart, payment_modul
 
             # Create a new order.
             newOrder = get_or_create_order(request, working_cart, contact, data)
-            newOrder.add_variable(GIFTCODE_KEY, data['giftcode'])
+            newOrder.add_variable(GIFTCODE_KEY, data["giftcode"])
 
-            request.session['orderID'] = newOrder.id
+            request.session["orderID"] = newOrder.id
 
             url = None
             if not url:
-                url = lookup_url(payment_module, 'satchmo_checkout-step3')
+                url = lookup_url(payment_module, "satchmo_checkout-step3")
 
             return (True, http.HttpResponseRedirect(url))
     else:
@@ -40,34 +40,36 @@ def giftcert_pay_ship_process_form(request, contact, working_cart, payment_modul
 
 
 def pay_ship_info(request):
-    return payship.base_pay_ship_info(request,
-                                      gc,
-                                      giftcert_pay_ship_process_form,
-                                      template="checkout/giftcertificate/pay_ship.html")
+    return payship.base_pay_ship_info(
+        request,
+        gc,
+        giftcert_pay_ship_process_form,
+        template="checkout/giftcertificate/pay_ship.html",
+    )
 
 
 def confirm_info(request, template="checkout/giftcertificate/confirm.html"):
     try:
-        order = Order.objects.get(id=request.session['orderID'])
+        order = Order.objects.get(id=request.session["orderID"])
         giftcert = GiftCertificate.objects.from_order(order)
     except (Order.DoesNotExist, GiftCertificate.DoesNotExist, KeyError):
         giftcert = None
 
     controller = confirm.ConfirmController(request, gc)
-    controller.templates['CONFIRM'] = template
-    controller.extra_context = {'giftcert': giftcert}
+    controller.templates["CONFIRM"] = template
+    controller.extra_context = {"giftcert": giftcert}
     controller.confirm()
     return controller.response
 
 
 def check_balance(request):
     if request.method == "GET":
-        code = request.GET.get('code', '')
+        code = request.GET.get("code", "")
         if code:
             try:
-                gc = GiftCertificate.objects.get(code=code,
-                                                 value=True,
-                                                 site=Site.objects.get_current())
+                gc = GiftCertificate.objects.get(
+                    code=code, value=True, site=Site.objects.get_current()
+                )
                 success = True
                 balance = gc.balance
             except GiftCertificate.DoesNotExist:
@@ -76,15 +78,12 @@ def check_balance(request):
             success = False
 
         ctx = {
-            'code': code,
-            'success': success,
-            'balance': balance,
-            'giftcertificate': gc
+            "code": code,
+            "success": success,
+            "balance": balance,
+            "giftcertificate": gc,
         }
     else:
         form = GiftCertCodeForm()
-        ctx = {
-            'code': '',
-            'form': form
-        }
-    return render(request, ctx, 'giftcertificate/balance.html')
+        ctx = {"code": "", "form": form}
+    return render(request, ctx, "giftcertificate/balance.html")

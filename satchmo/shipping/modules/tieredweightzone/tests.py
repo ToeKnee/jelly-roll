@@ -2,10 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.test import TestCase
-from satchmo.shipping.modules.tieredweightzone.models import (
-    Carrier,
-    WeightTier,
-)
+from satchmo.shipping.modules.tieredweightzone.models import Carrier, WeightTier
 
 
 def make_tiers(carrier, prices, expires=None):
@@ -14,7 +11,7 @@ def make_tiers(carrier, prices, expires=None):
             carrier=carrier,
             min_total=Decimal("%i.00" % min_total),
             price=Decimal("%i.00" % price),
-            expires=expires
+            expires=expires,
         )
         t.save()
 
@@ -25,11 +22,7 @@ class TieredCarrierSimpleTest(TestCase):
     def testCreate(self):
         c = Carrier(key="test", active=True)
         c.save()
-        t = WeightTier(
-            carrier=c,
-            min_total=Decimal("0.00"),
-            price=Decimal("10.00"),
-        )
+        t = WeightTier(carrier=c, min_total=Decimal("0.00"), price=Decimal("10.00"))
         t.save()
 
         self.assertEqual(c.price(Decimal("0.00")), Decimal("10.00"))
@@ -42,9 +35,7 @@ class TieredCarrierPricingTest(TestCase):
         self.carrier = Carrier(name="pricing", active=True)
         self.carrier.save()
         t = WeightTier(
-            carrier=self.carrier,
-            min_total=Decimal("0.00"),
-            price=Decimal("10.00"),
+            carrier=self.carrier, min_total=Decimal("0.00"), price=Decimal("10.00")
         )
         t.save()
 
@@ -53,9 +44,7 @@ class TieredCarrierPricingTest(TestCase):
 
     def test2Prices(self):
         t = WeightTier(
-            carrier=self.carrier,
-            min_total=Decimal("20.00"),
-            price=Decimal("15.00"),
+            carrier=self.carrier, min_total=Decimal("20.00"), price=Decimal("15.00")
         )
         t.save()
 
@@ -63,11 +52,7 @@ class TieredCarrierPricingTest(TestCase):
         self.assertEqual(self.carrier.price(Decimal("20.00")), Decimal("15.00"))
 
     def test4Prices(self):
-        prices = (
-            (20, 15),
-            (30, 16),
-            (40, 17)
-        )
+        prices = ((20, 15), (30, 16), (40, 17))
 
         make_tiers(self.carrier, prices)
 
@@ -86,23 +71,13 @@ class TieredCarrierExpiringTest(TestCase):
         self.carrier = Carrier(name="pricing", active=True)
         self.carrier.save()
 
-        base_prices = (
-            (0, 10),
-            (20, 15),
-            (30, 16),
-            (40, 17)
-        )
+        base_prices = ((0, 10), (20, 15), (30, 16), (40, 17))
         make_tiers(self.carrier, base_prices)
 
     def testExpired(self):
         dt = datetime(2000, 1, 1)
 
-        sale_prices = (
-            (0, 1),
-            (20, 2),
-            (30, 3),
-            (40, 4)
-        )
+        sale_prices = ((0, 1), (20, 2), (30, 3), (40, 4))
 
         make_tiers(self.carrier, sale_prices, expires=dt)
 
@@ -115,12 +90,7 @@ class TieredCarrierExpiringTest(TestCase):
 
         now = datetime.now()
         nextyear = datetime(now.year + 1, now.month, now.day)
-        sale_prices = (
-            (0, 1),
-            (20, 2),
-            (30, 3),
-            (40, 4)
-        )
+        sale_prices = ((0, 1), (20, 2), (30, 3), (40, 4))
 
         make_tiers(self.carrier, sale_prices, expires=nextyear)
 

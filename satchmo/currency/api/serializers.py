@@ -1,13 +1,8 @@
-
-
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import serializers
 
-from satchmo.currency.models import (
-    Currency,
-    ExchangeRate,
-)
+from satchmo.currency.models import Currency, ExchangeRate
 
 
 class CurrencySerializer(serializers.ModelSerializer):
@@ -16,12 +11,20 @@ class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = (
-            'iso_4217_code', 'name', 'symbol',
-            'primary', 'accepted', 'latest_exchange_rate'
+            "iso_4217_code",
+            "name",
+            "symbol",
+            "primary",
+            "accepted",
+            "latest_exchange_rate",
         )
         read_only_fields = (
-            'iso_4217_code', 'name', 'symbol',
-            'primary', 'accepted', 'latest_exchange_rate'
+            "iso_4217_code",
+            "name",
+            "symbol",
+            "primary",
+            "accepted",
+            "latest_exchange_rate",
         )
 
     def get_latest_exchange_rate(self, obj):
@@ -40,7 +43,10 @@ class CurrencySessionSerializer(serializers.Serializer):
         """
         Check that the currency is accepted
         """
-        if Currency.objects.all_accepted().filter(iso_4217_code=value).exists() is False:
+        if (
+            Currency.objects.all_accepted().filter(iso_4217_code=value).exists()
+            is False
+        ):
             raise serializers.ValidationError(
                 _("{value} is not an accepted currency".format(value=value))
             )

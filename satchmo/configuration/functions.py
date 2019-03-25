@@ -5,6 +5,7 @@ from satchmo.configuration.models import SettingNotSet
 from satchmo.utils import is_string_like
 
 import logging
+
 log = logging.getLogger(__name__)
 
 _NOTSET = object()
@@ -64,13 +65,11 @@ class ConfigurationSettings(object):
 
                 cg = self.settings.get(group, None)
                 if not cg:
-                    raise SettingNotSet(
-                        '%s config group does not exist' % group
-                    )
+                    raise SettingNotSet("%s config group does not exist" % group)
                 else:
                     return cg[key]
             except KeyError:
-                raise SettingNotSet('%s.%s' % (group, key))
+                raise SettingNotSet("%s.%s" % (group, key))
 
         def groups(self):
             """Return ordered list"""
@@ -98,7 +97,8 @@ class ConfigurationSettings(object):
             g = value.group
             if not isinstance(g, values.ConfigurationGroup):
                 raise ValueError(
-                    'value.group should be an instance of ConfigurationGroup')
+                    "value.group should be an instance of ConfigurationGroup"
+                )
 
             groupkey = g.key
             valuekey = value.key
@@ -122,7 +122,8 @@ class ConfigurationSettings(object):
             ConfigurationSettings.__instance = ConfigurationSettings.__impl()
 
         self.__dict__[
-            '_ConfigurationSettings__instance'] = ConfigurationSettings.__instance
+            "_ConfigurationSettings__instance"
+        ] = ConfigurationSettings.__instance
 
     def __getattr__(self, attr):
         """ Delegate access to implementation """
@@ -153,7 +154,7 @@ def config_get(group, key):
     try:
         return ConfigurationSettings().get_config(group, key)
     except SettingNotSet:
-        log.debug('SettingNotSet: %s.%s', group, key)
+        log.debug("SettingNotSet: %s.%s", group, key)
         raise
 
 
@@ -182,7 +183,7 @@ def config_collect_values(group, groupkey, key, unique=True, skip_missing=True):
             ret.append(config_value(g, key))
         except KeyError:
             if not skip_missing:
-                raise SettingNotSet('No config %s.%s' % (g, key))
+                raise SettingNotSet("No config %s.%s" % (g, key))
 
     if unique:
         out = []
@@ -242,7 +243,7 @@ def config_choice_values(group, key, skip_missing=True, translate=False):
         if skip_missing:
             return []
         else:
-            raise SettingNotSet('%s.%s' % (group, key))
+            raise SettingNotSet("%s.%s" % (group, key))
 
     if translate:
         choices = [(k, ugettext(v)) for k, v in choices]

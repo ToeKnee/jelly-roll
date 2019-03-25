@@ -20,21 +20,19 @@ def edit_inventory(request):
         form = forms.InventoryForm(new_data)
         if form.is_valid():
             form.save(request)
-            url = reverse('satchmo_admin_edit_inventory')
+            url = reverse("satchmo_admin_edit_inventory")
             return HttpResponseRedirect(url)
     else:
         form = forms.InventoryForm()
 
-    context = {
-        'title': _('Inventory Editor'),
-        'form': form,
-    }
+    context = {"title": _("Inventory Editor"), "form": form}
 
-    return render(request, 'admin/inventory_form.html', context)
+    return render(request, "admin/inventory_form.html", context)
 
 
-edit_inventory = user_passes_test(lambda u: u.is_authenticated(
-) and u.is_staff, login_url='/accounts/login/')(edit_inventory)
+edit_inventory = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_staff, login_url="/accounts/login/"
+)(edit_inventory)
 
 
 @user_passes_test(lambda u: u.is_authenticated and u.is_staff)
@@ -68,16 +66,16 @@ def picking_list(request):
         products[brand].sort()
 
     context = {
-        'title': "Picking List",
-        'products': products,
-        'order_count': processing_orders.count(),
+        "title": "Picking List",
+        "products": products,
+        "order_count": processing_orders.count(),
     }
-    return render(request, 'admin/picking_list.html', context)
+    return render(request, "admin/picking_list.html", context)
 
 
-def export_products(request, template='admin/product_export_form.html'):
+def export_products(request, template="admin/product_export_form.html"):
     """A product export tool"""
-    if request.method == 'POST':
+    if request.method == "POST":
         new_data = request.POST.copy()
         form = forms.ProductExportForm(new_data)
         if form.is_valid():
@@ -87,16 +85,17 @@ def export_products(request, template='admin/product_export_form.html'):
         fileform = forms.ProductImportForm()
 
     context = {
-        'title': _('Product Import/Export'),
-        'form': form,
-        'importform': fileform,
+        "title": _("Product Import/Export"),
+        "form": form,
+        "importform": fileform,
     }
 
     return render(request, template, context)
 
 
-export_products = user_passes_test(lambda u: u.is_authenticated(
-) and u.is_staff, login_url='/accounts/login/')(export_products)
+export_products = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_staff, login_url="/accounts/login/"
+)(export_products)
 
 
 def import_products(request, maxsize=10000000):
@@ -104,56 +103,53 @@ def import_products(request, maxsize=10000000):
     Imports product from an uploaded file.
     """
 
-    if request.method == 'POST':
+    if request.method == "POST":
         errors = []
         results = []
-        if 'upload' in request.FILES:
-            infile = request.FILES['upload']
+        if "upload" in request.FILES:
+            infile = request.FILES["upload"]
             form = forms.ProductImportForm()
             results, errors = form.import_from(infile, maxsize=maxsize)
 
         else:
-            errors.append('File: %s' % list(request.FILES.keys()))
-            errors.append(_('No upload file found'))
+            errors.append("File: %s" % list(request.FILES.keys()))
+            errors.append(_("No upload file found"))
 
-        context = {
-            'errors': errors,
-            'results': results,
-        }
+        context = {"errors": errors, "results": results}
         return render(request, "admin/product_import_result.html", context)
     else:
-        url = reverse('satchmo_admin_product_export')
+        url = reverse("satchmo_admin_product_export")
         return HttpResponseRedirect(url)
 
 
-import_products = user_passes_test(lambda u: u.is_authenticated(
-) and u.is_staff, login_url='/accounts/login/')(import_products)
+import_products = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_staff, login_url="/accounts/login/"
+)(import_products)
 
 
 def product_active_report(request):
     products = Product.objects.filter(active=True)
-    products = [
-        p
-        for p
-        in products.all()
-        if 'productvariation' not in p.get_subtypes
-    ]
-    context = {'title': 'Active Product Report', 'products': products}
-    return render(request, 'admin/product/active_product_report.html', context)
+    products = [p for p in products.all() if "productvariation" not in p.get_subtypes]
+    context = {"title": "Active Product Report", "products": products}
+    return render(request, "admin/product/active_product_report.html", context)
 
 
-product_active_report = user_passes_test(lambda u: u.is_authenticated(
-) and u.is_staff, login_url='/accounts/login/')(product_active_report)
+product_active_report = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_staff, login_url="/accounts/login/"
+)(product_active_report)
 
 
 def variation_list(request):
-    products = [p for p in Product.objects.all(
-    ) if "ConfigurableProduct" in p.get_subtypes()]
-    context = {
-        'products': products,
-    }
+    products = [
+        p for p in Product.objects.all() if "ConfigurableProduct" in p.get_subtypes()
+    ]
+    context = {"products": products}
 
-    return render(request, 'admin/product/configurableproduct/variation_manager_list.html', context)
+    return render(
+        request,
+        "admin/product/configurableproduct/variation_manager_list.html",
+        context,
+    )
 
 
 def variation_manager(request, product_slug=""):
@@ -161,21 +157,28 @@ def variation_manager(request, product_slug=""):
         product = Product.objects.get(slug=product_slug)
         subtypes = product.get_subtypes()
 
-        if 'ProductVariation' in subtypes:
+        if "ProductVariation" in subtypes:
             # got a variation, we want to work with its parent
             product = product.productvariation.parent.product
-            if 'ConfigurableProduct' in product.get_subtypes():
-                url = reverse("satchmo_admin_variation_manager",
-                              kwargs={'product_slug': product.slug})
+            if "ConfigurableProduct" in product.get_subtypes():
+                url = reverse(
+                    "satchmo_admin_variation_manager",
+                    kwargs={"product_slug": product.slug},
+                )
                 return HttpResponseRedirect(url)
 
-        if 'ConfigurableProduct' not in subtypes:
-            return bad_or_missing(request, _('The product you have requested is not a Configurable Product.'))
+        if "ConfigurableProduct" not in subtypes:
+            return bad_or_missing(
+                request,
+                _("The product you have requested is not a Configurable Product."),
+            )
 
     except Product.DoesNotExist:
-        return bad_or_missing(request, _('The product you have requested does not exist.'))
+        return bad_or_missing(
+            request, _("The product you have requested does not exist.")
+        )
 
-    if request.method == 'POST':
+    if request.method == "POST":
         new_data = request.POST.copy()
         form = VariationManagerForm(new_data, product=product)
         if form.is_valid():
@@ -184,16 +187,16 @@ def variation_manager(request, product_slug=""):
             # rebuild the form
             form = VariationManagerForm(product=product)
         else:
-            log.debug('errors on form')
+            log.debug("errors on form")
     else:
         form = VariationManagerForm(product=product)
 
-    context = {
-        'product': product,
-        'form': form,
-    }
-    return render(request, 'admin/product/configurableproduct/variation_manager.html', context)
+    context = {"product": product, "form": form}
+    return render(
+        request, "admin/product/configurableproduct/variation_manager.html", context
+    )
 
 
-variation_manager = user_passes_test(lambda u: u.is_authenticated(
-) and u.is_staff, login_url='/accounts/login/')(variation_manager)
+variation_manager = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_staff, login_url="/accounts/login/"
+)(variation_manager)

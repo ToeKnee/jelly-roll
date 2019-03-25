@@ -37,9 +37,10 @@ from satchmo.utils.case_insensitive_dict import CaseInsensitiveReadOnlyDict
 from satchmo.utils.dynamic import lookup_template
 
 import logging
+
 logger = logging.getLogger(__name__)
 
-payment_module = config_get_group('PAYMENT_INGENICO')
+payment_module = config_get_group("PAYMENT_INGENICO")
 
 
 def pay_ship_info(request):
@@ -49,9 +50,7 @@ def pay_ship_info(request):
         return HttpResponseRedirect(reverse("satchmo_cart"))
 
     return payship.simple_pay_ship_info(
-        request,
-        payment_module,
-        template='checkout/ingenico/pay_ship.html'
+        request, payment_module, template="checkout/ingenico/pay_ship.html"
     )
 
 
@@ -68,9 +67,9 @@ def confirm_info(request):
         return HttpResponseRedirect(reverse("satchmo_shop_home"))
 
     if order.validate(request) is False:
-        context = {'message': _('Your order is no longer valid.')}
+        context = {"message": _("Your order is no longer valid.")}
 
-        return render(request, 'shop_404.html', context)
+        return render(request, "shop_404.html", context)
 
     data = {
         "PSPID": payment_module.PSPID.value,
@@ -81,15 +80,9 @@ def confirm_info(request):
         "CURRENCY": order.currency.iso_4217_code,
         "CN": order.bill_addressee,
         "EMAIL": order.contact.user.email,
-        "OWNERADDRESS": ", ".join([
-            order.bill_street1,
-            order.bill_street2,
-        ]),
+        "OWNERADDRESS": ", ".join([order.bill_street1, order.bill_street2]),
         "OWNERZIP": order.bill_postal_code,
-        "OWNERTOWN": ", ".join([
-            order.bill_city,
-            order.bill_state,
-        ]),
+        "OWNERTOWN": ", ".join([order.bill_city, order.bill_state]),
         "OWNERCTY": order.bill_country.iso2_code,
     }
 
@@ -100,8 +93,7 @@ def confirm_info(request):
         data["ALIASUSAGE"] = payment_module.ALIASUSAGE.value
 
     form = IngenicoForm(data)
-    template = lookup_template(
-        payment_module, 'checkout/ingenico/confirm.html')
+    template = lookup_template(payment_module, "checkout/ingenico/confirm.html")
 
     live = payment_module.LIVE.value
 
@@ -110,12 +102,7 @@ def confirm_info(request):
     else:
         post_url = payment_module.CONNECTION_TEST.value
 
-    ctx = {
-        'form': form,
-        'order': order,
-        'post_url': post_url,
-        'PAYMENT_LIVE': live,
-    }
+    ctx = {"form": form, "order": order, "post_url": post_url, "PAYMENT_LIVE": live}
     return render(request, template, ctx)
 
 
@@ -129,24 +116,21 @@ def accepted(request):
 
     """
     # Accept the payment (but don't mark it as "Processing" yet)
-    order_id = request.session.get('orderID')
+    order_id = request.session.get("orderID")
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
-        if 'cart' in request.session:
-            del request.session['cart']
+        if "cart" in request.session:
+            del request.session["cart"]
 
         if order_id:
             return HttpResponseRedirect(
-                reverse(
-                    "satchmo_order_tracking",
-                    kwargs={"order_id": order_id}
-                )
+                reverse("satchmo_order_tracking", kwargs={"order_id": order_id})
             )
         else:
             return HttpResponseRedirect(reverse("satchmo_shop_home"))
     else:
-        order.add_status(status='Accepted', notes=_("Paid through Ingenico."))
+        order.add_status(status="Accepted", notes=_("Paid through Ingenico."))
         return generic_success(request)
 
 
@@ -160,12 +144,12 @@ def declined(request):
     except Order.DoesNotExist:
         return HttpResponseRedirect(reverse("satchmo_shop_home"))
 
-    order.add_status(status='Declined', notes='')
+    order.add_status(status="Declined", notes="")
     order.freeze()
     order.save()
 
-    context = {'order': order}
-    return render(request, 'checkout/ingenico/declined.html', context)
+    context = {"order": order}
+    return render(request, "checkout/ingenico/declined.html", context)
 
 
 @transaction.atomic
@@ -252,22 +236,25 @@ Expiry date: {ed}
             if "STATUS" in post_data:
                 status = int(post_data["STATUS"])
                 if status == 9:  # Payment requested, ok to send package
-                    record_payment(order, payment_module,
-                                   amount=amount, transaction_id=transaction_id)
+                    record_payment(
+                        order,
+                        payment_module,
+                        amount=amount,
+                        transaction_id=transaction_id,
+                    )
                     complete_order(order)
-                    order.add_status(status='Processing',
-                                     notes=_("Payment complete."))
+                    order.add_status(status="Processing", notes=_("Payment complete."))
                 elif status == 1:  # Cancelled by customer
                     if order.frozen is False:
                         order.freeze()
                     restock_order(order)
                     order.save()
-                    order.add_status(status='Cancelled', notes=_(""))
+                    order.add_status(status="Cancelled", notes=_(""))
                 elif status == 7 or status == 8:  # Payment Deleted or Refunded
                     if order.frozen is False:
                         order.freeze()
                     order.save()
-                    order.add_status(status='Refunded', notes=_(""))
+                    order.add_status(status="Refunded", notes=_(""))
                     OrderRefund.objects.create(
                         order=order,
                         amount=amount,
@@ -280,8 +267,8 @@ Expiry date: {ed}
                     restock_order(order)
                     order.save()
                     order.add_status(
-                        status='Authorisation refused',
-                        notes=_("Please contact your bank or card issuer.")
+                        status="Authorisation refused",
+                        notes=_("Please contact your bank or card issuer."),
                     )
             return HttpResponse()
         else:
