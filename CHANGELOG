@@ -2,6 +2,12 @@
 JellyRoll Change Log
 ==================
 
+Version 0.11.3.0, 25 March, 2019
+------------------------------
+* Black code format
+* Cache currency_for_request for the request
+
+
 Version 0.11.2.3, 17 December, 2018
 ------------------------------
 * Fix double currency conversion of discounts
