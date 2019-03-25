@@ -926,9 +926,10 @@ class Product(models.Model):
         ]
         return prices
 
-    def _get_fullPrice(self):
+    @property
+    def unit_price(self):
         """
-        returns price as a Decimal
+        Returns price as a Decimal
         """
 
         subtype = self.get_subtype_with_attr("unit_price")
@@ -941,8 +942,6 @@ class Product(models.Model):
         if not price:
             price = Decimal("0.00")
         return price
-
-    unit_price = property(_get_fullPrice)
 
     def get_qty_price(self, qty):
         """
@@ -2469,18 +2468,19 @@ def lookup_translation(obj, attr, language_code=None, version=-1):
     return val
 
 
-def get_product_quantity_price(product, qty=1, delta=Decimal("0.00"), parent=None):
+def get_product_quantity_price(product, quantity=1, delta=Decimal("0.00"), parent=None):
     """
     Returns price as a Decimal else None.
     First checks the product, if none, then checks the parent.
     """
 
-    qty_discounts = product.price_set.exclude(
+    quantity_discounts = product.price_set.exclude(
         expires__isnull=False, expires__lt=datetime.date.today()
-    ).filter(quantity__lte=qty)
-    if qty_discounts.count() > 0:
+    ).filter(quantity__lte=quantity)
+
+    if quantity_discounts.count() > 0:
         # Get the price with the quantity closest to the one specified without going over
-        val = qty_discounts.order_by("-quantity")[0].dynamic_price
+        val = quantity_discounts.order_by("-quantity")[0].dynamic_price
         try:
             if not isinstance(val, Decimal):
                 val = Decimal(val)
@@ -2489,7 +2489,7 @@ def get_product_quantity_price(product, qty=1, delta=Decimal("0.00"), parent=Non
             return val + delta
     else:
         if parent:
-            return get_product_quantity_price(parent, qty, delta=delta)
+            return get_product_quantity_price(parent, quantity, delta=delta)
         return None
 
 
