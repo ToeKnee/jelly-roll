@@ -3,12 +3,7 @@ from decimal import Decimal
 
 from satchmo.l10n.factories import CountryFactory
 from satchmo.shipping.models import ECONOMY
-from .models import (
-    Carrier,
-    CarrierTranslation,
-    WeightTier,
-    Zone,
-)
+from .models import Carrier, CarrierTranslation, WeightTier, Zone
 
 
 class CarrierFactory(factory.django.DjangoModelFactory):

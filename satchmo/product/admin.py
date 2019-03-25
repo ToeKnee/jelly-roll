@@ -1,13 +1,29 @@
 from satchmo.product.models import (
-    Category, CategoryTranslation,
-    CategoryImage, CategoryImageTranslation, OptionGroup,
-    OptionGroupTranslation, Option, OptionTranslation, Product,
-    CustomProduct, CustomTextField, CustomTextFieldTranslation,
-    ConfigurableProduct, DownloadableProduct, SubscriptionProduct,
-    Trial, ProductVariation, ProductAttribute, Price, ProductImage,
+    Category,
+    CategoryTranslation,
+    CategoryImage,
+    CategoryImageTranslation,
+    OptionGroup,
+    OptionGroupTranslation,
+    Option,
+    OptionTranslation,
+    Product,
+    CustomProduct,
+    CustomTextField,
+    CustomTextFieldTranslation,
+    ConfigurableProduct,
+    DownloadableProduct,
+    SubscriptionProduct,
+    Trial,
+    ProductVariation,
+    ProductAttribute,
+    Price,
+    ProductImage,
     ProductImageTranslation,
-    ProductTranslation, IngredientsList,
-    Instruction, Precaution
+    ProductTranslation,
+    IngredientsList,
+    Instruction,
+    Precaution,
 )
 from django.contrib import admin
 from django.forms import models, ValidationError
@@ -87,8 +103,8 @@ class ProductImageTranslation_Inline(admin.StackedInline):
 
 class CategoryAdminForm(models.ModelForm):
     def clean_parent(self):
-        parent = self.cleaned_data['parent']
-        slug = self.cleaned_data['slug']
+        parent = self.cleaned_data["parent"]
+        slug = self.cleaned_data["slug"]
         if parent and slug:
             if parent.slug == slug:
                 raise ValidationError(_("You must not save a category in itself!"))
@@ -101,14 +117,14 @@ class CategoryAdminForm(models.ModelForm):
 
 
 class CategoryOptions(admin.ModelAdmin):
-    list_display = ('site', 'active', 'name', '_parents_repr')
-    list_display_links = ('name',)
-    list_editable = ('active', )
-    ordering = ['site', 'active', 'parent__id', 'ordering', 'name']
+    list_display = ("site", "active", "name", "_parents_repr")
+    list_display_links = ("name",)
+    list_editable = ("active",)
+    ordering = ["site", "active", "parent__id", "ordering", "name"]
     inlines = [CategoryImage_Inline]
-    if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
+    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(CategoryTranslation_Inline)
-    filter_horizontal = ('related_categories',)
+    filter_horizontal = ("related_categories",)
     form = CategoryAdminForm
 
 
@@ -118,72 +134,86 @@ class CategoryImageOptions(admin.ModelAdmin):
 
 class OptionGroupOptions(admin.ModelAdmin):
     inlines = [Option_Inline]
-    if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
+    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(OptionGroupTranslation_Inline)
 
-    list_display = ['site', 'name']
+    list_display = ["site", "name"]
 
 
 class OptionOptions(admin.ModelAdmin):
     inlines = []
-    if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
+    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(OptionTranslation_Inline)
 
 
 class ProductOptions(admin.ModelAdmin):
-    list_display = ('site', 'slug', 'sku', 'name', 'unit_price', 'items_in_stock', 'total_sold', 'get_subtypes')
-    list_display_links = ('slug', 'name')
-    list_editable = ('items_in_stock',)
-    list_filter = ('active', 'category', 'brands')
+    list_display = (
+        "site",
+        "slug",
+        "sku",
+        "name",
+        "unit_price",
+        "items_in_stock",
+        "total_sold",
+        "get_subtypes",
+    )
+    list_display_links = ("slug", "name")
+    list_editable = ("items_in_stock",)
+    list_filter = ("active", "category", "brands")
     fieldsets = (
         (
-            None, {
-                'fields': (
-                    'site', 'category', 'name', 'slug', 'sku',
-                    'description', 'enhanced_description', 'short_description',
-                    'active', 'featured', 'items_in_stock',
-                    'total_sold', 'ordering', 'shipclass',
-                    'instructions', 'precautions'
+            None,
+            {
+                "fields": (
+                    "site",
+                    "category",
+                    "name",
+                    "slug",
+                    "sku",
+                    "description",
+                    "enhanced_description",
+                    "short_description",
+                    "active",
+                    "featured",
+                    "items_in_stock",
+                    "total_sold",
+                    "ordering",
+                    "shipclass",
+                    "instructions",
+                    "precautions",
                 )
-            }
+            },
         ),
+        (_("Meta Data"), {"fields": ("meta",), "classes": ("collapse",)}),
         (
-            _('Meta Data'), {
-                'fields': ('meta',),
-                'classes': ('collapse',)
-            }
-        ),
-        (
-            _('Item Dimensions'), {
-                'fields': (
-                    ('length', 'length_units',
-                     'width', 'width_units',
-                     'height', 'height_units'),
-                    ('weight', 'weight_units')
+            _("Item Dimensions"),
+            {
+                "fields": (
+                    (
+                        "length",
+                        "length_units",
+                        "width",
+                        "width_units",
+                        "height",
+                        "height_units",
+                    ),
+                    ("weight", "weight_units"),
                 ),
-                'classes': ('collapse',)
-            }
+                "classes": ("collapse",),
+            },
         ),
+        (_("Tax"), {"fields": ("taxable", "taxClass"), "classes": ("collapse",)}),
         (
-            _('Tax'), {
-                'fields': ('taxable', 'taxClass'),
-                'classes': ('collapse',)
-            }
-        ),
-        (
-            _('Related Products'), {
-                'fields':
-                ('related_items', 'also_purchased'),
-                'classes': 'collapse'
-            }
+            _("Related Products"),
+            {"fields": ("related_items", "also_purchased"), "classes": "collapse"},
         ),
     )
-    readonly_fields = ('total_sold', )
-    search_fields = ['slug', 'sku', 'name', 'brands__slug']
+    readonly_fields = ("total_sold",)
+    search_fields = ["slug", "sku", "name", "brands__slug"]
     inlines = [ProductAttribute_Inline, Price_Inline, ProductImage_Inline]
-    if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
+    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(ProductTranslation_Inline)
-    filter_horizontal = ('category', 'related_items', 'also_purchased')
+    filter_horizontal = ("category", "related_items", "also_purchased")
 
 
 class CustomProductOptions(admin.ModelAdmin):
@@ -192,7 +222,7 @@ class CustomProductOptions(admin.ModelAdmin):
 
 class CustomTextFieldOptions(admin.ModelAdmin):
     inlines = []
-    if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
+    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(CustomTextFieldTranslation_Inline)
 
 
@@ -201,12 +231,12 @@ class SubscriptionProductOptions(admin.ModelAdmin):
 
 
 class ProductVariationOptions(admin.ModelAdmin):
-    filter_horizontal = ('options',)
+    filter_horizontal = ("options",)
 
 
 class ProductImageOptions(admin.ModelAdmin):
     inlines = []
-    if get_satchmo_setting('ALLOW_PRODUCT_TRANSLATIONS'):
+    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(ProductImageTranslation_Inline)
 
 

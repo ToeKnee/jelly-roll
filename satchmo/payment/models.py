@@ -16,6 +16,7 @@ from satchmo.payment.fields import PaymentChoiceCharField, CreditChoiceCharField
 from satchmo.shop.models import OrderPayment
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -28,13 +29,19 @@ class PaymentOption(models.Model):
     If there are multiple options - CC, Cash, COD, etc this class allows
     configuration.
     """
+
     description = models.CharField(_("Description"), max_length=20)
-    active = models.BooleanField(_("Active"),
-                                 default=True,
-                                 help_text=_("Should this be displayed as an option for the user?"))
-    optionName = PaymentChoiceCharField(_("Option Name"), max_length=20,
-                                        unique=True,
-                                        help_text=_("The class name as defined in payment.py"))
+    active = models.BooleanField(
+        _("Active"),
+        default=True,
+        help_text=_("Should this be displayed as an option for the user?"),
+    )
+    optionName = PaymentChoiceCharField(
+        _("Option Name"),
+        max_length=20,
+        unique=True,
+        help_text=_("The class name as defined in payment.py"),
+    )
     sortOrder = models.IntegerField(_("Sort Order"))
 
     class Meta:
@@ -47,22 +54,18 @@ class CreditCardDetail(models.Model):
     Stores an encrypted CC number, its information, and its
     displayable number.
     """
+
     orderpayment = models.OneToOneField(
-        OrderPayment,
-        on_delete=models.CASCADE,
-        unique=True,
-        related_name="creditcards"
+        OrderPayment, on_delete=models.CASCADE, unique=True, related_name="creditcards"
     )
     credit_type = CreditChoiceCharField(_("Credit Card Type"), max_length=16)
-    display_cc = models.CharField(_("CC Number (Last 4 digits)"),
-                                  max_length=4, )
-    encrypted_cc = models.CharField(_("Encrypted Credit Card"),
-                                    max_length=40, blank=True,
-                                    null=True, editable=False)
+    display_cc = models.CharField(_("CC Number (Last 4 digits)"), max_length=4)
+    encrypted_cc = models.CharField(
+        _("Encrypted Credit Card"), max_length=40, blank=True, null=True, editable=False
+    )
     expire_month = models.IntegerField(_("Expiration Month"))
     expire_year = models.IntegerField(_("Expiration Year"))
-    card_holder = models.CharField(
-        _("card_holder Name"), max_length=60, blank=True)
+    card_holder = models.CharField(_("card_holder Name"), max_length=60, blank=True)
     start_month = models.IntegerField(_("Start Month"), blank=True, null=True)
     start_year = models.IntegerField(_("Start Year"), blank=True, null=True)
     issue_num = models.CharField(blank=True, null=True, max_length=2)
@@ -73,21 +76,20 @@ class CreditCardDetail(models.Model):
         secret_key = settings.SECRET_KEY
         encryption_object = Blowfish.new(secret_key)
         # block cipher length must be a multiple of 8
-        padding = ''
+        padding = ""
         if (len(ccnum) % 8) != 0:
-            padding = 'X' * (8 - (len(ccnum) % 8))
-        self.encrypted_cc = base64.b64encode(
-            encryption_object.encrypt(ccnum + padding))
+            padding = "X" * (8 - (len(ccnum) % 8))
+        self.encrypted_cc = base64.b64encode(encryption_object.encrypt(ccnum + padding))
         self.display_cc = ccnum[-4:]
 
     def setCCV(self, ccv):
         """Put the CCV in the cache, don't save it for security/legal reasons."""
         if not self.encrypted_cc:
             raise ValueError(
-                'CreditCardDetail expecting a credit card number to be stored before storing CCV')
+                "CreditCardDetail expecting a credit card number to be stored before storing CCV"
+            )
 
-        caching.cache_set(self.encrypted_cc, skiplog=True,
-                          length=60 * 60, value=ccv)
+        caching.cache_set(self.encrypted_cc, skiplog=True, length=60 * 60, value=ccv)
 
     def getCCV(self):
         try:
@@ -103,13 +105,16 @@ class CreditCardDetail(models.Model):
         secret_key = settings.SECRET_KEY
         encryption_object = Blowfish.new(secret_key)
         # strip padding from decrypted credit card number
-        ccnum = encryption_object.decrypt(
-            base64.b64decode(self.encrypted_cc)).rstrip('X')
-        return (ccnum)
+        ccnum = encryption_object.decrypt(base64.b64decode(self.encrypted_cc)).rstrip(
+            "X"
+        )
+        return ccnum
+
     decryptedCC = property(_decryptCC)
 
     def _expireDate(self):
-        return(str(self.expire_month) + "/" + str(self.expire_year))
+        return str(self.expire_month) + "/" + str(self.expire_year)
+
     expirationDate = property(_expireDate)
 
     class Meta:

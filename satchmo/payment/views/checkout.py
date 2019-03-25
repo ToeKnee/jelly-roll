@@ -9,12 +9,13 @@ from django.views.decorators.csrf import csrf_exempt
 from satchmo.shop.models import Order
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 @csrf_exempt
 @transaction.atomic
-def success(request, template='checkout/success.html'):
+def success(request, template="checkout/success.html"):
     """
     The order has been succesfully processed.  This can be used to generate a receipt or some other confirmation
     """
@@ -22,7 +23,8 @@ def success(request, template='checkout/success.html'):
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
         subject = _("ERROR Order processing - order not found")
-        message = _("""Can't find order to process
+        message = _(
+            """Can't find order to process
 
 URL: {url}
 
@@ -42,38 +44,42 @@ POST:
 
 {post}
             """.format(
-            url=request.path,
-            user=request.user,
-            session="\n".join([
-                "{key} {value}".format(key=key, value=value)
-                for key, value
-                in request.session.items()
-            ]),
-            get="\n".join([
-                "{key} {value}".format(key=key, value=value)
-                for key, value
-                in request.GET.items()
-            ]),
-            post="\n".join([
-                "{key} {value}".format(key=key, value=value)
-                for key, value
-                in request.POST.items()
-            ]),
-        ))
+                url=request.path,
+                user=request.user,
+                session="\n".join(
+                    [
+                        "{key} {value}".format(key=key, value=value)
+                        for key, value in request.session.items()
+                    ]
+                ),
+                get="\n".join(
+                    [
+                        "{key} {value}".format(key=key, value=value)
+                        for key, value in request.GET.items()
+                    ]
+                ),
+                post="\n".join(
+                    [
+                        "{key} {value}".format(key=key, value=value)
+                        for key, value in request.POST.items()
+                    ]
+                ),
+            )
+        )
         mail_admins(subject, message)
 
-        history = reverse('satchmo_order_history')
+        history = reverse("satchmo_order_history")
         return http.HttpResponseRedirect(history)
 
     complete_order(order)
 
-    if 'cart' in request.session:
-        del request.session['cart']
+    if "cart" in request.session:
+        del request.session["cart"]
 
-    del request.session['orderID']
+    del request.session["orderID"]
 
     log.info("Successully processed %s" % (order))
-    context = {'order': order}
+    context = {"order": order}
     return render(request, template, context)
 
 
@@ -89,8 +95,7 @@ def complete_order(order):
 
             item.stock_updated = True
             item.save()
-            log.debug("Set quantities for %s to %s" %
-                      (product, product.items_in_stock))
+            log.debug("Set quantities for %s to %s" % (product, product.items_in_stock))
 
     order.freeze()
     order.save()
@@ -108,5 +113,4 @@ def restock_order(order):
 
             item.stock_updated = False
             item.save()
-            log.debug("Set quantities for %s to %s" %
-                      (product, product.items_in_stock))
+            log.debug("Set quantities for %s to %s" % (product, product.items_in_stock))

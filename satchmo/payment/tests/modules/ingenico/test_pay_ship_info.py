@@ -18,12 +18,9 @@ class PayShipInfoTest(TestCase):
             item.product.items_in_stock = item.quantity
             item.product.save()
 
-        request = self.factory.get('/shop/checkout/ingenico/')
+        request = self.factory.get("/shop/checkout/ingenico/")
         request.user = cart.customer.user
-        request.session = {
-            "cart": cart.id,
-            "custID": cart.customer.id,
-        }
+        request.session = {"cart": cart.id, "custID": cart.customer.id}
 
         response = pay_ship_info(request)
         self.assertEqual(response.status_code, 200)
@@ -32,18 +29,13 @@ class PayShipInfoTest(TestCase):
     def test_not_enough_stock(self):
         cart = CartFactory()
 
-        request = self.factory.get('/shop/checkout/ingenico/')
+        request = self.factory.get("/shop/checkout/ingenico/")
         request.user = cart.customer.user
-        request.session = {
-            "cart": cart.id,
-            "custID": cart.customer.id,
-        }
+        request.session = {"cart": cart.id, "custID": cart.customer.id}
 
         response = pay_ship_info(request)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response._headers['location'],
-            ('Location', '{}/cart/'.format(
-                getattr(settings, "SHOP_BASE", "/store")
-            ))
+            response._headers["location"],
+            ("Location", "{}/cart/".format(getattr(settings, "SHOP_BASE", "/store"))),
         )

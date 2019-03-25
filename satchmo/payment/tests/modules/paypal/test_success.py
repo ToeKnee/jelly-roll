@@ -18,27 +18,22 @@ class ConfirmInfoTest(TestCase):
         cache_delete()
 
     def test_order_unavailable(self):
-        request = self.factory.get('/shop/checkout/paypal/success/')
+        request = self.factory.get("/shop/checkout/paypal/success/")
         request.user = AnonymousUser()
         request.session = {}
 
         response = success(request)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response._headers['location'],
-            (
-                'Location',
-                reverse('satchmo_order_history')
-            )
+            response._headers["location"],
+            ("Location", reverse("satchmo_order_history")),
         )
 
     def test_success(self):
         order = TestOrderFactory()
-        request = self.factory.get('/shop/checkout/paypal/success/')
+        request = self.factory.get("/shop/checkout/paypal/success/")
         request.user = order.contact.user
-        request.session = {
-            "orderID": order.id,
-        }
+        request.session = {"orderID": order.id}
 
         response = success(request)
         self.assertEqual(response.status_code, 200)

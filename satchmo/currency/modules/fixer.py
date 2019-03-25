@@ -6,6 +6,7 @@ from django.conf import settings
 from satchmo.currency.models import Currency, ExchangeRate
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -21,11 +22,10 @@ class FixerExchangeRateClient(object):
 
         url = self.API_URL.format(
             primary=primary_currency.iso_4217_code,
-            accepted=",".join((
-                currency.iso_4217_code
-                for currency in accepted_currencies
-            )),
-            access_key=getattr(settings, 'FIXERIO_KEY')
+            accepted=",".join(
+                (currency.iso_4217_code for currency in accepted_currencies)
+            ),
+            access_key=getattr(settings, "FIXERIO_KEY"),
         )
 
         try:
@@ -47,14 +47,17 @@ class FixerExchangeRateClient(object):
             except Currency.DoesNotExist:
                 continue
 
-            if ExchangeRate.objects.filter(
-                currency=currency,
-                date=datetime.datetime.strptime(data["date"], "%Y-%m-%d").date(),
-            ).exists() is False:
+            if (
+                ExchangeRate.objects.filter(
+                    currency=currency,
+                    date=datetime.datetime.strptime(data["date"], "%Y-%m-%d").date(),
+                ).exists()
+                is False
+            ):
                 exchange_rate = ExchangeRate.objects.create(
                     currency=currency,
                     date=datetime.datetime.strptime(data["date"], "%Y-%m-%d").date(),
-                    rate=rate
+                    rate=rate,
                 )
                 exchange_rates.append(exchange_rate)
 

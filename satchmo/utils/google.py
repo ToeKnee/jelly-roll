@@ -7,8 +7,14 @@ from satchmo.configuration.functions import config_get
 
 def get_google_card_type(card):
     allowed_payment_types = [
-        "AmericanExpress", "Cash", "Check", "Discover",
-        "GoogleCheckout", "MasterCard", "Visa", "wiretransfer"
+        "AmericanExpress",
+        "Cash",
+        "Check",
+        "Discover",
+        "GoogleCheckout",
+        "MasterCard",
+        "Visa",
+        "wiretransfer",
     ]
     for payment_type in allowed_payment_types:
         if card.lower() == payment_type.lower():
@@ -43,6 +49,6 @@ def product_feed(request):
     context = {
         "products": products,
         "payment_types": payment_types,
-        "payment_notes": payment_notes
+        "payment_notes": payment_notes,
     }
     return render(request, "product_feed.xml", context)

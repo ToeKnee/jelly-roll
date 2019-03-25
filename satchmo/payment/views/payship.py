@@ -28,20 +28,22 @@ def pay_ship_info_verify(request, payment_module):
     try:
         contact = Contact.objects.from_request(request, create=False)
     except Contact.DoesNotExist:
-        log.debug('No contact, returning to step 1 of checkout')
-        url = lookup_url(payment_module, 'satchmo_checkout-step1')
+        log.debug("No contact, returning to step 1 of checkout")
+        url = lookup_url(payment_module, "satchmo_checkout-step1")
         return (False, http.HttpResponseRedirect(url))
 
     # Verify that we still have items in the cart.
     tempCart = Cart.objects.from_request(request)
     if tempCart.numItems == 0:
-        template = lookup_template(payment_module, 'checkout/empty_cart.html')
+        template = lookup_template(payment_module, "checkout/empty_cart.html")
         return (False, render(request, template))
 
     return (True, contact, tempCart)
 
 
-def credit_pay_ship_process_form(request, contact, working_cart, payment_module, *args, **kwargs):
+def credit_pay_ship_process_form(
+    request, contact, working_cart, payment_module, *args, **kwargs
+):
     """Handle the form information.
     Returns:
         (True, destination) on success
@@ -49,13 +51,13 @@ def credit_pay_ship_process_form(request, contact, working_cart, payment_module,
     """
 
     def _get_form(request, payment_module, *args, **kwargs):
-        processor = payment_module.MODULE.load_module('processor')
-        log.debug('processor=%s', processor)
-        if hasattr(processor, 'FORM'):
-            log.debug('getting form from module')
+        processor = payment_module.MODULE.load_module("processor")
+        log.debug("processor=%s", processor)
+        if hasattr(processor, "FORM"):
+            log.debug("getting form from module")
             formclass = processor.FORM
         else:
-            log.debug('using default form')
+            log.debug("using default form")
             formclass = CreditPayShipForm
 
         form = formclass(request, payment_module, *args, **kwargs)
@@ -67,10 +69,10 @@ def credit_pay_ship_process_form(request, contact, working_cart, payment_module,
         form = _get_form(request, payment_module, new_data, *args, **kwargs)
         if form.is_valid():
             form.save(request, working_cart, contact, payment_module)
-            url = lookup_url(payment_module, 'satchmo_checkout-step3')
+            url = lookup_url(payment_module, "satchmo_checkout-step3")
             return (True, http.HttpResponseRedirect(url))
         else:
-            log.debug('Form errors: %s', form.errors)
+            log.debug("Form errors: %s", form.errors)
     else:
         form = _get_form(request, payment_module, *args, **kwargs)
 
@@ -83,7 +85,7 @@ def simple_pay_ship_process_form(request, contact, working_cart, payment_module)
         form = SimplePayShipForm(request, payment_module, new_data)
         if form.is_valid():
             form.save(request, working_cart, contact, payment_module)
-            url = lookup_url(payment_module, 'satchmo_checkout-step3')
+            url = lookup_url(payment_module, "satchmo_checkout-step3")
             return (True, http.HttpResponseRedirect(url))
     else:
         form = SimplePayShipForm(request, payment_module)
@@ -100,11 +102,7 @@ def pay_ship_render_form(request, form, template, payment_module, cart):
     else:
         sale = None
 
-    ctx = {
-        'form': form,
-        'sale': sale,
-        'PAYMENT_LIVE': payment_live(payment_module)
-    }
+    ctx = {"form": form, "sale": sale, "PAYMENT_LIVE": payment_live(payment_module)}
     return render(request, template, ctx)
 
 
@@ -123,11 +121,15 @@ def base_pay_ship_info(request, payment_module, form_handler, template):
     return pay_ship_render_form(request, form, template, payment_module, working_cart)
 
 
-def credit_pay_ship_info(request, payment_module, template='checkout/pay_ship.html'):
+def credit_pay_ship_info(request, payment_module, template="checkout/pay_ship.html"):
     """A pay_ship view which uses a credit card."""
-    return base_pay_ship_info(request, payment_module, credit_pay_ship_process_form, template)
+    return base_pay_ship_info(
+        request, payment_module, credit_pay_ship_process_form, template
+    )
 
 
 def simple_pay_ship_info(request, payment_module, template):
     """A pay_ship view which doesn't require a credit card."""
-    return base_pay_ship_info(request, payment_module, simple_pay_ship_process_form, template)
+    return base_pay_ship_info(
+        request, payment_module, simple_pay_ship_process_form, template
+    )

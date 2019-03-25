@@ -11,6 +11,7 @@ from django.conf import settings
 
 import logging
 from functools import reduce
+
 log = logging.getLogger(__name__)
 
 
@@ -27,8 +28,10 @@ def add_month(date, n=1):
 
 def app_enabled(appname):
     """Check the app list to see if a named app is installed."""
-    for app in [a.models_module for a in apps.get_app_configs() if a.models_module is not None]:
-        n = app.__name__.split('.')[-2]
+    for app in [
+        a.models_module for a in apps.get_app_configs() if a.models_module is not None
+    ]:
+        n = app.__name__.split(".")[-2]
         if n == appname:
             return True
     return False
@@ -63,7 +66,7 @@ def current_media_url(request):
         try:
             media_url = settings.MEDIA_SECURE_URL
         except AttributeError:
-            media_url = media_url.replace('http://', 'https://')
+            media_url = media_url.replace("http://", "https://")
     return media_url
 
 
@@ -137,8 +140,8 @@ def load_once(key, module):
 
 
 def normalize_dir(dir_name):
-    if not dir_name.startswith('./'):
-        dir_name = url_join('.', dir_name)
+    if not dir_name.startswith("./"):
+        dir_name = url_join(".", dir_name)
     if dir_name.endswith("/"):
         dir_name = dir_name[:-1]
     return dir_name
@@ -150,7 +153,7 @@ _LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 def random_string(length, variable=False, charset=_LETTERS):
     if variable:
         length = random.randrange(1, length + 1)
-    return ''.join([random.choice(charset) for x in range(length)])
+    return "".join([random.choice(charset) for x in range(length)])
 
 
 def request_is_secure(request):
@@ -158,8 +161,8 @@ def request_is_secure(request):
         return True
 
     # Handle forwarded SSL (used at Webfaction)
-    if 'HTTP_X_FORWARDED_SSL' in request.META:
-        return request.META['HTTP_X_FORWARDED_SSL'] == 'on'
+    if "HTTP_X_FORWARDED_SSL" in request.META:
+        return request.META["HTTP_X_FORWARDED_SSL"] == "on"
 
     return False
 
@@ -172,13 +175,15 @@ def trunc_decimal(val, places):
     if places > 0:
         roundfmt += "1"
     if val is None:
-        val = Decimal('0.00000000')
+        val = Decimal("0.00000000")
     if not isinstance(val, Decimal):
         try:
             val = Decimal(val)
         except InvalidOperation:
             log.warn(
-                "invalid operation trying to convert '%s' to decimal, returning raw", val)
+                "invalid operation trying to convert '%s' to decimal, returning raw",
+                val,
+            )
             return val
     return val.quantize(Decimal(roundfmt), ROUND_HALF_EVEN)
 

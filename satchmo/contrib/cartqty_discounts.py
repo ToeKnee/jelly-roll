@@ -5,7 +5,9 @@ To activate, simply import in your settings file.
 
 from satchmo.shop.signals import satchmo_cartitem_price_query
 import logging
+
 log = logging.getLogger(__name__)
+
 
 def lineitem_cartqty_price(cartitem=None, **kwargs):
     cart = cartitem.cart
@@ -14,8 +16,13 @@ def lineitem_cartqty_price(cartitem=None, **kwargs):
     newprice = cartitem.get_qty_price(qty)
     if oldprice != newprice:
         cartitem.qty_price = newprice
-        log.debug("updated price for item based on cart qty=%i new price on %s = %0.2f", 
-            qty, cartitem.product.slug, cartitem.qty_price)
+        log.debug(
+            "updated price for item based on cart qty=%i new price on %s = %0.2f",
+            qty,
+            cartitem.product.slug,
+            cartitem.qty_price,
+        )
+
 
 satchmo_cartitem_price_query.connect(lineitem_cartqty_price, sender=None)
-log.debug('registered lineitem_cartqty_price')
+log.debug("registered lineitem_cartqty_price")

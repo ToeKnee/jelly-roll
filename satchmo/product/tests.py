@@ -106,6 +106,7 @@ class CategoryTest(TestCase):
     def tearDown(self):
         caching.cache_delete()
 
+
 #    def test_absolute_url(self):
 #        prefix = get_satchmo_setting('SHOP_BASE')
 #        if prefix == '/':
@@ -153,11 +154,12 @@ class ProductExportTest(TestCase):
     def setUp(self):
         # Log in as a superuser
         from django.contrib.auth.models import User
-        user = User.objects.create_user('root', 'root@eruditorum.com', '12345')
+
+        user = User.objects.create_user("root", "root@eruditorum.com", "12345")
         user.is_staff = True
         user.is_superuser = True
         user.save()
-        self.client.login(username='root', password='12345')
+        self.client.login(username="root", password="12345")
 
     def tearDown(self):
         caching.cache_delete()
@@ -166,49 +168,49 @@ class ProductExportTest(TestCase):
         """
         Test the content type of an exported text file.
         """
-        url = '%s/product/inventory/export/' % get_satchmo_setting('SHOP_BASE')
-        form_data = {
-            'format': 'yaml',
-            'include_images': False,
-        }
+        url = "%s/product/inventory/export/" % get_satchmo_setting("SHOP_BASE")
+        form_data = {"format": "yaml", "include_images": False}
 
         response = self.client.post(url, form_data)
-        self.assertTrue(response.has_header('Content-Type'))
-        self.assertEqual('text/yaml', response['Content-Type'])
+        self.assertTrue(response.has_header("Content-Type"))
+        self.assertEqual("text/yaml", response["Content-Type"])
 
-        form_data['format'] = 'json'
+        form_data["format"] = "json"
         response = self.client.post(url, form_data)
-        self.assertTrue(response.has_header('Content-Type'))
-        self.assertEqual('text/json', response['Content-Type'])
+        self.assertTrue(response.has_header("Content-Type"))
+        self.assertEqual("text/json", response["Content-Type"])
 
-        form_data['format'] = 'xml'
+        form_data["format"] = "xml"
         response = self.client.post(url, form_data)
-        self.assertTrue(response.has_header('Content-Type'))
-        self.assertEqual('text/xml', response['Content-Type'])
+        self.assertTrue(response.has_header("Content-Type"))
+        self.assertEqual("text/xml", response["Content-Type"])
 
-        form_data['format'] = 'python'
+        form_data["format"] = "python"
         response = self.client.post(url, form_data)
-        self.assertTrue(response.has_header('Content-Type'))
-        self.assertEqual('text/python', response['Content-Type'])
+        self.assertTrue(response.has_header("Content-Type"))
+        self.assertEqual("text/python", response["Content-Type"])
 
     def test_zip_export_content_type(self):
         """
         Test the content type of an exported zip file.
         """
-        url = '%s/product/inventory/export/' % get_satchmo_setting('SHOP_BASE')
-        form_data = {
-            'format': 'yaml',
-            'include_images': True,
-        }
+        url = "%s/product/inventory/export/" % get_satchmo_setting("SHOP_BASE")
+        form_data = {"format": "yaml", "include_images": True}
 
         response = self.client.post(url, form_data)
-        self.assertTrue(response.has_header('Content-Type'))
-        self.assertEqual('application/zip', response['Content-Type'])
+        self.assertTrue(response.has_header("Content-Type"))
+        self.assertEqual("application/zip", response["Content-Type"])
 
 
 class ProductTest(TestCase):
     """Test Product functions"""
-    fixtures = ['l10n_data.xml', 'sample-store-data.yaml', 'products.yaml', 'test-config.yaml']
+
+    fixtures = [
+        "l10n_data.xml",
+        "sample-store-data.yaml",
+        "products.yaml",
+        "test-config.yaml",
+    ]
 
     def tearDown(self):
         caching.cache_delete()
@@ -216,12 +218,12 @@ class ProductTest(TestCase):
     def test_quantity_price_standard_product(self):
         """Check quantity price for a standard product"""
 
-        product = Product.objects.get(slug='PY-Rocks')
+        product = Product.objects.get(slug="PY-Rocks")
         self.assertEqual(product.unit_price, Decimal("19.50"))
 
     def test_discount_qty_price(self):
         """Test quantity price discounts"""
-        product = Product.objects.get(slug='PY-Rocks')
+        product = Product.objects.get(slug="PY-Rocks")
         price = Price(product=product, quantity=10, price=Decimal("10.00"))
         price.save()
 
@@ -234,24 +236,24 @@ class ProductTest(TestCase):
         """Check quantity price for a productvariation"""
 
         # base product
-        product = Product.objects.get(slug='dj-rocks')
+        product = Product.objects.get(slug="dj-rocks")
         self.assertEqual(product.unit_price, Decimal("20.00"))
         self.assertEqual(product.unit_price, product.get_qty_price(1))
 
         # product with no price delta
-        product = Product.objects.get(slug='dj-rocks-s-b')
+        product = Product.objects.get(slug="dj-rocks-s-b")
         self.assertEqual(product.unit_price, Decimal("20.00"))
         self.assertEqual(product.unit_price, product.get_qty_price(1))
 
         # product which costs more due to details
-        product = Product.objects.get(slug='dj-rocks-l-bl')
+        product = Product.objects.get(slug="dj-rocks-l-bl")
         self.assertEqual(product.unit_price, Decimal("23.00"))
         self.assertEqual(product.unit_price, product.get_qty_price(1))
 
     def test_smart_attr(self):
-        p = Product.objects.get(slug__iexact='dj-rocks')
-        mb = Product.objects.get(slug__iexact='dj-rocks-m-b')
-        sb = Product.objects.get(slug__iexact='dj-rocks-s-b')
+        p = Product.objects.get(slug__iexact="dj-rocks")
+        mb = Product.objects.get(slug__iexact="dj-rocks-m-b")
+        sb = Product.objects.get(slug__iexact="dj-rocks-s-b")
 
         # going to set a weight on the product, and an override weight on the medium
         # shirt.
@@ -261,13 +263,13 @@ class ProductTest(TestCase):
         sb.weight = 50
         sb.save()
 
-        self.assertEqual(p.smart_attr('weight'), 100)
-        self.assertEqual(sb.smart_attr('weight'), 50)
-        self.assertEqual(mb.smart_attr('weight'), 100)
+        self.assertEqual(p.smart_attr("weight"), 100)
+        self.assertEqual(sb.smart_attr("weight"), 50)
+        self.assertEqual(mb.smart_attr("weight"), 100)
 
         # no height
-        self.assertEqual(p.smart_attr('height'), None)
-        self.assertEqual(sb.smart_attr('height'), None)
+        self.assertEqual(p.smart_attr("height"), None)
+        self.assertEqual(sb.smart_attr("height"), None)
 
 
 class ProductStockDueTest(TestCase):
@@ -282,9 +284,7 @@ class ProductStockDueTest(TestCase):
 
     def test_we_know_when_its_coming(self):
         due_on = datetime.date.today() + datetime.timedelta(days=7)
-        brand = BrandFactory(
-            stock_due_on=due_on
-        )
+        brand = BrandFactory(stock_due_on=due_on)
         product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), due_on)
@@ -292,10 +292,7 @@ class ProductStockDueTest(TestCase):
     def test_its_within_a_normal_range(self):
         last_week = datetime.date.today() - datetime.timedelta(days=7)
         expected_date = datetime.date.today() + datetime.timedelta(days=7)
-        brand = BrandFactory(
-            restock_interval=14,
-            last_restocked=last_week,
-        )
+        brand = BrandFactory(restock_interval=14, last_restocked=last_week)
         product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), expected_date)
@@ -304,9 +301,7 @@ class ProductStockDueTest(TestCase):
         expected_date = datetime.date.today() + datetime.timedelta(days=14)
         last_month = datetime.date.today() - datetime.timedelta(days=31)
         brand = BrandFactory(
-            restock_interval=14,
-            stock_due_on=last_month,
-            last_restocked=last_month,
+            restock_interval=14, stock_due_on=last_month, last_restocked=last_month
         )
         product = ProductFactory(brands=[brand])
 
@@ -314,9 +309,7 @@ class ProductStockDueTest(TestCase):
 
     def test_stock_due_on_is_none(self):
         expected_date = datetime.date.today() + datetime.timedelta(days=14)
-        brand = BrandFactory(
-            restock_interval=14,
-        )
+        brand = BrandFactory(restock_interval=14)
         product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), expected_date)
@@ -329,9 +322,7 @@ class ProductStockDueTest(TestCase):
 
     def test_last_restocked_is_none(self):
         expected_date = datetime.date.today() + datetime.timedelta(days=7)
-        brand = BrandFactory(
-            restock_interval=7
-        )
+        brand = BrandFactory(restock_interval=7)
         product = ProductFactory(brands=[brand])
 
         self.assertEqual(product.stock_due_date(), expected_date)
@@ -339,7 +330,8 @@ class ProductStockDueTest(TestCase):
 
 class ConfigurableProductTest(TestCase):
     """Test ConfigurableProduct."""
-    fixtures = ['products.yaml']
+
+    fixtures = ["products.yaml"]
 
     def tearDown(self):
         caching.cache_delete()
@@ -354,47 +346,48 @@ class ConfigurableProductTest(TestCase):
         # Test filtering for one valid option.
         self.assertEqual(
             [
-                variation.pk for variation in
-                dj_rocks.get_variations_for_options([option_small])
+                variation.pk
+                for variation in dj_rocks.get_variations_for_options([option_small])
             ],
-            [6, 7, 8]
+            [6, 7, 8],
         )
         # Test filtering for two valid options.
         self.assertEqual(
             [
-                variation.pk for variation in
-                dj_rocks.get_variations_for_options([option_small, option_black])
+                variation.pk
+                for variation in dj_rocks.get_variations_for_options(
+                    [option_small, option_black]
+                )
             ],
-            [6]
+            [6],
         )
         # Test filtering for an option that cannot apply to the product.
         self.assertEqual(
-            len(dj_rocks.get_variations_for_options([option_hard_cover])), 0)
+            len(dj_rocks.get_variations_for_options([option_hard_cover])), 0
+        )
         # Test filtering for nothing.
         self.assertEqual(
-            [
-                variation.pk for variation in
-                dj_rocks.get_variations_for_options([])
-            ],
-            [6, 7, 8, 9, 10, 11, 12, 13, 14]
+            [variation.pk for variation in dj_rocks.get_variations_for_options([])],
+            [6, 7, 8, 9, 10, 11, 12, 13, 14],
         )
 
 
 class OptionUtilsTest(TestCase):
     """Test the utilities used for serialization of options and selected option details."""
-    fixtures = ['products.yaml']
+
+    fixtures = ["products.yaml"]
 
     def test_base_sort_order(self):
-        p = Product.objects.get(slug='dj-rocks')
+        p = Product.objects.get(slug="dj-rocks")
         serialized = serialize_options(p.configurableproduct)
         self.assertTrue(len(serialized), 2)
-        self.assertEqual(serialized[0]['id'], 1)
-        got_vals = [opt.value for opt in serialized[0]['items']]
-        self.assertEqual(got_vals, ['S', 'M', 'L'])
-        self.assertEqual(serialized[1]['id'], 2)
+        self.assertEqual(serialized[0]["id"], 1)
+        got_vals = [opt.value for opt in serialized[0]["items"]]
+        self.assertEqual(got_vals, ["S", "M", "L"])
+        self.assertEqual(serialized[1]["id"], 2)
 
     def test_reordered(self):
-        p = Product.objects.get(slug='dj-rocks')
+        p = Product.objects.get(slug="dj-rocks")
 
         pv = p.configurableproduct.productvariation_set.all()[0]
         orig_key = pv.optionkey
@@ -411,9 +404,9 @@ class OptionUtilsTest(TestCase):
 
         serialized = serialize_options(p.configurableproduct)
         self.assertTrue(len(serialized), 2)
-        self.assertEqual(serialized[1]['id'], 1)
-        got_vals = [opt.value for opt in serialized[1]['items']]
-        self.assertEqual(got_vals, ['L', 'M', 'S'])
+        self.assertEqual(serialized[1]["id"], 1)
+        got_vals = [opt.value for opt in serialized[1]["items"]]
+        self.assertEqual(got_vals, ["L", "M", "S"])
 
         pv2 = ProductVariation.objects.get(pk=pv.pk)
         self.assertEqual(orig_key, pv2.optionkey)
@@ -423,4 +416,5 @@ class OptionUtilsTest(TestCase):
 
 if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

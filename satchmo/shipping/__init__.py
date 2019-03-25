@@ -1,1 +1,1 @@
-default_app_config = 'satchmo.shipping.apps.ShippingConfig'
+default_app_config = "satchmo.shipping.apps.ShippingConfig"

@@ -1,5 +1,3 @@
-
-
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework import serializers
@@ -11,12 +9,24 @@ class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
         fields = (
-            'iso2_code', 'iso3_code', 'name', 'printable_name',
-            'numcode', 'continent', 'admin_area', 'eu'
+            "iso2_code",
+            "iso3_code",
+            "name",
+            "printable_name",
+            "numcode",
+            "continent",
+            "admin_area",
+            "eu",
         )
         read_only_fields = (
-            'iso2_code', 'iso3_code', 'name', 'printable_name',
-            'numcode', 'continent', 'admin_area', 'eu'
+            "iso2_code",
+            "iso3_code",
+            "name",
+            "printable_name",
+            "numcode",
+            "continent",
+            "admin_area",
+            "eu",
         )
         depth = 2
 

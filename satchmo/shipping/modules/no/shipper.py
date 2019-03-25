@@ -32,7 +32,7 @@ class Shipper(BaseShipper):
         """
         Describes the actual delivery service (Mail, FedEx, DHL, UPS, etc)
         """
-        return ugettext('No Shipping')
+        return ugettext("No Shipping")
 
     def expectedDelivery(self):
         """

@@ -1,11 +1,7 @@
 import mock
 from decimal import Decimal
 
-from django.test import (
-    RequestFactory,
-    TestCase,
-    override_settings,
-)
+from django.test import RequestFactory, TestCase, override_settings
 from django.utils.encoding import force_str
 
 from satchmo.configuration.models import Setting
@@ -28,38 +24,28 @@ class MoneyFormatTest(TestCase):
         value = None
         currency_code = "EUR"
 
-        self.assertEqual(
-            money_format(value, currency_code),
-            "€0.00 (EUR)"
-        )
+        self.assertEqual(money_format(value, currency_code), "€0.00 (EUR)")
 
     def test_value_is_zero(self):
         EURCurrencyFactory()
         value = Decimal("0.00")
         currency_code = "EUR"
 
-        self.assertEqual(
-            money_format(value, currency_code),
-            "€0.00 (EUR)"
-        )
+        self.assertEqual(money_format(value, currency_code), "€0.00 (EUR)")
 
     def test_currency(self):
         EURCurrencyFactory()
         value = Decimal("1.00")
         currency_code = "EUR"
 
-        self.assertEqual(
-            money_format(value, currency_code),
-            "€1.00 (EUR)"
-        )
+        self.assertEqual(money_format(value, currency_code), "€1.00 (EUR)")
 
     def test_currency__does_not_exist(self):
         value = Decimal("1.00")
         currency_code = "BTC"
 
         self.assertEqual(
-            force_str(money_format(value, currency_code)),
-            "BTC is not accepted"
+            force_str(money_format(value, currency_code)), "BTC is not accepted"
         )
 
 
@@ -96,11 +82,7 @@ class ConvertToCurrencyTest(TestCase):
         """
         value = Decimal("1.00")
         currency_code = "GBP"
-        Setting.objects.create(
-            group='CURRENCY',
-            key='BUFFER',
-            value=Decimal("0.00"),
-        )
+        Setting.objects.create(group="CURRENCY", key="BUFFER", value=Decimal("0.00"))
 
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, value)
@@ -111,15 +93,8 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("1.00")
         currency_code = "GBP"
         currency = GBPCurrencyFactory()
-        ExchangeRateFactory(
-            rate=Decimal("0.75"),
-            currency=currency
-        )
-        Setting.objects.create(
-            group='CURRENCY',
-            key='BUFFER',
-            value=Decimal("0.00"),
-        )
+        ExchangeRateFactory(rate=Decimal("0.75"), currency=currency)
+        Setting.objects.create(group="CURRENCY", key="BUFFER", value=Decimal("0.00"))
 
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("0.75"))
@@ -128,11 +103,7 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("1.00")
         currency_code = "GBP"
 
-        Setting.objects.create(
-            group='CURRENCY',
-            key='BUFFER',
-            value=Decimal("0.10"),
-        )
+        Setting.objects.create(group="CURRENCY", key="BUFFER", value=Decimal("0.10"))
 
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("1.10"))
@@ -141,11 +112,7 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("0.00")
         currency_code = "GBP"
 
-        Setting.objects.create(
-            group='CURRENCY',
-            key='BUFFER',
-            value=Decimal("0.10"),
-        )
+        Setting.objects.create(group="CURRENCY", key="BUFFER", value=Decimal("0.10"))
 
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("0.00"))
@@ -154,11 +121,7 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("1.00")
         currency_code = "GBP"
 
-        Setting.objects.create(
-            group='CURRENCY',
-            key='BUFFER',
-            value=Decimal("0.10"),
-        )
+        Setting.objects.create(group="CURRENCY", key="BUFFER", value=Decimal("0.10"))
 
         test_value = convert_to_currency(value, currency_code, ignore_buffer=True)
         self.assertEqual(test_value, Decimal("1.00"))
@@ -167,15 +130,8 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("1.00")
         currency_code = "GBP"
         currency = GBPCurrencyFactory()
-        ExchangeRateFactory(
-            rate=Decimal("0.750123"),
-            currency=currency
-        )
-        Setting.objects.create(
-            group='CURRENCY',
-            key='BUFFER',
-            value=Decimal("0.00"),
-        )
+        ExchangeRateFactory(rate=Decimal("0.750123"), currency=currency)
+        Setting.objects.create(group="CURRENCY", key="BUFFER", value=Decimal("0.00"))
 
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("0.75"))
@@ -184,15 +140,8 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("0.50")
         currency_code = "GBP"
         currency = GBPCurrencyFactory()
-        ExchangeRateFactory(
-            rate=Decimal("1.11"),
-            currency=currency
-        )
-        Setting.objects.create(
-            group='CURRENCY',
-            key='ROUND_UP',
-            value=True,
-        )
+        ExchangeRateFactory(rate=Decimal("1.11"), currency=currency)
+        Setting.objects.create(group="CURRENCY", key="ROUND_UP", value=True)
 
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("1.00"))
@@ -201,15 +150,8 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("0.33")
         currency_code = "GBP"
         currency = GBPCurrencyFactory()
-        ExchangeRateFactory(
-            rate=Decimal("1.11"),
-            currency=currency
-        )
-        Setting.objects.create(
-            group='CURRENCY',
-            key='ROUND_UP',
-            value=True,
-        )
+        ExchangeRateFactory(rate=Decimal("1.11"), currency=currency)
+        Setting.objects.create(group="CURRENCY", key="ROUND_UP", value=True)
 
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("0.50"))
@@ -218,15 +160,8 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("0.33")
         currency_code = "GBP"
         currency = GBPCurrencyFactory()
-        ExchangeRateFactory(
-            rate=Decimal("1.11"),
-            currency=currency
-        )
-        Setting.objects.create(
-            group='CURRENCY',
-            key='ROUND_UP',
-            value=False,
-        )
+        ExchangeRateFactory(rate=Decimal("1.11"), currency=currency)
+        Setting.objects.create(group="CURRENCY", key="ROUND_UP", value=False)
         test_value = convert_to_currency(value, currency_code)
         self.assertEqual(test_value, Decimal("0.37"))
 
@@ -235,15 +170,10 @@ class ConvertToCurrencyTest(TestCase):
 
         currency_code = "GBP"
         currency = GBPCurrencyFactory()
-        ExchangeRateFactory(
-            rate=Decimal("2.00"),
-            currency=currency
-        )
+        ExchangeRateFactory(rate=Decimal("2.00"), currency=currency)
 
         Setting.objects.create(
-            group='CURRENCY',
-            key='PSYCHOLOGICAL_PRICING',
-            value=True,
+            group="CURRENCY", key="PSYCHOLOGICAL_PRICING", value=True
         )
 
         test_value = convert_to_currency(value, currency_code)
@@ -253,14 +183,9 @@ class ConvertToCurrencyTest(TestCase):
         value = Decimal("0.75")
         currency_code = "GBP"
         currency = GBPCurrencyFactory()
-        ExchangeRateFactory(
-            rate=Decimal("2.00"),
-            currency=currency
-        )
+        ExchangeRateFactory(rate=Decimal("2.00"), currency=currency)
         Setting.objects.create(
-            group='CURRENCY',
-            key='PSYCHOLOGICAL_PRICING',
-            value=True,
+            group="CURRENCY", key="PSYCHOLOGICAL_PRICING", value=True
         )
 
         test_value = convert_to_currency(value, currency_code)
@@ -271,9 +196,7 @@ class ConvertToCurrencyTest(TestCase):
         currency_code = "EUR"
 
         Setting.objects.create(
-            group='CURRENCY',
-            key='PSYCHOLOGICAL_PRICING',
-            value=True,
+            group="CURRENCY", key="PSYCHOLOGICAL_PRICING", value=True
         )
 
         test_value = convert_to_currency(value, currency_code)
@@ -284,9 +207,7 @@ class ConvertToCurrencyTest(TestCase):
         currency_code = "EUR"
 
         Setting.objects.create(
-            group='CURRENCY',
-            key='PSYCHOLOGICAL_PRICING',
-            value=False,
+            group="CURRENCY", key="PSYCHOLOGICAL_PRICING", value=False
         )
 
         test_value = convert_to_currency(value, currency_code)
@@ -304,9 +225,7 @@ class CurrencyForRequest(TestCase):
     def test_currency_code_in_session(self):
         GBPCurrencyFactory()
         request = self.request_factory.get("/")
-        request.session = {
-            "currency_code": "GBP",
-        }
+        request.session = {"currency_code": "GBP"}
 
         self.assertEqual(currency_for_request(request), "GBP")
 
@@ -335,7 +254,8 @@ class CurrencyForRequest(TestCase):
 
         class MockGeoIP(object):
             def country(self, ip):
-                return {'country_name': None, 'country_code': None}
+                return {"country_name": None, "country_code": None}
+
         mock_geoip.return_value = MockGeoIP()
 
         request = self.request_factory.get("/")
@@ -346,12 +266,15 @@ class CurrencyForRequest(TestCase):
     @override_settings(GEOIP_PATH="/tmp")
     @mock.patch("satchmo.currency.utils.GeoIP2")
     @mock.patch("satchmo.currency.utils.get_real_ip")
-    def test_geoip__country_doesnt_match_accepted_country(self, mock_get_real_ip, mock_geoip):
+    def test_geoip__country_doesnt_match_accepted_country(
+        self, mock_get_real_ip, mock_geoip
+    ):
         mock_get_real_ip.return_value = "163.44.191.38"
 
         class MockGeoIP(object):
             def country(self, ip):
-                return {'country_name': 'Japan', 'country_code': 'JP'}
+                return {"country_name": "Japan", "country_code": "JP"}
+
         mock_geoip.return_value = MockGeoIP()
 
         request = self.request_factory.get("/")
@@ -362,7 +285,9 @@ class CurrencyForRequest(TestCase):
     @override_settings(GEOIP_PATH="/tmp")
     @mock.patch("satchmo.currency.utils.GeoIP2")
     @mock.patch("satchmo.currency.utils.get_real_ip")
-    def test_geoip__country_matches_accepted_country(self, mock_get_real_ip, mock_geoip):
+    def test_geoip__country_matches_accepted_country(
+        self, mock_get_real_ip, mock_geoip
+    ):
         mock_get_real_ip.return_value = "88.97.34.8"
         gbp = GBPCurrencyFactory()
         gbp.accepted = True
@@ -370,7 +295,8 @@ class CurrencyForRequest(TestCase):
 
         class MockGeoIP(object):
             def country(self, ip):
-                return {'country_name': 'United Kingdom', 'country_code': 'GB'}
+                return {"country_name": "United Kingdom", "country_code": "GB"}
+
         mock_geoip.return_value = MockGeoIP()
 
         request = self.request_factory.get("/")

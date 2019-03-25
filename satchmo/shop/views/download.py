@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from satchmo.shop.models import DownloadLink
 
-SHA1_RE = re.compile('^[a-f0-9]{40}$')
+SHA1_RE = re.compile("^[a-f0-9]{40}$")
 
 
 def _validate_key(download_key):
@@ -45,19 +45,15 @@ def process(request, download_key):
     """
     valid, msg, dl_product = _validate_key(download_key)
     if not valid:
-        context = {'error_message': msg}
-        return render(request, 'download.html', context)
+        context = {"error_message": msg}
+        return render(request, "download.html", context)
     else:
         # The key is valid so let's set the session variable and redirect to the
         # download view
-        request.session['download_key'] = download_key
-        url = reverse('satchmo_download_send', kwargs={
-            'download_key': download_key})
-        context = {
-            'download_product': dl_product,
-            'dl_url': url
-        }
-        return render(request, 'download.html', context)
+        request.session["download_key"] = download_key
+        url = reverse("satchmo_download_send", kwargs={"download_key": download_key})
+        context = {"download_product": dl_product, "dl_url": url}
+        return render(request, "download.html", context)
 
 
 def send_file(request, download_key):
@@ -77,26 +73,28 @@ def send_file(request, download_key):
     url.access-deny = ("")
     }
     """
-    if not request.session.get('download_key', False):
-        url = reverse('satchmo_download_process', kwargs={
-            'download_key': download_key})
+    if not request.session.get("download_key", False):
+        url = reverse("satchmo_download_process", kwargs={"download_key": download_key})
         return HttpResponseRedirect(url)
-    valid, msg, dl_product = _validate_key(request.session['download_key'])
+    valid, msg, dl_product = _validate_key(request.session["download_key"])
     if not valid:
-        url = reverse('satchmo_download_process', kwargs={
-            'download_key': request.session['download_key']})
+        url = reverse(
+            "satchmo_download_process",
+            kwargs={"download_key": request.session["download_key"]},
+        )
         return HttpResponseRedirect(url)
     file_name = os.path.split(dl_product.downloadable_product.file.path)[1]
     dl_product.num_attempts += 1
     dl_product.save()
-    del request.session['download_key']
+    del request.session["download_key"]
     response = HttpResponse()
-    response['X-Sendfile'] = dl_product.downloadable_product.file.path
-    response['X-LIGHTTPD-send-file'] = dl_product.downloadable_product.file.path
-    response['Content-Disposition'] = "attachment; filename=%s" % file_name
-    response['Content-length'] = os.stat(
-        dl_product.downloadable_product.file.path).st_size
+    response["X-Sendfile"] = dl_product.downloadable_product.file.path
+    response["X-LIGHTTPD-send-file"] = dl_product.downloadable_product.file.path
+    response["Content-Disposition"] = "attachment; filename=%s" % file_name
+    response["Content-length"] = os.stat(
+        dl_product.downloadable_product.file.path
+    ).st_size
     contenttype, encoding = mimetypes.guess_type(file_name)
     if contenttype:
-        response['Content-type'] = contenttype
+        response["Content-type"] = contenttype
     return response

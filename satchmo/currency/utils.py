@@ -4,6 +4,7 @@ from decimal import Decimal, ROUND_HALF_EVEN
 from ipware.ip import get_real_ip
 from geoip2.errors import AddressNotFoundError
 
+from django.core.cache import caches
 from django.conf import settings
 from django.contrib.gis.geoip2 import GeoIP2
 from django.utils.translation import ugettext_lazy as _
@@ -24,9 +25,7 @@ def money_format(value, currency_code):
         return _("{currency} is not accepted".format(currency=currency_code))
 
     return "{currency_symbol}{value:.2f} ({code})".format(
-        currency_symbol=currency.symbol,
-        value=value,
-        code=currency.iso_4217_code,
+        currency_symbol=currency.symbol, value=value, code=currency.iso_4217_code
     )
 
 
@@ -49,24 +48,24 @@ def convert_to_currency(value, currency_code, ignore_buffer=False):
 
         # Add a small buffer
         if value and ignore_buffer is False:
-            buffer = config_value('CURRENCY', 'BUFFER')
+            buffer = config_value("CURRENCY", "BUFFER")
             value = value + buffer
 
         # Multiply by the exchange rate
         value = value * exchange_rate
 
         # Quantize value using bankers rounding
-        value = value.quantize(Decimal('.01'), rounding=ROUND_HALF_EVEN)
+        value = value.quantize(Decimal(".01"), rounding=ROUND_HALF_EVEN)
 
         # Round up to the nearest half unit of currency
-        if config_value('CURRENCY', 'ROUND_UP'):
+        if config_value("CURRENCY", "ROUND_UP"):
             if value % 1 > Decimal("0.5"):
                 value = Decimal(math.ceil(value))
             else:
                 value = Decimal(math.floor(value)) + Decimal("0.5")
 
     # Take away 1 minor unit of currency
-    if config_value('CURRENCY', 'PSYCHOLOGICAL_PRICING') and value == math.ceil(value):
+    if config_value("CURRENCY", "PSYCHOLOGICAL_PRICING") and value == math.ceil(value):
         value = value - Decimal("0.01")
 
     return value
@@ -74,7 +73,11 @@ def convert_to_currency(value, currency_code, ignore_buffer=False):
 
 def currency_for_request(request):
     """ Find the currency_code for the request """
-    currency_code = None
+    key = "currency_for_request-{request}".format(request=hash(request))
+    cache = caches["default"]
+    currency_code = cache.get(key)
+    if currency_code:
+        return currency_code
 
     if request is not None:
         # Try to look up the currency code from the session
@@ -112,4 +115,5 @@ def currency_for_request(request):
         currency = Currency.objects.get_primary()
         currency_code = currency.iso_4217_code
 
+    cache.set(key, currency_code, 10)
     return currency_code

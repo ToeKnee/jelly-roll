@@ -10,6 +10,7 @@ class Command(NoArgsCommand):
 
     def handle_noargs(self, **options):
         from django.conf import settings
+
         errors = []
         print("Checking your satchmo configuration.")
         try:
@@ -42,21 +43,27 @@ class Command(NoArgsCommand):
             errors.append("YAML is not installed.")
         try:
             from satchmo.l10n.utils import get_locale_conv
+
             get_locale_conv()
         except:
-            errors.append("""
+            errors.append(
+                """
             Locale is not set correctly.  Try
             Unix: sudo locale-gen en_US
             If the above does not work, try
             sudo localedef -i en_US -f ISO-8859-1 en_US
             Windows: set LANGUAGE_CODE in settings.py to LANGUAGE_CODE = 'us'
-            """)
+            """
+            )
         try:
             cache_avail = settings.CACHE_BACKEND
         except AttributeError:
             errors.append("A CACHE_BACKEND must be configured.")
 
-        if 'satchmo.shop.context_processors.settings' not in settings.TEMPLATE_CONTEXT_PROCESSORS:
+        if (
+            "satchmo.shop.context_processors.settings"
+            not in settings.TEMPLATE_CONTEXT_PROCESSORS
+        ):
             errors.append(
                 "You must have satchmo.shop.context_processors.settings in your TEMPLATE_CONTEXT_PROCESSORS."
             )
@@ -64,10 +71,7 @@ class Command(NoArgsCommand):
             errors.append(
                 "You must have SECRET_KEY set to a valid string in your settings.py file"
             )
-            python_ver = Decimal(
-                "%s.%s" %
-                (sys.version_info[0], sys.version_info[1])
-            )
+            python_ver = Decimal("%s.%s" % (sys.version_info[0], sys.version_info[1]))
         if python_ver < Decimal("2.4"):
             errors.append("Python version must be at least 2.4.")
         if python_ver < Decimal("2.5"):

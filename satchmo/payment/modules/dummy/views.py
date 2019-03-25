@@ -7,7 +7,7 @@ from satchmo.configuration.functions import config_get_group
 from satchmo.payment.views import confirm, payship
 from satchmo.shop.models import Cart
 
-dummy = config_get_group('PAYMENT_DUMMY')
+dummy = config_get_group("PAYMENT_DUMMY")
 
 
 def pay_ship_info(request):

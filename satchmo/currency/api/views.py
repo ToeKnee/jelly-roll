@@ -1,5 +1,6 @@
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
+
 # Error 422 exists in a newer version of rest_framework, use it if
 # it's available.
 try:
@@ -67,6 +68,7 @@ class CurrencySessionAPIView(APIView):
             return Response(serializer.errors, status=HTTP_422_UNPROCESSABLE_ENTITY)
 
         currency = Currency.objects.all_accepted().get(
-            iso_4217_code=serializer.data["iso_4217_code"])
+            iso_4217_code=serializer.data["iso_4217_code"]
+        )
         serializer = CurrencySerializer(currency)
         return Response(serializer.data)

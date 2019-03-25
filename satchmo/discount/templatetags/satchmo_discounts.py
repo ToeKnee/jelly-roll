@@ -42,5 +42,5 @@ def discount_saved(context, product, discount):
         cents = Decimal("0.01")
         price = saved.quantize(cents)
     else:
-        price = Decimal('0.00')
+        price = Decimal("0.00")
     return money_format(price, currency)

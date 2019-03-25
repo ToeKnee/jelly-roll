@@ -2,11 +2,7 @@ import mock
 
 from django.test import TestCase
 
-from satchmo.shop.factories import (
-    OrderStatusFactory,
-    OrderFactory,
-    StatusFactory,
-)
+from satchmo.shop.factories import OrderStatusFactory, OrderFactory, StatusFactory
 
 
 class OrderStatusTest(TestCase):
@@ -22,9 +18,6 @@ class OrderStatusTest(TestCase):
         # weirdness.
         order = OrderFactory()
         status = StatusFactory(notify=True)
-        order_status = OrderStatusFactory.build(
-            order=order,
-            status=status,
-        )
+        order_status = OrderStatusFactory.build(order=order, status=status)
         order_status.save()
         self.assertEqual(order.status, order_status)

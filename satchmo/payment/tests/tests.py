@@ -18,56 +18,63 @@ from satchmo.utils.dynamic import lookup_template, lookup_url
 from satchmo.payment.urls import make_urlpatterns
 
 
-alphabet = 'abcdefghijklmnopqrstuvwxyz'
+alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-domain = 'http://testserver'
-prefix = get_satchmo_setting('SHOP_BASE')
-if prefix == '/':
-    prefix = ''
+domain = "http://testserver"
+prefix = get_satchmo_setting("SHOP_BASE")
+if prefix == "/":
+    prefix = ""
 
 
 class TestRecurringBilling(TestCase):
-    fixtures = ['l10n_data.xml', 'test_shop.yaml', 'sub_products', 'config']
+    fixtures = ["l10n_data.xml", "test_shop.yaml", "sub_products", "config"]
 
     def setUp(self):
-        self.customer = Contact.objects.create(
-            first_name='Jane', last_name='Doe')
+        self.customer = Contact.objects.create(first_name="Jane", last_name="Doe")
         US = Country.objects.get(iso2_code__iexact="US")
         self.customer.addressbook_set.create(
-            street1='123 Main St', city='New York', state='NY', postal_code='12345', country=US)
+            street1="123 Main St",
+            city="New York",
+            state="NY",
+            postal_code="12345",
+            country=US,
+        )
         import datetime
+
         site = Site.objects.get_current()
         for product in Product.objects.all():
             price, expire_length = self.getTerms(product)
             if price is None:
                 continue
             order = Order.objects.create(
-                contact=self.customer, shipping_cost=0, site=site)
+                contact=self.customer, shipping_cost=0, site=site
+            )
             order.orderitem_set.create(
                 product=product,
                 quantity=1,
                 unit_price=price,
                 line_item_price=price,
-                expire_date=datetime.datetime.now() + datetime.timedelta(days=expire_length),
-                completed=True
+                expire_date=datetime.datetime.now()
+                + datetime.timedelta(days=expire_length),
+                completed=True,
             )
             order.recalculate_total()
-            order.payments.create(
-                order=order, payment='DUMMY', amount=order.total)
+            order.payments.create(order=order, payment="DUMMY", amount=order.total)
             order.save()
 
     def tearDown(self):
         caching.cache_delete()
 
     def testProductType(self):
-        product1 = Product.objects.get(slug='membership-p1')
-        product2 = Product.objects.get(slug='membership-p2')
+        product1 = Product.objects.get(slug="membership-p1")
+        product2 = Product.objects.get(slug="membership-p2")
         self.assertEqual(product1.subscriptionproduct.expire_length, 21)
         self.assertEqual(product1.subscriptionproduct.recurring, True)
         self.assertEqual(product1.subscriptionproduct.recurring, True)
-        self.assertEqual(product1.price_set.all()[0].price, Decimal('3.95'))
+        self.assertEqual(product1.price_set.all()[0].price, Decimal("3.95"))
         self.assertEqual(
-            product2.subscriptionproduct.get_trial_terms(0).expire_length, 7)
+            product2.subscriptionproduct.get_trial_terms(0).expire_length, 7
+        )
 
     def testCheckout(self):
         pass
@@ -77,38 +84,46 @@ class TestRecurringBilling(TestCase):
             price, expire_length = self.getTerms(order.product)
             if price is None:
                 continue
-            self.assertEqual(order.expire_date, datetime.date.today(
-            ) + datetime.timedelta(days=expire_length))
+            self.assertEqual(
+                order.expire_date,
+                datetime.date.today() + datetime.timedelta(days=expire_length),
+            )
             # set expire date to today for upcoming cron test
             order.expire_date = datetime.date.today()
             order.save()
 
         order_count = OrderItem.objects.count()
         self.c = Client()
-        self.response = self.c.get(prefix+'/checkout/cron/')
+        self.response = self.c.get(prefix + "/checkout/cron/")
         self.assertEqual(self.response.status_code, 200)
-        self.assertEqual(self.response.content, 'Authentication Key Required')
+        self.assertEqual(self.response.content, "Authentication Key Required")
         from django.conf import settings
+
         self.response = self.c.get(
-            prefix+'/checkout/cron/', data={'key': config_value('PAYMENT', 'CRON_KEY')})
+            prefix + "/checkout/cron/",
+            data={"key": config_value("PAYMENT", "CRON_KEY")},
+        )
         self.assertEqual(self.response.status_code, 200)
-        self.assertEqual(self.response.content, '')
+        self.assertEqual(self.response.content, "")
         self.assertTrue(order_count < OrderItem.objects.count())
-        self.assertEqual(order_count, OrderItem.objects.count()/2.0)
+        self.assertEqual(order_count, OrderItem.objects.count() / 2.0)
         for order in OrderItem.objects.filter(expire_date__gt=datetime.datetime.now()):
-            price, expire_length = self.getTerms(
-                order.product, ignore_trial=True)
+            price, expire_length = self.getTerms(order.product, ignore_trial=True)
             if price is None:
                 continue
-            self.assertEqual(order.expire_date, datetime.date.today(
-            ) + datetime.timedelta(days=expire_length))
-            self.assertEqual(order.order.balance, Decimal('0.00'))
+            self.assertEqual(
+                order.expire_date,
+                datetime.date.today() + datetime.timedelta(days=expire_length),
+            )
+            self.assertEqual(order.order.balance, Decimal("0.00"))
 
     def getTerms(self, object, ignore_trial=False):
-        if object.subscriptionproduct.get_trial_terms().count() and ignore_trial is False:
+        if (
+            object.subscriptionproduct.get_trial_terms().count()
+            and ignore_trial is False
+        ):
             price = object.subscriptionproduct.get_trial_terms(0).price
-            expire_length = object.subscriptionproduct.get_trial_terms(
-                0).expire_length
+            expire_length = object.subscriptionproduct.get_trial_terms(0).expire_length
             return price, expire_length
         elif object.is_subscription or ignore_trial is True:
             price = object.price_set.all()[0].price
@@ -119,36 +134,36 @@ class TestRecurringBilling(TestCase):
 
 
 class TestModulesSettings(TestCase):
-
     def setUp(self):
-        self.dummy = config_get_group('PAYMENT_DUMMY')
+        self.dummy = config_get_group("PAYMENT_DUMMY")
 
     def tearDown(self):
         caching.cache_delete()
 
     def testGetDummy(self):
         self.assertTrue(self.dummy != None)
-        self.assertEqual(self.dummy.LABEL, 'Payment test module')
+        self.assertEqual(self.dummy.LABEL, "Payment test module")
 
     def testLookupTemplateSet(self):
-        t = lookup_template(self.dummy, 'test.html')
-        self.assertEqual(t, 'test.html')
+        t = lookup_template(self.dummy, "test.html")
+        self.assertEqual(t, "test.html")
 
         # TODO, add these back in when DictValues are added to Comfiguration
-        #self.dummy['TEMPLATE_OVERRIDES'] = {'test2.html' : 'foo.html'}
-        #t = lookup_template(self.dummy, 'test2.html')
-        #self.assertEqual(t, 'foo.html')
+        # self.dummy['TEMPLATE_OVERRIDES'] = {'test2.html' : 'foo.html'}
+        # t = lookup_template(self.dummy, 'test2.html')
+        # self.assertEqual(t, 'foo.html')
 
     def testLookupURL(self):
         try:
-            t = lookup_url(self.dummy, 'test_doesnt_exist')
-            self.fail('Should have failed with NoReverseMatch')
+            t = lookup_url(self.dummy, "test_doesnt_exist")
+            self.fail("Should have failed with NoReverseMatch")
         except NoReverseMatch:
             pass
 
     def testUrlPatterns(self):
         pats = make_urlpatterns()
         self.assertTrue(len(pats) > 0)
+
 
 # class TestGenerateCode(TestCase):
 #
@@ -203,8 +218,12 @@ class TestModulesSettings(TestCase):
 
 
 class TestMinimumOrder(TestCase):
-    fixtures = ['l10n_data.xml', 'sample-store-data.yaml',
-                'products.yaml', 'test-config.yaml']
+    fixtures = [
+        "l10n_data.xml",
+        "sample-store-data.yaml",
+        "products.yaml",
+        "test-config.yaml",
+    ]
 
     def setUp(self):
         # Every test needs a client
@@ -217,37 +236,40 @@ class TestMinimumOrder(TestCase):
         """
         Validate we can add some items to the cart
         """
-        min_order = config_get('PAYMENT', 'MINIMUM_ORDER')
+        min_order = config_get("PAYMENT", "MINIMUM_ORDER")
 
         # start with no min.
         min_order.update("0.00")
-        response = self.client.get(prefix+'/product/dj-rocks/')
-        self.assertContains(response, "Django Rocks shirt",
-                            count=2, status_code=200)
-        response = self.client.post(prefix+'/cart/add/', {"productname": "dj-rocks",
-                                                          "1": "L",
-                                                          "2": "BL",
-                                                          "quantity": 2})
-        self.assertRedirects(response, prefix + '/cart/',
-                             status_code=302, target_status_code=200)
-        response = self.client.get(prefix+'/cart/')
+        response = self.client.get(prefix + "/product/dj-rocks/")
+        self.assertContains(response, "Django Rocks shirt", count=2, status_code=200)
+        response = self.client.post(
+            prefix + "/cart/add/",
+            {"productname": "dj-rocks", "1": "L", "2": "BL", "quantity": 2},
+        )
+        self.assertRedirects(
+            response, prefix + "/cart/", status_code=302, target_status_code=200
+        )
+        response = self.client.get(prefix + "/cart/")
         self.assertContains(
-            response, "Django Rocks shirt (Large/Blue)", count=2, status_code=200)
-        response = self.client.get(reverse('satchmo_checkout-step1'))
+            response, "Django Rocks shirt (Large/Blue)", count=2, status_code=200
+        )
+        response = self.client.get(reverse("satchmo_checkout-step1"))
         self.assertContains(response, "Billing Address", status_code=200)
 
         # now check for min order not met
         min_order.update("100.00")
-        response = self.client.get(reverse('satchmo_checkout-step1'))
+        response = self.client.get(reverse("satchmo_checkout-step1"))
         self.assertContains(
-            response, "This store requires a minimum order", count=1, status_code=200)
+            response, "This store requires a minimum order", count=1, status_code=200
+        )
 
         # add a bunch of shirts, to make the min order
-        response = self.client.post(prefix+'/cart/add/', {"productname": "dj-rocks",
-                                                          "1": "L",
-                                                          "2": "BL",
-                                                          "quantity": 10})
-        self.assertRedirects(response, prefix + '/cart/',
-                             status_code=302, target_status_code=200)
-        response = self.client.get(reverse('satchmo_checkout-step1'))
+        response = self.client.post(
+            prefix + "/cart/add/",
+            {"productname": "dj-rocks", "1": "L", "2": "BL", "quantity": 10},
+        )
+        self.assertRedirects(
+            response, prefix + "/cart/", status_code=302, target_status_code=200
+        )
+        response = self.client.get(reverse("satchmo_checkout-step1"))
         self.assertContains(response, "Billing Address", status_code=200)

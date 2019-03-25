@@ -7,7 +7,7 @@ from satchmo.shop.models import Status
 register = template.Library()
 
 
-@register.inclusion_tag('admin/_ordercount_list.html')
+@register.inclusion_tag("admin/_ordercount_list.html")
 def order_lists():
     """ Show all orders that are in status' that have display set to True """
     status = []
@@ -21,6 +21,4 @@ def order_lists():
         if value:
             status.append((s, money_format(value, primary_currency.iso_4217_code)))
 
-    return {
-        'status': status,
-    }
+    return {"status": status}

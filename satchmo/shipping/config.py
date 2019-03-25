@@ -1,30 +1,26 @@
 from django.utils.translation import ugettext_lazy as _
-from satchmo.configuration.functions import (
-    config_register,
-    config_value,
-)
-from satchmo.configuration.values import (
-    ConfigurationGroup,
-    MultipleStringValue,
-)
+from satchmo.configuration.functions import config_register, config_value
+from satchmo.configuration.values import ConfigurationGroup, MultipleStringValue
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.utils import load_module
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 
-SHIPPING_GROUP = ConfigurationGroup('SHIPPING', _('Shipping Settings'))
+SHIPPING_GROUP = ConfigurationGroup("SHIPPING", _("Shipping Settings"))
 
 SHIPPING_ACTIVE = config_register(
     MultipleStringValue(
         SHIPPING_GROUP,
-        'MODULES',
+        "MODULES",
         description=_("Active shipping modules"),
         help_text=_(
-            "Select the active shipping modules, save and reload to set any module-specific shipping settings."),
+            "Select the active shipping modules, save and reload to set any module-specific shipping settings."
+        ),
         default=["satchmo.shipping.modules.per"],
-        choices=[('satchmo.shipping.modules.per', _('Per piece'))]
+        choices=[("satchmo.shipping.modules.per", _("Per piece"))],
     )
 )
 
@@ -34,24 +30,22 @@ SHIPPING_ACTIVE = config_register(
 # 'Tiered' is special, since it needs to be added as a module.  To enable it,
 # just add satchmo.shipping.modules.tiered to your INSTALLED_APPS, you don't
 # need to add it to CUSTOM_SHIPPING_MODULES either.
-_default_modules = ('dummy', 'fedex', 'flat', 'per',
-                    'ups', 'usps', 'royalmailcontract')
+_default_modules = ("dummy", "fedex", "flat", "per", "ups", "usps", "royalmailcontract")
 
 for module in _default_modules:
     try:
         load_module("satchmo.shipping.modules.%s.config" % module)
     except ImportError:
-        logger.debug(
-            'Could not load default shipping module configuration: %s', module)
+        logger.debug("Could not load default shipping module configuration: %s", module)
 
 # --- Load any extra shipping modules. ---
-extra_shipping = get_satchmo_setting('CUSTOM_SHIPPING_MODULES')
+extra_shipping = get_satchmo_setting("CUSTOM_SHIPPING_MODULES")
 
 for extra in extra_shipping:
     try:
         load_module("%s.config" % extra)
     except ImportError:
-        logger.warn('Could not load shipping module configuration: %s' % extra)
+        logger.warn("Could not load shipping module configuration: %s" % extra)
 
 
 class ShippingModuleNotFound(Exception):
@@ -61,8 +55,8 @@ class ShippingModuleNotFound(Exception):
 
 def shipping_methods():
     methods = []
-    modules = config_value('SHIPPING', 'MODULES')
-    logger.debug('Getting shipping methods: %s', modules)
+    modules = config_value("SHIPPING", "MODULES")
+    logger.debug("Getting shipping methods: %s", modules)
     for m in modules:
         module = load_module(m)
         methods.extend(module.get_methods())
@@ -76,6 +70,7 @@ def shipping_method_by_key(key):
                 return method
     else:
         import satchmo.shipping.modules.no.shipper as noship
+
         method = noship.Shipper()
 
     if method:

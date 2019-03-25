@@ -21,11 +21,21 @@ from satchmo.configuration.exceptions import SettingNotSet
 from satchmo.utils import load_module, is_string_like, is_list_or_tuple
 
 __all__ = [
-    'SHOP_GROUP', 'ConfigurationGroup', 'Value', 'BooleanValue',
-    'DecimalValue', 'DurationValue', 'FloatValue', 'IntegerValue',
-    'ModuleValue', 'PercentValue', 'PositiveIntegerValue',
-    'SortedDotDict', 'StringValue', 'LongStringValue',
-    'MultipleStringValue'
+    "SHOP_GROUP",
+    "ConfigurationGroup",
+    "Value",
+    "BooleanValue",
+    "DecimalValue",
+    "DurationValue",
+    "FloatValue",
+    "IntegerValue",
+    "ModuleValue",
+    "PercentValue",
+    "PositiveIntegerValue",
+    "SortedDotDict",
+    "StringValue",
+    "LongStringValue",
+    "MultipleStringValue",
 ]
 
 _WARN = {}
@@ -36,7 +46,6 @@ NOTSET = object()
 
 
 class SortedDotDict(OrderedDict):
-
     def __getattr__(self, key):
         try:
             return self[key]
@@ -70,10 +79,10 @@ class ConfigurationGroup(SortedDotDict):
         """
         self.key = key
         self.name = name
-        self.ordering = kwargs.pop('ordering', 1)
-        self.requires = kwargs.pop('requires', None)
+        self.ordering = kwargs.pop("ordering", 1)
+        self.requires = kwargs.pop("requires", None)
         if self.requires:
-            reqval = kwargs.pop('requiresvalue', key)
+            reqval = kwargs.pop("requiresvalue", key)
             if not is_list_or_tuple(reqval):
                 reqval = (reqval, reqval)
 
@@ -123,7 +132,7 @@ class ConfigurationGroup(SortedDotDict):
         return [v for v in vals if v.enabled()]
 
 
-SHOP_GROUP = ConfigurationGroup('SHOP', _('Base Settings'), ordering=0)
+SHOP_GROUP = ConfigurationGroup("SHOP", _("Base Settings"), ordering=0)
 
 
 class Value(object):
@@ -149,15 +158,15 @@ class Value(object):
         """
         self.group = group
         self.key = key
-        self.description = kwargs.get('description', None)
-        self.help_text = kwargs.get('help_text')
-        self.choices = kwargs.get('choices', [])
-        self.ordering = kwargs.pop('ordering', 0)
-        self.hidden = kwargs.pop('hidden', False)
+        self.description = kwargs.get("description", None)
+        self.help_text = kwargs.get("help_text")
+        self.choices = kwargs.get("choices", [])
+        self.ordering = kwargs.pop("ordering", 0)
+        self.hidden = kwargs.pop("hidden", False)
 
-        self.requires = kwargs.pop('requires', None)
+        self.requires = kwargs.pop("requires", None)
         if self.requires:
-            reqval = kwargs.pop('requiresvalue', key)
+            reqval = kwargs.pop("requiresvalue", key)
             if not is_list_or_tuple(reqval):
                 reqval = (reqval, reqval)
 
@@ -168,8 +177,8 @@ class Value(object):
             self.requires = group.requires
             self.requires_value = group.requires_value
 
-        if 'default' in kwargs:
-            self.default = kwargs.pop('default')
+        if "default" in kwargs:
+            self.default = kwargs.pop("default")
             self.use_default = True
         else:
             self.use_default = False
@@ -180,7 +189,7 @@ class Value(object):
     def __cmp__(self, other):
         return cmp(
             (self.ordering, self.description, self.creation_counter),
-            (other.ordering, other.description, other.creation_counter)
+            (other.ordering, other.description, other.creation_counter),
         )
 
     def __eq__(self, other):
@@ -229,11 +238,11 @@ class Value(object):
                 skip = True
                 break
         if not skip:
-            self.choices += (choice, )
+            self.choices += (choice,)
 
     def choice_field(self, **kwargs):
         if self.hidden:
-            kwargs['widget'] = forms.MultipleHiddenInput()
+            kwargs["widget"] = forms.MultipleHiddenInput()
         return forms.ChoiceField(choices=self.choices, **kwargs)
 
     def _choice_values(self):
@@ -260,7 +269,7 @@ class Value(object):
                 for x in self.choices:
                     if x[0] in self.default:
                         work.append(force_text(x[1]))
-                note = ugettext('Default value: ') + ", ".join(work)
+                note = ugettext("Default value: ") + ", ".join(work)
 
             else:
                 note = _("Default value: %s") % force_text(self.default)
@@ -287,11 +296,11 @@ class Value(object):
     def make_field(self, **kwargs):
         if self.choices:
             if self.hidden:
-                kwargs['widget'] = forms.MultipleHiddenInput()
+                kwargs["widget"] = forms.MultipleHiddenInput()
             field = self.choice_field(**kwargs)
         else:
             if self.hidden:
-                kwargs['widget'] = forms.HiddenInput()
+                kwargs["widget"] = forms.HiddenInput()
             field = self.field(**kwargs)
 
         field.group = self.group
@@ -300,11 +309,13 @@ class Value(object):
 
     def make_setting(self, db_value):
         from satchmo.configuration.models import Setting
-        log.debug('New setting %s.%s', self.group.key, self.key)
+
+        log.debug("New setting %s.%s", self.group.key, self.key)
         return Setting(group=self.group.key, key=self.key, value=db_value)
 
     def _setting(self):
         from satchmo.configuration.models import find_setting
+
         return find_setting(self.group.key, self.key)
 
     setting = property(fget=_setting)
@@ -322,29 +333,38 @@ class Value(object):
         except AttributeError as ae:
             log.error("Attribute error: %s", ae)
             log.error("%s: Could not get _value of %s", self.key, self.setting)
-            raise(ae)
+            raise (ae)
 
         except Exception as e:
             global _WARN
             log.error(e)
             if str(e).find("configuration_setting") > -1:
-                if 'configuration_setting' not in _WARN:
+                if "configuration_setting" not in _WARN:
                     log.warning(
-                        'Error loading setting %s.%s from table, OK if you are in syncdb', self.group.key, self.key)
-                    _WARN['configuration_setting'] = True
+                        "Error loading setting %s.%s from table, OK if you are in syncdb",
+                        self.group.key,
+                        self.key,
+                    )
+                    _WARN["configuration_setting"] = True
 
                 if self.use_default:
                     val = self.default
                 else:
                     raise ImproperlyConfigured(
-                        "All settings used in startup must have defaults, %s.%s does not", self.group.key, self.key)
+                        "All settings used in startup must have defaults, %s.%s does not",
+                        self.group.key,
+                        self.key,
+                    )
             else:
                 import traceback
+
                 traceback.print_exc()
-                log.warning("Problem finding settings %s.%s, %s",
-                            self.group.key, self.key, e)
+                log.warning(
+                    "Problem finding settings %s.%s, %s", self.group.key, self.key, e
+                )
                 raise SettingNotSet(
-                    "Startup error, couldn't load %s.%s" % (self.group.key, self.key))
+                    "Startup error, couldn't load %s.%s" % (self.group.key, self.key)
+                )
         return val
 
     def update(self, value):
@@ -365,12 +385,12 @@ class Value(object):
                     log.info("Deleted setting %s.%s", self.group.key, self.key)
                     s.delete()
             else:
-                log.info("Updated setting %s.%s = %s",
-                         self.group.key, self.key, value)
+                log.info("Updated setting %s.%s = %s", self.group.key, self.key, value)
                 s.save()
 
             signals.configuration_value_changed.send(
-                self, old_value=current_value, new_value=new_value, setting=self)
+                self, old_value=current_value, new_value=new_value, setting=self
+            )
 
             return True
         return False
@@ -407,17 +427,16 @@ class Value(object):
             return NOTSET
         return str(value)
 
+
 ###############
 # VALUE TYPES #
 ###############
 
 
 class BooleanValue(Value):
-
     class field(forms.BooleanField):
-
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
+            kwargs["required"] = False
             forms.BooleanField.__init__(self, *args, **kwargs)
 
     def add_choice(self, choice):
@@ -425,7 +444,7 @@ class BooleanValue(Value):
         pass
 
     def to_python(self, value):
-        if value in (True, 't', 'True', 1, '1'):
+        if value in (True, "t", "True", 1, "1"):
             return True
         return False
 
@@ -434,9 +453,8 @@ class BooleanValue(Value):
 
 class DecimalValue(Value):
     class field(forms.DecimalField):
-
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
+            kwargs["required"] = False
             forms.DecimalField.__init__(self, *args, **kwargs)
 
     def to_python(self, value):
@@ -446,8 +464,12 @@ class DecimalValue(Value):
         try:
             return Decimal(value)
         except TypeError as te:
-            log.warning("Can't convert %s to Decimal for settings %s.%s",
-                        value, self.group.key, self.key)
+            log.warning(
+                "Can't convert %s to Decimal for settings %s.%s",
+                value,
+                self.group.key,
+                self.key,
+            )
             raise TypeError(te)
 
     def to_editor(self, value):
@@ -460,17 +482,16 @@ class DecimalValue(Value):
 # DurationValue has a lot of duplication and ugliness because of issue #2443
 # Until DurationField is sorted out, this has to do some extra work
 class DurationValue(Value):
-
     class field(forms.CharField):
         def clean(self, value):
             try:
                 return datetime.timedelta(seconds=float(value))
             except (ValueError, TypeError):
-                raise forms.ValidationError(
-                    'This value must be a real number.')
+                raise forms.ValidationError("This value must be a real number.")
             except OverflowError:
                 raise forms.ValidationError(
-                    'The maximum allowed value is %s' % datetime.timedelta.max)
+                    "The maximum allowed value is %s" % datetime.timedelta.max
+                )
 
     def to_python(self, value):
         if value == NOTSET:
@@ -480,24 +501,27 @@ class DurationValue(Value):
         try:
             return datetime.timedelta(seconds=float(value))
         except (ValueError, TypeError):
-            raise forms.ValidationError('This value must be a real number.')
+            raise forms.ValidationError("This value must be a real number.")
         except OverflowError:
             raise forms.ValidationError(
-                'The maximum allowed value is %s' % datetime.timedelta.max)
+                "The maximum allowed value is %s" % datetime.timedelta.max
+            )
 
     def get_db_prep_save(self, value):
         if value == NOTSET:
             return NOTSET
         else:
-            return str(value.days * 24 * 3600 + value.seconds + float(value.microseconds) / 1000000)
+            return str(
+                value.days * 24 * 3600
+                + value.seconds
+                + float(value.microseconds) / 1000000
+            )
 
 
 class FloatValue(Value):
-
     class field(forms.FloatField):
-
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
+            kwargs["required"] = False
             forms.FloatField.__init__(self, *args, **kwargs)
 
     def to_python(self, value):
@@ -514,9 +538,8 @@ class FloatValue(Value):
 
 class IntegerValue(Value):
     class field(forms.IntegerField):
-
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
+            kwargs["required"] = False
             forms.IntegerField.__init__(self, *args, **kwargs)
 
     def to_python(self, value):
@@ -532,19 +555,17 @@ class IntegerValue(Value):
 
 
 class PercentValue(Value):
-
     class field(forms.DecimalField):
-
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
+            kwargs["required"] = False
             forms.DecimalField.__init__(self, 100, 0, 5, 2, *args, **kwargs)
 
         class widget(forms.TextInput):
             def render(self, *args, **kwargs):
                 # Place a percent sign after a smaller text field
-                attrs = kwargs.pop('attrs', {})
-                attrs['size'] = attrs['max_length'] = 6
-                return forms.TextInput.render(self, attrs=attrs, *args, **kwargs) + '%'
+                attrs = kwargs.pop("attrs", {})
+                attrs["size"] = attrs["max_length"] = 6
+                return forms.TextInput.render(self, attrs=attrs, *args, **kwargs) + "%"
 
     def to_python(self, value):
         if value == NOTSET:
@@ -559,19 +580,16 @@ class PercentValue(Value):
 
 
 class PositiveIntegerValue(IntegerValue):
-
     class field(forms.IntegerField):
-
         def __init__(self, *args, **kwargs):
-            kwargs['min_value'] = 0
+            kwargs["min_value"] = 0
             forms.IntegerField.__init__(self, *args, **kwargs)
 
 
 class StringValue(Value):
-
     class field(forms.CharField):
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
+            kwargs["required"] = False
             forms.CharField.__init__(self, *args, **kwargs)
 
     def to_python(self, value):
@@ -583,16 +601,16 @@ class StringValue(Value):
 
 
 class LongStringValue(Value):
-
     class field(forms.CharField):
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
-            kwargs['widget'] = forms.Textarea()
+            kwargs["required"] = False
+            kwargs["widget"] = forms.Textarea()
             forms.CharField.__init__(self, *args, **kwargs)
 
     def make_setting(self, db_value):
         from satchmo.configuration.models import LongSetting
-        log.debug('New long setting %s.%s', self.group.key, self.key)
+
+        log.debug("New long setting %s.%s", self.group.key, self.key)
         return LongSetting(group=self.group.key, key=self.key, value=db_value)
 
     def to_python(self, value):
@@ -604,18 +622,17 @@ class LongStringValue(Value):
 
 
 class MultipleStringValue(Value):
-
     class field(forms.CharField):
-
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
+            kwargs["required"] = False
             forms.CharField.__init__(self, *args, **kwargs)
 
     def choice_field(self, **kwargs):
-        kwargs['required'] = False
+        kwargs["required"] = False
         if len(self.choices) > 7:
             field = forms.MultipleChoiceField(
-                choices=self.choices, widget=FilteredSelectMultiple("", False), **kwargs)
+                choices=self.choices, widget=FilteredSelectMultiple("", False), **kwargs
+            )
         else:
             field = forms.MultipleChoiceField(choices=self.choices, **kwargs)
         return field
@@ -637,8 +654,7 @@ class MultipleStringValue(Value):
                 if is_string_like(value):
                     return [value]
                 else:
-                    log.warning(
-                        'Could not decode returning empty list: %s', value)
+                    log.warning("Could not decode returning empty list: %s", value)
                     return []
 
     to_editor = to_python
@@ -648,9 +664,8 @@ class ModuleValue(Value):
     """Handles setting modules, storing them as strings in the db."""
 
     class field(forms.CharField):
-
         def __init__(self, *args, **kwargs):
-            kwargs['required'] = False
+            kwargs["required"] = False
             forms.CharField.__init__(self, *args, **kwargs)
 
     def load_module(self, module):

@@ -8,7 +8,9 @@ from django.utils.translation import ugettext as _
 TRANSACTION_STATUS = {
     0: {
         "NAME": _("Invalid or incomplete"),
-        "DESCRIPTION": _("At least one of the payment data fields is invalid or missing. The NCERROR and NCERRORPLUS fields give an explanation of the error."),
+        "DESCRIPTION": _(
+            "At least one of the payment data fields is invalid or missing. The NCERROR and NCERRORPLUS fields give an explanation of the error."
+        ),
         "NCERROR": 500,
         "NCSTATUS": 5,
     },
@@ -20,7 +22,9 @@ TRANSACTION_STATUS = {
     },
     2: {
         "NAME": _("Authorisation refused"),
-        "DESCRIPTION": _("The authorisation has been refused by the financial institution. The customer can retry the authorisation process after selecting another card or another payment method."),
+        "DESCRIPTION": _(
+            "The authorisation has been refused by the financial institution. The customer can retry the authorisation process after selecting another card or another payment method."
+        ),
         "NCERROR": 300,
         "NCSTATUS": 3,
     },
@@ -50,10 +54,12 @@ TRANSACTION_STATUS = {
     },
     5: {
         "NAME": _("Authorised"),
-        "DESCRIPTION": _("""The authorisation has been accepted.
+        "DESCRIPTION": _(
+            """The authorisation has been accepted.
 
 An authorisation code is available in the "ACCEPTANCE" field.
-The status will be 5 if you have defined "Authorisation" as the default operation code in the "Global transaction parameters" tab, in the "Default operation code" section of the Technical information page in your account."""),
+The status will be 5 if you have defined "Authorisation" as the default operation code in the "Global transaction parameters" tab, in the "Default operation code" section of the Technical information page in your account."""
+        ),
         "NCERROR": 0,
         "NCSTATUS": 0,
     },
@@ -65,7 +71,8 @@ The status will be 5 if you have defined "Authorisation" as the default operatio
     },
     51: {
         "NAME": _("Authorisation waiting"),
-        "DESCRIPTION": _("""The authorisation will be processed offline.
+        "DESCRIPTION": _(
+            """The authorisation will be processed offline.
 
 This is the standard response if you have selected offline processing in your account configuration.
 
@@ -74,25 +81,23 @@ The status will be 51 in two events:
     You have defined "Always offline (Scheduled)" as payment processing in the "Global transaction parameters" tab, "Processing for individual transactions" section of the Technical Information page in your account.
     When the online acquiring system is unavailable and you have defined "Online but switch to offline in intervals when the online acquiring system is unavailable" as payment processing in the "Global transaction parameters" tab, "Processing for individual transactions" section of the Technical Information page in your account.
 
-You don't have to take any action when status 51 applies."""),
+You don't have to take any action when status 51 applies."""
+        ),
         "NCERROR": 0,
         "NCSTATUS": 0,
     },
     52: {
         "NAME": _("Authorisation not known"),
-        "DESCRIPTION": _("""A technical problem arose during the authorisation/payment process, giving an unpredictable result.
+        "DESCRIPTION": _(
+            """A technical problem arose during the authorisation/payment process, giving an unpredictable result.
 
 The merchant can contact the acquirer helpdesk to know the exact status of the payment or can wait until we have updated the status in our system.
-The customer should not retry the authorisation process since the authorisation/payment might already have been accepted."""),
+The customer should not retry the authorisation process since the authorisation/payment might already have been accepted."""
+        ),
         "NCERROR": 200,
         "NCSTATUS": 2,
     },
-    55: {
-        "NAME": _("Standby"),
-        "DESCRIPTION": _(""),
-        "NCERROR": None,
-        "NCSTATUS": None,
-    },
+    55: {"NAME": _("Standby"), "DESCRIPTION": _(""), "NCERROR": None, "NCSTATUS": None},
     56: {
         "NAME": _("Ok with scheduled payments"),
         "DESCRIPTION": _(""),
@@ -125,9 +130,11 @@ The customer should not retry the authorisation process since the authorisation/
     },
     62: {
         "NAME": _("Author. deletion uncertain"),
-        "DESCRIPTION": _("""A technical problem arose during the authorisation deletion process, giving an unpredictable result.
+        "DESCRIPTION": _(
+            """A technical problem arose during the authorisation deletion process, giving an unpredictable result.
 
-The merchant can contact the acquirer helpdesk to establish the precise status of the payment or wait until we have updated the status in our system."""),
+The merchant can contact the acquirer helpdesk to establish the precise status of the payment or wait until we have updated the status in our system."""
+        ),
         "NCERROR": 200,
         "NCSTATUS": 2,
     },
@@ -197,12 +204,7 @@ The merchant can contact the acquirer helpdesk to establish the precise status o
         "NCERROR": None,
         "NCSTATUS": None,
     },
-    84: {
-        "NAME": _("Refund"),
-        "DESCRIPTION": _(""),
-        "NCERROR": None,
-        "NCSTATUS": None,
-    },
+    84: {"NAME": _("Refund"), "DESCRIPTION": _(""), "NCERROR": None, "NCSTATUS": None},
     85: {
         "NAME": _("Refund handled by merchant"),
         "DESCRIPTION": _(""),
@@ -211,11 +213,13 @@ The merchant can contact the acquirer helpdesk to establish the precise status o
     },
     9: {
         "NAME": _("Payment requested"),
-        "DESCRIPTION": _("""The payment has been accepted.
+        "DESCRIPTION": _(
+            """The payment has been accepted.
 
 An authorisation code is available in the field "ACCEPTANCE".
 
-The initial status of a transaction will be 9 if you have defined "Sale" as the default operation code in the "Global transaction parameters" tab, "Default operation code" section of the Technical information page in your account."""),
+The initial status of a transaction will be 9 if you have defined "Sale" as the default operation code in the "Global transaction parameters" tab, "Default operation code" section of the Technical information page in your account."""
+        ),
         "NCERROR": 0,
         "NCSTATUS": 0,
     },
@@ -227,10 +231,12 @@ The initial status of a transaction will be 9 if you have defined "Sale" as the 
     },
     92: {
         "NAME": _("Payment uncertain"),
-        "DESCRIPTION": _("""A technical problem arose during the authorisation/payment process, giving an unpredictable result.
+        "DESCRIPTION": _(
+            """A technical problem arose during the authorisation/payment process, giving an unpredictable result.
 
 The merchant can contact the acquirer helpdesk to know the exact status of the payment or can wait until we have updated the status in our system.
-The customer should not retry the authorisation process since the authorisation/payment might already have been accepted."""),
+The customer should not retry the authorisation process since the authorisation/payment might already have been accepted."""
+        ),
         "NCERROR": 200,
         "NCSTATUS": 2,
     },

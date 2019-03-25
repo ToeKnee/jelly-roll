@@ -1,7 +1,7 @@
 import logging
 
-class BasePaymentProcessor(object):
 
+class BasePaymentProcessor(object):
     def __init__(self, label, payment_module):
         self.settings = payment_module
         self.label = label
@@ -27,17 +27,19 @@ class BasePaymentProcessor(object):
         for orderitem in self.order.orderitem_set.all():
             product = orderitem.product
             if product.is_subscription:
-                self.log_extra('Found subscription product: %s', product.slug)
+                self.log_extra("Found subscription product: %s", product.slug)
                 if product.subscriptionproduct.recurring:
-                    self.log_extra('Subscription is recurring: %s', product.slug)
+                    self.log_extra("Subscription is recurring: %s", product.slug)
                     subscriptions.append(orderitem)
                 elif product.subscriptionproduct.trial_set.count() > 0:
-                    self.log_extra('Not recurring, but it has a trial: %s', product.slug)
+                    self.log_extra(
+                        "Not recurring, but it has a trial: %s", product.slug
+                    )
                     subscriptions.append(orderitem)
                 else:
-                    self.log_extra('Not a recurring product: %s ', product.slug)
+                    self.log_extra("Not a recurring product: %s ", product.slug)
             else:
-                self.log_extra('Not a subscription product: %s', product.slug)
+                self.log_extra("Not a subscription product: %s", product.slug)
         return subscriptions
 
     def is_live(self):
@@ -54,7 +56,8 @@ class BasePaymentProcessor(object):
     def process(self):
         """Override me.  This will process the payment."""
         # return ProcessorResult(True, _('OK'))
-        return (True, _('OK'))
+        return (True, _("OK"))
+
 
 # class ProcessorResult(object):
 #

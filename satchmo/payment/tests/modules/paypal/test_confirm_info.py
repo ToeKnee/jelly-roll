@@ -20,18 +20,15 @@ class ConfirmInfoTest(TestCase):
         cache_delete()
 
     def test_order_unavailable(self):
-        request = self.factory.get('/shop/checkout/paypal/confirm/')
+        request = self.factory.get("/shop/checkout/paypal/confirm/")
         request.user = AnonymousUser()
         request.session = {}
 
         response = confirm_info(request)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response._headers['location'],
-            (
-                'Location',
-                reverse('satchmo_checkout-step1')
-            )
+            response._headers["location"],
+            ("Location", reverse("satchmo_checkout-step1")),
         )
 
     def test_not_enough_stock(self):
@@ -42,7 +39,7 @@ class ConfirmInfoTest(TestCase):
             item.product.items_in_stock = 0
             item.product.save()
 
-        request = self.factory.get('/shop/checkout/paypal/confirm/')
+        request = self.factory.get("/shop/checkout/paypal/confirm/")
         request.user = order.contact.user
         request.session = {
             "cart": cart.id,
@@ -53,9 +50,6 @@ class ConfirmInfoTest(TestCase):
         response = confirm_info(request)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            response._headers['location'],
-            (
-                'Location',
-                '{}/cart/'.format(getattr(settings, "SHOP_BASE", "/store"))
-            )
+            response._headers["location"],
+            ("Location", "{}/cart/".format(getattr(settings, "SHOP_BASE", "/store"))),
         )

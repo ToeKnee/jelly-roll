@@ -9,7 +9,7 @@ from satchmo.payment.modules.ingenico.forms import IngenicoForm
 from satchmo.payment.modules.ingenico.utils import shasign
 from satchmo.shop.factories import TestOrderFactory
 
-payment_module = config_get_group('PAYMENT_INGENICO')
+payment_module = config_get_group("PAYMENT_INGENICO")
 
 
 class IngenicoFormTest(TestCase):
@@ -18,11 +18,7 @@ class IngenicoFormTest(TestCase):
 
     def test_alias_enabled(self):
         # Enable Aliasing
-        Setting.objects.create(
-            key='ALIAS',
-            group='PAYMENT_INGENICO',
-            value=True,
-        )
+        Setting.objects.create(key="ALIAS", group="PAYMENT_INGENICO", value=True)
 
         form = IngenicoForm()
 
@@ -30,11 +26,7 @@ class IngenicoFormTest(TestCase):
 
     def test_alias_disabled(self):
         # Disable Aliasing
-        Setting.objects.create(
-            key='ALIAS',
-            group='PAYMENT_INGENICO',
-            value=False,
-        )
+        Setting.objects.create(key="ALIAS", group="PAYMENT_INGENICO", value=False)
 
         form = IngenicoForm()
 

@@ -12,19 +12,21 @@ def order_history(request):
     orders = None
     try:
         contact = Contact.objects.from_request(request, create=False)
-        orders = Order.objects.filter(contact=contact).exclude(
-            order_states__isnull=True
-        ).order_by('-time_stamp')
+        orders = (
+            Order.objects.filter(contact=contact)
+            .exclude(order_states__isnull=True)
+            .order_by("-time_stamp")
+        )
     except Contact.DoesNotExist:
         contact = None
 
     ctx = {
-        'contact': contact,
-        'default_view_tax': config_value('TAX', 'DEFAULT_VIEW_TAX'),
-        'orders': orders
+        "contact": contact,
+        "default_view_tax": config_value("TAX", "DEFAULT_VIEW_TAX"),
+        "orders": orders,
     }
 
-    return render(request, 'shop/order_history.html', ctx)
+    return render(request, "shop/order_history.html", ctx)
 
 
 order_history = login_required(order_history)
@@ -42,15 +44,20 @@ def order_tracking(request, order_id):
         contact = None
 
     if order is None:
-        return bad_or_missing(request, _("The order you have requested doesn't exist, or you don't have access to it."))
+        return bad_or_missing(
+            request,
+            _(
+                "The order you have requested doesn't exist, or you don't have access to it."
+            ),
+        )
 
     ctx = {
-        'default_view_tax': config_value('TAX', 'DEFAULT_VIEW_TAX'),
-        'contact': contact,
-        'order': order
+        "default_view_tax": config_value("TAX", "DEFAULT_VIEW_TAX"),
+        "contact": contact,
+        "order": order,
     }
 
-    return render(request, 'shop/order_tracking.html', ctx)
+    return render(request, "shop/order_tracking.html", ctx)
 
 
 order_tracking = login_required(order_tracking)

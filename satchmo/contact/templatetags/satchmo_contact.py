@@ -8,4 +8,4 @@ def addressblock(address):
     return {"address": address}
 
 
-register.inclusion_tag('contact/_addressblock.html')(addressblock)
+register.inclusion_tag("contact/_addressblock.html")(addressblock)

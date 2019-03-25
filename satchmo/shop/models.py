@@ -52,7 +52,9 @@ class NullConfig(object):
 
     def __init__(self):
         self.store_name = self.store_description = _("Test Store")
-        self.store_email = self.street1 = self.street2 = self.city = self.state = self.postal_code = self.phone = ""
+        self.store_email = (
+            self.street1
+        ) = self.street2 = self.city = self.state = self.postal_code = self.phone = ""
         self.site = self.country = None
         self.no_stock_checkout = False
         self.in_country_only = True
@@ -84,7 +86,8 @@ class ConfigManager(models.Manager):
             except Config.DoesNotExist:
                 if settings.DEBUG:
                     log.warning(
-                        "No Shop Config found, using test shop config for site=%s.", site
+                        "No Shop Config found, using test shop config for site=%s.",
+                        site,
                     )
                 shop_config = NullConfig()
 
@@ -96,47 +99,46 @@ class Config(models.Model):
     Used to store specific information about a store.  Also used to
     configure various store behaviors
     """
+
     site = models.OneToOneField(
-        Site,
-        on_delete=models.CASCADE,
-        verbose_name=_("Site"),
-        primary_key=True
+        Site, on_delete=models.CASCADE, verbose_name=_("Site"), primary_key=True
     )
     store_name = models.CharField(_("Store Name"), max_length=100, unique=True)
-    store_description = models.TextField(
-        _("Description"), blank=True, null=True)
+    store_description = models.TextField(_("Description"), blank=True, null=True)
     store_email = models.EmailField(_("Email"), blank=True, null=True)
-    street1 = models.CharField(
-        _("Street"), max_length=50, blank=True, null=True)
-    street2 = models.CharField(
-        _("Street"), max_length=50, blank=True, null=True)
+    street1 = models.CharField(_("Street"), max_length=50, blank=True, null=True)
+    street2 = models.CharField(_("Street"), max_length=50, blank=True, null=True)
     city = models.CharField(_("City"), max_length=50, blank=True, null=True)
     state = models.CharField(_("State"), max_length=30, blank=True, null=True)
-    postal_code = models.CharField(
-        _("Post Code"), blank=True, null=True, max_length=9)
+    postal_code = models.CharField(_("Post Code"), blank=True, null=True, max_length=9)
     country = models.ForeignKey(
         Country,
         on_delete=models.CASCADE,
         blank=True,
         null=False,
-        verbose_name=_('Country')
+        verbose_name=_("Country"),
     )
-    phone = models.CharField(
-        _("Phone Number"), blank=True, null=True, max_length=12)
+    phone = models.CharField(_("Phone Number"), blank=True, null=True, max_length=12)
     no_stock_checkout = models.BooleanField(
-        _("Purchase item not in stock?"), default=True)
+        _("Purchase item not in stock?"), default=True
+    )
     in_country_only = models.BooleanField(
-        _("Only sell to in-country customers?"), default=True)
+        _("Only sell to in-country customers?"), default=True
+    )
     sales_country = models.ForeignKey(
         Country,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        related_name='sales_country',
-        verbose_name=("Default country for customers")
+        related_name="sales_country",
+        verbose_name=("Default country for customers"),
     )
-    shipping_countries = models.ManyToManyField(Country, blank=True, verbose_name=_(
-        "Shipping Countries"), related_name="shop_configs")
+    shipping_countries = models.ManyToManyField(
+        Country,
+        blank=True,
+        verbose_name=_("Shipping Countries"),
+        related_name="shop_configs",
+    )
 
     objects = ConfigManager()
 
@@ -175,18 +177,21 @@ class Config(models.Model):
         if mycountry:
             if not self.sales_country:
                 log.debug(
-                    "%s: No sales_country set, adding country of store, '%s'", self, mycountry)
+                    "%s: No sales_country set, adding country of store, '%s'",
+                    self,
+                    mycountry,
+                )
                 self.sales_country = mycountry
 
-# This code doesn't work when creating a new site. At the time of creation, all of the necessary relationships
-# aren't setup. I modified the load_store code so that it would create this relationship manually when running
-# with sample data. This is a bit of a django limitation so I'm leaving this in here for now. - CBM
-#            salescountry = self.sales_country
-#            try:
-#                need = self.shipping_countries.get(pk=salescountry.pk)
-#            except Country.DoesNotExist:
-#                log.debug("%s: Adding default country '%s' to shipping countries", self, salescountry.iso2_code)
-#                self.shipping_countries.add(salescountry)
+        # This code doesn't work when creating a new site. At the time of creation, all of the necessary relationships
+        # aren't setup. I modified the load_store code so that it would create this relationship manually when running
+        # with sample data. This is a bit of a django limitation so I'm leaving this in here for now. - CBM
+        #            salescountry = self.sales_country
+        #            try:
+        #                need = self.shipping_countries.get(pk=salescountry.pk)
+        #            except Country.DoesNotExist:
+        #                log.debug("%s: Adding default country '%s' to shipping countries", self, salescountry.iso2_code)
+        #                self.shipping_countries.add(salescountry)
         else:
             log.warning("%s: has no country set", self)
 
@@ -203,6 +208,7 @@ class Config(models.Model):
 
 class NullCart(object):
     """Standin for a real cart when we don't have one yet.  More convenient than testing for null all the time."""
+
     desc = None
     date_time_created = None
     customer = None
@@ -259,6 +265,7 @@ class OrderCart(NullCart):
 
     def _not_enough_stock(self):
         pass
+
     not_enough_stock = property(_total)
 
     is_shippable = False
@@ -271,7 +278,6 @@ class OrderCart(NullCart):
 
 
 class CartManager(models.Manager):
-
     def from_request(self, request, create=False, return_nullcart=True):
         """Get the current cart from the request"""
         cart = None
@@ -280,8 +286,8 @@ class CartManager(models.Manager):
         except Contact.DoesNotExist:
             contact = None
 
-        if 'cart' in request.session:
-            cartid = request.session['cart']
+        if "cart" in request.session:
+            cartid = request.session["cart"]
             if cartid == "order":
                 log.debug("Getting Order Cart from request")
                 try:
@@ -294,14 +300,18 @@ class CartManager(models.Manager):
                 try:
                     cart = Cart.objects.get(id=cartid)
                 except Cart.DoesNotExist:
-                    log.debug('Removing invalid cart from session')
-                    del request.session['cart']
+                    log.debug("Removing invalid cart from session")
+                    del request.session["cart"]
 
-        if isinstance(cart, NullCart) and not isinstance(cart, OrderCart) and contact is not None:
+        if (
+            isinstance(cart, NullCart)
+            and not isinstance(cart, OrderCart)
+            and contact is not None
+        ):
             carts = Cart.objects.filter(customer=contact)
             if carts.count() > 0:
                 cart = carts[0]
-                request.session['cart'] = cart.id
+                request.session["cart"] = cart.id
 
         if not cart:
             if create:
@@ -311,7 +321,7 @@ class CartManager(models.Manager):
                 else:
                     cart = Cart(site=site, customer=contact)
                 cart.save()
-                request.session['cart'] = cart.id
+                request.session["cart"] = cart.id
 
             elif return_nullcart:
                 cart = NullCart()
@@ -337,29 +347,25 @@ class Cart(models.Model):
     The desc isn't used but it is needed to make the admin interface work appropriately
     Could be used for debugging
     """
-    site = models.ForeignKey(
-        Site,
-        on_delete=models.CASCADE,
-        verbose_name=_('Site')
-    )
-    desc = models.CharField(_("Description"), blank=True,
-                            null=True, max_length=10)
+
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name=_("Site"))
+    desc = models.CharField(_("Description"), blank=True, null=True, max_length=10)
     date_time_created = models.DateTimeField(_("Creation Date"))
     customer = models.ForeignKey(
         Contact,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        verbose_name=_('Customer')
+        verbose_name=_("Customer"),
     )
     currency = models.ForeignKey(
         Currency,
         on_delete=models.CASCADE,
-        verbose_name=_('Currency'),
+        verbose_name=_("Currency"),
         related_name="carts",
         editable=False,
         null=True,
-        blank=True
+        blank=True,
     )
 
     objects = CartManager()
@@ -396,21 +402,19 @@ class Cart(models.Model):
             details = {}
         alreadyInCart = False
         # Custom Products will not be added, they will each get their own line item
-        if 'CustomProduct' in chosen_item.get_subtypes():
-            item_to_modify = CartItem(
-                cart=self, product=chosen_item, quantity=0)
+        if "CustomProduct" in chosen_item.get_subtypes():
+            item_to_modify = CartItem(cart=self, product=chosen_item, quantity=0)
         else:
-            item_to_modify = CartItem(
-                cart=self, product=chosen_item, quantity=0)
+            item_to_modify = CartItem(cart=self, product=chosen_item, quantity=0)
             for similarItem in self.cartitem_set.filter(product__id=chosen_item.id):
                 looksTheSame = len(details) == similarItem.details.count()
                 if looksTheSame:
                     for detail in details:
                         try:
                             similarItem.details.get(
-                                name=detail['name'],
-                                value=detail['value'],
-                                price_change=detail['price_change']
+                                name=detail["name"],
+                                value=detail["value"],
+                                price_change=detail["price_change"],
                             )
                         except CartItemDetails.DoesNotExist:
                             looksTheSame = False
@@ -424,7 +428,7 @@ class Cart(models.Model):
             cart=self,
             cartitem=item_to_modify,
             added_quantity=number_added,
-            details=details
+            details=details,
         )
 
         if not alreadyInCart:
@@ -511,25 +515,20 @@ class CartItem(models.Model):
     """
     An individual item in the cart
     """
-    cart = models.ForeignKey(
-        Cart,
-        on_delete=models.CASCADE,
-        verbose_name=_('Cart')
-    )
+
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, verbose_name=_("Cart"))
     product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        verbose_name=_('Product')
+        Product, on_delete=models.CASCADE, verbose_name=_("Product")
     )
     quantity = models.IntegerField(_("Quantity"))
 
     class Meta:
         verbose_name = _("Cart Item")
         verbose_name_plural = _("Cart Items")
-        ordering = ('id',)
+        ordering = ("id",)
 
     def __str__(self):
-        return '%s X %s @ %s' % (self.quantity, self.product.name, self.unit_price)
+        return "%s X %s @ %s" % (self.quantity, self.product.name, self.unit_price)
 
     @property
     def unit_price(self):
@@ -573,6 +572,7 @@ class CartItem(models.Model):
 
     def _get_description(self):
         return self.product.translated_name()
+
     description = property(_get_description)
 
     def _is_shippable(self):
@@ -581,8 +581,13 @@ class CartItem(models.Model):
     is_shippable = property(fget=_is_shippable)
 
     def add_detail(self, data):
-        detl = CartItemDetails(cartitem=self, name=data['name'], value=data['value'],
-                               sort_order=data['sort_order'], price_change=data['price_change'])
+        detl = CartItemDetails(
+            cartitem=self,
+            name=data["name"],
+            value=data["value"],
+            sort_order=data["sort_order"],
+            price_change=data["price_change"],
+        )
         detl.save()
         # self.details.add(detl)
 
@@ -590,7 +595,7 @@ class CartItem(models.Model):
         """
         Determine if this specific item has more detail
         """
-        return (self.details.count() > 0)
+        return self.details.count() > 0
 
     has_details = property(_has_details)
 
@@ -609,28 +614,33 @@ class CartItemDetails(models.Model):
     """
     An arbitrary detail about a cart item.
     """
+
     cartitem = models.ForeignKey(
-        CartItem,
-        on_delete=models.CASCADE,
-        related_name='details',
+        CartItem, on_delete=models.CASCADE, related_name="details"
     )
-    value = models.TextField(_('detail'))
-    name = models.CharField(_('name'), max_length=100)
+    value = models.TextField(_("detail"))
+    name = models.CharField(_("name"), max_length=100)
     price_change = models.DecimalField(
-        _("Item Detail Price Change"), max_digits=6, decimal_places=2, blank=True, null=True)
+        _("Item Detail Price Change"),
+        max_digits=6,
+        decimal_places=2,
+        blank=True,
+        null=True,
+    )
     sort_order = models.IntegerField(
-        _("Sort Order"), help_text=_("The display order for this group."))
+        _("Sort Order"), help_text=_("The display order for this group.")
+    )
 
     class Meta:
-        ordering = ('sort_order',)
+        ordering = ("sort_order",)
         verbose_name = _("Cart Item Detail")
         verbose_name_plural = _("Cart Item Details")
 
 
 ORDER_CHOICES = (
-    ('Online', _('Online')),
-    ('In Person', _('In Person')),
-    ('Show', _('Show')),
+    ("Online", _("Online")),
+    ("In Person", _("In Person")),
+    ("Show", _("Show")),
 )
 
 
@@ -638,9 +648,13 @@ class Status(models.Model):
     status = models.CharField(_("Status"), max_length=255)
     description = models.TextField(_("description"), null=True, blank=True)
     notify = models.BooleanField(
-        _("Notify"), help_text="Notify the user on status update", default=True)
+        _("Notify"), help_text="Notify the user on status update", default=True
+    )
     display = models.BooleanField(
-        _("Display"), help_text="Show orders of this status in the admin area home page", default=True)
+        _("Display"),
+        help_text="Show orders of this status in the admin area home page",
+        default=True,
+    )
     time_stamp = models.DateTimeField(_("Time stamp"), default=timezone.now)
 
     def __str__(self):
@@ -660,27 +674,18 @@ class OrderQuerySet(models.QuerySet):
         return self.filter(frozen=False)
 
     def unfulfilled(self):
-        return self.by_latest_status(
-            'Processing'
-        ).filter(
-            frozen=True,
-            fulfilled=False,
-        )
+        return self.by_latest_status("Processing").filter(frozen=True, fulfilled=False)
 
     def by_latest_status(self, status):
-        ''' Return orders with their latest status matching `status` '''
+        """ Return orders with their latest status matching `status` """
         if isinstance(status, str):
             status = Status.objects.get(status=status)
-        newest_status = OrderStatus.objects.filter(
-            order=OuterRef('pk'),
-        ).order_by(
-            '-time_stamp'
+        newest_status = OrderStatus.objects.filter(order=OuterRef("pk")).order_by(
+            "-time_stamp"
         )
         return self.annotate(
-            status=Subquery(newest_status.values('status')[:1])
-        ).filter(
-            status=status.id
-        )
+            status=Subquery(newest_status.values("status")[:1])
+        ).filter(status=status.id)
 
 
 class OrderManager(models.Manager):
@@ -704,14 +709,14 @@ class OrderManager(models.Manager):
         """
 
         order = None
-        if 'orderID' in request.session:
+        if "orderID" in request.session:
             try:
-                order = Order.objects.live().get(id=request.session['orderID'])
+                order = Order.objects.live().get(id=request.session["orderID"])
             except Order.DoesNotExist:
                 pass
 
             if order is None:
-                del request.session['orderID']
+                del request.session["orderID"]
 
         if order is not None and request.user != order.contact.user:
             order = None
@@ -726,7 +731,7 @@ class OrderManager(models.Manager):
         try:
             order = Order.objects.from_request(request)
             if not order.status:
-                del request.session['orderID']
+                del request.session["orderID"]
                 log.info("Deleting incomplete order #%i from database", order.id)
                 order.delete()
                 return True
@@ -740,101 +745,114 @@ class Order(models.Model):
     Orders contain a copy of all the information at the time the order was
     placed.
     """
+
     site = models.ForeignKey(
-        Site,
-        on_delete=models.CASCADE,
-        verbose_name=_('Site'),
-        editable=False
+        Site, on_delete=models.CASCADE, verbose_name=_("Site"), editable=False
     )
     contact = models.ForeignKey(
-        Contact,
-        on_delete=models.CASCADE,
-        verbose_name=_('Contact'),
-        editable=False
+        Contact, on_delete=models.CASCADE, verbose_name=_("Contact"), editable=False
     )
     frozen = models.BooleanField(default=False)
     fulfilled = models.BooleanField(default=False)
     time_stamp = models.DateTimeField(_("Timestamp"), editable=False)
-    notes = models.TextField(_("Notes"), blank=True, null=True, default='')
+    notes = models.TextField(_("Notes"), blank=True, null=True, default="")
     method = models.CharField(
-        _("Order method"), choices=ORDER_CHOICES, max_length=200, blank=True)
+        _("Order method"), choices=ORDER_CHOICES, max_length=200, blank=True
+    )
     discount_code = models.CharField(
-        _("Discount Code"), max_length=20, blank=True, null=True, help_text=_("Coupon Code"))
+        _("Discount Code"),
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text=_("Coupon Code"),
+    )
 
-    ship_addressee = models.CharField(
-        _("Addressee"), max_length=61, blank=True)
+    ship_addressee = models.CharField(_("Addressee"), max_length=61, blank=True)
     ship_street1 = models.CharField(_("Street"), max_length=80, blank=True)
     ship_street2 = models.CharField(_("Street"), max_length=80, blank=True)
     ship_city = models.CharField(_("City"), max_length=50, blank=True)
     ship_state = models.CharField(_("State"), max_length=50, blank=True)
-    ship_postal_code = models.CharField(
-        _("Post Code"), max_length=30, blank=True)
+    ship_postal_code = models.CharField(_("Post Code"), max_length=30, blank=True)
     ship_country = models.ForeignKey(
-        Country,
-        on_delete=models.CASCADE,
-        blank=True,
-        related_name="ship_country"
+        Country, on_delete=models.CASCADE, blank=True, related_name="ship_country"
     )
-    bill_addressee = models.CharField(
-        _("Addressee"), max_length=61, blank=True)
+    bill_addressee = models.CharField(_("Addressee"), max_length=61, blank=True)
     bill_street1 = models.CharField(_("Street"), max_length=80, blank=True)
     bill_street2 = models.CharField(_("Street"), max_length=80, blank=True)
     bill_city = models.CharField(_("City"), max_length=50, blank=True)
     bill_state = models.CharField(_("State"), max_length=50, blank=True)
-    bill_postal_code = models.CharField(
-        _("Post Code"), max_length=30, blank=True)
+    bill_postal_code = models.CharField(_("Post Code"), max_length=30, blank=True)
     bill_country = models.ForeignKey(
-        Country,
-        on_delete=models.CASCADE,
-        blank=True,
-        related_name="bill_country"
+        Country, on_delete=models.CASCADE, blank=True, related_name="bill_country"
     )
 
     shipping_description = models.CharField(
-        _("Shipping Description"), max_length=200, blank=True, null=True)
+        _("Shipping Description"), max_length=200, blank=True, null=True
+    )
     shipping_method = models.CharField(
-        _("Shipping Method"), max_length=200, blank=True, null=True)
+        _("Shipping Method"), max_length=200, blank=True, null=True
+    )
     shipping_model = ShippingChoiceCharField(
-        _("Shipping Models"), max_length=30, blank=True, null=True)
+        _("Shipping Models"), max_length=30, blank=True, null=True
+    )
     estimated_delivery_min_days = models.PositiveIntegerField(
-        _('Minimum number of days after shipping until delivery'), default=1)
+        _("Minimum number of days after shipping until delivery"), default=1
+    )
     estimated_delivery_expected_days = models.PositiveIntegerField(
-        _('Usual number of days after shipping until delivery'), default=7)
+        _("Usual number of days after shipping until delivery"), default=7
+    )
     estimated_delivery_max_days = models.PositiveIntegerField(
-        _('Maximum number of days after shipping until delivery'), default=25)
-    shipping_signed_for = models.BooleanField(_('Signed For'), default=False)
-    shipping_tracked = models.BooleanField(_('Tracked'), default=False)
+        _("Maximum number of days after shipping until delivery"), default=25
+    )
+    shipping_signed_for = models.BooleanField(_("Signed For"), default=False)
+    shipping_tracked = models.BooleanField(_("Tracked"), default=False)
     tracking_number = models.CharField(
-        _('Tracking Number'), max_length=64, blank=True, null=True)
-    tracking_url = models.URLField(_('Tracking URL'), blank=True, null=True)
+        _("Tracking Number"), max_length=64, blank=True, null=True
+    )
+    tracking_url = models.URLField(_("Tracking URL"), blank=True, null=True)
     shipping_postage_speed = models.PositiveIntegerField(
-        _('Postage Speed'), choices=POSTAGE_SPEED_CHOICES, default=STANDARD)
+        _("Postage Speed"), choices=POSTAGE_SPEED_CHOICES, default=STANDARD
+    )
 
     currency = models.ForeignKey(
         Currency,
         on_delete=models.CASCADE,
-        verbose_name=_('Currency'),
+        verbose_name=_("Currency"),
         related_name="orders",
-        editable=False
+        editable=False,
     )
-    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_(
-        "Rate from primary currency"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+    exchange_rate = models.DecimalField(
+        _("Exchange Rate"),
+        help_text=_("Rate from primary currency"),
+        max_digits=6,
+        decimal_places=4,
+        editable=False,
+        default=Decimal("1.00"),
+    )
     sub_total = models.DecimalField(
-        _("Subtotal"), max_digits=18, decimal_places=2, blank=True, null=True)
+        _("Subtotal"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
     shipping_cost = models.DecimalField(
-        _("Shipping Cost"), max_digits=18, decimal_places=2, blank=True, null=True)
+        _("Shipping Cost"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
     shipping_discount = models.DecimalField(
-        _("Shipping Discount"), max_digits=18, decimal_places=2, blank=True, null=True)
-    tax = models.DecimalField(_("Tax"), max_digits=18,
-                              decimal_places=2, blank=True, null=True)
+        _("Shipping Discount"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
+    tax = models.DecimalField(
+        _("Tax"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
     discount = models.DecimalField(
-        _("Discount amount"), max_digits=18, decimal_places=2, blank=True, null=True)
+        _("Discount amount"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
     total = models.DecimalField(
-        _("Total"), max_digits=18, decimal_places=2, blank=True, null=True)
+        _("Total"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
     refund = models.DecimalField(
-        _("Refund"), max_digits=18, decimal_places=2,
+        _("Refund"),
+        max_digits=18,
+        decimal_places=2,
         default=Decimal("0.00"),
-        help_text=_("The amount refunded in the currency of the order")
+        help_text=_("The amount refunded in the currency of the order"),
     )
 
     objects = OrderManager()
@@ -861,7 +879,7 @@ class Order(models.Model):
         self.frozen = True
         self.time_stamp = timezone.now()
 
-    def add_status(self, status=None, notes='', status_notify_by_default=False):
+    def add_status(self, status=None, notes="", status_notify_by_default=False):
         order_status = OrderStatus()
         if not status:
             if self.order_states.count() > 0:
@@ -869,9 +887,7 @@ class Order(models.Model):
             else:
                 status_obj, __ = Status.objects.get_or_create(status="Pending")
         else:
-            status_obj, created = Status.objects.get_or_create(
-                status=status,
-            )
+            status_obj, created = Status.objects.get_or_create(status=status)
             if created:
                 status_obj.notify = status_notify_by_default
                 status_obj.save()
@@ -952,13 +968,14 @@ class Order(models.Model):
 
     def _credit_card(self):
         """Return the credit card associated with this payment."""
-        for payment in self.payments.order_by('-time_stamp'):
+        for payment in self.payments.order_by("-time_stamp"):
             try:
                 if payment.creditcards.count() > 0:
                     return payment.creditcards.get()
             except payment.creditcards.model.DoesNotExist:
                 pass
         return None
+
     credit_card = property(_credit_card)
 
     def _full_bill_street(self, delim="\n"):
@@ -971,6 +988,7 @@ class Order(models.Model):
         else:
             address = self.bill_street1
         return mark_safe(address)
+
     full_bill_street = property(_full_bill_street)
 
     def _full_ship_street(self, delim="\n"):
@@ -983,18 +1001,21 @@ class Order(models.Model):
         else:
             address = self.ship_street1
         return mark_safe(address)
+
     full_ship_street = property(_full_ship_street)
 
     def _ship_country_name(self):
         return Country.objects.get(iso2_code=self.ship_country).name
+
     ship_country_name = property(_ship_country_name)
 
     def _bill_country_name(self):
         return Country.objects.get(iso2_code=self.bill_country).name
+
     bill_country_name = property(_bill_country_name)
 
     def get_balance_remaining_url(self):
-        return reverse('satchmo_balance_remaining_order', None, {'order_id': self.id})
+        return reverse("satchmo_balance_remaining_order", None, {"order_id": self.id})
 
     def _partially_paid(self):
         return self.balance_paid > Decimal("0.0000000000")
@@ -1012,31 +1033,39 @@ class Order(models.Model):
 
     def payments_completed(self):
         q = self.payments.exclude(
-            transaction_id__isnull=False, transaction_id="PENDING")
+            transaction_id__isnull=False, transaction_id="PENDING"
+        )
         return q.exclude(amount=Decimal("0.00"))
 
     def invoice(self):
-        url = reverse('satchmo_print_shipping', None, None, {
-            'doc': 'invoice', 'id': self.id})
-        return mark_safe('<a href="%s">%s</a>' % (url, _('View')))
+        url = reverse(
+            "satchmo_print_shipping", None, None, {"doc": "invoice", "id": self.id}
+        )
+        return mark_safe('<a href="%s">%s</a>' % (url, _("View")))
+
     invoice.allow_tags = True
 
     def _item_discount(self):
         """Get the discount of just the items, less the shipping discount."""
         return self.discount - self.shipping_discount
+
     item_discount = property(_item_discount)
 
     def packingslip(self):
-        url = reverse('satchmo_print_shipping', None, None, {
-            'doc': 'packingslip', 'id': self.id})
-        return mark_safe('<a href="%s">%s</a>' % (url, _('View')))
+        url = reverse(
+            "satchmo_print_shipping", None, None, {"doc": "packingslip", "id": self.id}
+        )
+        return mark_safe('<a href="%s">%s</a>' % (url, _("View")))
+
     packingslip.allow_tags = True
 
     def recalculate_total(self, save=True):
         """Calculates sub_total, taxes and total if the order is not already partially paid."""
         if self.is_partially_paid:
             log.debug(
-                "Order %i - skipping recalculate_total since product is partially paid.", self.id)
+                "Order %i - skipping recalculate_total since product is partially paid.",
+                self.id,
+            )
         else:
             self.force_recalculate_total(save=save)
 
@@ -1068,8 +1097,8 @@ class Order(models.Model):
             itemprices.append(lineitem.sub_total)
             fullprices.append(lineitem.line_item_price)
 
-        if 'Shipping' in discount.item_discounts:
-            self.shipping_discount = discount.item_discounts['Shipping']
+        if "Shipping" in discount.item_discounts:
+            self.shipping_discount = discount.item_discounts["Shipping"]
         else:
             self.shipping_discount = zero
 
@@ -1105,20 +1134,23 @@ class Order(models.Model):
             money_format(item_sub_total, self.currency.iso_4217_code),
             money_format(self.shipping_sub_total, self.currency.iso_4217_code),
             money_format(self.discount, self.currency.iso_4217_code),
-            money_format(self.tax, self.currency.iso_4217_code)
+            money_format(self.tax, self.currency.iso_4217_code),
         )
 
-        self.total = Decimal(
-            item_sub_total + self.shipping_sub_total + self.tax
-        )
+        self.total = Decimal(item_sub_total + self.shipping_sub_total + self.tax)
 
         if save:
             self.save()
 
     def shippinglabel(self):
-        url = reverse('satchmo_print_shipping', None, None, {
-            'doc': 'shippinglabel', 'id': self.id})
-        return mark_safe('<a href="%s">%s</a>' % (url, _('View')))
+        url = reverse(
+            "satchmo_print_shipping",
+            None,
+            None,
+            {"doc": "shippinglabel", "id": self.id},
+        )
+        return mark_safe('<a href="%s">%s</a>' % (url, _("View")))
+
     shippinglabel.allow_tags = True
 
     def _convert_to_primary(self, value):
@@ -1219,12 +1251,11 @@ class Order(models.Model):
         """Run each item's order_success method."""
         log.info("Order success: %s", self)
         for orderitem in self.orderitem_set.all():
-            subtype = orderitem.product.get_subtype_with_attr('order_success')
+            subtype = orderitem.product.get_subtype_with_attr("order_success")
             if subtype:
                 subtype.order_success(self, orderitem)
         if self.is_downloadable:
-            self.add_status('Shipped', _(
-                "Order immediately available for download"))
+            self.add_status("Shipped", _("Order immediately available for download"))
 
         send_owner_order_notice(self)
 
@@ -1233,6 +1264,7 @@ class Order(models.Model):
     def _paid_in_full(self):
         """True if total has been paid"""
         return self.balance <= 0
+
     paid_in_full = property(fget=_paid_in_full)
 
     def _has_downloads(self):
@@ -1240,6 +1272,7 @@ class Order(models.Model):
         if self.downloadlink_set.count() > 0:
             return True
         return False
+
     has_downloads = property(_has_downloads)
 
     def _is_downloadable(self):
@@ -1248,6 +1281,7 @@ class Order(models.Model):
             if not orderitem.product.is_downloadable:
                 return False
         return True
+
     is_downloadable = property(_is_downloadable)
 
     def _is_shippable(self):
@@ -1256,27 +1290,30 @@ class Order(models.Model):
             if orderitem.is_shippable:
                 return True
         return False
+
     is_shippable = property(_is_shippable)
 
     @property
     def shipping_sub_total(self):
         if self.shipping_cost is None:
-            self.shipping_cost = Decimal('0.00')
+            self.shipping_cost = Decimal("0.00")
         if self.shipping_discount is None:
-            self.shipping_discount = Decimal('0.00')
+            self.shipping_discount = Decimal("0.00")
         return self.shipping_cost - self.shipping_discount
 
     def _shipping_tax(self):
-        rates = self.taxes.filter(description__iexact='shipping')
+        rates = self.taxes.filter(description__iexact="shipping")
         if rates.count() > 0:
             tax = reduce(operator.add, [t.tax for t in rates])
         else:
             tax = Decimal("0.0000000000")
         return tax
+
     shipping_tax = property(_shipping_tax)
 
     def _shipping_with_tax(self):
         return self.shipping_sub_total + self.shipping_tax
+
     shipping_with_tax = property(_shipping_with_tax)
 
     @property
@@ -1295,12 +1332,14 @@ class Order(models.Model):
         """
         if self.shipped:
             # Most recent shipped status
-            shipped = self.order_states.filter(
-                status__status="Shipped"
-            ).order_by("-time_stamp")[0]
+            shipped = self.order_states.filter(status__status="Shipped").order_by(
+                "-time_stamp"
+            )[0]
             ship_date = shipped.time_stamp.date()
-        elif (self.time_stamp.isoweekday() >= 6  # Weekend 6th and 7th day of week
-              or self.time_stamp.hour >= 12):  # Midday
+        elif (
+            self.time_stamp.isoweekday() >= 6  # Weekend 6th and 7th day of week
+            or self.time_stamp.hour >= 12
+        ):  # Midday
             # Ships next business day
             ship_date = workday(self.time_stamp, 1).date()
         else:
@@ -1318,7 +1357,9 @@ class Order(models.Model):
         return workday(self.shipping_date(), self.estimated_delivery_max_days + 1)
 
     def sub_total_with_tax(self):
-        return reduce(operator.add, [o.total_with_tax for o in self.orderitem_set.all()])
+        return reduce(
+            operator.add, [o.total_with_tax for o in self.orderitem_set.all()]
+        )
 
     def validate(self, request):
         """
@@ -1329,7 +1370,7 @@ class Order(models.Model):
         for orderitem in self.orderitem_set.all():
             for subtype_name in orderitem.product.get_subtypes():
                 subtype = getattr(orderitem.product, subtype_name.lower())
-                validate_method = getattr(subtype, 'validate_order', None)
+                validate_method = getattr(subtype, "validate_order", None)
                 if validate_method:
                     valid = valid and validate_method(request, self, orderitem)
         return valid
@@ -1343,15 +1384,16 @@ class Order(models.Model):
 
     @property
     def verification_hash(self):
-        value = "{id} {user_id}".format(
-            id=self.id,
-            user_id=self.contact_id,
-        )
-        return hmac.new(settings.SECRET_KEY.encode("utf-8"), value.encode("utf-8"), 'md5').hexdigest()
+        value = "{id} {user_id}".format(id=self.id, user_id=self.contact_id)
+        return hmac.new(
+            settings.SECRET_KEY.encode("utf-8"), value.encode("utf-8"), "md5"
+        ).hexdigest()
 
     def verify_hash(self, verification_hash):
         if hasattr(hmac, "compare_digest"):
-            return hmac.compare_digest(str(self.verification_hash), str(verification_hash))
+            return hmac.compare_digest(
+                str(self.verification_hash), str(verification_hash)
+            )
         else:
             # Avoid timing attacks
             sleep_for = random.random() / 100
@@ -1363,54 +1405,45 @@ class OrderItem(models.Model):
     """
     A line item on an order.
     """
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        verbose_name=_("Order")
-    )
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name=_("Order"))
     product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        verbose_name=_("Product")
+        Product, on_delete=models.CASCADE, verbose_name=_("Product")
     )
-    quantity = models.IntegerField(_("Quantity"), )
-    unit_price = models.DecimalField(_("Unit price"),
-                                     max_digits=18,
-                                     decimal_places=2)
-    unit_tax = models.DecimalField(_("Unit tax"),
-                                   max_digits=18,
-                                   decimal_places=2,
-                                   null=True)
-    line_item_price = models.DecimalField(_("Line item price"),
-                                          max_digits=18,
-                                          decimal_places=2)
-    tax = models.DecimalField(_("Line item tax"),
-                              max_digits=18,
-                              decimal_places=2,
-                              null=True)
-    expire_date = models.DateField(_("Subscription End"),
-                                   help_text=_(
-        "Subscription expiration date."),
+    quantity = models.IntegerField(_("Quantity"))
+    unit_price = models.DecimalField(_("Unit price"), max_digits=18, decimal_places=2)
+    unit_tax = models.DecimalField(
+        _("Unit tax"), max_digits=18, decimal_places=2, null=True
+    )
+    line_item_price = models.DecimalField(
+        _("Line item price"), max_digits=18, decimal_places=2
+    )
+    tax = models.DecimalField(
+        _("Line item tax"), max_digits=18, decimal_places=2, null=True
+    )
+    expire_date = models.DateField(
+        _("Subscription End"),
+        help_text=_("Subscription expiration date."),
         blank=True,
-        null=True)
+        null=True,
+    )
     completed = models.BooleanField(_("Completed"), default=False)
     stock_updated = models.BooleanField(_("Stock Updated"), default=False)
-    discount = models.DecimalField(_("Line item discount"),
-                                   max_digits=18,
-                                   decimal_places=2,
-                                   blank=True,
-                                   null=True)
+    discount = models.DecimalField(
+        _("Line item discount"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
 
     class Meta:
         verbose_name = _("Order Line Item")
         verbose_name_plural = _("Order Line Items")
-        ordering = ('id',)
+        ordering = ("id",)
 
     def __str__(self):
         return self.product.translated_name()
 
     def _get_category(self):
-        return(self.product.get_category.translated_name())
+        return self.product.get_category.translated_name()
+
     category = property(_get_category)
 
     def _is_shippable(self):
@@ -1461,6 +1494,7 @@ class OrderItem(models.Model):
 
     def _get_description(self):
         return self.product.translated_name()
+
     description = property(_get_description)
 
     def save(self, *args, **kwargs):
@@ -1482,17 +1516,18 @@ class OrderItemDetail(models.Model):
     """
     Name, value pair and price delta associated with a specific item in an order
     """
+
     item = models.ForeignKey(
-        OrderItem,
-        on_delete=models.CASCADE,
-        verbose_name=_("Order Item"),
+        OrderItem, on_delete=models.CASCADE, verbose_name=_("Order Item")
     )
-    name = models.CharField(_('Name'), max_length=100)
-    value = models.CharField(_('Value'), max_length=255)
+    name = models.CharField(_("Name"), max_length=100)
+    value = models.CharField(_("Value"), max_length=255)
     price_change = models.DecimalField(
-        _("Price Change"), max_digits=18, decimal_places=2, blank=True, null=True)
-    sort_order = models.IntegerField(_("Sort Order"),
-                                     help_text=_("The display order for this group."))
+        _("Price Change"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
+    sort_order = models.IntegerField(
+        _("Sort Order"), help_text=_("The display order for this group.")
+    )
 
     def __str__(self):
         return "%s - %s,%s" % (self.item, self.name, self.value)
@@ -1500,28 +1535,26 @@ class OrderItemDetail(models.Model):
     class Meta:
         verbose_name = _("Order Item Detail")
         verbose_name_plural = _("Order Item Details")
-        ordering = ('sort_order',)
+        ordering = ("sort_order",)
 
 
 class DownloadLink(models.Model):
     downloadable_product = models.ForeignKey(
         DownloadableProduct,
         on_delete=models.CASCADE,
-        verbose_name=_('Downloadable product')
+        verbose_name=_("Downloadable product"),
     )
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        verbose_name=_('Order')
-    )
-    key = models.CharField(_('Key'), max_length=40)
-    num_attempts = models.IntegerField(_('Number of attempts'), )
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name=_("Order"))
+    key = models.CharField(_("Key"), max_length=40)
+    num_attempts = models.IntegerField(_("Number of attempts"))
     time_stamp = models.DateTimeField(
-        _('Time stamp'), default=timezone.now, editable=True)
-    active = models.BooleanField(_('Active'), default=True)
+        _("Time stamp"), default=timezone.now, editable=True
+    )
+    active = models.BooleanField(_("Active"), default=True)
 
     def _attempts_left(self):
         return self.downloadable_product.num_allowed_downloads - self.num_attempts
+
     attempts_left = property(_attempts_left)
 
     def is_valid(self):
@@ -1530,20 +1563,22 @@ class DownloadLink(models.Model):
             return (False, _("This download is no longer active"))
         if self.num_attempts >= self.downloadable_product.num_allowed_downloads:
             return (False, _("You have exceeded the number of allowed downloads."))
-        expire_time = datetime.timedelta(
-            minutes=self.downloadable_product.expire_minutes) + self.time_stamp
+        expire_time = (
+            datetime.timedelta(minutes=self.downloadable_product.expire_minutes)
+            + self.time_stamp
+        )
         if timezone.now() > expire_time:
             return (False, _("This download link has expired."))
         return (True, "")
 
     def get_absolute_url(self):
-        return reverse('satchmo.shop.views.download.process', (), {'download_key': self.key})
+        return reverse(
+            "satchmo.shop.views.download.process", (), {"download_key": self.key}
+        )
 
     def get_full_url(self):
-        url = reverse('satchmo_download_process', kwargs={
-            'download_key': self.key
-        })
-        return('http://%s%s' % (Site.objects.get_current(), url))
+        url = reverse("satchmo_download_process", kwargs={"download_key": self.key})
+        return "http://%s%s" % (Site.objects.get_current(), url)
 
     def save(self, *args, **kwargs):
         """
@@ -1556,6 +1591,7 @@ class DownloadLink(models.Model):
 
     def _product_name(self):
         return "%s" % (self.downloadable_product.product.translated_name())
+
     product_name = property(_product_name)
 
     class Meta:
@@ -1572,21 +1608,20 @@ class OrderStatus(models.Model):
         Order,
         on_delete=models.CASCADE,
         verbose_name=_("Order"),
-        related_name='order_states',
+        related_name="order_states",
     )
     status = models.ForeignKey(
-        Status,
-        on_delete=models.CASCADE,
-        verbose_name=_("Status")
+        Status, on_delete=models.CASCADE, verbose_name=_("Status")
     )
     notes = models.TextField(_("Notes"), blank=True)
     time_stamp = models.DateTimeField(
-        _("Timestamp"), auto_now_add=True, editable=False, db_index=True)
+        _("Timestamp"), auto_now_add=True, editable=False, db_index=True
+    )
 
     class Meta:
         verbose_name = _("Order Status")
         verbose_name_plural = _("Order Statuses")
-        ordering = ('time_stamp',)
+        ordering = ("time_stamp",)
 
     def __str__(self):
         return self.status.status
@@ -1606,25 +1641,26 @@ class OrderStatus(models.Model):
 
 
 class OrderPayment(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="payments"
-    )
-    payment = PaymentChoiceCharField(
-        _("Payment Method"), max_length=25, blank=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="payments")
+    payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
     amount = models.DecimalField(
-        _("amount"), max_digits=18, decimal_places=2, blank=True, null=True)
+        _("amount"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
 
-    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_(
-        "Rate from primary currency at time of payment"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+    exchange_rate = models.DecimalField(
+        _("Exchange Rate"),
+        help_text=_("Rate from primary currency at time of payment"),
+        max_digits=6,
+        decimal_places=4,
+        editable=False,
+        default=Decimal("1.00"),
+    )
 
     time_stamp = models.DateTimeField(
-        _("timestamp"), default=timezone.now, editable=True)
+        _("timestamp"), default=timezone.now, editable=True
+    )
     transaction_id = models.CharField(
-        _("Transaction ID"),
-        max_length=64,
-        blank=True, null=True,
+        _("Transaction ID"), max_length=64, blank=True, null=True
     )
 
     class Meta:
@@ -1659,21 +1695,24 @@ class OrderPayment(models.Model):
 
 
 class OrderRefund(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="refunds"
-    )
-    payment = PaymentChoiceCharField(
-        _("Payment Method"), max_length=25, blank=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="refunds")
+    payment = PaymentChoiceCharField(_("Payment Method"), max_length=25, blank=True)
     amount = models.DecimalField(_("Amount"), max_digits=18, decimal_places=2)
-    exchange_rate = models.DecimalField(_("Exchange Rate"), help_text=_(
-        "Rate from primary currency  at time of refund"), max_digits=6, decimal_places=4, editable=False, default=Decimal("1.00"))
+    exchange_rate = models.DecimalField(
+        _("Exchange Rate"),
+        help_text=_("Rate from primary currency  at time of refund"),
+        max_digits=6,
+        decimal_places=4,
+        editable=False,
+        default=Decimal("1.00"),
+    )
 
     timestamp = models.DateTimeField(
-        _("Timestamp"), default=timezone.now, editable=True)
+        _("Timestamp"), default=timezone.now, editable=True
+    )
     transaction_id = models.CharField(
-        _("Transaction ID"), max_length=64, blank=True, null=True)
+        _("Transaction ID"), max_length=64, blank=True, null=True
+    )
 
     class Meta:
         verbose_name = _("Order Refund")
@@ -1682,8 +1721,7 @@ class OrderRefund(models.Model):
     def __str__(self):
         if self.id is not None:
             return "Order refund #{id} - {amount}".format(
-                id=self.id,
-                amount=self.display_amount,
+                id=self.id, amount=self.display_amount
             )
         else:
             return "Order refund (unsaved)"
@@ -1724,29 +1762,26 @@ class OrderRefund(models.Model):
 
         if self.currency.primary is False:
             reverse_exchange_rate = Decimal("1.00") / self.exchange_rate
-            amount = (
-                amount * reverse_exchange_rate).quantize(Decimal('.01'), ROUND_HALF_EVEN)
+            amount = (amount * reverse_exchange_rate).quantize(
+                Decimal(".01"), ROUND_HALF_EVEN
+            )
 
         return amount
 
 
 class OrderVariable(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="variables"
-    )
-    key = models.SlugField(_('key'))
-    value = models.CharField(_('value'), max_length=100)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="variables")
+    key = models.SlugField(_("key"))
+    value = models.CharField(_("value"), max_length=100)
 
     class Meta:
-        ordering = ('key',)
+        ordering = ("key",)
         verbose_name = _("Order variable")
         verbose_name_plural = _("Order variables")
 
     def __str__(self):
         if len(self.value) > 10:
-            v = self.value[:10] + '...'
+            v = self.value[:10] + "..."
         else:
             v = self.value
         return "OrderVariable: %s=%s" % (self.key, v)
@@ -1754,15 +1789,13 @@ class OrderVariable(models.Model):
 
 class OrderTaxDetail(models.Model):
     """A tax line item"""
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        related_name="taxes"
-    )
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="taxes")
     method = models.CharField(_("Model"), max_length=50)
     description = models.CharField(_("Description"), max_length=50, blank=True)
-    tax = models.DecimalField(_("Tax"), max_digits=18,
-                              decimal_places=2, blank=True, null=True)
+    tax = models.DecimalField(
+        _("Tax"), max_digits=18, decimal_places=2, blank=True, null=True
+    )
 
     def __str__(self):
         if self.description:
@@ -1771,9 +1804,9 @@ class OrderTaxDetail(models.Model):
             return "Tax: %s" % self.tax
 
     class Meta:
-        verbose_name = _('Order tax detail')
-        verbose_name_plural = _('Order tax details')
-        ordering = ('id',)
+        verbose_name = _("Order tax detail")
+        verbose_name_plural = _("Order tax details")
+        ordering = ("id",)
 
 
 def _remove_order_on_cart_update(request=None, cart=None, **kwargs):
@@ -1793,16 +1826,20 @@ def _recalc_total_on_contact_change(contact=None, **kwargs):
 
 def _create_download_link(product=None, order=None, subtype=None, **kwargs):
     if product and order and subtype == "download":
-        new_link = DownloadLink(downloadable_product=product,
-                                order=order, key=product.create_key(), num_attempts=0)
+        new_link = DownloadLink(
+            downloadable_product=product,
+            order=order,
+            key=product.create_key(),
+            num_attempts=0,
+        )
         new_link.save()
     else:
         log.debug(
-            "ignoring subtype_order_success signal, looking for download product, got %s", subtype)
+            "ignoring subtype_order_success signal, looking for download product, got %s",
+            subtype,
+        )
 
 
 signals.satchmo_cart_changed.connect(_remove_order_on_cart_update, sender=None)
-satchmo_contact_location_changed.connect(
-    _recalc_total_on_contact_change, sender=None)
-product_signals.subtype_order_success.connect(
-    _create_download_link, sender=None)
+satchmo_contact_location_changed.connect(_recalc_total_on_contact_change, sender=None)
+product_signals.subtype_order_success.connect(_create_download_link, sender=None)

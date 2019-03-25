@@ -40,8 +40,7 @@ def country_for_request(request):
                         try:
                             # GeoIP returns iso2 codes
                             country = Country.objects.filter().get(
-                                active=True,
-                                iso2_code=country["country_code"]
+                                active=True, iso2_code=country["country_code"]
                             )
                         except Country.DoesNotExist:
                             pass

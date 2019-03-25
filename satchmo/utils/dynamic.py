@@ -3,14 +3,15 @@ from django.urls import reverse, NoReverseMatch
 from satchmo.utils import url_join
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 def lookup_template(settings, template):
     """Return a template name, which may have been overridden in the settings."""
 
-    if 'TEMPLATE_OVERRIDES' in settings:
-        val = settings['TEMPLATE_OVERRIDES']
+    if "TEMPLATE_OVERRIDES" in settings:
+        val = settings["TEMPLATE_OVERRIDES"]
         template = val.get(template, template)
 
     return template
@@ -32,19 +33,16 @@ def lookup_url(settings, name, include_server=False, ssl=False):
 
     try:
         namespace = settings.KEY.value.lower()
-        possible = "{namespace}:{url_name}".format(
-            namespace=namespace,
-            url_name=name,
-        )
+        possible = "{namespace}:{url_name}".format(namespace=namespace, url_name=name)
         url = reverse(possible)
     except NoReverseMatch:
-        log.debug('No url found for %s', possible)
+        log.debug("No url found for %s", possible)
 
     if not url:
         try:
             url = reverse(name)
         except NoReverseMatch as e:
-            log.error('Could not find any url for %s', name)
+            log.error("Could not find any url for %s", name)
             log.exception(e)
             raise
 

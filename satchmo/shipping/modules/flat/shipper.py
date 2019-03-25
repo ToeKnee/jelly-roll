@@ -16,7 +16,7 @@ class Shipper(BaseShipper):
         """
         This is mainly helpful for debugging purposes
         """
-        return "Flat Rate: %s" % config_value('SHIPPING', 'FLAT_RATE')
+        return "Flat Rate: %s" % config_value("SHIPPING", "FLAT_RATE")
 
     def description(self):
         """
@@ -28,23 +28,23 @@ class Shipper(BaseShipper):
         """
         Complex calculations can be done here as long as the return value is a dollar figure
         """
-        assert(self._calculated)
+        assert self._calculated
         for cartitem in self.cart.cartitem_set.all():
             if cartitem.product.is_shippable:
-                return config_value('SHIPPING', 'FLAT_RATE')
+                return config_value("SHIPPING", "FLAT_RATE")
         return Decimal("0.00")
 
     def method(self):
         """
         Describes the actual delivery service (Mail, FedEx, DHL, UPS, etc)
         """
-        return ugettext(config_value('SHIPPING', 'FLAT_SERVICE'))
+        return ugettext(config_value("SHIPPING", "FLAT_SERVICE"))
 
     def expectedDelivery(self):
         """
         Can be a plain string or complex calcuation returning an actual date
         """
-        return ugettext(config_value('SHIPPING', 'FLAT_DAYS'))
+        return ugettext(config_value("SHIPPING", "FLAT_DAYS"))
 
     def valid(self, order=None):
         """

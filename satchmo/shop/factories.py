@@ -90,12 +90,12 @@ class TaxableOrderItemFactory(OrderItemFactory):
 
 
 class TestOrderFactory(OrderFactory):
-    shipping_cost = Decimal('10.00')
-    discount = Decimal('0.00')
-    shipping_discount = Decimal('0.00')
-    sub_total = Decimal('25.00')
-    tax = Decimal('0.00')
-    total = Decimal('35.00')
+    shipping_cost = Decimal("10.00")
+    discount = Decimal("0.00")
+    shipping_discount = Decimal("0.00")
+    sub_total = Decimal("25.00")
+    tax = Decimal("0.00")
+    total = Decimal("35.00")
 
     @factory.post_generation
     def add_order_item(obj, create, extracted, **kwargs):
@@ -136,7 +136,7 @@ class ShippedOrderFactory(PaidOrderFactory):
     @factory.post_generation
     def add_shipped_status(obj, create, extracted, **kwargs):
         if create:
-            obj.add_status('Shipped', "Test Order Shipped")
+            obj.add_status("Shipped", "Test Order Shipped")
 
 
 class StatusFactory(factory.django.DjangoModelFactory):

@@ -13,7 +13,8 @@ class ProductWishManager(models.Manager):
         encoded = json.dumps(details)
 
         products = ProductWish.objects.filter(
-            product=product, contact=contact, _details=encoded)
+            product=product, contact=contact, _details=encoded
+        )
         if products and len(products) > 0:
             wish = products[0]
             if len(products) > 1:
@@ -32,22 +33,22 @@ class ProductWish(models.Model):
         Contact,
         on_delete=models.CASCADE,
         verbose_name=_("Contact"),
-        related_name="contacts"
+        related_name="contacts",
     )
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
         verbose_name=_("Product"),
-        related_name="products"
+        related_name="products",
     )
-    _details = models.TextField(_('Details'), null=True, blank=True)
+    _details = models.TextField(_("Details"), null=True, blank=True)
     create_date = models.DateTimeField(_("Creation Date"))
 
     objects = ProductWishManager()
 
     class Meta:
-        verbose_name = _('Product Wish')
-        verbose_name_plural = _('Product Wishes')
+        verbose_name = _("Product Wish")
+        verbose_name_plural = _("Product Wishes")
 
     def save(self, *args, **kwargs):
         """Ensure we have a create_date before saving the first time."""

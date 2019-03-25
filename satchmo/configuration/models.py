@@ -8,9 +8,10 @@ from satchmo.caching import cache_key, cache_get, cache_set, NotCachedError
 from satchmo.caching.models import CachedObjectMixin
 from .exceptions import SettingNotSet
 import logging
+
 log = logging.getLogger(__name__)
 
-__all__ = ['Setting', 'LongSetting', 'find_setting']
+__all__ = ["Setting", "LongSetting", "find_setting"]
 
 
 def _safe_get_siteid(site):
@@ -32,7 +33,7 @@ def find_setting(group, key, site=None):
 
     siteid = _safe_get_siteid(site)
 
-    ck = cache_key('Setting', siteid, group, key)
+    ck = cache_key("Setting", siteid, group, key)
     setting = None
     try:
         setting = cache_get(ck)
@@ -41,18 +42,14 @@ def find_setting(group, key, site=None):
         if apps.ready:
             try:
                 setting = Setting.objects.get(
-                    site__id__exact=siteid,
-                    key__exact=key,
-                    group__exact=group
+                    site__id__exact=siteid, key__exact=key, group__exact=group
                 )
 
             except Setting.DoesNotExist:
                 # maybe it is a "long setting"
                 try:
                     setting = LongSetting.objects.get(
-                        site__id__exact=siteid,
-                        key__exact=key,
-                        group__exact=group
+                        site__id__exact=siteid, key__exact=key, group__exact=group
                     )
 
                 except LongSetting.DoesNotExist:
@@ -74,11 +71,7 @@ class SettingManager(models.Manager):
 
 
 class Setting(models.Model, CachedObjectMixin):
-    site = models.ForeignKey(
-        Site,
-        on_delete=models.CASCADE,
-        verbose_name=_('Site')
-    )
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name=_("Site"))
     group = models.CharField(max_length=100, blank=False, null=False)
     key = models.CharField(max_length=100, blank=False, null=False)
     value = models.CharField(max_length=255, blank=True)
@@ -87,13 +80,11 @@ class Setting(models.Model, CachedObjectMixin):
 
     class Meta:
         db_table = "configuration_setting"
-        unique_together = ('site', 'group', 'key')
+        unique_together = ("site", "group", "key")
 
     def __str__(self):
         return "{group}:{key} {value}".format(
-            group=self.group,
-            key=self.key,
-            value=self.value
+            group=self.group, key=self.key, value=self.value
         )
 
     def save(self, *args, **kwargs):
@@ -110,7 +101,7 @@ class Setting(models.Model, CachedObjectMixin):
         return self.id is not None
 
     def cache_key(self, *args, **kwargs):
-        return cache_key('Setting', self.site, self.group, self.key)
+        return cache_key("Setting", self.site, self.group, self.key)
 
     def delete(self):
         self.cache_delete()
@@ -126,11 +117,8 @@ class LongSettingManager(models.Manager):
 
 class LongSetting(models.Model, CachedObjectMixin):
     """A Setting which can handle more than 255 characters"""
-    site = models.ForeignKey(
-        Site,
-        on_delete=models.CASCADE,
-        verbose_name=_('Site')
-    )
+
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name=_("Site"))
     group = models.CharField(max_length=100, blank=False, null=False)
     key = models.CharField(max_length=100, blank=False, null=False)
     value = models.TextField(blank=True)
@@ -139,7 +127,7 @@ class LongSetting(models.Model, CachedObjectMixin):
 
     class Meta:
         db_table = "configuration_longsetting"
-        unique_together = ('site', 'group', 'key')
+        unique_together = ("site", "group", "key")
 
     def __bool__(self):
         return self.id is not None
@@ -156,7 +144,7 @@ class LongSetting(models.Model, CachedObjectMixin):
         # note same cache pattern as Setting.  This is so we can look up in one check.
         # they can't overlap anyway, so this is moderately safe.  At the worst, the
         # Setting will override a LongSetting.
-        return cache_key('Setting', self.site, self.group, self.key)
+        return cache_key("Setting", self.site, self.group, self.key)
 
     def delete(self):
         self.cache_delete()

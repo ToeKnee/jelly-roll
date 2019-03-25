@@ -19,50 +19,36 @@ class TruncDecimalTest(TestCase):
 
 class CaseInsensitiveReadOnlyDictTest(TestCase):
     def test_contains__correct_case(self):
-        d = {
-            "key": "value"
-        }
+        d = {"key": "value"}
         id = CaseInsensitiveReadOnlyDict(d)
         self.assertTrue("key" in id)
 
     def test_contains__incorrect_case(self):
-        d = {
-            "kEy": "value"
-        }
+        d = {"kEy": "value"}
         id = CaseInsensitiveReadOnlyDict(d)
         self.assertTrue("KeY" in id)
 
     def test_len(self):
-        d = {
-            "key": "value"
-        }
+        d = {"key": "value"}
         id = CaseInsensitiveReadOnlyDict(d)
         self.assertEqual(len(id), 1)
 
     def test_iter(self):
-        d = {
-            "key": "value"
-        }
+        d = {"key": "value"}
         id = CaseInsensitiveReadOnlyDict(d)
         self.assertEqual([i for i in id], ["KEY"])
 
     def test_getitem__correct_case(self):
-        d = {
-            "key": "value"
-        }
+        d = {"key": "value"}
         id = CaseInsensitiveReadOnlyDict(d)
         self.assertEqual(id["key"], "value")
 
     def test_getitem__incorrect_case(self):
-        d = {
-            "kEy": "value"
-        }
+        d = {"kEy": "value"}
         id = CaseInsensitiveReadOnlyDict(d)
         self.assertEqual(id["KeY"], "value")
 
     def test_actual_key_case(self):
-        d = {
-            "key": "value"
-        }
+        d = {"key": "value"}
         id = CaseInsensitiveReadOnlyDict(d)
         self.assertEqual(id.actual_key_case("KeY"), "key")

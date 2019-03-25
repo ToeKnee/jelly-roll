@@ -15,6 +15,7 @@ from satchmo.shop.models import Cart
 from satchmo.payment import signals
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -30,9 +31,9 @@ class ConfirmController(object):
     def __init__(self, request, payment_module):
         self.request = request
         self.paymentModule = payment_module
-        processor_module = payment_module.MODULE.load_module('processor')
+        processor_module = payment_module.MODULE.load_module("processor")
         self.processor = processor_module.PaymentProcessor(self.paymentModule)
-        self.viewTax = config_value('TAX', 'DEFAULT_VIEW_TAX')
+        self.viewTax = config_value("TAX", "DEFAULT_VIEW_TAX")
         self.order = None
         self.cart = None
         self.extra_context = {}
@@ -57,9 +58,9 @@ class ConfirmController(object):
         self.processorResults = None
 
         self.templates = {
-            'CONFIRM': 'checkout/confirm.html',
-            'EMPTY_CART': 'checkout/empty_cart',
-            '404': 'shop_404.html',
+            "CONFIRM": "checkout/confirm.html",
+            "EMPTY_CART": "checkout/empty_cart",
+            "404": "shop_404.html",
         }
 
     def confirm(self):
@@ -107,15 +108,15 @@ class ConfirmController(object):
         """Show the confirmation page for the order.  Looks up the proper template for the
         payment_module.
         """
-        template = controller.lookup_template('CONFIRM')
+        template = controller.lookup_template("CONFIRM")
         controller.order.recalculate_total()
 
         context = {
-            'PAYMENT_LIVE': payment_live(controller.paymentModule),
-            'default_view_tax': controller.viewTax,
-            'order': controller.order,
-            'errors': controller.processorMessage,
-            'checkout_step2': controller.lookup_url('satchmo_checkout-step2')
+            "PAYMENT_LIVE": payment_live(controller.paymentModule),
+            "default_view_tax": controller.viewTax,
+            "order": controller.order,
+            "errors": controller.processorMessage,
+            "checkout_step2": controller.lookup_url("satchmo_checkout-step2"),
         }
         if controller.extra_context:
             context.update(controller.extra_context)
@@ -132,28 +133,40 @@ class ConfirmController(object):
                     item.save()
             if not controller.order.status:
                 controller.order.add_status(
-                    status='Pending', notes="Order successfully submitted")
+                    status="Pending", notes="Order successfully submitted"
+                )
 
             # Redirect to the success page
-            url = controller.lookup_url('satchmo_checkout-success')
+            url = controller.lookup_url("satchmo_checkout-success")
             return HttpResponseRedirect(url)
 
         else:
             log.debug(
-                'Order #%i not paid in full, sending to pay rest of balance', controller.order.id)
+                "Order #%i not paid in full, sending to pay rest of balance",
+                controller.order.id,
+            )
             url = controller.order.get_balance_remaining_url()
             return HttpResponseRedirect(url)
 
     def process(self):
         """Process a prepared payment"""
-        self.processorResults, self.processorReasonCode, self.processorMessage = self.processor.process()
+        self.processorResults, self.processorReasonCode, self.processorMessage = (
+            self.processor.process()
+        )
 
-        log.info("""Processing %s transaction with %s
+        log.info(
+            """Processing %s transaction with %s
         Order %i
         Results=%s
         Response=%s
-        Reason=%s""", self.paymentModule.LABEL.value, self.paymentModule.KEY.value,
-                 self.order.id, self.processorResults, self.processorReasonCode, self.processorMessage)
+        Reason=%s""",
+            self.paymentModule.LABEL.value,
+            self.paymentModule.KEY.value,
+            self.order.id,
+            self.processorResults,
+            self.processorReasonCode,
+            self.processorMessage,
+        )
         return self.processorResults
 
     def sanity_check(self):
@@ -162,26 +175,26 @@ class ConfirmController(object):
             self.order = Order.objects.from_request(self.request)
 
         except Order.DoesNotExist:
-            url = reverse('satchmo_checkout-step1')
+            url = reverse("satchmo_checkout-step1")
             self.invalidate(HttpResponseRedirect(url))
             return False
 
         try:
             self.cart = Cart.objects.from_request(self.request)
             if self.cart.numItems == 0 and not self.order.is_partially_paid:
-                template = self.lookup_template('EMPTY_CART')
+                template = self.lookup_template("EMPTY_CART")
                 self.invalidate(render(request, template))
                 return False
 
         except Cart.DoesNotExist:
-            template = self.lookup_template('EMPTY_CART')
+            template = self.lookup_template("EMPTY_CART")
             self.invalidate(render(request, template))
             return False
 
         # Check if the order is still valid
         if not self.order.validate(self.request):
-            context = {'message': _('Your order is no longer valid.')}
-            self.invalidate(render(request, self.templates['404'], context))
+            context = {"message": _("Your order is no longer valid.")}
+            self.invalidate(render(request, self.templates["404"], context))
 
         self.valid = True
         signals.confirm_sanity_check.send(self, controller=self)
@@ -194,6 +207,6 @@ def credit_confirm_info(request, payment_module, template=None):
 
     controller = ConfirmController(request, payment_module)
     if template:
-        controller.templates['CONFIRM'] = template
+        controller.templates["CONFIRM"] = template
     controller.confirm()
     return controller.response

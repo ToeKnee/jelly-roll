@@ -3,6 +3,7 @@ from django import forms
 from satchmo.configuration.values import ConfigurationGroup
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -10,7 +11,7 @@ class SettingsEditor(forms.Form):
     "Base editor, from which customized forms are created"
 
     def __init__(self, *args, **kwargs):
-        settings = kwargs.pop('settings')
+        settings = kwargs.pop("settings")
         super(SettingsEditor, self).__init__(*args, **kwargs)
         flattened = []
         groups = []
@@ -23,14 +24,14 @@ class SettingsEditor(forms.Form):
         for setting in flattened:
             # Add the field to the customized field list
             kw = {
-                'label': setting.description,
-                'help_text': setting.help_text,
+                "label": setting.description,
+                "help_text": setting.help_text,
                 # Provide current setting values for initializing the form
-                'initial': setting.editor_value
+                "initial": setting.editor_value,
             }
             field = setting.make_field(**kw)
 
-            k = '%s__%s' % (setting.group.key, setting.key)
+            k = "%s__%s" % (setting.group.key, setting.key)
             self.fields[k] = field
 
             if setting.group.key not in (g.key for g in groups):

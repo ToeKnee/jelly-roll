@@ -10,6 +10,7 @@ from satchmo.utils import is_string_like
 from satchmo.tax.models import TaxRate, TaxClass
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -59,12 +60,10 @@ class Processor(object):
 
         if area:
             try:
-                area = AdminArea.objects.get(name__iexact=area,
-                                             country=country)
+                area = AdminArea.objects.get(name__iexact=area, country=country)
             except AdminArea.DoesNotExist:
                 try:
-                    area = AdminArea.objects.get(abbrev__iexact=area,
-                                                 country=country)
+                    area = AdminArea.objects.get(abbrev__iexact=area, country=country)
                 except AdminArea.DoesNotExist:
                     log.info("Couldn't find AdminArea from string: %s", area)
                     area = None
@@ -74,7 +73,9 @@ class Processor(object):
     def get_percent(self, taxclass="Default", area=None, country=None):
         return 100 * self.get_rate(taxclass=taxclass, area=area, country=country)
 
-    def get_rate(self, taxclass=None, area=None, country=None, get_object=False, **kwargs):
+    def get_rate(
+        self, taxclass=None, area=None, country=None, get_object=False, **kwargs
+    ):
         if not taxclass:
             taxclass = "Default"
         rate = None
@@ -141,9 +142,9 @@ class Processor(object):
 
         if subtotal:
             rate = None
-            if config_value('TAX', 'TAX_SHIPPING'):
+            if config_value("TAX", "TAX_SHIPPING"):
                 try:
-                    tc = TaxClass.objects.get(title=config_value('TAX', 'TAX_CLASS'))
+                    tc = TaxClass.objects.get(title=config_value("TAX", "TAX_CLASS"))
                     rate = self.get_rate(taxclass=tc)
                 except:
                     log.error("'Shipping' TaxClass doesn't exist.")
@@ -169,7 +170,7 @@ class Processor(object):
         else:
             order = self.order
 
-        sub_total = Decimal('0.00')
+        sub_total = Decimal("0.00")
         taxes = {}
 
         rates = {}
@@ -197,7 +198,7 @@ class Processor(object):
 
         ship = self.shipping()
         sub_total += ship
-        taxes['Shipping'] = ship
+        taxes["Shipping"] = ship
 
         for k in taxes:
             taxes[k] = taxes[k]

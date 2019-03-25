@@ -35,22 +35,20 @@ log = logging.getLogger(__name__)
 
 
 def configure_api():
-    ''' Configure PayPal api '''
-    payment_module = config_get_group('PAYMENT_PAYPAL')
+    """ Configure PayPal api """
+    payment_module = config_get_group("PAYMENT_PAYPAL")
     if payment_module.LIVE.value:
-        MODE = 'live'
+        MODE = "live"
         CLIENT = payment_module.CLIENT_ID.value
         SECRET = payment_module.SECRET_KEY.value
     else:
-        MODE = 'sandbox'
+        MODE = "sandbox"
         CLIENT = payment_module.SANDBOX_CLIENT_ID.value
         SECRET = payment_module.SANDBOX_SECRET_KEY.value
 
-    paypalrestsdk.configure({
-        "mode": MODE,
-        "client_id": CLIENT,
-        "client_secret": SECRET,
-    })
+    paypalrestsdk.configure(
+        {"mode": MODE, "client_id": CLIENT, "client_secret": SECRET}
+    )
 
 
 def pay_ship_info(request):
@@ -61,9 +59,9 @@ def pay_ship_info(request):
 
     return payship.base_pay_ship_info(
         request,
-        config_get_group('PAYMENT_PAYPAL'),
+        config_get_group("PAYMENT_PAYPAL"),
         payship.simple_pay_ship_process_form,
-        'checkout/paypal/pay_ship.html'
+        "checkout/paypal/pay_ship.html",
     )
 
 
@@ -74,40 +72,38 @@ def confirm_info(request):
     if cart.not_enough_stock():
         return HttpResponseRedirect(reverse("satchmo_cart"))
 
-    payment_module = config_get_group('PAYMENT_PAYPAL')
+    payment_module = config_get_group("PAYMENT_PAYPAL")
 
     # Get the order,
     # if there is no order, return to checkout step 1
     try:
         order = Order.objects.from_request(request)
     except Order.DoesNotExist:
-        url = lookup_url(payment_module, 'satchmo_checkout-step1')
+        url = lookup_url(payment_module, "satchmo_checkout-step1")
         return HttpResponseRedirect(url)
 
     # Check that the cart has items in it.
     if cart.numItems == 0:
-        template = lookup_template(payment_module, 'checkout/empty_cart.html')
+        template = lookup_template(payment_module, "checkout/empty_cart.html")
         return render(request, template)
 
     # Check if the order is still valid
     if not order.validate(request):
-        context = {
-            'message': _('Your order is no longer valid.')
-        }
-        return render(request, 'shop_404.html', context)
+        context = {"message": _("Your order is no longer valid.")}
+        return render(request, "shop_404.html", context)
 
     # Set environment
     if payment_module.LIVE.value:
-        environment = 'production'
+        environment = "production"
     else:
-        environment = 'sandbox'
+        environment = "sandbox"
 
     context = {
-        'order': order,
-        'environment': environment,
-        'PAYMENT_LIVE': payment_live(payment_module)
+        "order": order,
+        "environment": environment,
+        "PAYMENT_LIVE": payment_live(payment_module),
     }
-    template = lookup_template(payment_module, 'checkout/paypal/confirm.html')
+    template = lookup_template(payment_module, "checkout/paypal/confirm.html")
     return render(request, template, context)
 
 
@@ -130,108 +126,101 @@ def create_payment(request, retries=0):
 
     # Contact PayPal to create the payment
     configure_api()
-    payment_module = config_get_group('PAYMENT_PAYPAL')
+    payment_module = config_get_group("PAYMENT_PAYPAL")
     site = Site.objects.get_current()
 
     data = {
-        'intent': 'order',
-        'payer': {
-            'payment_method': 'paypal',
-        },
-        'redirect_urls': {
-            'return_url': lookup_url(
-                payment_module,
-                'paypal:satchmo_checkout-success',
-                include_server=True
+        "intent": "order",
+        "payer": {"payment_method": "paypal"},
+        "redirect_urls": {
+            "return_url": lookup_url(
+                payment_module, "paypal:satchmo_checkout-success", include_server=True
             ),
-            'cancel_url': lookup_url(
-                payment_module,
-                'satchmo_checkout-step1',
-                include_server=True
-            )
+            "cancel_url": lookup_url(
+                payment_module, "satchmo_checkout-step1", include_server=True
+            ),
         },
-        'transactions': [{
-            'amount': {
-                'currency': order.currency.iso_4217_code,
-                'total': str(order.total),
-                'details': {
-                    'subtotal': str(order.sub_total),
-                    'tax': str(order.tax),
-                    'shipping': str(order.shipping_cost),
-                    'shipping_discount': str(order.shipping_discount),
-                }
-            },
-            'description': 'Your {site} order.'.format(site=site.name),
-            'invoice_number': str(order.id),
-            'payment_options': {
-                'allowed_payment_method': 'UNRESTRICTED'
-            },
-            'item_list': {
-                'items': [
-                    {
-                        'name': item.product.name,
-                        'description': item.product.meta,
-                        'quantity': item.quantity,
-                        'currency': order.currency.iso_4217_code,
-                        'price': str(item.unit_price),
-                        'tax': str(item.unit_tax),
-                        'sku': item.product.sku,
-                    }
-                    for item
-                    in order.orderitem_set.all()
-                ],
-                'shipping_address': {
-                    'recipient_name': order.ship_addressee,
-                    'line1': order.ship_street1,
-                    'line2': order.ship_street2,
-                    'city': order.ship_city,
-                    'country_code': order.ship_country.iso2_code,
-                    'postal_code': order.ship_postal_code,
-                    'state': order.ship_state
+        "transactions": [
+            {
+                "amount": {
+                    "currency": order.currency.iso_4217_code,
+                    "total": str(order.total),
+                    "details": {
+                        "subtotal": str(order.sub_total),
+                        "tax": str(order.tax),
+                        "shipping": str(order.shipping_cost),
+                        "shipping_discount": str(order.shipping_discount),
+                    },
                 },
-                'shipping_method': order.shipping_description,
-            },
-        }],
+                "description": "Your {site} order.".format(site=site.name),
+                "invoice_number": str(order.id),
+                "payment_options": {"allowed_payment_method": "UNRESTRICTED"},
+                "item_list": {
+                    "items": [
+                        {
+                            "name": item.product.name,
+                            "description": item.product.meta,
+                            "quantity": item.quantity,
+                            "currency": order.currency.iso_4217_code,
+                            "price": str(item.unit_price),
+                            "tax": str(item.unit_tax),
+                            "sku": item.product.sku,
+                        }
+                        for item in order.orderitem_set.all()
+                    ],
+                    "shipping_address": {
+                        "recipient_name": order.ship_addressee,
+                        "line1": order.ship_street1,
+                        "line2": order.ship_street2,
+                        "city": order.ship_city,
+                        "country_code": order.ship_country.iso2_code,
+                        "postal_code": order.ship_postal_code,
+                        "state": order.ship_state,
+                    },
+                    "shipping_method": order.shipping_description,
+                },
+            }
+        ],
     }
 
     # Send it to PayPal
     payment = paypalrestsdk.Payment(data)
 
     if payment.create():
-        order.notes += _('--- Paypal Payment Created ---') + '\n'
-        order.notes += str(timezone.now()) + '\n'
-        order.notes += pprint.pformat(payment.to_dict()) + '\n'
+        order.notes += _("--- Paypal Payment Created ---") + "\n"
+        order.notes += str(timezone.now()) + "\n"
+        order.notes += pprint.pformat(payment.to_dict()) + "\n"
         order.freeze()
         order.save()
         # Create a pending payment in our system
         order_payment = create_pending_payment(order, payment_module)
-        order_payment.transaction_id = payment['id']
+        order_payment.transaction_id = payment["id"]
         order_payment.save()
 
         # Return JSON to client
-        return JsonResponse(payment.to_dict(), status=201,)
+        return JsonResponse(payment.to_dict(), status=201)
 
     else:
-        subject = 'PayPal API error'
+        subject = "PayPal API error"
         message = "\n".join(
-            "{key}: {value}".format(
-                key=key,
-                value=value
-            )
-            for key, value
-            in payment.error.items()
+            "{key}: {value}".format(key=key, value=value)
+            for key, value in payment.error.items()
         )
         mail_admins(subject, message)
         log.error(payment.error)
         log.error(pprint.pformat(data))
-        if payment.error['name'] == 'VALIDATION_ERROR':
-            data = payment.error['details']
+        if payment.error["name"] == "VALIDATION_ERROR":
+            data = payment.error["details"]
         else:
-            data = {"message": _("""Something went wrong with your PayPal payment.
+            data = {
+                "message": _(
+                    """Something went wrong with your PayPal payment.
 
 Please try again.
 
-If the problem persists, please contact us.""")}
+If the problem persists, please contact us."""
+                )
+            }
         # Because we are returning a list of dicts, we must mark it as unsafe
         return JsonResponse(data, status=400, safe=False)
 
@@ -243,158 +232,145 @@ def execute_payment(request, retries=0):
         raise Http404
     configure_api()
 
-    payment = paypalrestsdk.Payment.find(request.POST.get('paymentID'))
-    if payment.execute({"payer_id": request.POST.get('payerID')}):
+    payment = paypalrestsdk.Payment.find(request.POST.get("paymentID"))
+    if payment.execute({"payer_id": request.POST.get("payerID")}):
         # Get Order Payment and order
         order_payment = get_object_or_404(
-            OrderPayment,
-            transaction_id=request.POST.get('paymentID')
+            OrderPayment, transaction_id=request.POST.get("paymentID")
         )
         order = order_payment.order
 
-        order.notes += '\n' + _('--- Paypal Payment Executed ---') + '\n'
-        order.notes += str(timezone.now()) + '\n'
-        order.notes += pprint.pformat(payment.to_dict()) + '\n'
+        order.notes += "\n" + _("--- Paypal Payment Executed ---") + "\n"
+        order.notes += str(timezone.now()) + "\n"
+        order.notes += pprint.pformat(payment.to_dict()) + "\n"
         order.save()
 
         pp_order_id = payment.transactions[0].related_resources[0].order.id
         pp_order = paypalrestsdk.Order.find(pp_order_id)
-        authorize = pp_order.authorize({
-            "amount": {
-                'currency': order.currency.iso_4217_code,
-                'total': str(order.total),
+        authorize = pp_order.authorize(
+            {
+                "amount": {
+                    "currency": order.currency.iso_4217_code,
+                    "total": str(order.total),
+                }
             }
-        })
-        order.notes += '\n' + _('--- Paypal Payment Authorise ---') + '\n'
-        order.notes += str(timezone.now()) + '\n'
-        order.notes += str(authorize) + '\n'
+        )
+        order.notes += "\n" + _("--- Paypal Payment Authorise ---") + "\n"
+        order.notes += str(timezone.now()) + "\n"
+        order.notes += str(authorize) + "\n"
         order.save()
 
         if pp_order.success():  # Hmm?
-            capture = pp_order.capture({
-                'amount': {
-                    'currency': order.currency.iso_4217_code,
-                    'total': str(order.total),
-                },
-                'is_final_capture': True
-            })
+            capture = pp_order.capture(
+                {
+                    "amount": {
+                        "currency": order.currency.iso_4217_code,
+                        "total": str(order.total),
+                    },
+                    "is_final_capture": True,
+                }
+            )
 
-            order.notes += '\n' + _('--- Paypal Payment Capture ---') + '\n'
-            order.notes += str(timezone.now()) + '\n'
-            order.notes += pprint.pformat(capture.to_dict()) + '\n'
+            order.notes += "\n" + _("--- Paypal Payment Capture ---") + "\n"
+            order.notes += str(timezone.now()) + "\n"
+            order.notes += pprint.pformat(capture.to_dict()) + "\n"
             order.save()
 
             if capture.success():
-                state = capture['state']
-                if state == 'completed':
+                state = capture["state"]
+                if state == "completed":
                     # Update order payment values
-                    order_payment.amount = capture['amount']['total']
-                    order_payment.transaction_id = payment['id']
+                    order_payment.amount = capture["amount"]["total"]
+                    order_payment.transaction_id = payment["id"]
                     order_payment.save()
 
                     # Set Order to Processing
                     order.add_status(
-                        status='Processing',
-                        notes=_("Paid by PayPal. Thank you.")
+                        status="Processing", notes=_("Paid by PayPal. Thank you.")
                     )
-                elif state == 'pending':
+                elif state == "pending":
                     order.add_status(
-                        status='Pending',
+                        status="Pending",
                         notes=_(
-                            "Payment pending with PayPal.\n\nWe are waiting for funds to clear before shipping your order.\n\nThank you.")
+                            "Payment pending with PayPal.\n\nWe are waiting for funds to clear before shipping your order.\n\nThank you."
+                        ),
                     )
                 else:
-                    order.add_status(
-                        status=state.capitalize(),
-                        notes=""
-                    )
+                    order.add_status(status=state.capitalize(), notes="")
 
                 # Freeze the order as payment has now been taken
                 complete_order(order)
-                if 'cart' in request.session:
-                    del request.session['cart']
+                if "cart" in request.session:
+                    del request.session["cart"]
 
                 response_data = {
-                    'status': 'success',
-                    'url': reverse('paypal:satchmo_checkout-success')
+                    "status": "success",
+                    "url": reverse("paypal:satchmo_checkout-success"),
                 }
 
-                return JsonResponse(
-                    data=response_data,
-                    status=201
-                )
+                return JsonResponse(data=response_data, status=201)
 
             else:
-                subject = 'PayPal API Capture error'
+                subject = "PayPal API Capture error"
                 message = "\n".join(
-                    "{key}: {value}".format(
-                        key=key,
-                        value=value
-                    )
-                    for key, value
-                    in capture.error.items()
+                    "{key}: {value}".format(key=key, value=value)
+                    for key, value in capture.error.items()
                 )
                 mail_admins(subject, message)
                 log.error(message)
         else:
-            subject = 'PayPal API Order error'
+            subject = "PayPal API Order error"
             message = "\n".join(
-                "{key}: {value}".format(
-                    key=key,
-                    value=value
-                )
-                for key, value
-                in pp_order.error.items()
+                "{key}: {value}".format(key=key, value=value)
+                for key, value in pp_order.error.items()
             )
             mail_admins(subject, message)
             log.error(message)
     else:
-        subject = 'PayPal API Payment error'
+        subject = "PayPal API Payment error"
         message = "\n".join(
-            "{key}: {value}".format(
-                key=key,
-                value=value
-            )
-            for key, value
-            in payment.error.items()
+            "{key}: {value}".format(key=key, value=value)
+            for key, value in payment.error.items()
         )
         mail_admins(subject, message)
         log.error(message)
 
     data = {
-        "message": _("""Something went wrong with your PayPal payment.
+        "message": _(
+            """Something went wrong with your PayPal payment.
 
 Please try again.
 
-If the problem persists, please contact us.""")
+If the problem persists, please contact us."""
+        )
     }
     return JsonResponse(data, status=400)
 
 
 @transaction.atomic
 def success(request):
-    '''When the order has been successfully processed, the user will be
+    """When the order has been successfully processed, the user will be
     redirected here.
 
     This doesn't mean that the payment has been fully processed yet,
     the servers will talk to each other and confirm the payment.
-    '''
+    """
 
     try:
-        order = Order.objects.get(id=request.session.get('orderID'))
-        del request.session['orderID']
+        order = Order.objects.get(id=request.session.get("orderID"))
+        del request.session["orderID"]
     except Order.DoesNotExist:
         return HttpResponseRedirect(reverse("satchmo_order_history"))
 
-    template = 'checkout/success.html'
-    context = {'order': order}
+    template = "checkout/success.html"
+    context = {"order": order}
     return render(request, template, context)
 
 
 @transaction.atomic
 @csrf_exempt
 def webhook(request):
-    '''Handle PayPal webhooks.
+    """Handle PayPal webhooks.
 
     The PayPal REST APIs use webhooks for event notification. Webhooks
     are HTTP callbacks that receive notification messages for events.
@@ -412,24 +388,24 @@ def webhook(request):
     PAYMENT.SALE.PENDING The state of a sale changes to pending.
     PAYMENT.SALE.REFUNDED A merchant refunds a sale.
     PAYMENT.SALE.REVERSED PayPal reverses a sale.
-    '''
+    """
     if request.method != "POST":
         raise Http404
 
     data = json.loads(request.body.decode("utf-8"))
 
-    payment_module = config_get_group('PAYMENT_PAYPAL')
+    payment_module = config_get_group("PAYMENT_PAYPAL")
     if payment_module.LIVE.value:
         webhook_id = payment_module.WEBHOOK_ID.value
     else:
         webhook_id = payment_module.SANDBOX_WEBHOOK_ID.value
 
-    transmission_id = request.META['HTTP_PAYPAL_TRANSMISSION_ID']
-    timestamp = request.META['HTTP_PAYPAL_TRANSMISSION_TIME']
+    transmission_id = request.META["HTTP_PAYPAL_TRANSMISSION_ID"]
+    timestamp = request.META["HTTP_PAYPAL_TRANSMISSION_TIME"]
     event_body = request.body.decode("utf-8")
-    cert_url = request.META['HTTP_PAYPAL_CERT_URL']
-    actual_signature = request.META['HTTP_PAYPAL_TRANSMISSION_SIG']
-    auth_algo = request.META['HTTP_PAYPAL_AUTH_ALGO']
+    cert_url = request.META["HTTP_PAYPAL_CERT_URL"]
+    actual_signature = request.META["HTTP_PAYPAL_TRANSMISSION_SIG"]
+    auth_algo = request.META["HTTP_PAYPAL_AUTH_ALGO"]
     verified = WebhookEvent.verify(
         transmission_id,
         timestamp,
@@ -441,123 +417,105 @@ def webhook(request):
     )
 
     if verified is False:
-        subject = 'PayPal API webhook verification error'
+        subject = "PayPal API webhook verification error"
         message = pprint.pformat(data)
         mail_admins(subject, message)
-        log.error('PayPal API webhook verification error')
+        log.error("PayPal API webhook verification error")
         log.error(pprint.pformat(data))
-        return JsonResponse({'error': 'PayPal API webhook verification error'}, status=400)
+        return JsonResponse(
+            {"error": "PayPal API webhook verification error"}, status=400
+        )
 
-    event_type = data.get('event_type')
+    event_type = data.get("event_type")
     if event_type is not None:
-        if event_type.startswith('CUSTOMER.DISPUTE'):
+        if event_type.startswith("CUSTOMER.DISPUTE"):
             # Customer dispute
             # Add a note, but don't do anything else
             order_payment = get_object_or_404(
                 OrderPayment,
-                transaction_id=data['resource']['disputed_transactions'][0]['seller_transaction_id']
+                transaction_id=data["resource"]["disputed_transactions"][0][
+                    "seller_transaction_id"
+                ],
             )
             order = order_payment.order
-            order.notes += '\n' + _('--- Paypal Customer Dispute ---') + '\n'
-        elif event_type.endswith('COMPLETED'):
+            order.notes += "\n" + _("--- Paypal Customer Dispute ---") + "\n"
+        elif event_type.endswith("COMPLETED"):
             # Payment complete
-            order = get_object_or_404(
-                Order,
-                id=data['resource']['invoice_number']
-            )
-            if order.order_states.filter(status__status='Processing').exists() is False:
-                order.notes += '\n' + _('--- Paypal Payment Complete ---') + '\n'
+            order = get_object_or_404(Order, id=data["resource"]["invoice_number"])
+            if order.order_states.filter(status__status="Processing").exists() is False:
+                order.notes += "\n" + _("--- Paypal Payment Complete ---") + "\n"
                 # Update order payment values
                 order_payment = get_object_or_404(
-                    OrderPayment,
-                    transaction_id=data['resource']['parent_payment']
+                    OrderPayment, transaction_id=data["resource"]["parent_payment"]
                 )
-                order_payment.amount = data['resource']['amount']['total']
-                order_payment.transaction_id = data['id']
+                order_payment.amount = data["resource"]["amount"]["total"]
+                order_payment.transaction_id = data["id"]
                 order_payment.save()
 
                 # Set Order to Processing
                 order.add_status(
-                    status='Processing',
-                    notes=_("Paid by PayPal. Thank you.")
+                    status="Processing", notes=_("Paid by PayPal. Thank you.")
                 )
             else:
-                log.info("Already processed {payment}".format(
-                    payment=data['resource']['parent_payment']
-                ))
-        elif event_type.endswith('DENIED'):
+                log.info(
+                    "Already processed {payment}".format(
+                        payment=data["resource"]["parent_payment"]
+                    )
+                )
+        elif event_type.endswith("DENIED"):
             order_payment = get_object_or_404(
-                OrderPayment,
-                transaction_id=data['resource']['parent_payment']
+                OrderPayment, transaction_id=data["resource"]["parent_payment"]
             )
             order = order_payment.order
-            order.notes += '\n' + _('--- Paypal Payment Denied ---') + '\n'
-            order.add_status(
-                status='Denied',
-                notes=_("PayPal Payment Denied.")
-            )
-        elif event_type.endswith('PENDING'):
+            order.notes += "\n" + _("--- Paypal Payment Denied ---") + "\n"
+            order.add_status(status="Denied", notes=_("PayPal Payment Denied."))
+        elif event_type.endswith("PENDING"):
             order_payment = get_object_or_404(
-                OrderPayment,
-                transaction_id=data['resource']['parent_payment']
+                OrderPayment, transaction_id=data["resource"]["parent_payment"]
             )
             order = order_payment.order
-            order.notes += '\n' + _('--- Paypal Payment Pending ---') + '\n'
-            order.add_status(
-                status='Pending',
-                notes=_("PayPal Payment Pending.")
-            )
-        elif event_type.endswith('REFUNDED'):
-            order = get_object_or_404(
-                Order,
-                id=data['resource']['invoice_number']
-            )
-            order.notes += '\n' + _('--- Paypal Payment Refunded ---') + '\n'
-            order.add_status(status='Refunded', notes=_("PayPal Refund"))
+            order.notes += "\n" + _("--- Paypal Payment Pending ---") + "\n"
+            order.add_status(status="Pending", notes=_("PayPal Payment Pending."))
+        elif event_type.endswith("REFUNDED"):
+            order = get_object_or_404(Order, id=data["resource"]["invoice_number"])
+            order.notes += "\n" + _("--- Paypal Payment Refunded ---") + "\n"
+            order.add_status(status="Refunded", notes=_("PayPal Refund"))
             OrderRefund.objects.create(
                 payment="PAYPAL",
                 order=order,
-                amount=Decimal(data['resource']['amount']['total']),
+                amount=Decimal(data["resource"]["amount"]["total"]),
                 exchange_rate=order.exchange_rate,
-                transaction_id=data['id'],
+                transaction_id=data["id"],
             )
-        elif event_type == 'PAYMENT.SALE.REVERSED':
+        elif event_type == "PAYMENT.SALE.REVERSED":
             order_payment = get_object_or_404(
-                OrderPayment,
-                transaction_id=data['resource']['id']
+                OrderPayment, transaction_id=data["resource"]["id"]
             )
             order = order_payment.order
-            order.notes += '\n' + _('--- Paypal Payment Reversed ---') + '\n'
-            order.add_status(
-                status='Reversed',
-                notes=_("PayPal Payment Reversed.")
-            )
+            order.notes += "\n" + _("--- Paypal Payment Reversed ---") + "\n"
+            order.add_status(status="Reversed", notes=_("PayPal Payment Reversed."))
             OrderPayment.objects.create(
                 order=order,
-                amount=data['resource']['amount']['total'],  # Minus amount for reversal
+                amount=data["resource"]["amount"]["total"],  # Minus amount for reversal
                 exchange_rate=order.exchange_rate,
-                payment='PAYPAL',
-                transaction_id=data['id']
+                payment="PAYPAL",
+                transaction_id=data["id"],
             )
         else:
             order_payment = get_object_or_404(
-                OrderPayment,
-                transaction_id=data['resource']['parent_payment']
+                OrderPayment, transaction_id=data["resource"]["parent_payment"]
             )
             order = order_payment.order
-            order.notes += '\n' + _('--- Paypal {event_type} ---'.format(
-                event_type=event_type)
-            ) + '\n'
+            order.notes += (
+                "\n"
+                + _("--- Paypal {event_type} ---".format(event_type=event_type))
+                + "\n"
+            )
 
-    order.notes += str(timezone.now()) + '\n'
-    order.notes += pprint.pformat(data) + '\n'
+    order.notes += str(timezone.now()) + "\n"
+    order.notes += pprint.pformat(data) + "\n"
     order.save()
 
-    response_data = {
-        'status': 'success',
-    }
+    response_data = {"status": "success"}
 
-    return JsonResponse(
-        data=response_data,
-        status=201
-    )
+    return JsonResponse(data=response_data, status=201)

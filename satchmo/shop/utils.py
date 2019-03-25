@@ -7,4 +7,4 @@ class HttpResponseMethodNotAllowed(HttpResponse):
 
 
 def is_multihost_enabled():
-    return getattr(SiteManager, 'MULTIHOST', False)
+    return getattr(SiteManager, "MULTIHOST", False)

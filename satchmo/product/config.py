@@ -9,55 +9,62 @@ from satchmo.shop.satchmo_settings import get_satchmo_setting
 from satchmo.utils import load_module
 
 import logging
+
 logger = logging.getLogger(__name__)
 
-PRODUCT_GROUP = ConfigurationGroup('PRODUCT', _('Product Settings'))
+PRODUCT_GROUP = ConfigurationGroup("PRODUCT", _("Product Settings"))
 
 PRODUCT_TYPES = config_register(
-    MultipleStringValue(PRODUCT_GROUP,
-                        'PRODUCT_TYPES',
-                        description=_(
-                            "Product Model Options"),
-                        default=[
-                            'product::ConfigurableProduct', 'product::ProductVariation'],
-                        choices=[('product::ConfigurableProduct', _('Configurable Product')),
-                                 ('product::ProductVariation', _(
-                                     'Product Variation')),
-                                 ('product::CustomProduct', _(
-                                     'Custom Order')),
-                                 ('product::SubscriptionProduct', _(
-                                     'Subscription Product')),
-                                 ('product::DownloadableProduct', _('Downloadable Product'))]
-                        )
+    MultipleStringValue(
+        PRODUCT_GROUP,
+        "PRODUCT_TYPES",
+        description=_("Product Model Options"),
+        default=["product::ConfigurableProduct", "product::ProductVariation"],
+        choices=[
+            ("product::ConfigurableProduct", _("Configurable Product")),
+            ("product::ProductVariation", _("Product Variation")),
+            ("product::CustomProduct", _("Custom Order")),
+            ("product::SubscriptionProduct", _("Subscription Product")),
+            ("product::DownloadableProduct", _("Downloadable Product")),
+        ],
+    )
 )
 
 config_register(
-    StringValue(PRODUCT_GROUP,
-                'IMAGE_DIR',
-                description=_("Upload Image Dir"),
-                help_text=_("""Directory name for storing uploaded images.
+    StringValue(
+        PRODUCT_GROUP,
+        "IMAGE_DIR",
+        description=_("Upload Image Dir"),
+        help_text=_(
+            """Directory name for storing uploaded images.
     This value will be appended to MEDIA_ROOT.  Do not worry about slashes.
-    We can handle it any which way."""),
-                default="images")
+    We can handle it any which way."""
+        ),
+        default="images",
+    )
 )
 
 config_register(
-    StringValue(PRODUCT_GROUP,
-                'PROTECTED_DIR',
-                description=_("Protected dir"),
-                help_text=_("""This is only used if you use Downloadable Products.
+    StringValue(
+        PRODUCT_GROUP,
+        "PROTECTED_DIR",
+        description=_("Protected dir"),
+        help_text=_(
+            """This is only used if you use Downloadable Products.
 This value will be appended to MEDIA_ROOT.  Do not worry about slashes.
-We can handle it any which way."""),
-                default="protected",
-                requires=PRODUCT_TYPES,
-                requiresvalue='product::DownloadableProduct')
+We can handle it any which way."""
+        ),
+        default="protected",
+        requires=PRODUCT_TYPES,
+        requiresvalue="product::DownloadableProduct",
+    )
 )
 
 # --- Load any extra product modules. ---
-extra_product = get_satchmo_setting('CUSTOM_PRODUCT_MODULES')
+extra_product = get_satchmo_setting("CUSTOM_PRODUCT_MODULES")
 
 for extra in extra_product:
     try:
         load_module("%s.config" % extra)
     except ImportError:
-        logger.warn('Could not load product module configuration: %s' % extra)
+        logger.warn("Could not load product module configuration: %s" % extra)

@@ -8,6 +8,7 @@ from django.utils.translation import get_language
 from satchmo import caching
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -15,7 +16,7 @@ class TranslatedObjectMixin(object):
     """Allows any object with a "translations" object to find the proper translation.
     """
 
-    def _find_translation(self, language_code=None, attr='translations'):
+    def _find_translation(self, language_code=None, attr="translations"):
         """Look up a translation for an attr.
 
         Ex: self._find_translation(language_code='en-us', attr='translations')
@@ -25,7 +26,12 @@ class TranslatedObjectMixin(object):
 
         try:
             site = Site.objects.get_current()
-            trans = caching.cache_get("{}-{}".format(self.__class__.__name__, self.id), site=site, trans=attr, lang=language_code)
+            trans = caching.cache_get(
+                "{}-{}".format(self.__class__.__name__, self.id),
+                site=site,
+                trans=attr,
+                lang=language_code,
+            )
         except caching.NotCachedError as nce:
             translations = getattr(self, attr)
 
@@ -33,7 +39,7 @@ class TranslatedObjectMixin(object):
             ct = c.count()
 
             if not c or ct == 0:
-                pos = language_code.find('-')
+                pos = language_code.find("-")
                 if pos > -1:
                     short_code = language_code[:pos]
                     # log.debug("%s: Trying to find root language content for: [%s]", self, short_code)
@@ -45,7 +51,9 @@ class TranslatedObjectMixin(object):
 
             if not c or ct == 0:
                 # log.debug("Trying to find default language content for: %s", self)
-                c = translations.filter(languagecode__istartswith=settings.LANGUAGE_CODE)
+                c = translations.filter(
+                    languagecode__istartswith=settings.LANGUAGE_CODE
+                )
                 ct = c.count()
 
             if not c or ct == 0:
@@ -61,6 +69,7 @@ class TranslatedObjectMixin(object):
             caching.cache_set(nce.key, value=trans)
 
         return trans
+
 
 # class ExampleTranslation(models.Model):
 #

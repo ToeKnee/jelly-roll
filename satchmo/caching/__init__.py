@@ -25,7 +25,9 @@ try:
     CACHE_PREFIX = settings.CACHE_PREFIX
 except AttributeError:
     CACHE_PREFIX = str(settings.SITE_ID)
-    log.warn("No CACHE_PREFIX found in settings, using SITE_ID.  Please update your settings to add a CACHE_PREFIX")
+    log.warn(
+        "No CACHE_PREFIX found in settings, using SITE_ID.  Please update your settings to add a CACHE_PREFIX"
+    )
 
 
 class CacheWrapper(object):
@@ -65,10 +67,10 @@ class CacheNotRespondingError(Exception):
 def cache_delete(*keys, **kwargs):
     removed = []
     global CACHED_KEYS
-    log.debug('cache_delete')
-    children = kwargs.pop('children', False)
+    log.debug("cache_delete")
+    children = kwargs.pop("children", False)
 
-    if (keys or kwargs):
+    if keys or kwargs:
         key = cache_key(*keys, **kwargs)
 
         if key in CACHED_KEYS:
@@ -104,7 +106,7 @@ def cache_delete(*keys, **kwargs):
 
 
 def cache_delete_function(func):
-    return cache_delete(['func', func.__name__, func.__module__], children=True)
+    return cache_delete(["func", func.__name__, func.__module__], children=True)
 
 
 def _cache_flush_all():
@@ -132,16 +134,19 @@ def cache_function(length=TIMEOUT):
     wait until the function finishes. If this is not desired behavior, you can
     remove the first two lines after the ``else``.
     """
+
     def decorator(func):
         def inner_func(*args, **kwargs):
             try:
-                value = cache_get('func', func.__name__, func.__module__, args, kwargs)
+                value = cache_get("func", func.__name__, func.__module__, args, kwargs)
             except NotCachedError as e:
                 # This will set a temporary value while ``func`` is being
                 # processed. When using threads, this is vital, as otherwise
                 # the function can be called several times before it finishes
                 # and is put into the cache.
-                funcwrapper = CacheWrapper(".".join([func.__module__, func.__name__]), inprocess=True)
+                funcwrapper = CacheWrapper(
+                    ".".join([func.__module__, func.__name__]), inprocess=True
+                )
                 cache_set(e.key, value=funcwrapper, length=length, skiplog=True)
                 value = func(*args, **kwargs)
                 cache_set(e.key, value=value, length=length)
@@ -150,13 +155,15 @@ def cache_function(length=TIMEOUT):
                 value = func(*args, **kwargs)
 
             return value
+
         return inner_func
+
     return decorator
 
 
 def cache_get(*keys, **kwargs):
-    if 'default' in kwargs:
-        default_value = kwargs.pop('default')
+    if "default" in kwargs:
+        default_value = kwargs.pop("default")
         use_default = True
     else:
         use_default = False
@@ -172,7 +179,7 @@ def cache_get(*keys, **kwargs):
     if obj and isinstance(obj, CacheWrapper):
         CACHE_HITS += 1
         CACHED_KEYS[key] = True
-        log.debug('got cached [%i/%i]: %s', CACHE_CALLS, CACHE_HITS, key)
+        log.debug("got cached [%i/%i]: %s", CACHE_CALLS, CACHE_HITS, key)
         if obj.inprocess:
             raise MethodNotFinishedError(obj.val)
 
@@ -192,14 +199,14 @@ def cache_get(*keys, **kwargs):
 def cache_set(*keys, **kwargs):
     """Set an object into the cache."""
     global CACHED_KEYS
-    obj = kwargs.pop('value')
-    length = kwargs.pop('length', TIMEOUT)
-    skiplog = kwargs.pop('skiplog', False)
+    obj = kwargs.pop("value")
+    length = kwargs.pop("length", TIMEOUT)
+    skiplog = kwargs.pop("skiplog", False)
 
     key = cache_key(keys, **kwargs)
     val = CacheWrapper.wrap(obj)
     if not skiplog:
-        log.debug('setting cache: %s', key)
+        log.debug("setting cache: %s", key)
     cache.set(key, val, length)
     CACHED_KEYS[key] = True
 
@@ -209,7 +216,7 @@ def _hash_or_string(key):
         return smart_str(key)
     else:
         try:
-            #if it has a PK, use it.
+            # if it has a PK, use it.
             return str(key._get_pk_val())
         except AttributeError:
             return md5_hash(key)
@@ -257,17 +264,17 @@ def md5_hash(obj):
 
 def is_memcached_backend():
     try:
-        return cache._cache.__module__.endswith('memcache')
+        return cache._cache.__module__.endswith("memcache")
     except AttributeError:
         return False
 
 
 def cache_require():
     """Error if caching isn't running."""
-    key = cache_key('require_cache')
-    cache_set(key, value='1')
-    v = cache_get(key, default='0')
-    if v != '1':
+    key = cache_key("require_cache")
+    cache_set(key, value="1")
+    v = cache_get(key, default="0")
+    if v != "1":
         raise CacheNotRespondingError()
     else:
         log.debug("Cache responding OK")

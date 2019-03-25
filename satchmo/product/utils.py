@@ -1,7 +1,4 @@
-from satchmo.currency.utils import (
-    currency_for_request,
-    money_format,
-)
+from satchmo.currency.utils import currency_for_request, money_format
 from satchmo.product.models import (
     Option,
     OptionGroup,
@@ -12,6 +9,7 @@ from satchmo.shop.models import Config
 from satchmo.tax.utils import get_tax_processor
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -56,19 +54,20 @@ def productvariation_details(product, include_tax, user, request, create=False):
     variations = ProductPriceLookup.objects.filter(parentid=product.id)
     if variations.count() == 0:
         if create:
-            log.debug('Creating price lookup for %s', product)
+            log.debug("Creating price lookup for %s", product)
             ProductPriceLookup.objects.smart_create_for_product(product)
             variations = ProductPriceLookup.objects.filter(parentid=product.id)
         else:
             log.warning(
-                'You must run satchmo_rebuild_pricing and add it to a cron-job to run every day, or else the product details will not work for product detail pages.')
+                "You must run satchmo_rebuild_pricing and add it to a cron-job to run every day, or else the product details will not work for product detail pages."
+            )
     for detl in variations:
         key = detl.key
         if key in details:
             detail = details[key]
         else:
             detail = {}
-            detail['SLUG'] = detl.productslug
+            detail["SLUG"] = detl.productslug
 
             if not detl.active:
                 qty = -1
@@ -77,22 +76,22 @@ def productvariation_details(product, include_tax, user, request, create=False):
             else:
                 qty = detl.items_in_stock
 
-            detail['QTY'] = qty
+            detail["QTY"] = qty
 
-            detail['PRICE'] = {}
+            detail["PRICE"] = {}
             if include_tax:
-                detail['TAXED'] = {}
+                detail["TAXED"] = {}
 
             details[key] = detail
 
         price = detl.dynamic_price
         currency_code = currency_for_request(request)
 
-        detail['PRICE'][detl.quantity] = money_format(price, currency_code)
+        detail["PRICE"][detl.quantity] = money_format(price, currency_code)
 
         if include_tax:
             tax_price = taxer.by_price(tax_class, price) + price
-            detail['TAXED'][detl.quantity] = money_format(tax_price, currency_code)
+            detail["TAXED"][detl.quantity] = money_format(tax_price, currency_code)
 
     return details
 
@@ -140,7 +139,9 @@ def serialize_options(product, selected_options=()):
                 groups[k] = False
                 opts[option] = None
 
-    for option in Option.objects.filter(option_group__id__in=list(groups.keys()), value__in=list(vals.keys())):
+    for option in Option.objects.filter(
+        option_group__id__in=list(groups.keys()), value__in=list(vals.keys())
+    ):
         uid = option.unique_id
         if uid in opts:
             opts[uid] = option
@@ -152,12 +153,12 @@ def serialize_options(product, selected_options=()):
     for option in list(opts.values()):
         if option.option_group_id not in serialized:
             serialized[option.option_group.id] = {
-                'name': option.option_group.translated_name(),
-                'id': option.option_group.id,
-                'items': [],
+                "name": option.option_group.translated_name(),
+                "id": option.option_group.id,
+                "items": [],
             }
-        if option not in serialized[option.option_group_id]['items']:
-            serialized[option.option_group_id]['items'] += [option]
+        if option not in serialized[option.option_group_id]["items"]:
+            serialized[option.option_group_id]["items"] += [option]
             option.selected = option.unique_id in selected_options
 
     # first sort the option groups
@@ -168,13 +169,13 @@ def serialize_options(product, selected_options=()):
     values.sort()
     values = list(zip(*values))[1]
 
-    log.debug('serialized: %s', values)
+    log.debug("serialized: %s", values)
 
     # Now go back and make sure option items are sorted properly.
     for v in values:
-        v['items'] = _sort_options(v['items'])
+        v["items"] = _sort_options(v["items"])
 
-    log.debug('Serialized Options %s: %s', product.product.slug, values)
+    log.debug("Serialized Options %s: %s", product.product.slug, values)
     return values
 
 

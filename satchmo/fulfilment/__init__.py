@@ -1,1 +1,1 @@
-default_app_config = 'satchmo.fulfilment.apps.FulfilmentConfig'
+default_app_config = "satchmo.fulfilment.apps.FulfilmentConfig"

@@ -28,17 +28,19 @@ def displayDoc(request, id, doc):
         filename = "%s-shippinglabel.pdf" % filename_prefix
         template = "shipping-label.rml"
     else:
-        return HttpResponseRedirect('/admin')
-    response = HttpResponse(mimetype='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename=%s' % filename
-    icon_uri = config_value('SHOP', 'LOGO_URI')
-    t = loader.get_template(os.path.join('pdf', template))
-    c = Context({
-                'filename': filename,
-                'iconURI': icon_uri,
-                'shopDetails': shopDetails,
-                'order': order,
-                })
+        return HttpResponseRedirect("/admin")
+    response = HttpResponse(mimetype="application/pdf")
+    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    icon_uri = config_value("SHOP", "LOGO_URI")
+    t = loader.get_template(os.path.join("pdf", template))
+    c = Context(
+        {
+            "filename": filename,
+            "iconURI": icon_uri,
+            "shopDetails": shopDetails,
+            "order": order,
+        }
+    )
     pdf = trml2pdf.parseString(smart_str(t.render(c)))
     response.write(pdf)
     return response

@@ -1,8 +1,5 @@
 from django.template import Library
-from satchmo.currency.utils import (
-    money_format,
-    currency_for_request
-)
+from satchmo.currency.utils import money_format, currency_for_request
 
 register = Library()
 

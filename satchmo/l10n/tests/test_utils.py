@@ -1,17 +1,9 @@
 import mock
 
-from django.test import (
-    RequestFactory,
-    TestCase,
-    override_settings,
-)
+from django.test import RequestFactory, TestCase, override_settings
 
 from satchmo.contact.factories import ContactFactory, UserFactory
-from satchmo.l10n.factories import (
-    CAFactory,
-    UKFactory,
-    USFactory,
-)
+from satchmo.l10n.factories import CAFactory, UKFactory, USFactory
 from satchmo.l10n.utils import country_for_request
 from satchmo.shop.factories import ShopConfigFactory
 
@@ -28,9 +20,7 @@ class CountryForRequest(TestCase):
         country = UKFactory()
         request = self.request_factory.get("/")
         request.user = UserFactory()
-        request.session = {
-            "shipping_country": country.iso2_code,
-        }
+        request.session = {"shipping_country": country.iso2_code}
 
         self.assertEqual(country_for_request(request), country.iso2_code)
 
@@ -72,7 +62,8 @@ class CountryForRequest(TestCase):
 
         class MockGeoIP(object):
             def country(self, ip):
-                return {'country_name': None, 'country_code': None}
+                return {"country_name": None, "country_code": None}
+
         mock_geoip.return_value = MockGeoIP()
 
         request = self.request_factory.get("/")
@@ -83,7 +74,9 @@ class CountryForRequest(TestCase):
     @override_settings(GEOIP_PATH="/tmp")
     @mock.patch("satchmo.l10n.utils.GeoIP2")
     @mock.patch("satchmo.l10n.utils.get_real_ip")
-    def test_geoip__country_doesnt_match_active_country(self, mock_get_real_ip, mock_geoip):
+    def test_geoip__country_doesnt_match_active_country(
+        self, mock_get_real_ip, mock_geoip
+    ):
         mock_get_real_ip.return_value = "163.44.191.38"
         uk = UKFactory()
         uk.active = False
@@ -91,7 +84,8 @@ class CountryForRequest(TestCase):
 
         class MockGeoIP(object):
             def country(self, ip):
-                return {'country_name': 'United Kingdom', 'country_code': 'GB'}
+                return {"country_name": "United Kingdom", "country_code": "GB"}
+
         mock_geoip.return_value = MockGeoIP()
 
         request = self.request_factory.get("/")
@@ -110,7 +104,8 @@ class CountryForRequest(TestCase):
 
         class MockGeoIP(object):
             def country(self, ip):
-                return {'country_name': 'United Kingdom', 'country_code': 'GB'}
+                return {"country_name": "United Kingdom", "country_code": "GB"}
+
         mock_geoip.return_value = MockGeoIP()
 
         request = self.request_factory.get("/")
