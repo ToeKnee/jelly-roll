@@ -83,7 +83,9 @@ class ProductAttribute_Inline(admin.TabularInline):
 
 class Price_Inline(admin.TabularInline):
     model = Price
-    extra = 2
+    extra = 1
+    verbose_name = _("Price Discount")
+    verbose_name_plural = _("Price Discounts")
 
 
 class ProductImage_Inline(admin.StackedInline):
@@ -168,19 +170,16 @@ class ProductOptions(admin.ModelAdmin):
                     "site",
                     "category",
                     "name",
-                    "slug",
-                    "sku",
+                    ("slug", "sku"),
                     "description",
                     "enhanced_description",
                     "short_description",
-                    "active",
-                    "featured",
-                    "items_in_stock",
-                    "total_sold",
+                    ("active", "featured"),
+                    "unit_price",
+                    ("items_in_stock", "total_sold"),
                     "ordering",
                     "shipclass",
-                    "instructions",
-                    "precautions",
+                    ("instructions", "precautions"),
                 )
             },
         ),
@@ -208,9 +207,9 @@ class ProductOptions(admin.ModelAdmin):
             {"fields": ("related_items", "also_purchased"), "classes": "collapse"},
         ),
     )
+    inlines = [Price_Inline, ProductAttribute_Inline, ProductImage_Inline]
     readonly_fields = ("total_sold",)
     search_fields = ["slug", "sku", "name", "brands__slug"]
-    inlines = [ProductAttribute_Inline, Price_Inline, ProductImage_Inline]
     if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(ProductTranslation_Inline)
     filter_horizontal = ("category", "related_items", "also_purchased")
