@@ -14,10 +14,7 @@ class ProductFactory(factory.django.DjangoModelFactory):
     site = factory.LazyAttribute(lambda a: Site.objects.get_current())
     name = factory.Sequence(lambda n: "Product {0}".format(n))
     slug = factory.LazyAttribute(lambda a: slugify(a.name))
-
-    @factory.post_generation
-    def create_price(self, create, extracted, **kwargs):
-        PriceFactory(product=self)
+    unit_price = Decimal("5.00")
 
     @factory.post_generation
     def brands(self, create, extracted, **kwargs):

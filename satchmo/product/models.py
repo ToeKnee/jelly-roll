@@ -693,6 +693,13 @@ class Product(models.Model):
         blank=True,
     )
     category = models.ManyToManyField(Category, blank=True, verbose_name=_("Category"))
+    unit_price = models.DecimalField(
+        _("Unit Price"),
+        help_text=_("Base price for quantity of 1"),
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
     items_in_stock = models.IntegerField(_("Number in stock"), default=0)
     meta = models.TextField(
         _("Meta Description"),
@@ -856,7 +863,8 @@ class Product(models.Model):
     def mpn(self):
         return self.productattribute_set.filter(name="mpn").first().value
 
-    def _get_mainImage(self):
+    @property
+    def main_image(self):
         key = "Product_get_mainImage %s" % (self.id)
         key = key.replace(" ", "-")
         img = cache.get(key)
@@ -883,16 +891,13 @@ class Product(models.Model):
             cache.set(key, img)
         return img
 
-    main_image = property(_get_mainImage)
-
-    def _is_discountable(self):
+    @property
+    def is_discountable(self):
         p = self.get_subtype_with_attr("discountable")
         if p:
             return p.discountable
         else:
             return True
-
-    is_discountable = property(_is_discountable)
 
     def translated_attributes(self, language_code=None):
         if not language_code:
@@ -926,29 +931,15 @@ class Product(models.Model):
         ]
         return prices
 
-    @property
-    def unit_price(self):
-        """
-        Returns price as a Decimal
-        """
-
-        subtype = self.get_subtype_with_attr("unit_price")
-
-        if subtype:
-            price = subtype.unit_price
-        else:
-            price = get_product_quantity_price(self, 1)
-
-        if not price:
-            price = Decimal("0.00")
-        return price
-
     def get_qty_price(self, qty):
         """
         If QTY_DISCOUNT prices are specified, then return the appropriate discount price for
         the specified qty.  Otherwise, return the unit_price
         returns price as a Decimal
         """
+        if qty == 1:
+            return self.unit_price
+
         subtype = self.get_subtype_with_attr("get_qty_price")
         if subtype:
             price = subtype.get_qty_price(qty)
@@ -956,18 +947,21 @@ class Product(models.Model):
         else:
             price = get_product_quantity_price(self, qty)
             if not price:
-                price = self._get_fullPrice()
+                price = self.unit_price
 
         return price
 
     def get_qty_price_list(self):
         """Return a list of tuples (qty, price)"""
-        prices = (
+        price_objects = (
             Price.objects.filter(product__id=self.id)
             .exclude(expires__isnull=False, expires__lt=datetime.date.today())
             .select_related()
         )
-        return [(price.quantity, price.dynamic_price) for price in prices]
+        prices = [(1, self.unit_price)] + [
+            (price.quantity, price.dynamic_price) for price in price_objects
+        ]
+        return prices
 
     def in_stock(self):
         subtype = self.get_subtype_with_attr("in_stock")
@@ -976,7 +970,8 @@ class Product(models.Model):
 
         return self.items_in_stock > 0
 
-    def _has_full_dimensions(self):
+    @property
+    def has_full_dimensions(self):
         """Return true if the dimensions all have units and values. Used in shipping calcs. """
         for att in (
             "length",
@@ -990,16 +985,13 @@ class Product(models.Model):
                 return False
         return True
 
-    has_full_dimensions = property(_has_full_dimensions)
-
-    def _has_full_weight(self):
+    @property
+    def has_full_weight(self):
         """Return True if we have weight and weight units"""
         for att in ("weight", "weight_units"):
             if self.smart_attr(att) is None:
                 return False
         return True
-
-    has_full_weight = property(_has_full_weight)
 
     def get_subtypes(self):
         types = []
@@ -1065,13 +1057,13 @@ class Product(models.Model):
 
         return val
 
-    def _has_variants(self):
+    @property
+    def has_variants(self):
         subtype = self.get_subtype_with_attr("has_variants")
         return subtype and subtype.has_variants
 
-    has_variants = property(_has_variants)
-
-    def _get_category(self):
+    @property
+    def get_category(self):
         """
         Return the primary category associated with this product
         """
@@ -1084,18 +1076,16 @@ class Product(models.Model):
         except IndexError:
             return None
 
-    get_category = property(_get_category)
-
-    def _get_downloadable(self):
+    @property
+    def is_downloadable(self):
         """
         If this Product has any subtypes associated with it that are downloadable, then
         consider it downloadable
         """
         return self.get_subtype_with_attr("is_downloadable") is not None
 
-    is_downloadable = property(_get_downloadable)
-
-    def _get_subscription(self):
+    @property
+    def is_subscription(self):
         """
         If this Product has any subtypes associated with it that are subscriptions, then
         consider it subscription based.
@@ -1106,9 +1096,8 @@ class Product(models.Model):
                 return True
         return False
 
-    is_subscription = property(_get_subscription)
-
-    def _get_shippable(self):
+    @property
+    def is_shippable(self):
         """
         If this Product has any subtypes associated with it that are not
         shippable, then consider the product not shippable.
@@ -1123,8 +1112,6 @@ class Product(models.Model):
             return True
         else:
             return False
-
-    is_shippable = property(_get_shippable)
 
     def add_template_context(self, context, *args, **kwargs):
         """
@@ -1289,18 +1276,16 @@ class CustomProduct(models.Model):
         OptionGroup, verbose_name=_("Option Group"), blank=True
     )
 
-    def _is_shippable(self):
+    @property
+    def is_shippable(self):
         return not self.deferred_shipping
 
-    is_shippable = property(fget=_is_shippable)
-
-    def _get_fullPrice(self):
+    @property
+    def unit_price(self):
         """
         returns price as a Decimal
         """
-        return self.get_qty_price(1)
-
-    unit_price = property(_get_fullPrice)
+        return self.product.unit_price
 
     def add_template_context(self, context, selected_options, **kwargs):
         """
@@ -1319,25 +1304,27 @@ class CustomProduct(models.Model):
         the specified qty.  Otherwise, return the unit_price
         returns price as a Decimal
         """
+        if qty == 1:
+            return self.unit_price
+
         price = get_product_quantity_price(self.product, qty)
         if not price and qty == 1:  # Prevent a recursive loop.
             price = Decimal("0.00")
         elif not price:
-            price = self.product._get_fullPrice()
+            price = self.product.unit_price
 
         return price * self.downpayment / 100
 
-    def get_full_price(self, qty=1):
+    @property
+    def full_price(self, qty=1):
         """
         Return the full price, ignoring the deposit.
         """
+
         price = get_product_quantity_price(self.product, qty)
         if not price:
             price = self.product.unit_price
-
         return price
-
-    full_price = property(fget=get_full_price)
 
     def _get_subtype(self):
         return "CustomProduct"
@@ -1745,13 +1732,12 @@ class SubscriptionProduct(models.Model):
     def __str__(self):
         return self.product.slug
 
-    def _get_fullPrice(self):
+    @property
+    def unit_price(self):
         """
         returns price as a Decimal
         """
-        return self.get_qty_price(1)
-
-    unit_price = property(_get_fullPrice)
+        return self.product.unit_price
 
     def get_qty_price(self, qty, show_trial=True):
         """
@@ -1774,7 +1760,7 @@ class SubscriptionProduct(models.Model):
             if not price and qty == 1:  # Prevent a recursive loop.
                 price = Decimal("0.00")
             elif not price:
-                price = self.product._get_fullPrice()
+                price = self.product.unit_price
         return price
 
     def recurring_price(self):
@@ -1899,10 +1885,10 @@ class ProductVariation(models.Model):
     def get_absolute_url(self):
         return self.product.get_absolute_url()
 
-    def _get_fullPrice(self):
+    @property
+    def unit_price(self):
         """ Get price based on parent ConfigurableProduct """
         # allow explicit setting of prices.
-        # qty_discounts = self.price_set.exclude(expires__isnull=False, expires__lt=datetime.date.today()).filter(quantity__lte=1)
         try:
             qty_discounts = Price.objects.filter(product__id=self.product.id).exclude(
                 expires__isnull=False, expires__lt=datetime.date.today()
@@ -1920,8 +1906,6 @@ class ProductVariation(models.Model):
 
         # calculate from options
         return self.parent.product.unit_price + self.price_delta()
-
-    unit_price = property(_get_fullPrice)
 
     def _get_optionName(self):
         "Returns the options in a human readable form"
@@ -2245,7 +2229,7 @@ class Price(models.Model):
     price = models.DecimalField(_("Price"), max_digits=14, decimal_places=6)
     quantity = models.IntegerField(
         _("Discount Quantity"),
-        default=1,
+        default=2,
         help_text=_("Use this price only for this quantity or higher"),
     )
     expires = models.DateField(_("Expires"), null=True, blank=True)
@@ -2253,12 +2237,11 @@ class Price(models.Model):
     def __str__(self):
         return str(self.price)
 
-    def _dynamic_price(self):
+    @property
+    def dynamic_price(self):
         """Get the current price as modified by all listeners."""
         signals.satchmo_price_query.send(self, price=self)
         return self.price
-
-    dynamic_price = property(fget=_dynamic_price)
 
     def save(self, *args, **kwargs):
         prices = Price.objects.filter(product=self.product, quantity=self.quantity)
@@ -2473,6 +2456,9 @@ def get_product_quantity_price(product, quantity=1, delta=Decimal("0.00"), paren
     Returns price as a Decimal else None.
     First checks the product, if none, then checks the parent.
     """
+
+    if quantity == 1:
+        return self.unit_price
 
     quantity_discounts = product.price_set.exclude(
         expires__isnull=False, expires__lt=datetime.date.today()
