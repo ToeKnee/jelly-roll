@@ -118,7 +118,7 @@ class CreatePaymentTest(TestCase):
 
         response = create_payment(request)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(json.loads(response.content)["id"], data["id"])
+        self.assertEqual(json.loads(response.content.decode("utf-8"))["id"], data["id"])
 
         order.refresh_from_db()
         self.assertTrue(order.frozen)
