@@ -113,7 +113,7 @@ def display_featured(limit=None, random=None):
         num_to_display = limit
     else:
         num_to_display = config_value("SHOP", "NUM_DISPLAY")
-    q = Product.objects.featured_by_site().filter(items_in_stock__gt=0)
+    q = Product.objects.featured().filter(items_in_stock__gt=0)
     if not random_display:
         return q[:num_to_display]
     else:
@@ -144,7 +144,7 @@ def get_product(
 ):
     """Basic product view"""
     try:
-        product = Product.objects.get_by_site(active=True, slug=product_slug)
+        product = Product.objects.active().get(slug=product_slug)
     except Product.DoesNotExist:
         return bad_or_missing(
             request, _("The product you have requested does not exist.")
@@ -220,7 +220,7 @@ def get_price(request, product_slug):
     quantity = 1
 
     try:
-        product = Product.objects.get_by_site(active=True, slug=product_slug)
+        product = Product.objects.active().get(slug=product_slug)
     except Product.DoesNotExist:
         return http.HttpResponseNotFound(
             json_encode(("", _("not available"))), mimetype="text/javascript"
@@ -268,7 +268,7 @@ def get_price_detail(request, product_slug):
         reqdata = request.GET
 
     try:
-        product = Product.objects.get_by_site(active=True, slug=product_slug)
+        product = Product.objects.active().get(slug=product_slug)
         found = True
 
         if "quantity" in reqdata:

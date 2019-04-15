@@ -110,30 +110,22 @@ class Command(NoArgsCommand):
 
         print("Creating Categories...")
         # Create some categories
-        cat1 = Category(
-            site=site, name="Shirts", slug="shirts", description="Women's Shirts"
-        )
+        cat1 = Category(name="Shirts", slug="shirts", description="Women's Shirts")
         cat1.save()
         cat2 = Category(
-            site=site,
             name="Short Sleeve",
             slug="shortsleeve",
             description="Short sleeve shirts",
             parent=cat1,
         )
         cat2.save()
-        cat3 = Category(site=site, name="Books", slug="book", description="Books")
+        cat3 = Category(name="Books", slug="book", description="Books")
         cat3.save()
         cat4 = Category(
-            site=site,
-            name="Fiction",
-            slug="fiction",
-            description="Fiction Books",
-            parent=cat3,
+            name="Fiction", slug="fiction", description="Fiction Books", parent=cat3
         )
         cat4.save()
         cat5 = Category(
-            site=site,
             name="Science Fiction",
             slug="scifi",
             description="Science Fiction",
@@ -141,20 +133,18 @@ class Command(NoArgsCommand):
         )
         cat5.save()
         cat6 = Category(
-            site=site,
             name="Non Fiction",
             slug="nonfiction",
             description="Non Fiction",
             parent=cat3,
         )
         cat6.save()
-        cat7 = Category(site=site, name="Software", slug="software")
+        cat7 = Category(name="Software", slug="software")
         cat7.save()
 
         print("Creating products...")
         # Create some items
         i1 = Product(
-            site=site,
             name="Django Rocks shirt",
             slug="dj-rocks",
             description="Really cool shirt",
@@ -167,7 +157,6 @@ class Command(NoArgsCommand):
         i1.category.add(cat1)
         i1.save()
         i2 = Product(
-            site=site,
             name="Python Rocks shirt",
             slug="PY-Rocks",
             description="Really cool python shirt - One Size Fits All",
@@ -180,7 +169,6 @@ class Command(NoArgsCommand):
         i2.category.add(cat2)
         i2.save()
         i3 = Product(
-            site=site,
             name="A really neat book",
             slug="neat-book",
             description="A neat book.  You should buy it.",
@@ -193,7 +181,6 @@ class Command(NoArgsCommand):
         i3.category.add(cat4)
         i3.save()
         i4 = Product(
-            site=site,
             name="Robots Attack!",
             slug="robot-attack",
             description="Robots try to take over the world.",
@@ -206,21 +193,21 @@ class Command(NoArgsCommand):
         i4.category.add(cat5)
         i4.save()
 
-        #    i5 = Product(site=site, name="Really Neat Software", slug="neat-software", description="Example Configurable/Downloadable product", active=True, featured=True)
+        #    i5 = Product(name="Really Neat Software", slug="neat-software", description="Example Configurable/Downloadable product", active=True, featured=True)
         #    i5.save()
         #    i5.category.add(cat7)
         #    i5.save()
 
         # Create an attribute set
-        optSet1 = OptionGroup(site=site, name="sizes", sort_order=1)
-        optSet2 = OptionGroup(site=site, name="colors", sort_order=2)
+        optSet1 = OptionGroup(name="sizes", sort_order=1)
+        optSet2 = OptionGroup(name="colors", sort_order=2)
         optSet1.save()
         optSet2.save()
 
-        optSet3 = OptionGroup(site=site, name="Book type", sort_order=1)
+        optSet3 = OptionGroup(name="Book type", sort_order=1)
         optSet3.save()
 
-        optSet4 = OptionGroup(site=site, name="Full/Upgrade", sort_order=5)
+        optSet4 = OptionGroup(name="Full/Upgrade", sort_order=5)
         optSet4.save()
 
         optItem1a = Option(name="Small", value="S", sort_order=1, option_group=optSet1)

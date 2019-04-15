@@ -2,21 +2,25 @@
 from decimal import Decimal
 
 from django.test import TestCase
-from .models import *
+
 from satchmo.caching import cache_delete
 from satchmo.configuration.functions import config_value
 from satchmo.contact.models import AddressBook, Contact
 from satchmo.l10n.models import Country
 from satchmo.product.models import Product
 from satchmo.shop.models import Order, OrderItem, OrderItemDetail
-from django.contrib.sites.models import Site
+
+from .models import (
+    GiftCertificate,
+    GiftCertificateUsage,
+    GiftCertificateProduct,
+    GiftCertificateManager,
+)
 from .utils import generate_certificate_code, generate_code
 
 import logging
 
 log = logging.getLogger(__name__)
-
-alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 
 def make_test_order(country, state):
@@ -37,8 +41,7 @@ def make_test_order(country, state):
         is_default_billing=True,
     )
     ad.save()
-    site = Site.objects.get_current()
-    o = Order(contact=c, shipping_cost=Decimal("0.00"), site=site)
+    o = Order(contact=c, shipping_cost=Decimal("0.00"))
     o.save()
 
     p = Product.objects.get(slug="GIFT10")
@@ -63,22 +66,22 @@ def make_test_order(country, state):
 
 class TestGenerateCode(TestCase):
     def testGetCode(self):
-        c = generate_code(alphabet, "^^^^")
+        c = generate_code(string.ascii_lowercase, "^^^^")
 
         self.assertEqual(len(c), 4)
 
         for ch in c:
-            self.assertTrue(ch in alphabet)
+            self.assertTrue(ch in string.ascii_lowercase)
 
     def testGetCode2(self):
-        c = generate_code(alphabet, "^^^^-^^^^")
-        c2 = generate_code(alphabet, "^^^^-^^^^")
+        c = generate_code(string.ascii_lowercase, "^^^^-^^^^")
+        c2 = generate_code(string.ascii_lowercase, "^^^^-^^^^")
         self.assertNotEqual(c, c2)
 
     def testFormat(self):
-        c = generate_code(alphabet, "^-^-^-^")
+        c = generate_code(string.ascii_lowercase, "^-^-^-^")
         for i in (0, 2, 4, 6):
-            self.assertTrue(c[i] in alphabet)
+            self.assertTrue(c[i] in string.ascii_lowercase)
         for i in (1, 3, 5):
             self.assertEqual(c[i], "-")
 
@@ -101,21 +104,18 @@ class TestGenerateCertificateCode(TestCase):
 class TestCertCreate(TestCase):
     fixtures = ["l10n_data.xml", "test_shop"]
 
-    def setUp(self):
-        self.site = Site.objects.get_current()
-
     def tearDown(self):
         cache_delete()
 
     def testCreate(self):
-        gc = GiftCertificate(start_balance="100.00", site=self.site)
+        gc = GiftCertificate(start_balance="100.00")
         gc.save()
 
         self.assertTrue(gc.code)
         self.assertEqual(gc.balance, Decimal("100.00"))
 
     def testUse(self):
-        gc = GiftCertificate(start_balance="100.00", site=self.site)
+        gc = GiftCertificate(start_balance="100.00")
         gc.save()
         bal = gc.use("10.00")
         self.assertEqual(bal, Decimal("90.00"))

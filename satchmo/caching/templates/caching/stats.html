@@ -12,7 +12,7 @@
 {% show_messages %}
 <p>[<a href="{% url "caching_view" %}">View Cache</a>] [<a href="{% url "caching_delete" %}">Delete from Cache</a>]
 <h1>Cache Stats</h1>
-<p>Backend: {{ cache_backend }} ({% if cache_running %}running{% else %}down{% endif %})</p>
+<p>Backend: {{ cache_backend }}</p>
 <p>Timeout: {{ cache_time }}</p>
 <p>Keys in cache: {{ cache_count }}</p>
 <p>Cache Calls: {{ cache_calls }}</p>

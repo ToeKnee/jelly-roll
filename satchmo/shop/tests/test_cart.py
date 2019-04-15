@@ -1,7 +1,6 @@
 from decimal import Decimal
 
 from django.test import TestCase
-from django.contrib.sites.models import Site
 
 from satchmo.caching import cache_delete
 from satchmo.product.factories import ProductFactory
@@ -125,7 +124,7 @@ class CartTest(TestCase):
         lb = Product.objects.get(slug__iexact="dj-rocks-l-bl")
         sb = Product.objects.get(slug__iexact="dj-rocks-s-b")
 
-        cart = Cart(site=Site.objects.get_current())
+        cart = Cart()
         cart.save()
         cart.add_item(sb, 1)
         self.assertEqual(cart.numItems, 1)

@@ -3,7 +3,7 @@ from django.test import TestCase, RequestFactory
 
 from satchmo.currency.factories import EURCurrencyFactory
 from satchmo.payment.modules.ingenico.views import pay_ship_info
-from satchmo.shop.factories import CartFactory
+from satchmo.shop.factories import CartFactory, ShopConfigFactory
 
 
 class PayShipInfoTest(TestCase):
@@ -12,6 +12,7 @@ class PayShipInfoTest(TestCase):
         EURCurrencyFactory(primary=True)
 
     def test_has_enough_stock(self):
+        ShopConfigFactory()
         cart = CartFactory()
         # Make sure the items are in stock
         for item in cart.cartitem_set.all():
@@ -27,6 +28,7 @@ class PayShipInfoTest(TestCase):
         self.assertNotIn("Your cart is empty".encode("utf-8"), response.content)
 
     def test_not_enough_stock(self):
+        ShopConfigFactory()
         cart = CartFactory()
 
         request = self.factory.get("/shop/checkout/ingenico/")

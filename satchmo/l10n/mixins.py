@@ -2,7 +2,6 @@
 """Provides mixin objects to ease programming for translations."""
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.utils.translation import get_language
 
 from satchmo import caching
@@ -25,10 +24,8 @@ class TranslatedObjectMixin(object):
             language_code = get_language()
 
         try:
-            site = Site.objects.get_current()
             trans = caching.cache_get(
                 "{}-{}".format(self.__class__.__name__, self.id),
-                site=site,
                 trans=attr,
                 lang=language_code,
             )

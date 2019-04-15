@@ -2,7 +2,7 @@ from django.urls import reverse
 from django.test import TestCase, RequestFactory
 
 from satchmo.payment.modules.ingenico.views import accepted
-from satchmo.shop.factories import TestOrderFactory
+from satchmo.shop.factories import ShopConfigFactory, TestOrderFactory
 from satchmo.shop.models import Order, NullCart
 
 
@@ -48,6 +48,7 @@ class AcceptedTest(TestCase):
         )
 
     def test_order_available(self):
+        ShopConfigFactory()
         order = TestOrderFactory()
 
         request = self.factory.get("/shop/checkout/ingenico/accepted/")

@@ -119,10 +119,10 @@ class CategoryAdminForm(models.ModelForm):
 
 
 class CategoryOptions(admin.ModelAdmin):
-    list_display = ("site", "active", "name", "_parents_repr")
+    list_display = ("active", "name", "_parents_repr")
     list_display_links = ("name",)
     list_editable = ("active",)
-    ordering = ["site", "active", "parent__id", "ordering", "name"]
+    ordering = ["active", "parent__id", "ordering", "name"]
     inlines = [CategoryImage_Inline]
     if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(CategoryTranslation_Inline)
@@ -139,7 +139,7 @@ class OptionGroupOptions(admin.ModelAdmin):
     if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
         inlines.append(OptionGroupTranslation_Inline)
 
-    list_display = ["site", "name"]
+    list_display = ["name"]
 
 
 class OptionOptions(admin.ModelAdmin):
@@ -150,7 +150,6 @@ class OptionOptions(admin.ModelAdmin):
 
 class ProductOptions(admin.ModelAdmin):
     list_display = (
-        "site",
         "slug",
         "sku",
         "name",
@@ -167,7 +166,6 @@ class ProductOptions(admin.ModelAdmin):
             None,
             {
                 "fields": (
-                    "site",
                     "category",
                     "name",
                     ("slug", "sku"),

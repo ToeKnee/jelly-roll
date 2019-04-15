@@ -9,7 +9,7 @@ def bestsellers(limit=10):
         products = cache.get(key)
     else:
         products = (
-            Product.objects.active_by_site()
+            Product.objects.active()
             .order_by("-total_sold")
             .exclude(total_sold=0)[:limit]
         )

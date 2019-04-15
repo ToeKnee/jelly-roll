@@ -33,17 +33,7 @@ class ConfigOptions(admin.ModelAdmin):
     list_display = ("site", "store_name")
     filter_horizontal = ("shipping_countries",)
     fieldsets = (
-        (
-            None,
-            {
-                "fields": (
-                    "site",
-                    "store_name",
-                    "store_description",
-                    "no_stock_checkout",
-                )
-            },
-        ),
+        (None, {"fields": ("store_name", "store_description", "no_stock_checkout")}),
         (
             _("Store Contact"),
             {

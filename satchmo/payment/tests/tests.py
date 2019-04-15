@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from decimal import Decimal
 
-from django.contrib.sites.models import Site
 from django.urls import NoReverseMatch
 from django.urls import reverse
 from django.test import TestCase
@@ -41,14 +40,11 @@ class TestRecurringBilling(TestCase):
         )
         import datetime
 
-        site = Site.objects.get_current()
         for product in Product.objects.all():
             price, expire_length = self.getTerms(product)
             if price is None:
                 continue
-            order = Order.objects.create(
-                contact=self.customer, shipping_cost=0, site=site
-            )
+            order = Order.objects.create(contact=self.customer, shipping_cost=0)
             order.orderitem_set.create(
                 product=product,
                 quantity=1,

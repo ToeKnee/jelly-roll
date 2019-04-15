@@ -12,7 +12,6 @@ import random
 from decimal import Decimal
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.urls import reverse
@@ -65,35 +64,18 @@ def default_weight_unit():
 
 
 class CategoryManager(models.Manager):
-    def by_site(self, site=None, **kwargs):
-        """Get all categories for this site"""
-        if not site:
-            site = Site.objects.get_current()
-
-        site = site.id
-
-        return self.filter(site__id__exact=site, **kwargs)
-
-    def root_categories(self, site=None, **kwargs):
+    def root_categories(self, **kwargs):
         """Get all root categories."""
+        return self.filter(parent__isnull=True, **kwargs)
 
-        if not site:
-            site = Site.objects.get_current()
-
-        return self.filter(parent__isnull=True, site=site, **kwargs)
-
-    def search_by_site(self, keyword, site=None, include_children=False):
+    def search(self, keyword, include_children=False):
         """Search for categories by keyword.
         Note, this does not return a queryset."""
-
-        if not site:
-            site = Site.objects.get_current()
 
         cats = self.filter(
             Q(name__icontains=keyword)
             | Q(meta__icontains=keyword)
-            | Q(description__icontains=keyword),
-            site=site,
+            | Q(description__icontains=keyword)
         )
 
         if include_children:
@@ -113,7 +95,6 @@ class Category(models.Model):
     Basic hierarchical category model for storing products
     """
 
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name=_("Site"))
     name = models.CharField(_("Name"), max_length=200)
     slug = models.SlugField(
         _("Slug"),
@@ -145,7 +126,7 @@ class Category(models.Model):
     objects = CategoryManager()
 
     class Meta:
-        ordering = ["site", "parent__id", "ordering", "name"]
+        ordering = ["parent__id", "ordering", "name"]
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
 
@@ -208,27 +189,23 @@ class Category(models.Model):
             if variations and include_children:
                 cats = self.get_all_children(include_self=True)
                 products = Product.objects.select_related().filter(
-                    category__in=cats, site=self.site, active=True, **kwargs
+                    category__in=cats, active=True, **kwargs
                 )
             elif variations and not include_children:
                 products = self.product_set.select_related().filter(
-                    site=self.site, active=True, **kwargs
+                    active=True, **kwargs
                 )
             elif not variations and include_children:
                 cats = self.get_all_children(include_self=True)
                 products = Product.objects.select_related().filter(
                     category__in=cats,
-                    site=self.site,
                     active=True,
                     productvariation__parent__isnull=True,
                     **kwargs
                 )
             elif not variations and not include_children:
                 products = self.product_set.select_related().filter(
-                    site=self.site,
-                    active=True,
-                    productvariation__parent__isnull=True,
-                    **kwargs
+                    active=True, productvariation__parent__isnull=True, **kwargs
                 )
             cache.set(key, products)
         return products
@@ -452,7 +429,6 @@ class OptionGroup(models.Model):
     Examples - Size, Color, Shape, etc
     """
 
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name=_("Site"))
     name = models.CharField(
         _("Name of Option Group"),
         max_length=50,
@@ -602,39 +578,20 @@ class OptionTranslation(models.Model):
 
 class ProductManager(models.Manager):
     def active(self, variations=True, **kwargs):
-        return self.filter(active=True, variations=variations, **kwargs)
-
-    def active_by_site(self, variations=True, **kwargs):
-        return self.by_site(active=True, variations=variations, **kwargs)
+        if not variations:
+            kwargs["productvariation__parent__isnull"] = True
+        return self.filter(active=True, **kwargs)
 
     def in_stock(self, **kwargs):
         return self.filter(active=True, items_in_stock__gt=0, **kwargs)
 
-    def by_site(self, site=None, variations=True, **kwargs):
-        if not site:
-            site = Site.objects.get_current()
+    def featured(self, **kwargs):
+        return self.active(featured=True, **kwargs)
 
-        site = site.id
-
-        # log.debug("by_site: site=%s", site)
-        if not variations:
-            kwargs["productvariation__parent__isnull"] = True
-        return self.filter(site__id__exact=site, **kwargs)
-
-    def featured_by_site(self, site=None, **kwargs):
-        return self.by_site(site=site, active=True, featured=True, **kwargs)
-
-    def get_by_site(self, site=None, **kwargs):
-        products = self.by_site(site=site, **kwargs)
-        if len(products) == 0:
-            raise Product.DoesNotExist
-        else:
-            return products[0]
-
-    def recent_by_site(self, **kwargs):
-        query = self.active_by_site(**kwargs)
+    def recent(self, **kwargs):
+        query = self.active(**kwargs)
         if query.count() == 0:
-            query = self.active_by_site()
+            query = self.active()
 
         query = query.order_by("-date_added")
         return query
@@ -645,7 +602,6 @@ class Product(models.Model):
     Root class for all Products
     """
 
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name=_("Site"))
     name = models.CharField(
         _("Full Name"),
         max_length=255,
@@ -659,6 +615,7 @@ class Product(models.Model):
         blank=True,
         help_text=_("Used for URLs, auto-generated from name if blank"),
         max_length=80,
+        unique=True,
     )
     sku = models.CharField(
         _("SKU"),
@@ -666,6 +623,7 @@ class Product(models.Model):
         blank=True,
         null=True,
         help_text=_("Defaults to slug if left blank"),
+        unique=True,
     )
     short_description = models.TextField(
         _("Short description of product"),
@@ -791,10 +749,9 @@ class Product(models.Model):
     objects = ProductManager()
 
     class Meta:
-        ordering = ("site", "ordering", "name")
+        ordering = ("ordering", "name")
         verbose_name = _("Product")
         verbose_name_plural = _("Products")
-        unique_together = (("site", "sku"), ("site", "slug"))
 
     def __str__(self):
         return self.name
@@ -1478,14 +1435,9 @@ class ConfigurableProduct(models.Model):
         log.debug("Create variation: %s", options)
         variations = self.get_variations_for_options(options)
 
+        # There isn't an existing ProductVariation.
         if not variations:
-            # There isn't an existing ProductVariation.
-            if self.product:
-                site = self.product.site
-            else:
-                site = self.site
-
-            variant = Product(site=site, items_in_stock=0, name=name)
+            variant = Product(items_in_stock=0, name=name)
             optnames = [opt.value for opt in options]
             if not slug:
                 slug = slugify("%s-%s" % (self.product.slug, "-".join(optnames)))
@@ -2086,7 +2038,6 @@ class ProductPriceLookupManager(models.Manager):
         for qty, price in pricelist:
             obj = ProductPriceLookup(
                 productslug=product.slug,
-                siteid=product.site_id,
                 active=product.active,
                 price=price,
                 quantity=qty,
@@ -2119,7 +2070,6 @@ class ProductPriceLookupManager(models.Manager):
             obj = ProductPriceLookup(
                 productslug=product.slug,
                 parentid=parent.id,
-                siteid=product.site_id,
                 active=product.active,
                 price=price,
                 quantity=qty,
@@ -2135,16 +2085,13 @@ class ProductPriceLookupManager(models.Manager):
         for obj in self.filter(productslug=product.slug):
             obj.delete()
 
-    def rebuild_all(self, site=None):
-        if not site:
-            site = Site.objects.get_current()
-
-        for lookup in self.filter(siteid=site.id):
+    def rebuild_all(self):
+        for lookup in self.all():
             lookup.delete()
 
         ct = 0
         log.debug("ProductPriceLookup rebuilding all pricing")
-        for p in Product.objects.active_by_site(site=site, variations=False):
+        for p in Product.objects.active(variations=False):
             prices = self.smart_create_for_product(p)
             ct += len(prices)
         log.info("ProductPriceLookup built %i prices", ct)
@@ -2167,7 +2114,6 @@ class ProductPriceLookup(models.Model):
     details needed for productvariation display, without way too many database hits.
     """
 
-    siteid = models.IntegerField()
     key = models.CharField(max_length=60, null=True)
     parentid = models.IntegerField(null=True)
     productslug = models.CharField(max_length=80)

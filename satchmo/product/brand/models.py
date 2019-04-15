@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.urls import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -12,20 +11,16 @@ log = logging.getLogger(__name__)
 
 
 class BrandManager(models.Manager):
-    def active(self, site=None):
-        if not site:
-            site = Site.objects.get_current()
-        return self.filter(site=site, active=True)
+    def active(self):
+        return self.filter(active=True)
 
     def by_slug(self, slug):
-        site = Site.objects.get_current()
-        return self.get(slug=slug, site=site)
+        return self.get(slug=slug)
 
 
 class Brand(models.Model, TranslatedObjectMixin):
     """A product brand"""
 
-    site = models.ForeignKey(Site, on_delete=models.CASCADE)
     slug = models.SlugField(_("Slug"), unique=True, help_text=_("Used for URLs"))
     products = models.ManyToManyField(
         Product, blank=True, related_name="brands", verbose_name=_("Products")
@@ -86,7 +81,7 @@ class Brand(models.Model, TranslatedObjectMixin):
         return self._find_translation()
 
     def active_products(self, category=None):
-        products = self.products.filter(site=self.site, active=True)
+        products = self.products.filter(active=True)
         if category:
             products = products.filter(category=category)
         return products

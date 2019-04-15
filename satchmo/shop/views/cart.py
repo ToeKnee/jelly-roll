@@ -448,8 +448,8 @@ def set_quantity_ajax(request, template="json.html"):
     return render(template, {"json": encoded})
 
 
-def product_from_post(productslug, formdata):
-    product = Product.objects.get_by_site(slug=productslug)
+def product_from_post(product_slug, formdata):
+    product = Product.objects.get(slug=product_slug)
     log.debug("found product: %s", product)
     p_types = product.get_subtypes()
     details = []

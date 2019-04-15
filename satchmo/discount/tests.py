@@ -1,7 +1,6 @@
 import datetime
 from decimal import Decimal
 
-from django.contrib.sites.models import Site
 from django.test import TestCase
 
 from satchmo.caching import cache_delete
@@ -15,7 +14,6 @@ from .models import Discount
 
 class DiscountTest(TestCase):
     def setUp(self):
-        self.site = Site.objects.get_current()
         start = datetime.date(2006, 10, 1)
         end = datetime.date(5000, 10, 1)
         self.discount = Discount.objects.create(
@@ -29,7 +27,6 @@ class DiscountTest(TestCase):
             startDate=start,
             endDate=end,
             freeShipping=False,
-            site=self.site,
         )
 
     def tearDown(self):
@@ -165,7 +162,6 @@ class DiscountAmountTest(TestCase):
 
     def setUp(self):
         self.US = Country.objects.get(iso2_code__iexact="US")
-        self.site = Site.objects.get_current()
         tax = config_get("TAX", "MODULE")
         tax.update("satchmo.tax.modules.no")
         c = Contact(
@@ -186,9 +182,9 @@ class DiscountAmountTest(TestCase):
             is_default_billing=True,
         )
         ad.save()
-        o = Order(contact=c, shipping_cost=Decimal("6.00"), site=self.site)
+        o = Order(contact=c, shipping_cost=Decimal("6.00"))
         o.save()
-        small = Order(contact=c, shipping_cost=Decimal("6.00"), site=self.site)
+        small = Order(contact=c, shipping_cost=Decimal("6.00"))
         small.save()
 
         p = Product.objects.get(slug="neat-book-soft")

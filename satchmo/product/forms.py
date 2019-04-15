@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.core import serializers
 from django.core.management.base import CommandError
 from django.core.management.color import no_style
-from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
 
@@ -44,7 +43,7 @@ class ProductExportForm(forms.Form):
         )
 
         if not products:
-            products = Product.objects.by_site().order_by("slug")
+            products = Product.objects.all().order_by("slug")
 
         for product in products:
             subtypes = product.get_subtypes()
@@ -289,9 +288,7 @@ class InventoryForm(forms.Form):
         super(InventoryForm, self).__init__(*args, **kwargs)
 
         if not products:
-            products = Product.objects.by_site().order_by(
-                "-active", "brands__slug", "slug"
-            )
+            products = Product.objects.all().order_by("-active", "brands__slug", "slug")
 
         for product in products:
             subtypes = product.get_subtypes()
@@ -533,8 +530,7 @@ class VariationManagerForm(forms.Form):
 
 
 def _get_optiondict():
-    site = Site.objects.get_current()
-    opts = Option.objects.filter(option_group__site__id=site.id)
+    opts = Option.objects.all()
     d = {}
     for opt in opts:
         d.setdefault(opt.option_group.id, {})[opt.id] = opt

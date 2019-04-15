@@ -1,7 +1,6 @@
 import factory
 from decimal import Decimal
 
-from django.contrib.sites.models import Site
 from django.utils.text import slugify
 
 from satchmo.product.models import ConfigurableProduct, Product, Price
@@ -11,7 +10,6 @@ class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Product
 
-    site = factory.LazyAttribute(lambda a: Site.objects.get_current())
     name = factory.Sequence(lambda n: "Product {0}".format(n))
     slug = factory.LazyAttribute(lambda a: slugify(a.name))
     unit_price = Decimal("5.00")
