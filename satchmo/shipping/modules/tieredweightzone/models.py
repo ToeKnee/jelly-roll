@@ -109,6 +109,12 @@ class Carrier(models.Model):
     key = models.SlugField(_("Key"))
     ordering = models.IntegerField(_("Ordering"), default=0)
     active = models.BooleanField(_("Active"), default=False)
+
+    name = models.CharField(_("Carrier"), max_length=50)
+    description = models.CharField(_("Description"), max_length=200)
+    method = models.CharField(_("Method"), help_text=_("i.e. US Mail"), max_length=200)
+    delivery = models.CharField(_("Delivery Days"), max_length=200)
+
     signed_for = models.BooleanField(_("Signed For"), default=False)
     tracked = models.BooleanField(_("Tracked"), default=False)
     postage_speed = models.PositiveIntegerField(
@@ -129,95 +135,6 @@ class Carrier(models.Model):
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.description)
-
-    def _find_translation(self, language_code=None):
-        if not language_code:
-            language_code = get_language()
-
-        c = self.translations.filter(languagecode__exact=language_code)
-        ct = c.count()
-
-        if not c or ct == 0:
-            pos = language_code.find("-")
-            if pos > -1:
-                short_code = language_code[:pos]
-                log.debug(
-                    "%s: Trying to find root language content for: [%s]",
-                    self.id,
-                    short_code,
-                )
-                c = self.translations.filter(languagecode__exact=short_code)
-                ct = c.count()
-                if ct > 0:
-                    log.debug(
-                        "%s: Found root language content for: [%s]", self.id, short_code
-                    )
-
-        if not c or ct == 0:
-            log.debug("Trying to find default language content for: %s", self)
-            c = self.translations.filter(
-                languagecode__istartswith=settings.LANGUAGE_CODE
-            )
-            ct = c.count()
-
-        if not c or ct == 0:
-            log.debug("Trying to find *any* language content for: %s", self)
-            c = self.translations.all()
-            ct = c.count()
-
-        if ct > 0:
-            trans = c[0]
-        else:
-            trans = None
-
-        return trans
-
-    def delivery(self):
-        """Get the delivery, looking up by language code, falling back intelligently.
-        """
-        trans = self._find_translation()
-
-        if trans:
-            return trans.delivery
-        else:
-            return ""
-
-    delivery = property(delivery)
-
-    def description(self):
-        """Get the description, looking up by language code, falling back intelligently.
-        """
-        trans = self._find_translation()
-        if trans:
-            return trans.description
-        else:
-            return ""
-
-    description = property(description)
-
-    def method(self):
-        """Get the description, looking up by language code, falling back intelligently.
-        """
-        trans = self._find_translation()
-
-        if trans:
-            return trans.method
-        else:
-            return ""
-
-    method = property(method)
-
-    def name(self):
-        """Get the name, looking up by language code, falling back intelligently.
-        """
-        trans = self._find_translation()
-
-        if trans:
-            return trans.name
-        else:
-            return ""
-
-    name = property(name)
 
     def price(self, wgt, country):
         """Get a price for this weight and country."""
@@ -254,25 +171,10 @@ class Carrier(models.Model):
             )
 
 
-class CarrierTranslation(models.Model):
-    carrier = models.ForeignKey(
-        "Carrier", on_delete=models.CASCADE, related_name="translations"
-    )
-    languagecode = models.CharField(
-        _("language"), max_length=10, choices=settings.LANGUAGES
-    )
-    name = models.CharField(_("Carrier"), max_length=50)
-    description = models.CharField(_("Description"), max_length=200)
-    method = models.CharField(_("Method"), help_text=_("i.e. US Mail"), max_length=200)
-    delivery = models.CharField(_("Delivery Days"), max_length=200)
-
-    class Meta:
-        db_table = "tieredweightzone_carriertranslation"
-        ordering = ("languagecode", "name")
-
-
 class Zone(models.Model):
     key = models.SlugField(_("Key"))
+    name = models.CharField(_("Zone"), max_length=50)
+    description = models.CharField(_("Description"), max_length=200)
     continent = models.ManyToManyField(
         Continent, related_name="continent", db_table="tieredweightzone_zone_continent"
     )
@@ -288,84 +190,6 @@ class Zone(models.Model):
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.description)
-
-    def _find_translation(self, language_code=None):
-        if not language_code:
-            language_code = get_language()
-
-        c = self.translations.filter(languagecode__exact=language_code)
-        ct = c.count()
-
-        if not c or ct == 0:
-            pos = language_code.find("-")
-            if pos > -1:
-                short_code = language_code[:pos]
-                log.debug(
-                    "%s: Trying to find root language content for: [%s]",
-                    self.id,
-                    short_code,
-                )
-                c = self.translations.filter(languagecode__exact=short_code)
-                ct = c.count()
-                if ct > 0:
-                    log.debug(
-                        "%s: Found root language content for: [%s]", self.id, short_code
-                    )
-
-        if not c or ct == 0:
-            log.debug("Trying to find default language content for: %s", self)
-            c = self.translations.filter(
-                languagecode__istartswith=settings.LANGUAGE_CODE
-            )
-            ct = c.count()
-
-        if not c or ct == 0:
-            log.debug("Trying to find *any* language content for: %s", self)
-            c = self.translations.all()
-            ct = c.count()
-
-        if ct > 0:
-            trans = c[0]
-        else:
-            trans = None
-
-        return trans
-
-    @property
-    def description(self):
-        """Get the description, looking up by language code, falling back intelligently.
-        """
-        trans = self._find_translation()
-        if trans:
-            return trans.description
-        else:
-            return ""
-
-    @property
-    def name(self):
-        """Get the name, looking up by language code, falling back intelligently.
-        """
-        trans = self._find_translation()
-
-        if trans:
-            return trans.name
-        else:
-            return ""
-
-
-class ZoneTranslation(models.Model):
-    zone = models.ForeignKey(
-        "Zone", on_delete=models.CASCADE, related_name="translations"
-    )
-    languagecode = models.CharField(
-        _("language"), max_length=10, choices=settings.LANGUAGES
-    )
-    name = models.CharField(_("Zone"), max_length=50)
-    description = models.CharField(_("Description"), max_length=200)
-
-    class Meta:
-        db_table = "tieredweightzone_zonetranslation"
-        ordering = ("languagecode", "name")
 
 
 class WeightTier(models.Model):

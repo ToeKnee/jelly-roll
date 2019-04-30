@@ -22,7 +22,7 @@ ProductVariations or CustomProducts, look for product/detail_xxx.html
 {% for name, url in product.category.all.0.get_url_name %}
     <li><a href="{{ url }}">{{ name }}</a></li>
 {% endfor %}
-<li>{{ product.translated_name }}</li>
+<li>{{ product.name }}</li>
 {% endblock %}
 
 {% block sidebar %}

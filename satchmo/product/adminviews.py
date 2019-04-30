@@ -49,7 +49,7 @@ def picking_list(request):
         for item in order.orderitem_set.all():
             brand = item.product.brands.all()
             if brand.count():
-                brand = brand[0].translation.name
+                brand = brand[0].name
             else:
                 brand = "Unknown"
 

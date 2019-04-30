@@ -130,7 +130,7 @@
         <td>{% trans "Description" %}</td>
         <td>{% trans "Quantity" %}</td>
         <td>{% trans "Unit Price" %}</td>
-    <td>{% trans "Discount" %}</td>
+        <td>{% trans "Discount" %}</td>
         <td>{% trans "Total" %}</td>
     </tr>
     {% for item in order.orderitem_set.all %}

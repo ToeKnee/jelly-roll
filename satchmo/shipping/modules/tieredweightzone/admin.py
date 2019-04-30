@@ -2,11 +2,9 @@ from django.contrib import admin
 
 from satchmo.shipping.modules.tieredweightzone.models import (
     Carrier,
-    CarrierTranslation,
     ShippingDiscount,
     WeightTier,
     Zone,
-    ZoneTranslation,
 )
 
 
@@ -18,19 +16,8 @@ class WeightTierOptions(admin.ModelAdmin):
     list_filter = ("carrier", "zone")
 
 
-class ZoneTransaltion_Inline(admin.TabularInline):
-    model = ZoneTranslation
-    extra = 1
-
-
 class ZoneOptions(admin.ModelAdmin):
     ordering = ("key",)
-    inlines = [ZoneTransaltion_Inline]
-
-
-class CarrierTranslation_Inline(admin.TabularInline):
-    model = CarrierTranslation
-    extra = 1
 
 
 class CarrierOptions(admin.ModelAdmin):
@@ -41,7 +28,6 @@ class CarrierOptions(admin.ModelAdmin):
         "estimated_delivery_max_days",
     )
     ordering = ("key",)
-    inlines = [CarrierTranslation_Inline]
 
 
 class ShippingDiscountOptions(admin.ModelAdmin):

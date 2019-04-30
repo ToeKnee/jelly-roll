@@ -1,9 +1,5 @@
 {% extends "base_satchmo.html" %}
-{% load i18n %}
-{% load satchmo_cart %}
-{% load satchmo_currency %}
-{% load satchmo_util %}
-{% load satchmo_product %}
+{% load i18n satchmo_cart satchmo_currency satchmo_product satchmo_util %}
 
 {% block navbar %}
     <li class="first"><a href="{{shop_base}}/">{% trans "Home" %}</a></li>

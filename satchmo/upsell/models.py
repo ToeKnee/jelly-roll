@@ -50,68 +50,10 @@ class Upsell(models.Model, CachedObjectMixin):
         max_length=20,
     )
 
+    description = models.TextField(_("Description"), blank=True)
     notes = models.TextField(
         _("Notes"), blank=True, null=True, help_text=_("Internal notes")
     )
-
-    def _description(self):
-        """Get the description, looking up by language code, falling back intelligently.
-        """
-        language_code = get_language()
-
-        try:
-            trans = self.cache_get(trans=language_code)
-
-        except caching.NotCachedError as e:
-            trans = self._find_translation(language_code)
-
-        if trans:
-            return trans.description
-        else:
-            return ""
-
-    description = property(fget=_description)
-
-    def _find_translation(self, language_code):
-        c = self.translations.filter(languagecode__exact=language_code)
-        ct = c.count()
-
-        if not c or ct == 0:
-            pos = language_code.find("-")
-            if pos > -1:
-                short_code = language_code[:pos]
-                log.debug(
-                    "%s: Trying to find root language content for: [%s]",
-                    self,
-                    short_code,
-                )
-                c = self.translations.filter(languagecode__exact=short_code)
-                ct = c.count()
-                if ct > 0:
-                    log.debug(
-                        "%s: Found root language content for: [%s]", self, short_code
-                    )
-
-        if not c or ct == 0:
-            # log.debug("Trying to find default language content for: %s", self)
-            c = self.translations.filter(
-                languagecode__istartswith=settings.LANGUAGE_CODE
-            )
-            ct = c.count()
-
-        if not c or ct == 0:
-            # log.debug("Trying to find *any* language content for: %s", self)
-            c = self.translations.all()
-            ct = c.count()
-
-        if ct > 0:
-            trans = c[0]
-        else:
-            trans = None
-
-        self.cache_set(trans=language_code, value=trans)
-
-        return trans
 
     def is_form(self):
         """Returns true if the style is a FORM"""
@@ -138,20 +80,3 @@ class Upsell(models.Model, CachedObjectMixin):
 
     class Meta:
         ordering = ("goal",)
-
-
-class UpsellTranslation(models.Model):
-
-    menu = models.ForeignKey(
-        Upsell, on_delete=models.CASCADE, related_name="translations"
-    )
-    languagecode = models.CharField(
-        _("language"),
-        max_length=10,
-        choices=settings.LANGUAGES,
-        default=settings.LANGUAGES[0][0],
-    )
-    description = models.TextField(_("Description"), blank=True)
-
-    class Meta:
-        ordering = ("languagecode",)

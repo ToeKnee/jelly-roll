@@ -3,7 +3,7 @@
 
 {% block content %}
 <h4>{% trans 'Gift Certificate' %}</h4>
-<p>{% autoescape off %}{{ product.translated_description }}{% endautoescape %}</p>
+<p>{% autoescape off %}{{ product.description }}{% endautoescape %}</p>
 {% trans "Price" %}: <h3 id="price">{% currency product.unit_price %}</h3>
 {% for pic in product.productimage_set.all %}
     <img src="{{ pic.picture.url }}" width="280" />

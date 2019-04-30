@@ -516,7 +516,7 @@ class CartItem(models.Model):
         return self.product.get_qty_price(qty)
 
     def _get_description(self):
-        return self.product.translated_name()
+        return self.product.name
 
     description = property(_get_description)
 
@@ -1381,10 +1381,10 @@ class OrderItem(models.Model):
         ordering = ("id",)
 
     def __str__(self):
-        return self.product.translated_name()
+        return self.product.name
 
     def _get_category(self):
-        return self.product.get_category.translated_name()
+        return self.product.get_category.name
 
     category = property(_get_category)
 
@@ -1435,7 +1435,7 @@ class OrderItem(models.Model):
         return self.unit_price + self.unit_tax
 
     def _get_description(self):
-        return self.product.translated_name()
+        return self.product.name
 
     description = property(_get_description)
 
@@ -1532,7 +1532,7 @@ class DownloadLink(models.Model):
         return "%s - %s" % (self.downloadable_product.product.slug, self.time_stamp)
 
     def _product_name(self):
-        return "%s" % (self.downloadable_product.product.translated_name())
+        return "%s" % (self.downloadable_product.product.name)
 
     product_name = property(_product_name)
 

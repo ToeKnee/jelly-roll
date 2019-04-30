@@ -8,6 +8,7 @@ class BrandFactory(factory.django.DjangoModelFactory):
         model = Brand
 
     slug = factory.Faker("word")
+    name = factory.Faker("word")
     ordering = 0
 
     @factory.post_generation

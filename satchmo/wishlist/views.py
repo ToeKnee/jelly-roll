@@ -83,7 +83,7 @@ def wishlist_add_ajax(request, template="json.html"):
 
     else:
         data["id"] = product.id
-        data["name"] = product.translated_name()
+        data["name"] = product.name
 
     if not data["errors"]:
         contact = Contact.objects.from_request(request)
@@ -108,7 +108,7 @@ def wishlist_move_to_cart(request):
         except CartAddProhibited as cap:
             msg = _(
                 "Wishlist product '%(product)s' could't be added to the cart. %(details)s"
-            ) % {"product": wish.product.translated_name, "detail": cap.message}
+            ) % {"product": wish.product.name, "detail": cap.message}
             return wishlist_view(request, message=msg)
 
         url = reverse("satchmo_cart")

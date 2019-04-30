@@ -20,16 +20,16 @@ $(function() {
 {% endblock %}
 
 {% block productdetail %}
-<h4>{{ product.translated_name }}</h4>
-<p>{{ product.translated_description }}</p>
+<h4>{{ product.name }}</h4>
+<p>{{ product.description }}</p>
 {% trans "Price" %}{% if default_view_tax %} {% trans '(incl. tax)' %}{% endif %}: <h3 id="price">{% currency product.unit_price %}</h3>
 {% for pic in product.productimage_set.all %}
     <img src="{{ pic.picture.url }}" width="280" />
 {% endfor %}
 
-{% with product.translated_attributes as atts %}{% if atts %}
+{% with product.attributes as atts %}{% if atts %}
 <p class="productattributes">
-{% for att in product.translated_attributes %}
+{% for att in product.attributes %}
 {{ att.name }}: {{ att.value }}<br/>
 {% endfor %}
 </p>
@@ -45,7 +45,7 @@ $(function() {
  {{ option_group.name }}
     <select name="{{ option_group.id }}" id="{{option_group.id}}" class="priced">
     {% for choice in option_group.items %}
-     <option value="{{ choice.value }}" {% if choice.selected %}selected="selected"{% endif %}>{{ choice.translated_name }}
+     <option value="{{ choice.value }}" {% if choice.selected %}selected="selected"{% endif %}>{{ choice.name }}
         {% if choice.price_change %}
             {% option_price choice %}
         {% endif %}

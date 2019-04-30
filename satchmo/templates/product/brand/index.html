@@ -11,15 +11,15 @@
 <h2>Brands</h2>
 {% if brands %}
 <div id="product_category" class="brand">
-	{% for brand in brands %}{% with brand.translation as translated %}
+	{% for brand in brands %}
 	<div class="brandImage">
        	<a href="{{ brand.get_absolute_url }}">
-       		<img src="{{ translated.picture.url }}" width="85" />
+       		<img src="{{ brand.picture.url }}" width="85" />
 		</a>
 		<br/>
-       	<a href="{{ brand.get_absolute_url }}">{{ translated.name }}</a>
+       	<a href="{{ brand.get_absolute_url }}">{{ brand.name }}</a>
 	</div>
-       {% endwith %}{% endfor %}
+       {% endfor %}
 </div>
 {% else %}
 <p>{% trans 'No brands are active' %}</p>

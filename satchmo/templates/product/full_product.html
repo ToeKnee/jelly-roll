@@ -1,19 +1,19 @@
 {% load satchmo_currency satchmo_util satchmo_discounts i18n cache %}
 <div class="hproduct top_product clear">
     {% cache 86400 full_product product %}
-    <h1 class="fn">{{ product.translated_name }}</h1>
+    <h1 class="fn">{{ product.name }}</h1>
     <div class="breadcrumb">
         {% for name, url in product.category.all.0.get_url_name %}
             <a href="{{ url }}" class="category">{{ name }}</a> &gt;
             {% if forloop.last %}
                 {% with product.brands.all|first as brand %}
                     {% if brand %}
-                        <a href="{% url "satchmo_brand_category_view" name|slugify brand.slug %}" class="brand">{{ brand.translation.name }}</a> &gt;
+                        <a href="{% url "satchmo_brand_category_view" name|slugify brand.slug %}" class="brand">{{ brand.name }}</a> &gt;
                     {% endif %}
                 {% endwith %}
             {% endif %}
         {% endfor %}
-        <a href="{{ product.get_absolute_url }}" class="url">{{ product.translated_name }}</a>
+        <a href="{{ product.get_absolute_url }}" class="url">{{ product.name }}</a>
     </div>
 
     {% if product.main_image %}
@@ -25,10 +25,10 @@
     <span class="description">{{ product.description|linebreaks }}</span>
 
     <p>
-        {% trans "Price" %}:
-    {% if default_view_tax %}
+      {% trans "Price" %}:
+      {% if default_view_tax %}
             <span class="price">{% currency price_with_tax %}</span>
-    {% else %}
+      {% else %}
         {% if sale %}
                     <span class="struckthrough">{% currency product.unit_price %}</span>
                     <span class="salestyle price">{% discount_price product sale %}</span>

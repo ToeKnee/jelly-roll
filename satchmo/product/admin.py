@@ -1,16 +1,11 @@
 from satchmo.product.models import (
     Category,
-    CategoryTranslation,
     CategoryImage,
-    CategoryImageTranslation,
     OptionGroup,
-    OptionGroupTranslation,
     Option,
-    OptionTranslation,
     Product,
     CustomProduct,
     CustomTextField,
-    CustomTextFieldTranslation,
     ConfigurableProduct,
     DownloadableProduct,
     SubscriptionProduct,
@@ -19,8 +14,6 @@ from satchmo.product.models import (
     ProductAttribute,
     Price,
     ProductImage,
-    ProductImageTranslation,
-    ProductTranslation,
     IngredientsList,
     Instruction,
     Precaution,
@@ -31,24 +24,9 @@ from django.utils.translation import ugettext_lazy as _
 from satchmo.shop.satchmo_settings import get_satchmo_setting
 
 
-class CategoryTranslation_Inline(admin.StackedInline):
-    model = CategoryTranslation
-    extra = 1
-
-
 class CategoryImage_Inline(admin.TabularInline):
     model = CategoryImage
     extra = 3
-
-
-class CategoryImageTranslation_Inline(admin.StackedInline):
-    model = CategoryImageTranslation
-    extra = 1
-
-
-class OptionGroupTranslation_Inline(admin.StackedInline):
-    model = OptionGroupTranslation
-    extra = 1
 
 
 class Option_Inline(admin.TabularInline):
@@ -56,19 +34,9 @@ class Option_Inline(admin.TabularInline):
     extra = 5
 
 
-class OptionTranslation_Inline(admin.StackedInline):
-    model = OptionTranslation
-    extra = 1
-
-
 class CustomTextField_Inline(admin.TabularInline):
     model = CustomTextField
     extra = 3
-
-
-class CustomTextFieldTranslation_Inline(admin.StackedInline):
-    model = CustomTextFieldTranslation
-    extra = 1
 
 
 class Trial_Inline(admin.StackedInline):
@@ -93,16 +61,6 @@ class ProductImage_Inline(admin.StackedInline):
     extra = 3
 
 
-class ProductTranslation_Inline(admin.TabularInline):
-    model = ProductTranslation
-    extra = 1
-
-
-class ProductImageTranslation_Inline(admin.StackedInline):
-    model = ProductImageTranslation
-    extra = 1
-
-
 class CategoryAdminForm(models.ModelForm):
     def clean_parent(self):
         parent = self.cleaned_data["parent"]
@@ -124,28 +82,21 @@ class CategoryOptions(admin.ModelAdmin):
     list_editable = ("active",)
     ordering = ["active", "parent__id", "ordering", "name"]
     inlines = [CategoryImage_Inline]
-    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
-        inlines.append(CategoryTranslation_Inline)
     filter_horizontal = ("related_categories",)
     form = CategoryAdminForm
 
 
 class CategoryImageOptions(admin.ModelAdmin):
-    inlines = [CategoryImageTranslation_Inline]
+    pass
 
 
 class OptionGroupOptions(admin.ModelAdmin):
     inlines = [Option_Inline]
-    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
-        inlines.append(OptionGroupTranslation_Inline)
-
     list_display = ["name"]
 
 
 class OptionOptions(admin.ModelAdmin):
-    inlines = []
-    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
-        inlines.append(OptionTranslation_Inline)
+    pass
 
 
 class ProductOptions(admin.ModelAdmin):
@@ -208,8 +159,6 @@ class ProductOptions(admin.ModelAdmin):
     inlines = [Price_Inline, ProductAttribute_Inline, ProductImage_Inline]
     readonly_fields = ("total_sold",)
     search_fields = ["slug", "sku", "name", "brands__slug"]
-    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
-        inlines.append(ProductTranslation_Inline)
     filter_horizontal = ("category", "related_items", "also_purchased")
 
 
@@ -218,9 +167,7 @@ class CustomProductOptions(admin.ModelAdmin):
 
 
 class CustomTextFieldOptions(admin.ModelAdmin):
-    inlines = []
-    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
-        inlines.append(CustomTextFieldTranslation_Inline)
+    pass
 
 
 class SubscriptionProductOptions(admin.ModelAdmin):
@@ -232,9 +179,7 @@ class ProductVariationOptions(admin.ModelAdmin):
 
 
 class ProductImageOptions(admin.ModelAdmin):
-    inlines = []
-    if get_satchmo_setting("ALLOW_PRODUCT_TRANSLATIONS"):
-        inlines.append(ProductImageTranslation_Inline)
+    pass
 
 
 class IngredientsListOptions(admin.ModelAdmin):

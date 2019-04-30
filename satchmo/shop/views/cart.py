@@ -80,8 +80,7 @@ def _set_quantity(request, force_delete=False):
                     False,
                     cart,
                     cartitem,
-                    _("Not enough items of '%s' in stock.")
-                    % cartitem.product.translated_name(),
+                    _("Not enough items of '%s' in stock.") % cartitem.product.name,
                 )
         cartitem.quantity = qty
         cartitem.save()
@@ -286,7 +285,7 @@ def add_ajax(request, id=0, template="json.html"):
 
             else:
                 data["id"] = product.id
-                data["name"] = product.translated_name()
+                data["name"] = product.name
 
                 if "quantity" not in formdata:
                     quantity = -1
@@ -470,7 +469,7 @@ def product_from_post(product_slug, formdata):
                 price_change = zero
 
             data = {
-                "name": customfield.translated_name(),
+                "name": customfield.name,
                 "value": formdata["custom_%s" % customfield.slug],
                 "sort_order": customfield.sort_order,
                 "price_change": price_change,
@@ -487,7 +486,7 @@ def product_from_post(product_slug, formdata):
                 price_change = zero
             data = {
                 "name": str(result.option_group),
-                "value": str(result.translated_name()),
+                "value": str(result.name),
                 "sort_order": result.sort_order,
                 "price_change": price_change,
             }

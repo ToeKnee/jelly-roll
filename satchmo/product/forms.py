@@ -113,16 +113,13 @@ class ProductExportForm(forms.Form):
                     if category not in categories:
                         categories[category] = 1
 
-        # Export all categories, translations.  Export images,translations if
-        # desired.
+        # Export all categories.  Export images if desired.
         if include_categories:
             for category in list(categories.keys()):
                 objects.append(category)
-                objects.extend(list(category.translations.all()))
                 if include_images:
                     for image in category.images.all():
                         objects.append(image)
-                        objects.extend(list(image.translations.all()))
 
         try:
             raw = serializers.serialize(format, objects, indent=False)

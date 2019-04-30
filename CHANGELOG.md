@@ -8,6 +8,7 @@ Version 0.11.4.0, XX April, 2019
 * Give products a standard `unit_price`. Only look for discount
   prices if quantity is greater than one.
 * Remove multi-site support
+* Remove database level translations
 
 
 Version 0.11.3.0, 25 March, 2019
