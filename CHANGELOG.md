@@ -2,6 +2,9 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.1, 04 May, 2019
+------------------------------
+* Update max Django version
 
 Version 0.12.0.0, 04 May, 2019
 ------------------------------
