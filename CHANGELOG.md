@@ -3,7 +3,7 @@ JellyRoll Change Log
 ==================
 
 
-Version 0.11.4.0, XX April, 2019
+Version 0.12.0.0, 04 May, 2019
 ------------------------------
 * Give products a standard `unit_price`. Only look for discount
   prices if quantity is greater than one.
