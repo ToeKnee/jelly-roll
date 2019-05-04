@@ -5,10 +5,11 @@ from django.contrib.auth.models import AnonymousUser
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 
+
 from satchmo.caching import cache_delete
 from satchmo.currency.factories import EURCurrencyFactory
 from satchmo.payment.modules.paypal.views import confirm_info
-from satchmo.shop.factories import CartFactory, TestOrderFactory
+from satchmo.shop.factories import CartFactory, ShopConfigFactory, TestOrderFactory
 
 
 class ConfirmInfoTest(TestCase):
@@ -32,6 +33,7 @@ class ConfirmInfoTest(TestCase):
         )
 
     def test_not_enough_stock(self):
+        ShopConfigFactory()
         cart = CartFactory()
         order = TestOrderFactory()
         # Make all items out of stock

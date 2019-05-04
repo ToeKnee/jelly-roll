@@ -1,10 +1,6 @@
-try:
-    from decimal import Decimal, InvalidOperation
-except:
-    from django.utils._decimal import Decimal, InvalidOperation
-
-from django.contrib.sites.models import Site
+from decimal import Decimal, InvalidOperation
 from django.db.models import Q
+
 from satchmo.product.models import Product, Category
 import logging
 
@@ -19,13 +15,8 @@ def default_product_search_listener(
     adding more results, then leave this listener registered and add more objects in your search listener.
     """
     log.debug("default product search listener")
-    site = Site.objects.get_current()
     products = Product.objects.all()
-    productkwargs = {
-        "productvariation__parent__isnull": True,
-        "active": True,
-        "site": site,
-    }
+    productkwargs = {"productvariation__parent__isnull": True, "active": True}
 
     if category:
         categories = Category.objects.filter(slug=category)
@@ -41,8 +32,7 @@ def default_product_search_listener(
             categories = categories.filter(
                 Q(name__icontains=keyword)
                 | Q(meta__icontains=keyword)
-                | Q(description__icontains=keyword),
-                site=site,
+                | Q(description__icontains=keyword)
             )
 
         products = products.filter(
@@ -61,7 +51,7 @@ def priceband_search_listener(
     sender, request=None, category=None, keywords=[], results={}, **kwargs
 ):
     """Filter search results by price bands.
-    
+
     If a "priceband" parameter is available, it will be parsed as follows:
         lowval-highval
         if there is no "-", then it will be parsed as lowval or higher

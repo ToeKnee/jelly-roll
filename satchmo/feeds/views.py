@@ -39,7 +39,7 @@ def product_feed(
             raise Http404(_("Bad Category: %s" % category))
     else:
         cat = None
-        products = Product.objects.active_by_site()
+        products = Product.objects.active()
 
     products = [
         product

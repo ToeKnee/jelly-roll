@@ -27,17 +27,15 @@ class ShopConfigFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Config
 
-    site_id = 1
+    site = factory.LazyAttribute(lambda a: Site.objects.get_current())
     store_name = "Test Shop"
-
-    country = factory.LazyAttribute(lambda a: CountryFactory())
+    country = factory.SubFactory(CountryFactory)
 
 
 class CartFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Cart
 
-    site = factory.LazyAttribute(lambda a: Site.objects.get_current())
     customer = factory.SubFactory(ContactFactory)
 
     @factory.post_generation
@@ -59,7 +57,6 @@ class OrderFactory(factory.django.DjangoModelFactory):
         model = Order
 
     contact = factory.SubFactory(ContactFactory)
-    site = factory.LazyAttribute(lambda a: Site.objects.get_current())
     currency = factory.SubFactory(CurrencyFactory)
 
 

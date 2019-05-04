@@ -1,7 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
 
-from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -25,9 +24,8 @@ class GiftCertificateManager(models.Manager):
         code = order.get_variable(GIFTCODE_KEY, "")
         log.debug("GiftCert.from_order code=%s", code)
         if code:
-            site = order.site
             return GiftCertificate.objects.get(
-                code__exact=code.value, valid__exact=True, site=site
+                code__exact=code.value, valid__exact=True
             )
         raise GiftCertificate.DoesNotExist()
 
@@ -35,9 +33,6 @@ class GiftCertificateManager(models.Manager):
 class GiftCertificate(models.Model):
     """A Gift Cert which holds value."""
 
-    site = models.ForeignKey(
-        Site, on_delete=models.CASCADE, null=True, blank=True, verbose_name=_("Site")
-    )
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
@@ -111,8 +106,6 @@ class GiftCertificate(models.Model):
             self.date_added = datetime.now()
         if not self.code:
             self.code = generate_certificate_code()
-        if not self.site:
-            self.site = Site.objects.get_current()
         super(GiftCertificate, self).save(*args, **kwargs)
 
     def __str__(self):

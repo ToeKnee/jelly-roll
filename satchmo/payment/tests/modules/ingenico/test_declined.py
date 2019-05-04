@@ -2,7 +2,7 @@ from django.conf import settings
 from django.test import TestCase, RequestFactory
 
 from satchmo.payment.modules.ingenico.views import declined
-from satchmo.shop.factories import TestOrderFactory
+from satchmo.shop.factories import ShopConfigFactory, TestOrderFactory
 from satchmo.shop.models import Order
 
 
@@ -22,6 +22,7 @@ class DeclinedTest(TestCase):
         )
 
     def test_order_available(self):
+        ShopConfigFactory()
         order = TestOrderFactory()
 
         request = self.factory.get("/shop/checkout/ingenico/declined/")

@@ -37,7 +37,7 @@ def product_count(category, args=""):
         ct = caching.cache_get("product_count", category, variations)
     except caching.NotCachedError:
         if not category:
-            ct = Product.objects.active_by_site(variations=variations).count()
+            ct = Product.objects.active(variations=variations).count()
         else:
             ct = category.active_products(
                 include_children=True, variations=variations

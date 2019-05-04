@@ -8,7 +8,7 @@ from satchmo.caching import cache_delete
 from satchmo.configuration.models import Setting
 from satchmo.currency.factories import EURCurrencyFactory
 from satchmo.payment.modules.ingenico.views import confirm_info
-from satchmo.shop.factories import CartFactory, TestOrderFactory
+from satchmo.shop.factories import CartFactory, ShopConfigFactory, TestOrderFactory
 
 
 class ConfirmInfoTest(TestCase):
@@ -32,6 +32,7 @@ class ConfirmInfoTest(TestCase):
         )
 
     def test_not_enough_stock(self):
+        ShopConfigFactory()
         cart = CartFactory()
         order = TestOrderFactory()
         # Make all items out of stock
@@ -55,6 +56,7 @@ class ConfirmInfoTest(TestCase):
         )
 
     def test_form_includes_shasign(self):
+        ShopConfigFactory()
         order = TestOrderFactory()
 
         request = self.factory.get("/shop/checkout/ingenico/confirm/")
@@ -68,9 +70,9 @@ class ConfirmInfoTest(TestCase):
         self.assertNotIn("ALIASUSAGE".encode("utf-8"), response.content)
 
     def test_form_includes_alias__if_enabled(self):
+        ShopConfigFactory()
         # Enable Aliasing
         Setting.objects.create(key="ALIAS", group="PAYMENT_INGENICO", value=True)
-
         order = TestOrderFactory()
 
         request = self.factory.get("/shop/checkout/ingenico/confirm/")

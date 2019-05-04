@@ -5,14 +5,14 @@
     {% if product.main_image %}
         <a href="{{ product.get_absolute_url }}">
             {% with product.main_image.picture.url as img %}
-            <img src="{{ img }}" width="80" height="80" alt="{{ product.translated_name }}" title="{{ product.translated_name }} - {{ product.description }}">
+            <img src="{{ img }}" width="80" height="80" alt="{{ product.name }}" title="{{ product.name }} - {{ product.description }}">
             {% endwith %}
         </a>
     {% endif %}
 
     <h2>
         <a href="{{ product.get_absolute_url }}" title="{{ product.description }}" class="fn">
-            {{ product.translated_name }}
+            {{ product.name }}
         </a>
         -
         <span class="price">
@@ -23,10 +23,10 @@
     {% with product.category.all|first as category %}
         {% with product.brands.all|first as brand %}
             {% if brand %}
-                <a href="{% url "satchmo_brand_view" brand.slug %}" class="brand">{{ brand.translation.name }}</a> -
+                <a href="{% url "satchmo_brand_view" brand.slug %}" class="brand">{{ brand.name }}</a> -
             {% endif %}
         {% endwith %}
-        <a href="{% url "satchmo_category" category.parent.slug category.slug %}" class="category">{{ category.translated_name }}</a>
+        <a href="{% url "satchmo_category" category.parent.slug category.slug %}" class="category">{{ category.name }}</a>
     {% endwith %}
 
     <div class="description">
@@ -34,7 +34,7 @@
     </div>
 
     <p>
-        <a href="{{ product.get_absolute_url }}" title="Read more about {{ product.translated_name }}" class="url">See more at the {{ product.translated_name }} details page.</a>
+        <a href="{{ product.get_absolute_url }}" title="Read more about {{ product.name }}" class="url">See more at the {{ product.name }} details page.</a>
     </p>
 
     {% endcache %}

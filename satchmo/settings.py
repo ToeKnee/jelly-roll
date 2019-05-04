@@ -135,8 +135,6 @@ SATCHMO_SETTINGS = {
     # examples: '/shop' or '/mystore'
     # If you want the shop at the root directory, set SHOP_BASE to ''
     "SHOP_BASE": "/store",
-    # This will turn on/off product translations in the admin for products
-    "ALLOW_PRODUCT_TRANSLATIONS": True,
     # register custom external payment modules by listing their modules here
     # ex: 'CUSTOM_PAYMENT_MODULES' : ['client.payment.wondercharge',]
     "CUSTOM_PAYMENT_MODULES": [],

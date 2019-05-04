@@ -1,9 +1,7 @@
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.urls import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from satchmo.l10n.mixins import TranslatedObjectMixin
 from satchmo.product.models import Category, Product
 
 import logging
@@ -12,21 +10,34 @@ log = logging.getLogger(__name__)
 
 
 class BrandManager(models.Manager):
-    def active(self, site=None):
-        if not site:
-            site = Site.objects.get_current()
-        return self.filter(site=site, active=True)
+    def active(self):
+        return self.filter(active=True)
 
     def by_slug(self, slug):
-        site = Site.objects.get_current()
-        return self.get(slug=slug, site=site)
+        return self.get(slug=slug)
 
 
-class Brand(models.Model, TranslatedObjectMixin):
+class Brand(models.Model):
     """A product brand"""
 
-    site = models.ForeignKey(Site, on_delete=models.CASCADE)
     slug = models.SlugField(_("Slug"), unique=True, help_text=_("Used for URLs"))
+    name = models.CharField(_("title"), max_length=100, blank=False)
+    # TODO: This should be changed to meta_keywords
+    short_description = models.CharField(
+        _("Short Description"), blank=True, max_length=200
+    )
+    meta_description = models.TextField(_("Meta Description"), blank=True)
+    # TODO: Rename this to "full description"
+    description = models.TextField(
+        _("Full description, visible to customers"), blank=True
+    )
+    picture = models.ImageField(
+        verbose_name=_("Picture"),
+        upload_to="brand/",
+        null=True,
+        blank=True,
+        max_length=200,
+    )
     products = models.ManyToManyField(
         Product, blank=True, related_name="brands", verbose_name=_("Products")
     )
@@ -59,7 +70,7 @@ class Brand(models.Model, TranslatedObjectMixin):
         verbose_name_plural = _("Brands")
 
     def __str__(self):
-        return "%s" % self.slug
+        return "%s" % self.name
 
     def get_absolute_url(self):
         url = reverse("satchmo_brand_view", kwargs={"brandname": self.slug})
@@ -81,12 +92,8 @@ class Brand(models.Model, TranslatedObjectMixin):
     def active_categories(self):
         return self.categories.filter(active=True)
 
-    @property
-    def translation(self):
-        return self._find_translation()
-
     def active_products(self, category=None):
-        products = self.products.filter(site=self.site, active=True)
+        products = self.products.filter(active=True)
         if category:
             products = products.filter(category=category)
         return products
@@ -99,41 +106,3 @@ class Brand(models.Model, TranslatedObjectMixin):
 
     def has_products(self):
         return self.active_products().count > 0
-
-
-class BrandTranslation(models.Model):
-    brand = models.ForeignKey(
-        Brand, on_delete=models.CASCADE, related_name="translations"
-    )
-    languagecode = models.CharField(
-        _("language"), max_length=10, choices=settings.LANGUAGES
-    )
-    name = models.CharField(_("title"), max_length=100, blank=False)
-    # TODO: This should be changed to meta_keywords
-    short_description = models.CharField(
-        _("Short Description"), blank=True, max_length=200
-    )
-    meta_description = models.TextField(_("Meta Description"), blank=True)
-    # TODO: Rename this to "full description"
-    description = models.TextField(
-        _("Full description, visible to customers"), blank=True
-    )
-    picture = models.ImageField(
-        verbose_name=_("Picture"),
-        upload_to="brand/",
-        null=True,
-        blank=True,
-        max_length=200,
-    )
-
-    class Meta:
-        ordering = ("languagecode",)
-        verbose_name = _("Brand Translation")
-        verbose_name_plural = _("Brand Translations")
-
-    @property
-    def filename(self):
-        if self.brand:
-            return "%s-%s" % (self.brand.slug, self.id)
-        else:
-            return "default"

@@ -7,14 +7,12 @@ from satchmo.product.models import ConfigurableProduct, DownloadableProduct, Pro
 from satchmo.shipping.modules.flat.shipper import Shipper as flat
 from satchmo.shipping.modules.per.shipper import Shipper as per
 from satchmo.shop.models import Cart
-from django.contrib.sites.models import Site
 
 
 class ShippingBaseTest(TestCase):
     def setUp(self):
-        self.site = Site.objects.get_current()
-        self.product1 = Product.objects.create(slug="p1", name="p1", site=self.site)
-        self.cart1 = Cart.objects.create(site=self.site)
+        self.product1 = Product.objects.create(slug="p1", name="p1")
+        self.cart1 = Cart.objects.create()
         self.cartitem1 = self.cart1.add_item(self.product1, 3)
 
     def tearDown(self):

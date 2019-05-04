@@ -2,22 +2,23 @@ import os
 import trml2pdf
 
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpResponseRedirect
-from django.template import loader, Context
 from django.shortcuts import get_object_or_404
+from django.template import loader, Context
 from django.utils.encoding import smart_str
 from django.views.decorators.cache import never_cache
 
-from satchmo.shop.models import Order
-from satchmo.shop.models import Config
 from satchmo.configuration.functions import config_value
+from satchmo.shop.models import Config, Order
 
 
 def displayDoc(request, id, doc):
-    # Create the HttpResponse object with the appropriate PDF headers for an invoice or a packing slip
+    # Create the HttpResponse object with the appropriate PDF headers
+    # for an invoice or a packing slip
     order = get_object_or_404(Order, pk=id)
     shopDetails = Config.objects.get_current()
-    filename_prefix = shopDetails.site.domain
+    filename_prefix = Site.objects.get_current().domain
     if doc == "invoice":
         filename = "%s-invoice.pdf" % filename_prefix
         template = "invoice.rml"

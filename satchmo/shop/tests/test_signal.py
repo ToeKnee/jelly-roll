@@ -1,5 +1,4 @@
 from django.test import TestCase
-from django.contrib.sites.models import Site
 
 from satchmo import caching
 from satchmo.caching import cache_delete
@@ -28,8 +27,7 @@ class SignalTest(TestCase):
     def testCartAddVerifyVeto(self):
         """Test that vetoes from `signals.satchmo_cart_add_verify` are caught and cause an error."""
         try:
-            site = Site.objects.get_current()
-            cart = Cart(site=site)
+            cart = Cart()
             cart.save()
             p = ProductFactory()
             cart.add_item(p, 1)

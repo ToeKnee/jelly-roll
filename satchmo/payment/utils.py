@@ -214,7 +214,6 @@ def update_orderitems(new_order, cart, update=False):
         new_order.remove_all_items()
     else:
         # have to save first, or else we can't add orderitems
-        new_order.site = cart.site
         new_order.save()
 
     # Add all the items in the cart to the order

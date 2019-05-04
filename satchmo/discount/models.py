@@ -7,7 +7,6 @@ import operator
 
 from decimal import Decimal
 
-from django.contrib.sites.models import Site
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
@@ -36,7 +35,6 @@ class Discount(models.Model):
     Also allows finite number of uses.
     """
 
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name=_("Site"))
     description = models.CharField(_("Description"), max_length=100)
     code = models.CharField(
         _("Discount Code"), max_length=20, unique=True, help_text=_("Coupon Code")

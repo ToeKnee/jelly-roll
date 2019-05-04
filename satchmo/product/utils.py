@@ -153,7 +153,7 @@ def serialize_options(product, selected_options=()):
     for option in list(opts.values()):
         if option.option_group_id not in serialized:
             serialized[option.option_group.id] = {
-                "name": option.option_group.translated_name(),
+                "name": option.option_group.name,
                 "id": option.option_group.id,
                 "items": [],
             }

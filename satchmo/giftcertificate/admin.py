@@ -1,10 +1,11 @@
+from django.contrib import admin
+from django.utils.translation import get_language, ugettext_lazy as _
+
 from satchmo.giftcertificate.models import (
     GiftCertificate,
     GiftCertificateUsage,
     GiftCertificateProduct,
 )
-from django.contrib import admin
-from django.utils.translation import get_language, ugettext_lazy as _
 
 
 class GiftCertificateUsage_Inline(admin.StackedInline):
@@ -13,9 +14,9 @@ class GiftCertificateUsage_Inline(admin.StackedInline):
 
 
 class GiftCertificateOptions(admin.ModelAdmin):
-    list_display = ["site", "code", "balance"]
+    list_display = ["code", "balance"]
     list_display_links = ("code",)
-    ordering = ["site", "date_added"]
+    ordering = ["date_added"]
     inlines = [GiftCertificateUsage_Inline]
 
 

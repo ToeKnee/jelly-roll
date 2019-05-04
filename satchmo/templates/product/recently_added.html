@@ -17,7 +17,7 @@
 	      		<a href="{{ product.get_absolute_url }}"><img src="{{ product.main_image.picture.url }}" width="85" /> </a>
 	      	</center>
 	   		{% endif %}
-	    	<p><a href="{{ product.get_absolute_url }}">{{ product.translated_name }}</a></p>
+	    	<p><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></p>
 		</div>
 		</div>
 	{% endfor %}

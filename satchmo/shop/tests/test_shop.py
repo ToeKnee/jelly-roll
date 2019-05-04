@@ -7,7 +7,6 @@ from django.urls import reverse as url
 from django.test import TestCase
 from django.test.client import Client
 from django.utils.encoding import smart_str
-from django.contrib.sites.models import Site
 
 from satchmo.caching import cache_delete
 from satchmo.configuration.functions import config_get, config_value
@@ -120,11 +119,7 @@ class ShopTest(TestCase):
         """
         Get the page of a Product that is not in a Category.
         """
-        Product.objects.create(
-            name="Orphaned Product",
-            slug="orphaned-product",
-            site=Site.objects.get_current(),
-        )
+        Product.objects.create(name="Orphaned Product", slug="orphaned-product")
         response = self.client.get(prefix + "/product/orphaned-product/")
         self.assertContains(response, "Orphaned Product")
 
@@ -351,13 +346,11 @@ class ShopTest(TestCase):
         self.assertEqual(len(mail.outbox), 1)
 
 
-def make_test_order(country, state, include_non_taxed=False, site=None):
+def make_test_order(country, state, include_non_taxed=False):
     warnings.warn(
         "make_test_order is deprecated - Use TestOrderFactory instead",
         DeprecationWarning,
     )
-    if not site:
-        site = Site.objects.get_current()
     c = Contact(
         first_name="Tax", last_name="Tester", role="Customer", email="tax@example.com"
     )
@@ -376,7 +369,7 @@ def make_test_order(country, state, include_non_taxed=False, site=None):
         is_default_billing=True,
     )
     ad.save()
-    o = Order(contact=c, shipping_cost=Decimal("10.00"), site=site)
+    o = Order(contact=c, shipping_cost=Decimal("10.00"))
     o.save()
 
     p = Product.objects.get(slug="dj-rocks-s-b")

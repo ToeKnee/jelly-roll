@@ -7,8 +7,8 @@ class BrandFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Brand
 
-    site_id = 1
     slug = factory.Faker("word")
+    name = factory.Faker("word")
     ordering = 0
 
     @factory.post_generation

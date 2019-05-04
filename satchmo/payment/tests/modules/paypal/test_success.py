@@ -6,7 +6,7 @@ from django.urls import reverse
 from satchmo.caching import cache_delete
 from satchmo.currency.factories import EURCurrencyFactory
 from satchmo.payment.modules.paypal.views import success
-from satchmo.shop.factories import TestOrderFactory
+from satchmo.shop.factories import ShopConfigFactory, TestOrderFactory
 
 
 class ConfirmInfoTest(TestCase):
@@ -30,6 +30,7 @@ class ConfirmInfoTest(TestCase):
         )
 
     def test_success(self):
+        ShopConfigFactory()
         order = TestOrderFactory()
         request = self.factory.get("/shop/checkout/paypal/success/")
         request.user = order.contact.user

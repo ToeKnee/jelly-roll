@@ -21,7 +21,6 @@ from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-
 from satchmo import caching
 from satchmo.configuration.functions import ConfigurationSettings
 from satchmo.contact.models import Contact
@@ -47,49 +46,14 @@ from functools import reduce
 log = logging.getLogger(__name__)
 
 
-class NullConfig(object):
-    """Standin for a real config when we don't have one yet."""
-
-    def __init__(self):
-        self.store_name = self.store_description = _("Test Store")
-        self.store_email = (
-            self.street1
-        ) = self.street2 = self.city = self.state = self.postal_code = self.phone = ""
-        self.site = self.country = None
-        self.no_stock_checkout = False
-        self.in_country_only = True
-        self.sales_country = None
-
-    def _options(self):
-        return ConfigurationSettings()
-
-    options = property(fget=_options)
-
-    def __str__(self):
-        return "Test Store - no configured store exists!"
-
-
 class ConfigManager(models.Manager):
-    def get_current(self, site=None):
+    def get_current(self):
         """Convenience method to get the current shop config"""
-        if not site:
-            site = Site.objects.get_current()
-
-        site = site.id
-
         try:
-            shop_config = caching.cache_get("Config", site)
+            shop_config = caching.cache_get("Config")
         except caching.NotCachedError as nce:
-            try:
-                shop_config = self.get(site__id__exact=site)
-                caching.cache_set(nce.key, value=shop_config)
-            except Config.DoesNotExist:
-                if settings.DEBUG:
-                    log.warning(
-                        "No Shop Config found, using test shop config for site=%s.",
-                        site,
-                    )
-                shop_config = NullConfig()
+            shop_config = Config.objects.get(site=Site.objects.get_current())
+            caching.cache_set(nce.key, value=shop_config)
 
         return shop_config
 
@@ -120,7 +84,7 @@ class Config(models.Model):
     )
     phone = models.CharField(_("Phone Number"), blank=True, null=True, max_length=12)
     no_stock_checkout = models.BooleanField(
-        _("Purchase item not in stock?"), default=True
+        _("Purchase item not in stock?"), default=False
     )
     in_country_only = models.BooleanField(
         _("Only sell to in-country customers?"), default=True
@@ -142,10 +106,40 @@ class Config(models.Model):
 
     objects = ConfigManager()
 
-    def _options(self):
-        return ConfigurationSettings()
+    class Meta:
+        verbose_name = _("Store Configuration")
+        verbose_name_plural = _("Store Configurations")
 
-    options = property(fget=_options)
+    def __str__(self):
+        return self.store_name
+
+    def save(self, *args, **kwargs):
+        caching.cache_delete("config")
+        # ensure the default country is in shipping countries
+        mycountry = self.country
+
+        if mycountry:
+            if not self.sales_country:
+                log.debug(
+                    "%s: No sales_country set, adding country of store, '%s'",
+                    self,
+                    mycountry,
+                )
+                self.sales_country = mycountry
+        else:
+            log.warning("%s: has no country set", self)
+
+        super(Config, self).save(*args, **kwargs)
+        caching.cache_set("Config", value=self)
+
+    @property
+    def base_url(self):
+        site = Site.objects.get_current()
+        return "https://" + site.domain
+
+    @property
+    def options(self):
+        return ConfigurationSettings()
 
     def areas(self):
         """Get country areas (states/counties).  Used in forms."""
@@ -160,50 +154,6 @@ class Config(models.Model):
             return Country.objects.filter(pk=self.sales_country.pk)
         else:
             return self.shipping_countries.filter(active=True)
-
-    def _base_url(self, secure=False):
-        prefix = "http"
-        if secure:
-            prefix += "s"
-        return prefix + "://" + self.site.domain
-
-    base_url = property(fget=_base_url)
-
-    def save(self, *args, **kwargs):
-        caching.cache_delete("Config", self.site.id)
-        # ensure the default country is in shipping countries
-        mycountry = self.country
-
-        if mycountry:
-            if not self.sales_country:
-                log.debug(
-                    "%s: No sales_country set, adding country of store, '%s'",
-                    self,
-                    mycountry,
-                )
-                self.sales_country = mycountry
-
-        # This code doesn't work when creating a new site. At the time of creation, all of the necessary relationships
-        # aren't setup. I modified the load_store code so that it would create this relationship manually when running
-        # with sample data. This is a bit of a django limitation so I'm leaving this in here for now. - CBM
-        #            salescountry = self.sales_country
-        #            try:
-        #                need = self.shipping_countries.get(pk=salescountry.pk)
-        #            except Country.DoesNotExist:
-        #                log.debug("%s: Adding default country '%s' to shipping countries", self, salescountry.iso2_code)
-        #                self.shipping_countries.add(salescountry)
-        else:
-            log.warning("%s: has no country set", self)
-
-        super(Config, self).save(*args, **kwargs)
-        caching.cache_set("Config", self.site.id, value=self)
-
-    def __str__(self):
-        return self.store_name
-
-    class Meta:
-        verbose_name = _("Store Configuration")
-        verbose_name_plural = _("Store Configurations")
 
 
 class NullCart(object):
@@ -315,11 +265,10 @@ class CartManager(models.Manager):
 
         if not cart:
             if create:
-                site = Site.objects.get_current()
                 if contact is None:
-                    cart = Cart(site=site)
+                    cart = Cart()
                 else:
-                    cart = Cart(site=site, customer=contact)
+                    cart = Cart(customer=contact)
                 cart.save()
                 request.session["cart"] = cart.id
 
@@ -348,7 +297,6 @@ class Cart(models.Model):
     Could be used for debugging
     """
 
-    site = models.ForeignKey(Site, on_delete=models.CASCADE, verbose_name=_("Site"))
     desc = models.CharField(_("Description"), blank=True, null=True, max_length=10)
     date_time_created = models.DateTimeField(_("Creation Date"))
     customer = models.ForeignKey(
@@ -387,10 +335,6 @@ class Cart(models.Model):
         """Ensure we have a date_time_created before saving the first time."""
         if not self.pk:
             self.date_time_created = timezone.now()
-        try:
-            self.site
-        except Site.DoesNotExist:
-            self.site = Site.objects.get_current()
 
         if self.currency is None:
             self.currency = Currency.objects.get_primary()
@@ -471,6 +415,7 @@ class Cart(models.Model):
         """
         not_enough_stock = []
         config = Config.objects.get_current()
+        print(config.no_stock_checkout)
         if config.no_stock_checkout is False:
             for cart_item in self.cartitem_set.all():
                 if not cart_item.has_enough_stock():
@@ -571,7 +516,7 @@ class CartItem(models.Model):
         return self.product.get_qty_price(qty)
 
     def _get_description(self):
-        return self.product.translated_name()
+        return self.product.name
 
     description = property(_get_description)
 
@@ -746,9 +691,6 @@ class Order(models.Model):
     placed.
     """
 
-    site = models.ForeignKey(
-        Site, on_delete=models.CASCADE, verbose_name=_("Site"), editable=False
-    )
     contact = models.ForeignKey(
         Contact, on_delete=models.CASCADE, verbose_name=_("Contact"), editable=False
     )
@@ -1439,10 +1381,10 @@ class OrderItem(models.Model):
         ordering = ("id",)
 
     def __str__(self):
-        return self.product.translated_name()
+        return self.product.name
 
     def _get_category(self):
-        return self.product.get_category.translated_name()
+        return self.product.get_category.name
 
     category = property(_get_category)
 
@@ -1493,7 +1435,7 @@ class OrderItem(models.Model):
         return self.unit_price + self.unit_tax
 
     def _get_description(self):
-        return self.product.translated_name()
+        return self.product.name
 
     description = property(_get_description)
 
@@ -1578,7 +1520,7 @@ class DownloadLink(models.Model):
 
     def get_full_url(self):
         url = reverse("satchmo_download_process", kwargs={"download_key": self.key})
-        return "http://%s%s" % (Site.objects.get_current(), url)
+        return "https://%s%s" % (Site.objects.get_current(), url)
 
     def save(self, *args, **kwargs):
         """
@@ -1590,7 +1532,7 @@ class DownloadLink(models.Model):
         return "%s - %s" % (self.downloadable_product.product.slug, self.time_stamp)
 
     def _product_name(self):
-        return "%s" % (self.downloadable_product.product.translated_name())
+        return "%s" % (self.downloadable_product.product.name)
 
     product_name = property(_product_name)
 

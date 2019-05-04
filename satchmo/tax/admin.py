@@ -1,7 +1,7 @@
 from satchmo.tax.models import TaxClass, TaxRate
 from django.contrib import admin
 from django.forms import models, ValidationError
-from django.utils.translation import get_language, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 
 class TaxRateForm(models.ModelForm):

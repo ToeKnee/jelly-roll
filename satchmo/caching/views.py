@@ -45,15 +45,8 @@ def stats_page(request):
     else:
         rate = 0
 
-    try:
-        running = caching.cache_require()
-
-    except caching.CacheNotRespondingError:
-        running = False
-
     ctx = {
         "cache_count": len(caching.CACHED_KEYS),
-        "cache_running": running,
         "cache_time": settings.CACHE_TIMEOUT,
         "cache_backend": settings.CACHE_BACKEND,
         "cache_calls": caching.CACHE_CALLS,

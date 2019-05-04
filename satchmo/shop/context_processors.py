@@ -18,7 +18,7 @@ def settings(request):
     shop_config = Config.objects.get_current()
     cart = Cart.objects.from_request(request)
 
-    all_categories = Category.objects.by_site()
+    all_categories = Category.objects.all()
     site = shop_config.site
     if site:
         domain = site.domain

@@ -1,1464 +1,1398 @@
 [
-    {
-        "pk": 1, 
-        "model": "tieredweightzone.carrier", 
-        "fields": {
-            "ordering": 0, 
-            "active": true, 
-            "key": "FirstClass"
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "tieredweightzone.carrier", 
-        "fields": {
-            "ordering": 0, 
-            "active": true, 
-            "key": "UKRecorded"
-        }
-    }, 
-    {
-        "pk": 3, 
-        "model": "tieredweightzone.carrier", 
-        "fields": {
-            "ordering": 0, 
-            "active": true, 
-            "key": "UKSPL"
-        }
-    }, 
-    {
-        "pk": 4, 
-        "model": "tieredweightzone.carrier", 
-        "fields": {
-            "ordering": 0, 
-            "active": true, 
-            "key": "Airmail"
-        }
-    }, 
-    {
-        "pk": 5, 
-        "model": "tieredweightzone.carrier", 
-        "fields": {
-            "ordering": 0, 
-            "active": true, 
-            "key": "IntlSF"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "tieredweightzone.carriertranslation", 
-        "fields": {
-            "languagecode": "en", 
-            "name": "Royal Mail", 
-            "delivery": "1-2 working days", 
-            "carrier": 1, 
-            "method": "First Class", 
-            "description": "UK First Class Mail"
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "tieredweightzone.carriertranslation", 
-        "fields": {
-            "languagecode": "en", 
-            "name": "Royal Mail", 
-            "delivery": "1-2 working days", 
-            "carrier": 2, 
-            "method": "Recorded Delivery", 
-            "description": "Recorded Delivery"
-        }
-    }, 
-    {
-        "pk": 3, 
-        "model": "tieredweightzone.carriertranslation", 
-        "fields": {
-            "languagecode": "en", 
-            "name": "Royal Mail", 
-            "delivery": "1 working day", 
-            "carrier": 3, 
-            "method": "insured mail. For orders over \u00a325 in value.", 
-            "description": "Insured"
-        }
-    }, 
-    {
-        "pk": 4, 
-        "model": "tieredweightzone.carriertranslation", 
-        "fields": {
-            "languagecode": "en", 
-            "name": "Royal Mail", 
-            "delivery": "3-4 days for European orders, Rest of world 5-10 working days", 
-            "carrier": 4, 
-            "method": "international airmail and", 
-            "description": "Airmail"
-        }
-    }, 
-    {
-        "pk": 5, 
-        "model": "tieredweightzone.carriertranslation", 
-        "fields": {
-            "languagecode": "en", 
-            "name": "Royal Mail", 
-            "delivery": "3-4 days for European orders, Rest of world 5-10 working days", 
-            "carrier": 5, 
-            "method": "Insured mail. Recommended for orders over \u00a325 in value. Requires signature on delivery, is trackable and", 
-            "description": "Signed-For"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "tieredweightzone.zone", 
-        "fields": {
-            "country": [
-                230
-            ], 
-            "continent": [
-                3
-            ], 
-            "key": "UK"
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "tieredweightzone.zone", 
-        "fields": {
-            "country": [], 
-            "continent": [
-                3
-            ], 
-            "key": "EU"
-        }
-    }, 
-    {
-        "pk": 3, 
-        "model": "tieredweightzone.zone", 
-        "fields": {
-            "country": [], 
-            "continent": [
-                1, 
-                2, 
-                4, 
-                5, 
-                6, 
-                7
-            ], 
-            "key": "ROW"
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "tieredweightzone.zonetranslation", 
-        "fields": {
-            "languagecode": "en", 
-            "name": "Europe", 
-            "zone": 2, 
-            "description": "Continental Europe"
-        }
-    }, 
-    {
-        "pk": 3, 
-        "model": "tieredweightzone.zonetranslation", 
-        "fields": {
-            "languagecode": "en", 
-            "name": "Rest of World", 
-            "zone": 3, 
-            "description": "Non-European Countries"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "tieredweightzone.zonetranslation", 
-        "fields": {
-            "languagecode": "en", 
-            "name": "U.K.", 
-            "zone": 1, 
-            "description": "UK"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "1.80", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "0.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 3, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "2.30", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "0.10", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "2.70", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "0.25", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 4, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "3.30", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "0.50", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 5, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "3.95", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "0.75", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 6, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "5.10", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "1.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 7, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "5.90", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "1.25", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 8, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "6.65", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "1.50", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 9, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.40", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "1.75", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 10, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "9.30", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "2.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 11, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "12.40", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "4.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 12, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "15.50", 
-            "carrier": 1, 
-            "expires": null, 
-            "min_weight": "6.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 13, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "2.26", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "0.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 14, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "3.10", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "0.10", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 15, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "3.50", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "0.25", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 16, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "4.10", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "0.50", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 17, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "4.75", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "0.75", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 18, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "5.90", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "1.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 19, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "6.70", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "1.25", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 20, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.45", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "1.50", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 21, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "8.20", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "1.75", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 22, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "10.10", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "2.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 23, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "13.20", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "4.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 24, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "16.70", 
-            "carrier": 2, 
-            "expires": null, 
-            "min_weight": "6.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 113, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "6.10", 
-            "carrier": 3, 
-            "expires": null, 
-            "min_weight": "0.10", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 115, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.20", 
-            "carrier": 3, 
-            "expires": null, 
-            "min_weight": "0.50", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 116, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "9.25", 
-            "carrier": 3, 
-            "expires": null, 
-            "min_weight": "1.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 117, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "19.00", 
-            "carrier": 3, 
-            "expires": null, 
-            "min_weight": "2.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 118, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "22.90", 
-            "carrier": 3, 
-            "expires": null, 
-            "min_weight": "3.00", 
-            "zone": 1
-        }
-    }, 
-    {
-        "pk": 25, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "1.80", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.00", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 27, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "2.50", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.10", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 29, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "2.95", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.20", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 31, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "3.55", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.30", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 33, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "4.15", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.40", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 35, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "4.75", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.50", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 37, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "5.35", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.60", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 39, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "5.95", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.70", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 41, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "6.55", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.80", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 43, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.15", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.90", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 45, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.25", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.00", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 47, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.75", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.10", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 49, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "8.35", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.20", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 51, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "8.95", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.30", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 53, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "9.55", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.40", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 55, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "10.15", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.50", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 57, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "10.75", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.60", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 59, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "11.35", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.70", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 61, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "11.95", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.80", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 63, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "12.55", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.90", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 65, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "15.00", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "2.00", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 75, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.50", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.10", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 76, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.95", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.20", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 77, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "8.55", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.30", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 78, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "9.15", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.40", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 79, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "9.75", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.50", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 80, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "10.35", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.60", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 81, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "10.95", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.70", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 82, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "11.55", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.80", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 83, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "12.15", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.90", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 84, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "12.25", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.00", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 85, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "12.75", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.10", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 86, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "13.35", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.20", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 87, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "13.95", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.30", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 88, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "14.55", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.40", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 89, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "15.15", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.50", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 90, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "15.75", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.60", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 91, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "16.35", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.70", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 92, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "16.95", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.80", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 93, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "17.55", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.90", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 67, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "25.40", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "2.50", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 69, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "29.40", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "3.00", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 71, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "34.40", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "4.00", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 73, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "53.10", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "6.00", 
-            "zone": 2
-        }
-    }, 
-    {
-        "pk": 26, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "2.40", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.00", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 28, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "3.70", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.10", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 30, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "4.60", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.20", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 32, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "5.80", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.30", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 34, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "7.00", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.40", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 36, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "8.20", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.50", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 38, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "9.40", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.60", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 40, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "10.60", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.70", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 42, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "11.80", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.80", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 44, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "13.00", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "0.90", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 46, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "14.20", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.00", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 48, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "15.40", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.10", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 50, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "16.60", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.20", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 52, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "17.80", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.30", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 54, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "19.00", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.40", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 56, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "20.20", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.50", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 58, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "21.40", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.60", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 60, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "22.60", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.70", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 62, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "23.80", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.80", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 64, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "25.00", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "1.90", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 66, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "29.00", 
-            "carrier": 4, 
-            "expires": null, 
-            "min_weight": "2.00", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 94, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "8.70", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.10", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 95, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "9.60", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.20", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 96, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "10.80", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.30", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 97, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "12.00", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.40", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 98, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "13.20", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.50", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 99, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "14.40", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.60", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 100, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "15.60", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.70", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 101, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "16.80", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.80", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 102, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "18.00", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "0.90", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 103, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "19.20", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.00", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 104, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "20.40", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.10", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 105, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "21.60", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.20", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 106, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "23.80", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.30", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 107, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "24.00", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.40", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 108, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "25.20", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.50", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 109, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "26.40", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.60", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 111, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "26.45", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.80", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 110, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "27.60", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.70", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 112, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "28.80", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "1.90", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 68, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "42.40", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "2.50", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 70, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "47.90", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "3.00", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 72, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "60.40", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "4.00", 
-            "zone": 3
-        }
-    }, 
-    {
-        "pk": 74, 
-        "model": "tieredweightzone.weighttier", 
-        "fields": {
-            "price": "89.90", 
-            "carrier": 5, 
-            "expires": null, 
-            "min_weight": "6.00", 
-            "zone": 3
-        }
+  {
+    "pk": 1,
+    "model": "tieredweightzone.carrier",
+    "fields": {
+      "ordering": 0,
+      "active": true,
+      "key": "FirstClass",
+      "name": "Royal Mail",
+      "delivery": "1-2 working days",
+      "carrier": 1,
+      "method": "First Class",
+      "description": "UK First Class Mail"
     }
+  },
+  {
+    "pk": 2,
+    "model": "tieredweightzone.carrier",
+    "fields": {
+      "ordering": 0,
+      "active": true,
+      "key": "UKRecorded",
+      "name": "Royal Mail",
+      "delivery": "1-2 working days",
+      "carrier": 2,
+      "method": "Recorded Delivery",
+      "description": "Recorded Delivery"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "tieredweightzone.carrier",
+    "fields": {
+      "ordering": 0,
+      "active": true,
+      "key": "UKSPL",
+      "name": "Royal Mail",
+      "delivery": "1 working day",
+      "carrier": 3,
+      "method": "Insured mail. For orders over \u00a325 in value.",
+      "description": "Insured"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "tieredweightzone.carrier",
+    "fields": {
+      "ordering": 0,
+      "active": true,
+      "key": "Airmail",
+      "name": "Royal Mail",
+      "delivery":
+        "3-4 days for European orders, Rest of world 5-10 working days",
+      "carrier": 4,
+      "method": "International airmail",
+      "description": "Airmail"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "tieredweightzone.carrier",
+    "fields": {
+      "ordering": 0,
+      "active": true,
+      "key": "IntlSF",
+      "name": "Royal Mail",
+      "delivery":
+        "3-4 days for European orders, Rest of world 5-10 working days",
+      "carrier": 5,
+      "method":
+        "Insured mail. Recommended for orders over \u00a325 in value. Requires signature on delivery, is trackable.",
+      "description": "Signed-For"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "tieredweightzone.zone",
+    "fields": {
+      "country": [230],
+      "continent": [3],
+      "key": "UK",
+      "name": "U.K.",
+      "zone": 1,
+      "description": "UK"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "tieredweightzone.zone",
+    "fields": {
+      "country": [],
+      "continent": [3],
+      "key": "EU",
+      "name": "Europe",
+      "zone": 2,
+      "description": "Continental Europe"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "tieredweightzone.zone",
+    "fields": {
+      "country": [],
+      "continent": [1, 2, 4, 5, 6, 7],
+      "key": "ROW",
+      "name": "Rest of World",
+      "zone": 3,
+      "description": "Non-European Countries"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "1.80",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "0.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 3,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "2.30",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "0.10",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "2.70",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "0.25",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 4,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "3.30",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "0.50",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 5,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "3.95",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "0.75",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 6,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "5.10",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "1.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 7,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "5.90",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "1.25",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 8,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "6.65",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "1.50",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 9,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.40",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "1.75",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 10,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "9.30",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "2.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 11,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "12.40",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "4.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 12,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "15.50",
+      "carrier": 1,
+      "expires": null,
+      "min_weight": "6.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 13,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "2.26",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "0.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 14,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "3.10",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "0.10",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 15,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "3.50",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "0.25",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 16,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "4.10",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "0.50",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 17,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "4.75",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "0.75",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 18,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "5.90",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "1.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 19,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "6.70",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "1.25",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 20,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.45",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "1.50",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 21,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "8.20",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "1.75",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 22,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "10.10",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "2.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 23,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "13.20",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "4.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 24,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "16.70",
+      "carrier": 2,
+      "expires": null,
+      "min_weight": "6.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 113,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "6.10",
+      "carrier": 3,
+      "expires": null,
+      "min_weight": "0.10",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 115,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.20",
+      "carrier": 3,
+      "expires": null,
+      "min_weight": "0.50",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 116,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "9.25",
+      "carrier": 3,
+      "expires": null,
+      "min_weight": "1.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 117,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "19.00",
+      "carrier": 3,
+      "expires": null,
+      "min_weight": "2.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 118,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "22.90",
+      "carrier": 3,
+      "expires": null,
+      "min_weight": "3.00",
+      "zone": 1
+    }
+  },
+  {
+    "pk": 25,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "1.80",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.00",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 27,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "2.50",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.10",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 29,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "2.95",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.20",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 31,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "3.55",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.30",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 33,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "4.15",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.40",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 35,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "4.75",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.50",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 37,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "5.35",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.60",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 39,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "5.95",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.70",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 41,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "6.55",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.80",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 43,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.15",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.90",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 45,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.25",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.00",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 47,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.75",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.10",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 49,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "8.35",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.20",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 51,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "8.95",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.30",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 53,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "9.55",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.40",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 55,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "10.15",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.50",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 57,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "10.75",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.60",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 59,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "11.35",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.70",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 61,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "11.95",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.80",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 63,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "12.55",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.90",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 65,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "15.00",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "2.00",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 75,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.50",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.10",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 76,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.95",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.20",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 77,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "8.55",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.30",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 78,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "9.15",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.40",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 79,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "9.75",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.50",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 80,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "10.35",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.60",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 81,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "10.95",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.70",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 82,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "11.55",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.80",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 83,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "12.15",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.90",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 84,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "12.25",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.00",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 85,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "12.75",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.10",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 86,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "13.35",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.20",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 87,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "13.95",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.30",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 88,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "14.55",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.40",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 89,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "15.15",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.50",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 90,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "15.75",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.60",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 91,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "16.35",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.70",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 92,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "16.95",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.80",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 93,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "17.55",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.90",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 67,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "25.40",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "2.50",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 69,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "29.40",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "3.00",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 71,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "34.40",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "4.00",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 73,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "53.10",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "6.00",
+      "zone": 2
+    }
+  },
+  {
+    "pk": 26,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "2.40",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.00",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 28,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "3.70",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.10",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 30,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "4.60",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.20",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 32,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "5.80",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.30",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 34,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "7.00",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.40",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 36,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "8.20",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.50",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 38,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "9.40",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.60",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 40,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "10.60",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.70",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 42,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "11.80",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.80",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 44,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "13.00",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "0.90",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 46,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "14.20",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.00",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 48,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "15.40",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.10",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 50,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "16.60",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.20",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 52,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "17.80",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.30",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 54,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "19.00",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.40",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 56,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "20.20",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.50",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 58,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "21.40",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.60",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 60,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "22.60",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.70",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 62,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "23.80",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.80",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 64,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "25.00",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "1.90",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 66,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "29.00",
+      "carrier": 4,
+      "expires": null,
+      "min_weight": "2.00",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 94,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "8.70",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.10",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 95,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "9.60",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.20",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 96,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "10.80",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.30",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 97,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "12.00",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.40",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 98,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "13.20",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.50",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 99,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "14.40",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.60",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 100,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "15.60",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.70",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 101,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "16.80",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.80",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 102,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "18.00",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "0.90",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 103,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "19.20",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.00",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 104,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "20.40",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.10",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 105,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "21.60",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.20",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 106,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "23.80",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.30",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 107,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "24.00",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.40",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 108,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "25.20",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.50",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 109,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "26.40",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.60",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 111,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "26.45",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.80",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 110,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "27.60",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.70",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 112,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "28.80",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "1.90",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 68,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "42.40",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "2.50",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 70,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "47.90",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "3.00",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 72,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "60.40",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "4.00",
+      "zone": 3
+    }
+  },
+  {
+    "pk": 74,
+    "model": "tieredweightzone.weighttier",
+    "fields": {
+      "price": "89.90",
+      "carrier": 5,
+      "expires": null,
+      "min_weight": "6.00",
+      "zone": 3
+    }
+  }
 ]

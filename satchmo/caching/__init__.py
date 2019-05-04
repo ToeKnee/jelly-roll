@@ -4,15 +4,12 @@ from django.conf import settings
 
 from django.core.cache import cache
 from django.utils.encoding import smart_str
-import pickle as pickle
-import types
+import pickle
 import logging
 from satchmo.utils import is_string_like, is_list_or_tuple
 
-try:
-    import hashlib
-except:
-    import md5
+
+import hashlib
 
 log = logging.getLogger(__name__)
 
@@ -21,13 +18,6 @@ CACHE_CALLS = 0
 CACHE_HITS = 0
 KEY_DELIM = "::"
 TIMEOUT = 300
-try:
-    CACHE_PREFIX = settings.CACHE_PREFIX
-except AttributeError:
-    CACHE_PREFIX = str(settings.SITE_ID)
-    log.warn(
-        "No CACHE_PREFIX found in settings, using SITE_ID.  Please update your settings to add a CACHE_PREFIX"
-    )
 
 
 class CacheWrapper(object):
@@ -172,8 +162,6 @@ def cache_get(*keys, **kwargs):
 
     global CACHE_CALLS, CACHE_HITS
     CACHE_CALLS += 1
-    if CACHE_CALLS == 1:
-        cache_require()
 
     obj = cache.get(key)
     if obj and isinstance(obj, CacheWrapper):
@@ -248,7 +236,7 @@ def cache_key(*keys, **pairs):
             keys.append(pairs[k])
 
     key = KEY_DELIM.join([_hash_or_string(x) for x in keys])
-    prefix = CACHE_PREFIX + KEY_DELIM
+    prefix = KEY_DELIM
     if not key.startswith(prefix):
         key = prefix + key
     return key.replace(" ", ".")
@@ -256,10 +244,7 @@ def cache_key(*keys, **pairs):
 
 def md5_hash(obj):
     pickled = pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
-    try:
-        return hashlib.md5(pickled).hexdigest()
-    except:
-        return md5.new(pickled).hexdigest()
+    return hashlib.md5(pickled).hexdigest()
 
 
 def is_memcached_backend():
@@ -267,15 +252,3 @@ def is_memcached_backend():
         return cache._cache.__module__.endswith("memcache")
     except AttributeError:
         return False
-
-
-def cache_require():
-    """Error if caching isn't running."""
-    key = cache_key("require_cache")
-    cache_set(key, value="1")
-    v = cache_get(key, default="0")
-    if v != "1":
-        raise CacheNotRespondingError()
-    else:
-        log.debug("Cache responding OK")
-    return True

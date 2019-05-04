@@ -2,6 +2,15 @@
 JellyRoll Change Log
 ==================
 
+
+Version 0.12.0.0, 04 May, 2019
+------------------------------
+* Give products a standard `unit_price`. Only look for discount
+  prices if quantity is greater than one.
+* Remove multi-site support
+* Remove database level translations
+
+
 Version 0.11.3.0, 25 March, 2019
 ------------------------------
 * Black code format
