@@ -2,6 +2,11 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.2, 11 June, 2019
+------------------------------
+* PayPal: Make sure we remove the discount from the sub_total when creating order.
+* PayPal: Handle Risk Dispute
+
 Version 0.12.0.1, 04 May, 2019
 ------------------------------
 * Update max Django version
