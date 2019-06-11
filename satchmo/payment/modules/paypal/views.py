@@ -146,7 +146,7 @@ def create_payment(request, retries=0):
                     "currency": order.currency.iso_4217_code,
                     "total": str(order.total),
                     "details": {
-                        "subtotal": str(order.sub_total),
+                        "subtotal": str(order.sub_total - order.discount),
                         "tax": str(order.tax),
                         "shipping": str(order.shipping_cost),
                         "shipping_discount": str(order.shipping_discount),
