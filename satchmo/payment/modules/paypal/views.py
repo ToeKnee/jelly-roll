@@ -428,7 +428,9 @@ def webhook(request):
 
     event_type = data.get("event_type")
     if event_type is not None:
-        if event_type.startswith("CUSTOMER.DISPUTE"):
+        if event_type.startswith("CUSTOMER.DISPUTE") or event_type.startswith(
+            "RISK.DISPUTE"
+        ):
             # Customer dispute
             # Add a note, but don't do anything else
             order_payment = get_object_or_404(
@@ -439,6 +441,11 @@ def webhook(request):
             )
             order = order_payment.order
             order.notes += "\n" + _("--- Paypal Customer Dispute ---") + "\n"
+            order.add_status(
+                status="Customer Dispute",
+                notes=data["resource"]["messages"][0]["content"],
+            )
+
         elif event_type.endswith("COMPLETED"):
             # Payment complete
             order = get_object_or_404(Order, id=data["resource"]["invoice_number"])
