@@ -2,6 +2,11 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.3, 12 June, 2019
+------------------------------
+* PayPal: Handle the order item discount.
+
+
 Version 0.12.0.2, 11 June, 2019
 ------------------------------
 * PayPal: Make sure we remove the discount from the sub_total when creating order.
