@@ -162,7 +162,9 @@ def create_payment(request, retries=0):
                             "description": item.product.meta,
                             "quantity": item.quantity,
                             "currency": order.currency.iso_4217_code,
-                            "price": str(item.unit_price),
+                            "price": "{price:.2f}".format(
+                                price=(item.unit_price - item.discount)
+                            ),
                             "tax": str(item.unit_tax),
                             "sku": item.product.sku,
                         }
@@ -189,7 +191,7 @@ def create_payment(request, retries=0):
     if payment.create():
         order.notes += _("--- Paypal Payment Created ---") + "\n"
         order.notes += str(timezone.now()) + "\n"
-        order.notes += pprint.pformat(payment.to_dict()) + "\n"
+        order.notes += pprint.pformat(payment.to_dict()) + "\n\n"
         order.freeze()
         order.save()
         # Create a pending payment in our system
@@ -206,6 +208,9 @@ def create_payment(request, retries=0):
             "{key}: {value}".format(key=key, value=value)
             for key, value in payment.error.items()
         )
+        # Add the posted data
+        message += "\n\n" + pprint.pformat(data) + "\n"
+
         mail_admins(subject, message)
         log.error(payment.error)
         log.error(pprint.pformat(data))
