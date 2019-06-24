@@ -451,6 +451,14 @@ def webhook(request):
                 notes=data["resource"]["messages"][0]["content"],
             )
 
+        elif event_type == "PAYMENTS.PAYMENT.CREATED":
+            order = get_object_or_404(
+                Order, id=data["resource"]["transactions"][0]["invoice_number"]
+            )
+            # Set Order to Processing
+            order.add_status(
+                status="Payment Created", notes=_("PayPal payment created. Thank you.")
+            )
         elif event_type.endswith("COMPLETED"):
             # Payment complete
             order = get_object_or_404(Order, id=data["resource"]["invoice_number"])
