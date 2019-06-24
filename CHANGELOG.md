@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.4, 24 June, 2019
+------------------------------
+* PayPal: Handle payment created.
+
 Version 0.12.0.3, 12 June, 2019
 ------------------------------
 * PayPal: Handle the order item discount.
