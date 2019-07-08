@@ -619,7 +619,9 @@ class OrderQuerySet(models.QuerySet):
         return self.filter(frozen=False)
 
     def unfulfilled(self):
-        return self.by_latest_status("Processing").filter(frozen=True, fulfilled=False)
+        return self.filter(order_states__status__status="Processing").filter(
+            frozen=True, fulfilled=False
+        )
 
     def by_latest_status(self, status):
         """ Return orders with their latest status matching `status` """
