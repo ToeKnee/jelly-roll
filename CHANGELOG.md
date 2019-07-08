@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.6, 08 July, 2019
+------------------------------
+* Revert - Improve handling of unfulfilled order manager
+
 Version 0.12.0.5, 08 July, 2019
 ------------------------------
 * Improve handling of unfulfilled order manager
