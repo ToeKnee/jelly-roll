@@ -619,15 +619,31 @@ class OrderQuerySet(models.QuerySet):
         return self.filter(frozen=False)
 
     def unfulfilled(self):
-        return self.by_latest_status("Processing").filter(frozen=True, fulfilled=False)
+        return self.by_latest_status(
+            "Processing", exclude_status="Payment Created"
+        ).filter(frozen=True, fulfilled=False)
 
-    def by_latest_status(self, status):
-        """ Return orders with their latest status matching `status` """
+    def by_latest_status(self, status, exclude_status=None):
+        """Return orders with their latest status matching `status`.
+
+        It is possible to exclude a payment status for the latest
+        search. This is useful for "Payment Created" or similar that
+        can be created asynchronoulsy and appear after the
+        "Processing" status.
+
+        """
         if isinstance(status, str):
             status = Status.objects.get(status=status)
         newest_status = OrderStatus.objects.filter(order=OuterRef("pk")).order_by(
             "-time_stamp"
         )
+
+        if exclude_status:
+            if isinstance(exclude_status, str):
+                newest_status = newest_status.exclude(status__status=exclude_status)
+            elif isinstance(exclude_status, list):
+                newest_status = newest_status.exclude(status__status__in=exclude_status)
+
         return self.annotate(
             status=Subquery(newest_status.values("status")[:1])
         ).filter(status=status.id)
