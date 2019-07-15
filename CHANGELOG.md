@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.7, 15 July, 2019
+------------------------------
+* Improve handling of unfulfilled order manager
+
 Version 0.12.0.6, 08 July, 2019
 ------------------------------
 * Revert - Improve handling of unfulfilled order manager
@@ -10,7 +14,6 @@ Version 0.12.0.5, 08 July, 2019
 ------------------------------
 * Improve handling of unfulfilled order manager
 
-
 Version 0.12.0.4, 24 June, 2019
 ------------------------------
 * PayPal: Handle payment created.
@@ -18,7 +21,6 @@ Version 0.12.0.4, 24 June, 2019
 Version 0.12.0.3, 12 June, 2019
 ------------------------------
 * PayPal: Handle the order item discount.
-
 
 Version 0.12.0.2, 11 June, 2019
 ------------------------------
@@ -36,22 +38,18 @@ Version 0.12.0.0, 04 May, 2019
 * Remove multi-site support
 * Remove database level translations
 
-
 Version 0.11.3.0, 25 March, 2019
 ------------------------------
 * Black code format
 * Cache currency_for_request for the request
 
-
 Version 0.11.2.3, 17 December, 2018
 ------------------------------
 * Fix double currency conversion of discounts
 
-
 Version 0.11.2.2, 25 September, 2018
 ------------------------------
 * Fix recalculate totals
-
 
 Version 0.11.2.1, 25 September, 2018
 ------------------------------
@@ -188,52 +186,42 @@ Version 0.9.7.8, 11 May, 2017
 -------------------------------
 * Ingenico handle unicode characters in process views
 
-
 Version 0.9.7.7, 9 May, 2017
 -------------------------------
 * Ingenico handle unicode characters in shasign
-
 
 Version 0.9.7.6, 28 April, 2017
 -------------------------------
 * Ingenico handle payment deleted like a refund
 
-
 Version 0.9.7.5, 27 April, 2017
 -------------------------------
 * Ingenico improve handling visiting accepted page after processing order
 
-
 Version 0.9.7.4, 27 April, 2017
 -------------------------------
 * Ingenico handle random case sensitivity of return values
-
 
 Version 0.9.7.3, 26 April, 2017
 -------------------------------
 * Ingenico SHASIGN - handle lower case keys properly
 * Ingenico SHASIGN - handle empty values properly
 
-
 Version 0.9.7.2, 26 April, 2017
 -------------------------------
 * Add Alias Usage
-
 
 Version 0.9.7.1, 26 April, 2017
 -------------------------------
 * Fix Alias length
 
-
 Version 0.9.7, 26 April, 2017
 -----------------------------
 * Add Ingenico payment module
 
-
 Version 0.9.6, 26 Dec, 2016
 ---------------------------
 * Fix early notification issue
-
 
 Version 0.9.5, 6 Dec, 2016
 --------------------------
@@ -241,19 +229,16 @@ Version 0.9.5, 6 Dec, 2016
 * Update email images to be background-images
 * Send order status email on status create
 
-
 Version 0.9.4, 3 Dec, 2016
 --------------------------
  * Add order status emails
  * Add html emails
  * Use https://github.com/leemunroe/responsive-html-email-template as a basis for HTML emails
 
-
 Version 0.9.3,
 ------------------------------
 * Fix caching of translations
 * Fix pycrypto requirement
-
 
 Version 0.9.2, 22 August, 2016
 ------------------------------
@@ -262,11 +247,9 @@ Version 0.9.2, 22 August, 2016
  * Add missing requirements: requests, httmock
  * Make "six" fulfilment API test portable
 
-
 Version 0.9.1, 15 August, 2016
 ---------------------------
  * Add CarrierTranslationFactory to CarrierFactory to fix issue with debugging tests
-
 
 Version 0.9, 15 August, 2016
 ---------------------------
@@ -276,7 +259,6 @@ Version 0.9, 15 August, 2016
  * Make optional apps required
  * Refactor tests (still more to do)
  * Remove thumbnail app
-
 
 Version 0.8, November 25, 2008
 -----------------------------
@@ -316,8 +298,6 @@ Version 0.8, November 25, 2008
  * Improved performance of price lookups
  * Recurring billing support for Authorize.net
  * New Purchase Order payment module
-
-
 
 Version 0.7, May 26, 2008
 -------------------------
