@@ -8,6 +8,7 @@ https://payment-services.ingenico.com/int/en/ogone/support/guides/integration%20
 
 
 import hashlib
+import pprint
 from decimal import Decimal
 
 from .forms import IngenicoForm
@@ -272,7 +273,7 @@ Expiry date: {ed}
                     )
             return HttpResponse()
         else:
-            logger.warning("Verification failed: %s", post_data)
+            logger.warning("Verification failed: %s", pprint.pformat(post_data.items()))
             return HttpResponsePaymentRequired()
     else:
         return HttpResponseMethodNotAllowed()
