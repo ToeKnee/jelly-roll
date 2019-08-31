@@ -455,15 +455,14 @@ def webhook(request):
             try:
                 order_id = data["resource"]["transactions"][0]["invoice_number"]
             except KeyError:
-                order_id = None
+                response_data = {"status": "not found"}
+                return JsonResponse(data=response_data, status=404)
 
-            if order_id:
-                order = get_object_or_404(Order, id=order_id)
-                # Set Order to Processing
-                order.add_status(
-                    status="Payment Created",
-                    notes=_("PayPal payment created. Thank you."),
-                )
+            order = get_object_or_404(Order, id=order_id)
+            # Set Order to Processing
+            order.add_status(
+                status="Payment Created", notes=_("PayPal payment created. Thank you.")
+            )
         elif event_type.endswith("COMPLETED"):
             # Payment complete
             order = get_object_or_404(Order, id=data["resource"]["invoice_number"])

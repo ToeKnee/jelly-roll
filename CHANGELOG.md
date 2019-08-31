@@ -2,6 +2,12 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.9, 31 August, 2019
+------------------------------
+* PayPal: Change handling of payment created as sometimes the order
+  number does not exist.
+
+
 Version 0.12.0.8, 31 August, 2019
 ------------------------------
 * PayPal: Change handling of payment created as sometimes the order
