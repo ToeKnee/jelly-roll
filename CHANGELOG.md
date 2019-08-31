@@ -2,6 +2,12 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.8, 31 August, 2019
+------------------------------
+* PayPal: Change handling of payment created as sometimes the order
+  number does not exist.
+* Ingenico: Improve logging when verification fails
+
 Version 0.12.0.7, 15 July, 2019
 ------------------------------
 * Improve handling of unfulfilled order manager
