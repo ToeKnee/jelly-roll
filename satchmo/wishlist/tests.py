@@ -6,6 +6,7 @@ from satchmo.caching import cache_delete
 from satchmo.contact.models import Contact
 from satchmo.product.models import Product
 from satchmo.shop.satchmo_settings import get_satchmo_setting
+from satchmo.wishlist.factories import ProductWishFactory
 from satchmo.wishlist.models import ProductWish
 
 domain = "http://testserver"
@@ -31,6 +32,18 @@ def get_step1_post_data(US):
         "ship_postal_code": "81123",
         "paymentmethod": "DUMMY",
     }
+
+
+class WishManagerTest(TestCase):
+    def test_active(self):
+        active_product = ProductWishFactory()
+        inactive_product = ProductWishFactory()
+        inactive_product.product.active = False
+        inactive_product.product.save()
+
+        active_product_wishes = ProductWish.objects.active()
+        self.assertTrue(active_product in active_product_wishes)
+        self.assertFalse(inactive_product in active_product_wishes)
 
 
 class WishTest(TestCase):

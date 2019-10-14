@@ -29,7 +29,7 @@ def wishlist_view(request, message=""):
     except Contact.DoesNotExist:
         return _wishlist_requires_login(request)
 
-    wishes = ProductWish.objects.filter(contact=contact)
+    wishes = ProductWish.objects.active().filter(contact=contact)
 
     ctx = {"wishlist": wishes, "wishlist_message": message}
 

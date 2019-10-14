@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.10, NEXT
+------------------------------
+* Wishlist: Do not display wishlist items for inactive products
+
 Version 0.12.0.9, 31 August, 2019
 ------------------------------
 * PayPal: Change handling of payment created as sometimes the order
