@@ -2,9 +2,10 @@
 JellyRoll Change Log
 ==================
 
-Version 0.12.0.10, NEXT
+Version 0.12.0.10, 27 January, 2020
 ------------------------------
 * Wishlist: Do not display wishlist items for inactive products
+* Discount: Display correct date format
 
 Version 0.12.0.9, 31 August, 2019
 ------------------------------
