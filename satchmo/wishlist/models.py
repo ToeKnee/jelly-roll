@@ -27,6 +27,9 @@ class ProductWishManager(models.Manager):
 
         return wish
 
+    def active(self):
+        return self.filter(product__active=True)
+
 
 class ProductWish(models.Model):
     contact = models.ForeignKey(
