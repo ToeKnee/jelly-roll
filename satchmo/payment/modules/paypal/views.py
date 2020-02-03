@@ -163,7 +163,9 @@ def create_payment(request, retries=0):
                             "quantity": item.quantity,
                             "currency": order.currency.iso_4217_code,
                             "price": "{price:.2f}".format(
-                                price=(item.unit_price - item.discount)
+                                price=(
+                                    item.unit_price - (item.discount / item.quantity)
+                                )
                             ),
                             "tax": str(item.unit_tax),
                             "sku": item.product.sku,
