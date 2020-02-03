@@ -2,6 +2,10 @@
 JellyRoll Change Log
 ==================
 
+Version 0.12.0.12, 03 February, 2020
+------------------------------
+* Split item discount between items when creating PayPal Data
+
 Version 0.12.0.11, 27 January, 2020
 ------------------------------
 * Wishlist: Do not display wishlist items for inactive products
